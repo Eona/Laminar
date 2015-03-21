@@ -5,7 +5,7 @@
 #ifndef gpu_utils_h__
 #define gpu_utils_h__
 
-#include "myutils.h"
+#include "utils.h"
 #include "cuda.h"
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
