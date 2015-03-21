@@ -11,5 +11,4 @@ TEST(MyTestSuite, Dudulu)
 
 TEST(MyTestSuite, Cuda)
 {
-
 }

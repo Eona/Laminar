@@ -37,9 +37,10 @@ int main(int argc, char **argv)
 	cout << a << endl;
 #endif
 
-double p = 66;
+double p = 64;
 GpuTimer t;
 t.start();
 testkernel<<< 3, 4 >>>();
+
 t.setResolution(Timer::Microsec).printElapsed();
 }
