@@ -18,18 +18,19 @@
 from sys import argv, stderr
 import os
 
-if not len(argv) >= 2:
-    print >> stderr, "Usage: python {} <eclipse_project_dir (cmake build dir)> [Eclipse_filter_title actual_dir_name pairs]\n".format(argv[0])
-    print >> stderr, "e.g. $ python {} ./build/ GTest test".format(argv[0])
-    print >> stderr, "To include directory 'test' as another source directory, and set its title to 'GTest' in Eclipse project explorer. "
+if not len(argv) >= 3:
+    print >> stderr, "Usage: python {} <eclipse_project_dir (cmake build dir)> <useCUDA=1/0> [Eclipse_filter_title actual_dir_name pairs]\n".format(argv[0])
+    print >> stderr, "e.g. $ python {} 1 ./build/ GTest test".format(argv[0])
+    print >> stderr, "To include directory 'test' as another source directory, and set its title to 'GTest' in Eclipse project explorer. Also enable CUDA macros."
     exit()
 
 projpath = lambda f : os.path.join(argv[1], f)
+useCUDA = True if argv[2] == '1' else False
 
 AddExplorerDict = {} # {GTest (title in eclipse explorer) : test (actual dir name)}
 
 arglen = len(argv)
-i = 2
+i = 3
 while i < arglen:
     AddExplorerDict[argv[i]] = argv[i+1]
     i += 2
@@ -100,6 +101,10 @@ while l:
             # add [Gtest] as "src"
             for explorerTitle in AddExplorerDict:
                 write('<pathentry kind="src" path="[{}]"/>'.format(explorerTitle))
+            # define macros specific for CUDA
+            if useCUDA:
+                write('<pathentry kind="mac" name="__NVCC__" path="" value="1"/>')
+                write('<pathentry kind="mac" name="__CUDACC__" path="" value="1"/>')
     else:
         write(l)
 
