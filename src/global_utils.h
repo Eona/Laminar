@@ -24,6 +24,7 @@
 #include <stdexcept>
 #include <climits>
 #include <cstdarg>
+#include <utility>
 
 using std::vector;
 using std::string;
@@ -33,6 +34,7 @@ using std::endl;
 using std::ostream;
 using std::ostringstream;
 using std::move;
+using std::shared_ptr;
 typedef unsigned long ulong;
 typedef unsigned int uint;
 

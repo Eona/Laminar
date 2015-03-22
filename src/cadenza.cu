@@ -16,15 +16,19 @@ int main(int argc, char **argv)
 	float input = 0.2;
 	float target = 1.5;
 
-	LinearLayer l1(input);
-	SigmoidLayer s2(0);
-	LinearLayer l3(0);
-	SquareErrorLayer sq4(0, target);
-	LinearConnection conn12(l1, s2);
-	LinearConnection conn23(s2, l3);
-	ConstantConnection conn34(l3, sq4);
+	auto l1 = makeLayer<LinearLayer>(input);
+	auto s2 = makeLayer<SigmoidLayer>(0);
+	auto l3 = makeLayer<LinearLayer>(0);
+	auto sq4 = makeLayer<SquareErrorLayer>(0, target);
 
-	ForwardNetwork net {&l1, &conn12, &s2, &conn23, &l3, &conn34, &sq4};
+	ForwardNetwork net;
+	net.addLayer(l1);
+	net.addConnection(makeConnection<LinearConnection>(l1, s2));
+	net.addLayer(s2);
+	net.addConnection(makeConnection<LinearConnection>(s2, l3));
+	net.addLayer(l3);
+	net.addConnection(makeConnection<ConstantConnection>(l3, sq4));
+	net.addLayer(sq4);
 
 	net.forward_prop();
 	net.backward_prop();

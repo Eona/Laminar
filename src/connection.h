@@ -15,7 +15,7 @@
 class Connection : public Component
 {
 public:
-	Connection(Layer& _inLayer, Layer& _outLayer):
+	Connection(LayerPtr _inLayer, LayerPtr _outLayer):
 		inLayer(_inLayer), outLayer(_outLayer)
     {
     }
@@ -24,12 +24,12 @@ public:
 
 	virtual void forward()
 	{
-		_forward(inLayer.outValue, outLayer.inValue);
+		_forward(inLayer->outValue, outLayer->inValue);
 	}
 
 	virtual void backward()
 	{
-		_backward(inLayer.outValue, inLayer.outGradient, outLayer.inGradient);
+		_backward(inLayer->outValue, inLayer->outGradient, outLayer->inGradient);
 	}
 
 	virtual void _forward(float& inlayerOutval, float& outlayerInval) = 0;
@@ -37,14 +37,28 @@ public:
 	virtual void _backward(float& inlayerOutval, float& inlayerOutgrad, float& outlayerIngrad) = 0;
 
 protected:
-	Layer& inLayer;
-	Layer& outLayer;
+	LayerPtr inLayer;
+	LayerPtr outLayer;
 };
+
+typedef shared_ptr<Connection> ConnectionPtr;
+
+
+/**
+ * Make a polymorphic shared pointer
+ */
+template<typename ConnectionT, typename ...ArgT>
+ConnectionPtr makeConnection(ArgT&& ... args)
+{
+	return static_cast<ConnectionPtr>(
+			std::make_shared<ConnectionT>(
+					std::forward<ArgT>(args) ...));
+}
 
 class ConstantConnection : public Connection
 {
 public:
-	ConstantConnection(Layer& _inLayer, Layer& _outLayer):
+	ConstantConnection(LayerPtr _inLayer, LayerPtr _outLayer):
 		Connection(_inLayer, _outLayer)
 	{
 	}
@@ -70,7 +84,7 @@ public:
 class LinearConnection : public Connection
 {
 public:
-	LinearConnection(Layer& _inLayer, Layer& _outLayer):
+	LinearConnection(LayerPtr _inLayer, LayerPtr _outLayer):
 		Connection(_inLayer, _outLayer), gradient(0.0f)
 	{
 		// TODO random number

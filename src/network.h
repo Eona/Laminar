@@ -5,40 +5,53 @@
 #ifndef NETWORK_H_
 #define NETWORK_H_
 
+#include "component.h"
 #include "layer.h"
 #include "connection.h"
 
 class Network
 {
 public:
-	Network(std::initializer_list<Component*> _components) :
-		components(_components)
-	{
-	}
+	Network()
+	{ }
 
 	virtual ~Network() {}
+
+	virtual void addLayer(LayerPtr) = 0;
+
+	virtual void addConnection(ConnectionPtr) = 0;
 
 	virtual void forward_prop() = 0;
 
 	virtual void backward_prop() = 0;
 
-	vector<Component*> components;
-	vector<Layer *> layers;
-	vector<Connection *> connections;
+	vector<LayerPtr> layers;
+	vector<ConnectionPtr> connections;
+	vector<ComponentPtr> components;
 };
 
 class ForwardNetwork : public Network
 {
 public:
-	ForwardNetwork(std::initializer_list<Component*> _components) :
-		Network(_components)
-	{}
+	ForwardNetwork() { }
 
 	~ForwardNetwork() {}
 
+	virtual void addLayer(LayerPtr layer)
+	{
+		components.push_back(makeComponent(layer));
+		layers.push_back(layer);
+	}
+
+	virtual void addConnection(ConnectionPtr conn)
+	{
+		components.push_back(makeComponent(conn));
+		connections.push_back(conn);
+	}
+
 	virtual void forward_prop()
 	{
-		for (Component *compon : this->components)
+		for (auto compon : this->components)
 			compon->forward();
 	}
 
@@ -52,7 +65,7 @@ public:
 ostream& operator<<(ostream& os, ForwardNetwork& layer)
 {
 	os << "[ForwardNet\n";
-	for (Component *compon : layer.components)
+	for (auto compon : layer.components)
 		os << "  " << compon->str() << "\n";
 	os << "]";
 	return os;

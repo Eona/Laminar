@@ -46,5 +46,17 @@ public:
 	float inValue, inGradient, outValue, outGradient;
 };
 
+typedef shared_ptr<Layer> LayerPtr;
+
+/**
+ * Make a polymorphic shared pointer
+ */
+template<typename LayerT, typename ...ArgT>
+LayerPtr makeLayer(ArgT&& ... args)
+{
+	return static_cast<LayerPtr>(
+			std::make_shared<LayerT>(
+					std::forward<ArgT>(args) ...));
+}
 
 #endif /* LAYER_H_ */
