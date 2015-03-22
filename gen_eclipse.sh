@@ -15,12 +15,12 @@ else
 fi
 
 cd $BUILD_DIR
-cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_CXX_COMPILER_ARG1=-std=c++11 -DCMAKE_BUILD_TYPE=Release ../cmake/
+cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_CXX_COMPILER_ARG1=-std=c++11 -DCMAKE_BUILD_TYPE=Release ../src/
 cd ..
 
 echo
 echo Patch eclipse project configurations:
-python patch_eclipse.py $BUILD_DIR $USE_CUDA GTest test
+python patch_eclipse_nvcc_macro.py $BUILD_DIR $USE_CUDA GTest test
 
 echo
 echo DONE
