@@ -18,8 +18,18 @@ public:
 
 	virtual ~Layer();
 
-	virtual void forward(float& inValue, float& outValue) = 0;
-	virtual void backward(float& inValue, float& inGradient, float& outValue, float& outGradient) = 0;
+	void forward()
+	{
+		_forward(inValue, outValue);
+	}
+
+	void backward()
+	{
+		_backward(inValue, inGradient, outValue, outGradient);
+	}
+
+	virtual void _forward(float& inValue, float& outValue) = 0;
+	virtual void _backward(float& inValue, float& inGradient, float& outValue, float& outGradient) = 0;
 
 	float inValue, inGradient, outValue, outGradient;
 };
