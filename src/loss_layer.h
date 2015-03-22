@@ -30,6 +30,12 @@ public:
 	{
 		inGradient = inValue - targetValue;
 	}
+
+	string str()
+	{
+		return string("[SquareLossLayer: \n")
+				+ Layer::str() + "]";
+	}
 };
 
 

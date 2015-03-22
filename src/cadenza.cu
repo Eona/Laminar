@@ -14,10 +14,12 @@
 int main(int argc, char **argv)
 {
 	float input = 0.2;
+	float target = 1.5;
+
 	LinearLayer l1(input);
 	SigmoidLayer s2(0);
 	LinearLayer l3(0);
-	SquareErrorLayer sq4(0, 1.5f);
+	SquareErrorLayer sq4(0, target);
 	LinearConnection conn12(l1, s2);
 	LinearConnection conn23(s2, l3);
 	ConstantConnection conn34(l3, sq4);

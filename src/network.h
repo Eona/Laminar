@@ -23,6 +23,8 @@ public:
 	virtual void backward_prop() = 0;
 
 	vector<Component*> components;
+	vector<Layer *> layers;
+	vector<Connection *> connections;
 };
 
 class ForwardNetwork : public Network
@@ -50,7 +52,7 @@ public:
 ostream& operator<<(ostream& os, ForwardNetwork& layer)
 {
 	os << "[ForwardNet\n";
-	for (auto compon : layer.components)
+	for (Component *compon : layer.components)
 		os << "  " << compon->str() << "\n";
 	os << "]";
 	return os;
