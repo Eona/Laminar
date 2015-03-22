@@ -20,3 +20,10 @@ An artificial music improviser powered by GPU-based recurrent neural network.
  
  6. You might need to manually rebuild the index by right clicking the project -> index -> rebuild. Otherwise eclipse editor will be swamped with error markups. 
 Warning: if you ever change any of the `CMakeLists.txt` or add/delete/rename source files, do not build or run directly in eclipse. Run `./gen_eclipse.sh <project>` in a terminal before you do anything in eclipse, otherwise the code indexer will be broken again. 
+
+## Notes
+### Naming convention
+
+ - All functions use underscores
+ - All variables start with lower case and use camel case
+ - All types and classes start with upper case and use camel case
