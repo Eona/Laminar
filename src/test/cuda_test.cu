@@ -1,14 +1,18 @@
-#include "../utils.h"
-#include <gtest/gtest.h>
-using namespace std;
+#include "test_utils.h"
 
-int sq(int i) { return i * i; }
-
-TEST(MyTestSuite, Dudulu)
+#ifdef is_CUDA
+__global__ void testkernel()
 {
-    EXPECT_EQ(1+2, 3) << "cooooo";
+	double p = threadIdx.x + 66;
+	for (int i = 0; i < 30000000; ++i)
+		p += i / p - std::sqrt(p);
+
+	printf("thread %d; block %d\n", threadIdx.x, blockIdx.x);
 }
+#endif
 
-TEST(MyTestSuite, Cuda)
+TEST(CudaTest, Run)
 {
+	testkernel<<<3, 4>>>();
+
 }
