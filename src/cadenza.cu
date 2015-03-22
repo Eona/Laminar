@@ -6,6 +6,14 @@
  * http://scrupulousabstractions.tumblr.com/post/36441490955/eclipse-mingw-builds
  */
 #include "timer.h"
+#include "input_layer.h"
+#include "output_layer.h"
+#include "recurrent_layer.h"
+#include "connection.h"
+#include "transfer_layer.h"
+#include "loss_layer.h"
+#include "parameter.h"
+#include "lstm_layer.h"
 
 #ifdef is_CUDA
 __global__ void testkernel()
@@ -20,27 +28,11 @@ __global__ void testkernel()
 
 int main(int argc, char **argv)
 {
-#ifdef is_CPP_11
-	cout << "C++ 11 supported!" << endl;
-#else
-	cout << "C++ 11 NOT supported!" << endl;
-#endif
-#ifdef is_CPP_11
-	vector<int> a {115, 113, 111, 110, 112};
-	cout << "[";
-	for (auto i : a)
-		cout << i << " ";
-	cout << "]";
-#else
-	vector<int> a;
-	a.push_back(5); a.push_back(1); a.push_back(4); a.push_back(9); a.push_back(0);
-	cout << a << endl;
-#endif
 
-double p = 64;
-GpuTimer t;
-t.start();
-testkernel<<< 3, 4 >>>();
+    double p = 66;
+    GpuTimer t;
+    t.start();
+    testkernel<<< 3, 4 >>>();
 
-t.setResolution(Timer::Microsec).printElapsed();
+    t.setResolution(Timer::Microsec).printElapsed();
 }
