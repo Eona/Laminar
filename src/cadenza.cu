@@ -35,4 +35,5 @@ int main(int argc, char **argv)
     testkernel<<< 3, 4 >>>();
 
     t.setResolution(Timer::Microsec).printElapsed();
+
 }
