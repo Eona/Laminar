@@ -43,7 +43,6 @@ protected:
 
 typedef shared_ptr<Connection> ConnectionPtr;
 
-
 /**
  * Make a polymorphic shared pointer
  */
@@ -53,6 +52,15 @@ ConnectionPtr make_connection(ArgT&& ... args)
 	return static_cast<ConnectionPtr>(
 			std::make_shared<ConnectionT>(
 					std::forward<ArgT>(args) ...));
+}
+
+/**
+ * Down cast ConnectionPtr to a specific connection type
+ */
+template<typename ConnectionT>
+shared_ptr<ConnectionT> cast_connection(ConnectionPtr conn)
+{
+	return std::dynamic_pointer_cast<ConnectionT>(conn);
 }
 
 class ConstantConnection : public Connection

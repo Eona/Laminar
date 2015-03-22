@@ -59,4 +59,13 @@ LayerPtr make_layer(ArgT&& ... args)
 					std::forward<ArgT>(args) ...));
 }
 
+/**
+ * Down cast LayerPtr to a specific layer type
+ */
+template<typename LayerT>
+shared_ptr<LayerT> cast_layer(LayerPtr layer)
+{
+	return std::dynamic_pointer_cast<LayerT>(layer);
+}
+
 #endif /* LAYER_H_ */

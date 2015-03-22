@@ -33,5 +33,7 @@ int main(int argc, char **argv)
 	net.forward_prop();
 	net.backward_prop();
 
+	net.gradient_check();
+
 	cout << net << endl;
 }

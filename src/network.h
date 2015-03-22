@@ -51,7 +51,7 @@ public:
 
 	virtual void forward_prop()
 	{
-		for (auto compon : this->components)
+		for (ComponentPtr compon : this->components)
 			compon->forward();
 	}
 
@@ -61,6 +61,18 @@ public:
 			components[i]->backward();
 	}
 
+	void gradient_check()
+	{
+		for (ConnectionPtr conn : this->connections)
+		{
+			auto linearConn = cast_connection<LinearConnection>(conn);
+			if (linearConn)
+				cout << "linear!" << endl;
+			auto constconn = cast_connection<ConstantConnection>(conn);
+			if (constconn)
+				cout << "const!" << endl;
+		}
+	}
 };
 
 ostream& operator<<(ostream& os, ForwardNetwork& layer)
