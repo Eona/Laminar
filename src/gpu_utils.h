@@ -16,8 +16,8 @@ void __syncthreads();
 void atomicAdd(uint*, uint);
 #endif
 
-#define CUDA_CHECK(ans) { gpuCheckError((ans), __FILE__, __LINE__); }
-inline void gpuCheckError(cudaError_t code, const char *file, int line)
+#define CUDA_CHECK(ans) { gpu_check_error((ans), __FILE__, __LINE__); }
+inline void gpu_check_error(cudaError_t code, const char *file, int line)
 {
 	if (code != cudaSuccess)
 	{
@@ -28,7 +28,7 @@ inline void gpuCheckError(cudaError_t code, const char *file, int line)
 }
 
 template<typename T>
-void gMemcpyVectorToDevice(const vector<T>& h_data, T *d_data)
+void g_memcpy_vector2device(const vector<T>& h_data, T *d_data)
 {
 	CUDA_CHECK(
 			cudaMemcpy((void *)d_data,
@@ -39,7 +39,7 @@ void gMemcpyVectorToDevice(const vector<T>& h_data, T *d_data)
 }
 
 template<typename T>
-void gMemcpyHostToDevice(T *h_data, T *d_data, size_t size)
+void g_memcpy_host2device(T *h_data, T *d_data, size_t size)
 {
 	CUDA_CHECK(
 			cudaMemcpy((void *)d_data,
@@ -50,7 +50,7 @@ void gMemcpyHostToDevice(T *h_data, T *d_data, size_t size)
 }
 
 template<typename T>
-void gMemcpyDeviceToVector(T *d_data, const vector<T>& h_data)
+void g_memcpy_device2vector(T *d_data, const vector<T>& h_data)
 {
 	CUDA_CHECK(
 		cudaMemcpy((void *)&h_data[0],
@@ -61,7 +61,7 @@ void gMemcpyDeviceToVector(T *d_data, const vector<T>& h_data)
 }
 
 template<typename T>
-void gMemcpyDeviceToHost(T *d_data, T *h_data, size_t size)
+void g_memcpy_device2host(T *d_data, T *h_data, size_t size)
 {
 	CUDA_CHECK(
 		cudaMemcpy((void *)h_data,
@@ -72,7 +72,7 @@ void gMemcpyDeviceToHost(T *d_data, T *h_data, size_t size)
 }
 
 template<typename T>
-T *gMalloc(size_t size)
+T *g_malloc(size_t size)
 {
 	T* d_data;
 	CUDA_CHECK(
@@ -82,13 +82,13 @@ T *gMalloc(size_t size)
 }
 
 template<typename T>
-void gMemset(T *d_data, size_t size, T value = 0)
+void g_memset(T *d_data, size_t size, T value = 0)
 {
 	CUDA_CHECK(cudaMemset((void *)d_data, value, size * sizeof(T)));
 }
 
 template<typename T>
-void gFree(T *d_data)
+void g_free(T *d_data)
 {
 	CUDA_CHECK(cudaFree(d_data));
 }
