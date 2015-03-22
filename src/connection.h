@@ -97,8 +97,8 @@ public:
 	{
 		ostringstream os;
 		os << "[LinearConn: "
-			<< "param=" << this->param
-			<< " grad=" << this->gradient
+			<< "\n\tparam=" << this->param
+			<< "\tgrad=" << this->gradient
 			<< "]";
 		return os.str();
 	}

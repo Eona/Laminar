@@ -35,7 +35,7 @@ ostream& operator<<(ostream& os, ForwardNetwork& layer)
 {
 	os << "[ForwardNet\n";
 	for (auto compon : layer.components)
-		os << compon->str() << "\n";
+		os << "  " << compon->str() << "\n";
 	os << "]";
 	return os;
 }
