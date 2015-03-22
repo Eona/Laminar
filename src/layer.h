@@ -7,6 +7,7 @@
 #define LAYER_H_
 
 #include "global_utils.h"
+#include "math_utils.h"
 
 class Layer
 {

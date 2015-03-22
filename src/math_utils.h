@@ -8,6 +8,7 @@
 
 #include "global_utils.h"
 
-
+// FIXME for prototype only
+inline float transpose(float x) { return x; }
 
 #endif /* MATH_UTILS_H_ */

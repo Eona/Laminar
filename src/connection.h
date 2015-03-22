@@ -8,6 +8,9 @@
 #include "global_utils.h"
 #include "layer.h"
 
+/**
+ * Contains the actual parameters
+ */
 class Connection
 {
 public:
@@ -62,7 +65,7 @@ class LinearConnection : public Connection
 {
 public:
 	LinearConnection(Layer& _inLayer, Layer& _outLayer):
-		Connection(_inLayer, _outLayer)
+		Connection(_inLayer, _outLayer), gradient(0.0f)
 	{
 		// TODO random number
 		param = 3.73;
@@ -72,15 +75,20 @@ public:
 
 	void _forward(float& inlayerOutval, float& outlayerInval)
 	{
-
+		// NOTE matrix multiplication order applies here
+		outlayerInval += param * inlayerOutval;
 	}
 
 	void _backward(float& inlayerOutval, float& inlayerOutgrad, float& outlayerIngrad)
 	{
-
+		// NOTE matrix multiplication order applies here
+		// should check if input module actually has gradient
+		inlayerOutgrad += transpose(param) * outlayerIngrad;
+		this->gradient += outlayerIngrad * transpose(inlayerOutval);
 	}
 
 	float param;
+	float gradient;
 };
 
 #endif /* CONNECTION_H_ */
