@@ -18,6 +18,10 @@ public:
 
 	virtual ~Network() {}
 
+	virtual void forward_prop() = 0;
+
+	virtual void backward_prop() = 0;
+
 	vector<Component*> components;
 };
 
@@ -29,6 +33,18 @@ public:
 	{}
 
 	~ForwardNetwork() {}
+
+	virtual void forward_prop()
+	{
+		for (Component *compon : this->components)
+			compon->forward();
+	}
+
+	virtual void backward_prop()
+	{
+		for (int i = components.size() - 1; i >= 0; --i)
+			components[i]->backward();
+	}
 };
 
 ostream& operator<<(ostream& os, ForwardNetwork& layer)

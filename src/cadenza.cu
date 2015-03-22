@@ -22,25 +22,10 @@ int main(int argc, char **argv)
 	LinearConnection conn23(s2, l3);
 	ConstantConnection conn34(l3, sq4);
 
-	l1.forward();
-	conn12.forward();
-	s2.forward();
-	conn23.forward();
-	l3.forward();
-	conn34.forward();
-	sq4.forward();
-
-	sq4.backward();
-	conn34.backward();
-	l3.backward();
-	conn23.backward();
-	s2.backward();
-	conn12.backward();
-	l1.backward();
-
-	cout << sq4.outValue << endl;
-	cout << l1.inGradient << endl;
-
 	ForwardNetwork net {&l1, &conn12, &s2, &conn23, &l3, &conn34, &sq4};
+
+	net.forward_prop();
+	net.backward_prop();
+
 	cout << net << endl;
 }
