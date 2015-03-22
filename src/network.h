@@ -17,9 +17,9 @@ public:
 
 	virtual ~Network() {}
 
-	virtual void addLayer(LayerPtr) = 0;
+	virtual void add_layer(LayerPtr) = 0;
 
-	virtual void addConnection(ConnectionPtr) = 0;
+	virtual void add_connection(ConnectionPtr) = 0;
 
 	virtual void forward_prop() = 0;
 
@@ -37,13 +37,13 @@ public:
 
 	~ForwardNetwork() {}
 
-	virtual void addLayer(LayerPtr layer)
+	virtual void add_layer(LayerPtr layer)
 	{
 		components.push_back(makeComponent(layer));
 		layers.push_back(layer);
 	}
 
-	virtual void addConnection(ConnectionPtr conn)
+	virtual void add_connection(ConnectionPtr conn)
 	{
 		components.push_back(makeComponent(conn));
 		connections.push_back(conn);
@@ -60,6 +60,7 @@ public:
 		for (int i = components.size() - 1; i >= 0; --i)
 			components[i]->backward();
 	}
+
 };
 
 ostream& operator<<(ostream& os, ForwardNetwork& layer)

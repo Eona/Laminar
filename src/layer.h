@@ -52,7 +52,7 @@ typedef shared_ptr<Layer> LayerPtr;
  * Make a polymorphic shared pointer
  */
 template<typename LayerT, typename ...ArgT>
-LayerPtr makeLayer(ArgT&& ... args)
+LayerPtr make_layer(ArgT&& ... args)
 {
 	return static_cast<LayerPtr>(
 			std::make_shared<LayerT>(

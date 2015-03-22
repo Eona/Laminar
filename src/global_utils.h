@@ -96,7 +96,7 @@ ostream& operator<<(ostream& oss, vector<T>&& vec)
 
 // print basic array
 template <typename T>
-void printArray(T *arr, int size)
+void print_array(T *arr, int size)
 {
 	cout << "[";
 	int i;
@@ -117,7 +117,7 @@ void myassert(bool cond, string errmsg = "")
 	}
 }
 
-void printTitle(string title = "", int leng = 10)
+void print_title(string title = "", int leng = 10)
 {
 	string sep = "";
 	for (int i = 0; i < leng; ++i)

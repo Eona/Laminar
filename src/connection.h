@@ -48,7 +48,7 @@ typedef shared_ptr<Connection> ConnectionPtr;
  * Make a polymorphic shared pointer
  */
 template<typename ConnectionT, typename ...ArgT>
-ConnectionPtr makeConnection(ArgT&& ... args)
+ConnectionPtr make_connection(ArgT&& ... args)
 {
 	return static_cast<ConnectionPtr>(
 			std::make_shared<ConnectionT>(
