@@ -21,6 +21,12 @@ endif()
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
+function(link_gtest target)
+    target_link_libraries(${target} ${GTEST_BOTH_LIBRARIES})
+    target_link_libraries(${target} ${Boost_LIBRARYDIR})
+    target_link_libraries(${target} -pthread)
+endfunction()
+
 # add_gtest(<target> <sources>...)
 #
 #  Adds a GTest test executable, <target>, built from <sources> and
@@ -30,10 +36,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 # additional args can be accessed via ARG0, ARG1 ... ARGN
 function(add_gtest target)
     add_executable(${target} ${ARGN})
-    target_link_libraries(${target} ${GTEST_BOTH_LIBRARIES})
-    target_link_libraries(${target} ${Boost_LIBRARYDIR})
-    target_link_libraries(${target} -pthread)
-
+    link_gtest(${target})
     add_test(${target} ${target})
 
     # run test after each time it's built
@@ -42,7 +45,7 @@ function(add_gtest target)
         POST_BUILD
         COMMAND ${target}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "My GTest running ${target}" VERBATIM)
+        COMMENT "GTest running ${target}" VERBATIM)
 endfunction()
 
 # add_multiple_gtests(<target1> <target2> ...)
@@ -52,5 +55,28 @@ function(add_multiple_gtests target0)
     set(targets ${target0} ${ARGN})
     foreach(target IN ITEMS ${targets})
         add_gtest(${target} ${target}.cpp)
+    endforeach()
+endfunction()
+
+# ============ CUDA gtest ===============
+function(add_gtest_cuda target)
+    cuda_add_executable(${target} ${ARGN})
+    link_gtest(${target})
+    add_test(${target} ${target})
+
+    add_custom_command(TARGET ${target}
+        POST_BUILD
+        COMMAND ${target}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "CUDA GTest running ${target}" VERBATIM)
+endfunction()
+
+# add_multiple_gtests_cuda(<target1> <target2> ...)
+# default source name: <target>.cu
+# one target may only link to one source. 
+function(add_multiple_gtests_cuda target0)
+    set(targets ${target0} ${ARGN})
+    foreach(target IN ITEMS ${targets})
+        add_gtest_cuda(${target} ${target}.cu)
     endforeach()
 endfunction()
