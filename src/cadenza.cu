@@ -1,10 +1,7 @@
 /*
- * test.cpp
- * (c) 2015
- * Author: Jim Fan
- * See below link for how to support C++11 in eclipse
- * http://scrupulousabstractions.tumblr.com/post/36441490955/eclipse-mingw-builds
+ * Eona Studio (c)2015
  */
+#include "global_utils.h"
 #include "timer.h"
 #include "input_layer.h"
 #include "output_layer.h"

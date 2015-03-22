@@ -6,10 +6,14 @@
 #ifndef TRANSFER_LAYER_H_
 #define TRANSFER_LAYER_H_
 
+#include "layer.h"
+
 class SigmoidLayer : public Layer
 {
 public:
-	SigmoidLayer() { }
+	SigmoidLayer(float _inValue, float _inGradient, float _outValue, float _outGradient):
+		Layer(_inValue, _inGradient, _outValue, _outGradient)
+	{}
 
 	~SigmoidLayer() { }
 
@@ -27,7 +31,9 @@ public:
 class CosineLayer : public Layer
 {
 public:
-	CosineLayer() { }
+	CosineLayer(float _inValue, float _inGradient, float _outValue, float _outGradient):
+		Layer(_inValue, _inGradient, _outValue, _outGradient)
+	{}
 
 	~CosineLayer() { }
 
@@ -45,9 +51,11 @@ public:
 class LinearLayer : public Layer
 {
 public:
-	LinearLayer(float _multiplier) :
+	LinearLayer(float _inValue, float _inGradient, float _outValue, float _outGradient,
+			float _multiplier):
+		Layer(_inValue, _inGradient, _outValue, _outGradient),
 		multiplier(_multiplier)
-    { }
+	{}
 
 	~LinearLayer() { }
 

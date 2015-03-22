@@ -7,7 +7,7 @@
 #define TEST_H_
 
 #include <gtest/gtest.h>
-#include "../utils.h"
+#include "../global_utils.h"
 using namespace std;
 
 #endif /* TEST_H_ */
