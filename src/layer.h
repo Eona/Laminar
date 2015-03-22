@@ -12,11 +12,11 @@
 class Layer
 {
 public:
-	Layer(float _inValue, float _inGradient, float _outValue, float _outGradient):
-		inValue(_inValue), inGradient(_inGradient), outValue(_outValue), outGradient(_outGradient)
+	Layer(float _inValue):
+		inValue(_inValue), inGradient(0), outValue(0), outGradient(0)
 	{}
 
-	virtual ~Layer();
+	virtual ~Layer() {};
 
 	void forward()
 	{

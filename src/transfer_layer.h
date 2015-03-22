@@ -11,15 +11,15 @@
 class SigmoidLayer : public Layer
 {
 public:
-	SigmoidLayer(float _inValue, float _inGradient, float _outValue, float _outGradient):
-		Layer(_inValue, _inGradient, _outValue, _outGradient)
+	SigmoidLayer(float _inValue):
+		Layer(_inValue)
 	{}
 
 	~SigmoidLayer() { }
 
 	void _forward(float& inValue, float& outValue)
 	{
-		outValue = 1.0f / (1.0f + exp(inValue));
+		outValue = 1.0f / (1.0f + exp(-inValue));
 	}
 
 	void _backward(float& inValue, float& inGradient, float& outValue, float& outGradient)
@@ -31,8 +31,8 @@ public:
 class CosineLayer : public Layer
 {
 public:
-	CosineLayer(float _inValue, float _inGradient, float _outValue, float _outGradient):
-		Layer(_inValue, _inGradient, _outValue, _outGradient)
+	CosineLayer(float _inValue):
+		Layer(_inValue)
 	{}
 
 	~CosineLayer() { }
@@ -51,9 +51,8 @@ public:
 class LinearLayer : public Layer
 {
 public:
-	LinearLayer(float _inValue, float _inGradient, float _outValue, float _outGradient,
-			float _multiplier = 1.0f):
-		Layer(_inValue, _inGradient, _outValue, _outGradient),
+	LinearLayer(float _inValue, float _multiplier = 1.0f):
+		Layer(_inValue),
 		multiplier(_multiplier)
 	{}
 
