@@ -26,6 +26,12 @@ public:
 	{
 		inGradient = outValue * (1.0f - outValue) * outGradient;
 	}
+
+	string str()
+	{
+		return string("[SigmoidLayer: \n")
+				+ Layer::str() + "]";
+	}
 };
 
 class CosineLayer : public Layer
@@ -45,6 +51,12 @@ public:
 	void _backward(float& inValue, float& inGradient, float& outValue, float& outGradient)
 	{
 		inGradient = -sin(inValue) * outGradient;
+	}
+
+	string str()
+	{
+		return string("[CosineLayer: \n")
+				+ Layer::str() + "]";
 	}
 };
 
@@ -68,9 +80,37 @@ public:
 		inGradient = multiplier * outGradient;
 	}
 
+	string str()
+	{
+		return string("[LinearLayer: \n")
+				+ Layer::str() + "]";
+	}
+
 private:
 	float multiplier;
 };
 
+
+ostream& operator<<(ostream& os, LinearLayer& layer)
+{
+	os << layer.str();
+	return os;
+}
+ostream& operator<<(ostream& os, LinearLayer&& layer)
+{
+	os << layer.str();
+	return os;
+}
+
+ostream& operator<<(ostream& os, SigmoidLayer& layer)
+{
+	os << layer.str();
+	return os;
+}
+ostream& operator<<(ostream& os, SigmoidLayer&& layer)
+{
+	os << layer.str();
+	return os;
+}
 
 #endif /* TRANSFER_LAYER_H_ */

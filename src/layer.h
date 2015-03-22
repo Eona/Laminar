@@ -8,8 +8,10 @@
 
 #include "global_utils.h"
 #include "math_utils.h"
+#include "connection.h"
+#include "component.h"
 
-class Layer
+class Layer : public Component
 {
 public:
 	Layer(float _inValue):
@@ -18,18 +20,28 @@ public:
 
 	virtual ~Layer() {};
 
-	void forward()
+	virtual void forward()
 	{
 		_forward(inValue, outValue);
 	}
 
-	void backward()
+	virtual void backward()
 	{
 		_backward(inValue, inGradient, outValue, outGradient);
 	}
 
 	virtual void _forward(float& inValue, float& outValue) = 0;
 	virtual void _backward(float& inValue, float& inGradient, float& outValue, float& outGradient) = 0;
+
+	virtual string str()
+	{
+		ostringstream os;
+		os << "\tinVal=" << this->inValue
+			<< "\tinGrad=" << this->inGradient
+			<< "\n\toutVal=" << this->outValue
+			<< "\toutGrad=" << this->outGradient;
+		return os.str();
+	}
 
 	float inValue, inGradient, outValue, outGradient;
 };

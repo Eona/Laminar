@@ -23,6 +23,7 @@
 #include <functional>
 #include <stdexcept>
 #include <climits>
+#include <cstdarg>
 
 using std::vector;
 using std::string;
@@ -30,6 +31,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::ostream;
+using std::ostringstream;
 using std::move;
 typedef unsigned long ulong;
 typedef unsigned int uint;
@@ -84,7 +86,7 @@ string container2str(Container&& vec,
 }
 
 template<typename T>
-std::ostream& operator<<(std::ostream& oss, vector<T>&& vec)
+ostream& operator<<(ostream& oss, vector<T>&& vec)
 {
 	return oss << vec;
 }

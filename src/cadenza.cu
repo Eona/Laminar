@@ -4,13 +4,12 @@
 #include "global_utils.h"
 #include "timer.h"
 #include "connection.h"
-#include "input_layer.h"
-#include "output_layer.h"
 #include "recurrent_layer.h"
 #include "transfer_layer.h"
 #include "loss_layer.h"
 #include "parameter.h"
 #include "lstm_layer.h"
+#include "network.h"
 
 int main(int argc, char **argv)
 {
@@ -41,4 +40,7 @@ int main(int argc, char **argv)
 
 	cout << sq4.outValue << endl;
 	cout << l1.inGradient << endl;
+
+	ForwardNetwork net {&l1, &conn12, &s2, &conn23, &l3, &conn34, &sq4};
+	cout << net << endl;
 }

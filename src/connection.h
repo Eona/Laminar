@@ -7,11 +7,12 @@
 
 #include "global_utils.h"
 #include "layer.h"
+#include "component.h"
 
 /**
  * Contains the actual parameters
  */
-class Connection
+class Connection : public Component
 {
 public:
 	Connection(Layer& _inLayer, Layer& _outLayer):
@@ -21,12 +22,12 @@ public:
 
 	virtual ~Connection() {}
 
-	void forward()
+	virtual void forward()
 	{
 		_forward(inLayer.outValue, outLayer.inValue);
 	}
 
-	void backward()
+	virtual void backward()
 	{
 		_backward(inLayer.outValue, inLayer.outGradient, outLayer.inGradient);
 	}
@@ -59,6 +60,11 @@ public:
 	{
 		inlayerOutgrad = outlayerIngrad;
 	}
+
+	string str()
+	{
+		return "[ConstantConn]";
+	}
 };
 
 class LinearConnection : public Connection
@@ -87,8 +93,41 @@ public:
 		this->gradient += outlayerIngrad * transpose(inlayerOutval);
 	}
 
+	string str()
+	{
+		ostringstream os;
+		os << "[LinearConn: "
+			<< "param=" << this->param
+			<< " grad=" << this->gradient
+			<< "]";
+		return os.str();
+	}
+
 	float param;
 	float gradient;
 };
+
+ostream& operator<<(ostream& os, LinearConnection& conn)
+{
+	os << conn.str();
+	return os;
+}
+ostream& operator<<(ostream& os, LinearConnection&& conn)
+{
+	os << conn.str();
+	return os;
+}
+
+ostream& operator<<(ostream& os, ConstantConnection& conn)
+{
+	os << conn.str();
+	return os;
+}
+
+ostream& operator<<(ostream& os, ConstantConnection&& conn)
+{
+	os << conn.str();
+	return os;
+}
 
 #endif /* CONNECTION_H_ */
