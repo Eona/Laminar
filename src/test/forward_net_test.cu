@@ -41,5 +41,5 @@ TEST(ForwardNet, FourLayerInterconnected)
 	net.add_new_connection<LinearConnection>(l3_2, l4);
 	net.add_layer(l4);
 
-	gradient_check(net, 1e-2);
+	gradient_check(net, 1e-2, 0.1);
 }

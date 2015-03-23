@@ -100,7 +100,7 @@ public:
 		gradient(0.0f),
 		rand(-3, 6)
 	{
-		initParam = param = rand();
+		param = rand();
 	}
 
 	~LinearConnection() {}
@@ -131,12 +131,10 @@ public:
 
 	void reset()
 	{
-		// DUMMY
-		param = initParam;
 		gradient = 0;
 	}
 
-	float param, initParam;
+	float param;
 	float gradient;
 	UniformRand<float> rand;
 };

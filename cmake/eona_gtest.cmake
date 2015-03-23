@@ -64,11 +64,11 @@ function(add_gtest_cuda target)
     link_gtest(${target})
     add_test(${target} ${target})
 
-    add_custom_command(TARGET ${target}
-        POST_BUILD
-        COMMAND ${target}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "CUDA GTest running ${target}" VERBATIM)
+#   add_custom_command(TARGET ${target}
+#       POST_BUILD
+#       COMMAND ${target}
+#       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+#       COMMENT "CUDA GTest running ${target}" VERBATIM)
 endfunction()
 
 # add_multiple_gtests_cuda(<target1> <target2> ...)
