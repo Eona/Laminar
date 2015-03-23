@@ -25,6 +25,10 @@ public:
 
 	virtual void backward_prop() = 0;
 
+	virtual void reset() = 0;
+
+	virtual void initialize() = 0;
+
 	vector<LayerPtr> layers;
 	vector<ConnectionPtr> connections;
 	vector<ComponentPtr> components;
@@ -36,6 +40,28 @@ public:
 	ForwardNetwork() { }
 
 	~ForwardNetwork() {}
+
+	virtual void set_input(float input)
+	{
+		this->input = input;
+	}
+
+	virtual void set_target(float target)
+	{
+		this->target = target;
+	}
+
+	virtual void initialize()
+	{
+		layers[0]->inValue = this->input;
+		this->lossLayer = cast_layer<LossLayer>(layers[layers.size() - 1]);
+		if (lossLayer)
+		{
+			lossLayer->targetValue = this->target;
+		}
+		else
+			throw NeuralException("Last layer must be a LossLayer");
+	}
 
 	virtual void add_layer(LayerPtr layer)
 	{
@@ -61,19 +87,59 @@ public:
 			components[i]->backward();
 	}
 
-	void gradient_check()
+	virtual void reset()
 	{
-		for (ConnectionPtr conn : this->connections)
+		for (ComponentPtr compon : this->components)
+			compon->reset();
+		this->initialize();
+	}
+
+	// DUMMY
+	float input = 0,
+		target = 0;
+
+	LossLayerPtr lossLayer;
+};
+
+
+inline void gradient_check(ForwardNetwork& net, float perturb)
+{
+	// for restoration
+	float oldInput = net.input;
+	float oldTarget = net.target;
+
+	for (ConnectionPtr conn : net.connections)
+	{
+		net.reset(); // refresh network
+
+		auto linearConn = cast_connection<LinearConnection>(conn);
+		auto constConn = cast_connection<ConstantConnection>(conn);
+		if (linearConn)
 		{
-			auto linearConn = cast_connection<LinearConnection>(conn);
-			if (linearConn)
-				cout << "linear!" << endl;
-			auto constconn = cast_connection<ConstantConnection>(conn);
-			if (constconn)
-				cout << "const!" << endl;
+			net.forward_prop();
+			net.backward_prop();
+			float analyticGrad = linearConn->gradient;
+
+			// perturb the parameter and run again
+			net.reset();
+			linearConn->param -= perturb;
+			net.forward_prop();
+			float outValMinus = net.lossLayer->outValue;
+			net.reset();
+			linearConn->param += perturb;
+			net.forward_prop();
+			float outValPlus = net.lossLayer->outValue;
+			float numericGrad = (outValPlus - outValMinus) / (2.0 * perturb);
+
+			cout << "analytic = " << analyticGrad
+				<< "\tnumeric = " << numericGrad << endl;
+		}
+		else if (constConn)
+		{
+
 		}
 	}
-};
+}
 
 ostream& operator<<(ostream& os, ForwardNetwork& layer)
 {

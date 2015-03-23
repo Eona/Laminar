@@ -13,7 +13,4 @@ inline float transpose(float x) { return x; }
 
 inline float softmax(float x) { return x; }
 
-// epsilon error
-#define EPS 1.0e-6f
-
 #endif /* MATH_UTILS_H_ */

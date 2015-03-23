@@ -18,15 +18,23 @@ public:
 
 	virtual void backward() = 0;
 
+	virtual void reset() = 0;
+
 	virtual string str() = 0;
 };
 
-typedef shared_ptr<Component> ComponentPtr;
+TypedefPtr(Component);
 
 template<typename ComponentT>
-ComponentPtr makeComponent(shared_ptr<ComponentT> ptr)
+ComponentPtr makeComponent(shared_ptr<ComponentT> compon)
 {
-	return static_cast<ComponentPtr>(ptr);
+	return static_cast<ComponentPtr>(compon);
+}
+
+template<typename ComponentT>
+shared_ptr<ComponentT> cast_component(ComponentPtr compon)
+{
+	return std::dynamic_pointer_cast<ComponentT>(compon);
 }
 
 #endif /* COMPONENT_H_ */

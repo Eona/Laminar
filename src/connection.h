@@ -36,12 +36,14 @@ public:
 
 	virtual void _backward(float& inlayerOutval, float& inlayerOutgrad, float& outlayerIngrad) = 0;
 
+	virtual void reset() {}
+
 protected:
 	LayerPtr inLayer;
 	LayerPtr outLayer;
 };
 
-typedef shared_ptr<Connection> ConnectionPtr;
+TypedefPtr(Connection);
 
 /**
  * Make a polymorphic shared pointer
@@ -95,7 +97,7 @@ public:
 	LinearConnection(LayerPtr _inLayer, LayerPtr _outLayer):
 		Connection(_inLayer, _outLayer), gradient(0.0f)
 	{
-		// TODO random number
+		// DUMMY random initilization
 		param = 3.73;
 	}
 
@@ -123,6 +125,13 @@ public:
 			<< "\tgrad=" << this->gradient
 			<< "]";
 		return os.str();
+	}
+
+	void reset()
+	{
+		// DUMMY
+		param = 3.73;
+		gradient = 0;
 	}
 
 	float param;

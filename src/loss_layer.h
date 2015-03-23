@@ -8,17 +8,24 @@
 
 #include "layer.h"
 
-class SquareErrorLayer : public Layer
+class LossLayer : public Layer
 {
 public:
-	float targetValue;
+	LossLayer() {}
 
-	SquareErrorLayer(float _inValue, float _targetValue):
-		Layer(_inValue),
-		targetValue(_targetValue)
-	{}
+	virtual ~LossLayer() { }
 
-	~SquareErrorLayer() { }
+	float targetValue = 0;
+};
+
+TypedefPtr(LossLayer);
+
+class SquareLossLayer : public LossLayer
+{
+public:
+	SquareLossLayer() {}
+
+	~SquareLossLayer() { }
 
 	void _forward(float& inValue, float& outValue)
 	{

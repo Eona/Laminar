@@ -108,6 +108,13 @@ void print_array(T *arr, int size)
 /**************************************
 ************ Misc **************
 **************************************/
+// Define shared_ptr<Xclass> as XclassPtr
+#define TypedefPtr(Xclass) \
+	typedef shared_ptr<Xclass> Xclass##Ptr
+
+/**************************************
+************ Debugging **************
+**************************************/
 void myassert(bool cond, string errmsg = "")
 {
 	if (!cond)
@@ -125,6 +132,20 @@ void print_title(string title = "", int leng = 10)
 
 	cout << sep << " " << title << " " << sep << " \n";
 }
+
+/****** Exceptions ******/
+class NeuralException: public std::exception {
+private:
+    std::string msg;
+public:
+    NeuralException(const string& _msg):
+    	msg(_msg)
+	{}
+
+    virtual const char* what() const throw() {
+        return (string("[Neural exception] ") + msg).c_str();
+    }
+};
 
 } // end of anonymous namespace
 #endif /* UTILS_H_ */

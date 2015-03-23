@@ -11,9 +11,7 @@
 class SigmoidLayer : public Layer
 {
 public:
-	SigmoidLayer(float _inValue):
-		Layer(_inValue)
-	{}
+	SigmoidLayer() {}
 
 	~SigmoidLayer() { }
 
@@ -37,9 +35,7 @@ public:
 class CosineLayer : public Layer
 {
 public:
-	CosineLayer(float _inValue):
-		Layer(_inValue)
-	{}
+	CosineLayer() {}
 
 	~CosineLayer() { }
 
@@ -63,8 +59,7 @@ public:
 class LinearLayer : public Layer
 {
 public:
-	LinearLayer(float _inValue, float _multiplier = 1.0f):
-		Layer(_inValue),
+	LinearLayer(float _multiplier = 1.0f):
 		multiplier(_multiplier)
 	{}
 

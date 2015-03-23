@@ -14,9 +14,7 @@
 class Layer : public Component
 {
 public:
-	Layer(float _inValue):
-		inValue(_inValue), inGradient(0), outValue(0), outGradient(0)
-	{}
+	Layer() {}
 
 	virtual ~Layer() {};
 
@@ -28,6 +26,11 @@ public:
 	virtual void backward()
 	{
 		_backward(inValue, inGradient, outValue, outGradient);
+	}
+
+	virtual void reset()
+	{
+		inValue = inGradient = outValue = outGradient = 0;
 	}
 
 	virtual void _forward(float& inValue, float& outValue) = 0;
@@ -43,10 +46,13 @@ public:
 		return os.str();
 	}
 
-	float inValue, inGradient, outValue, outGradient;
+	float inValue = 0,
+		inGradient = 0,
+		outValue = 0,
+		outGradient = 0;
 };
 
-typedef shared_ptr<Layer> LayerPtr;
+TypedefPtr(Layer);
 
 /**
  * Make a polymorphic shared pointer
