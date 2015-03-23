@@ -21,6 +21,13 @@ public:
 
 	virtual void add_connection(ConnectionPtr) = 0;
 
+	template<typename ConnectionT, typename ...ArgT>
+	void add_new_connection(ArgT&& ... args)
+	{
+		this->add_connection(
+			make_connection<ConnectionT>(std::forward<ArgT>(args)...));
+	}
+
 	virtual void forward_prop() = 0;
 
 	virtual void backward_prop() = 0;
@@ -117,7 +124,6 @@ inline void gradient_check(ForwardNetwork& net,
 {
 	// for restoration
 	float oldInput = net.input;
-	float oldTarget = net.target;
 
 	for (ConnectionPtr conn : net.connections)
 	{
@@ -141,9 +147,6 @@ inline void gradient_check(ForwardNetwork& net,
 			net.forward_prop();
 			float outValPlus = net.lossLayer->outValue;
 			float numericGrad = (outValPlus - outValMinus) / (2.0 * perturb);
-
-			// calculated percentage error
-			float percentError = (analyticGrad - numericGrad) / (0.5*(analyticGrad + numericGrad));
 
 			assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
 					"analytic != numeric", "gradient check success");
