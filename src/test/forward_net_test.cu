@@ -1,17 +1,10 @@
 /*
- * Eona Studio (c)2015
+ * Eona Studio (c) 2015
  */
-#include "global_utils.h"
-#include "timer.h"
-#include "connection.h"
-#include "recurrent_layer.h"
-#include "transfer_layer.h"
-#include "loss_layer.h"
-#include "parameter.h"
-#include "lstm_layer.h"
-#include "network.h"
 
-int main(int argc, char **argv)
+#include "test_utils.h"
+
+TEST(ForwardNet, FourLayerInterconnected)
 {
 	float input = 0.2;
 	float target = 1.5;
@@ -38,7 +31,9 @@ int main(int argc, char **argv)
 	net.add_layer(l2_2);
 	net.add_new_connection<LinearConnection>(l2_1, l3_1);
 	net.add_new_connection<LinearConnection>(l2_1, l3_2);
+	net.add_new_connection<LinearConnection>(l2_1, l4);
 	net.add_new_connection<LinearConnection>(l2_2, l3_2);
+	net.add_new_connection<LinearConnection>(l2_2, l3_1);
 	net.add_new_connection<LinearConnection>(l2_2, l4);
 	net.add_layer(l3_1);
 	net.add_layer(l3_2);
