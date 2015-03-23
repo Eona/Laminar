@@ -47,5 +47,5 @@ int main(int argc, char **argv)
 	net.add_connection(make_connection<LinearConnection>(l3_2, l4));
 	net.add_layer(l4);
 
-	gradient_check(net, 1e-3);
+	gradient_check(net, 1e-2);
 }

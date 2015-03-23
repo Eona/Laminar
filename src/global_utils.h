@@ -161,9 +161,17 @@ template<typename FloatT>
 void assert_float_percent_eq(FloatT f1, FloatT f2, FloatT percentTol = 1.0f,
 		string errmsg = "", string successmsg="")
 {
-	FloatT percentDiff = abs(f1 - f2) / (0.5*(f1 + f2)) * 100;
+	const float DEFAULT_ABS_TOL = 1e-3f;
+	if (abs(f1) < DEFAULT_ABS_TOL || abs(f2) < DEFAULT_ABS_TOL)
+	{
+		assert_float_eq(f1, f2, DEFAULT_ABS_TOL, errmsg, successmsg);
+		return;
+	}
+
+	FloatT percentDiff = abs((f1 - f2) / (0.5*(f1 + f2))) * 100;
+
 	if (percentDiff >= percentTol)
-		errmsg = string(errmsg=="" ? "" : ":") +
+		errmsg += string(errmsg=="" ? "" : ":") +
 			"\n(" + to_str(f1) + ") != (" +
 			to_str(f2) + ") -> " +
 			to_str(percentDiff) + " % diff";
