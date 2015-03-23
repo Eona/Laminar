@@ -102,7 +102,8 @@ public:
 };
 
 
-inline void gradient_check(ForwardNetwork& net, float perturb)
+inline void gradient_check(ForwardNetwork& net,
+		float perturb = 1e-3f, float tol = 1e-4f)
 {
 	// for restoration
 	float oldInput = net.input;
@@ -131,13 +132,10 @@ inline void gradient_check(ForwardNetwork& net, float perturb)
 			float outValPlus = net.lossLayer->outValue;
 			float numericGrad = (outValPlus - outValMinus) / (2.0 * perturb);
 
-			cout << "analytic = " << analyticGrad
-				<< "\tnumeric = " << numericGrad << endl;
+			assert_float_eq(analyticGrad, numericGrad,
+					"analytic != numeric", tol);
 		}
-		else if (constConn)
-		{
-
-		}
+		else if (constConn) { }
 	}
 }
 

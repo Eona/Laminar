@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 	net.add_connection(make_connection<ConstantConnection>(l3, sq4));
 	net.add_layer(sq4);
 
-	gradient_check(net, 1e-3f);
+	gradient_check(net);
 
 //	cout << net << endl;
 }

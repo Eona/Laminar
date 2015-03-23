@@ -1,6 +1,5 @@
 #include "test_utils.h"
 
-#ifdef is_CUDA
 __global__ void testkernel()
 {
 	double p = threadIdx.x + 66;
@@ -9,7 +8,6 @@ __global__ void testkernel()
 
 	printf("thread %d; block %d\n", threadIdx.x, blockIdx.x);
 }
-#endif
 
 TEST(CudaTest, Run)
 {

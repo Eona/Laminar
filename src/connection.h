@@ -6,6 +6,7 @@
 #define CONNECTION_H_
 
 #include "global_utils.h"
+#include "rand_utils.h"
 #include "layer.h"
 #include "component.h"
 
@@ -95,10 +96,11 @@ class LinearConnection : public Connection
 {
 public:
 	LinearConnection(LayerPtr _inLayer, LayerPtr _outLayer):
-		Connection(_inLayer, _outLayer), gradient(0.0f)
+		Connection(_inLayer, _outLayer),
+		gradient(0.0f),
+		rand(-3, 6)
 	{
-		// DUMMY random initilization
-		param = 3.73;
+		initParam = param = rand();
 	}
 
 	~LinearConnection() {}
@@ -130,12 +132,13 @@ public:
 	void reset()
 	{
 		// DUMMY
-		param = 3.73;
+		param = initParam;
 		gradient = 0;
 	}
 
-	float param;
+	float param, initParam;
 	float gradient;
+	UniformRand<float> rand;
 };
 
 ostream& operator<<(ostream& os, LinearConnection& conn)

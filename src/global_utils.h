@@ -73,9 +73,17 @@ string container2str(Container& vec,
 }
 
 template<typename T>
-std::ostream& operator<<(std::ostream& oss, vector<T>& vec)
+ostream& operator<<(ostream& oss, vector<T>& vec)
 {
 	return oss << container2str(vec);
+}
+
+template<typename T>
+string to_str(T val)
+{
+	ostringstream oss;
+	oss << val;
+	return oss.str();
 }
 
 /****** Rvalue overloaded printing ******/
@@ -115,11 +123,27 @@ void print_array(T *arr, int size)
 /**************************************
 ************ Debugging **************
 **************************************/
-void myassert(bool cond, string errmsg = "")
+#undef assert
+
+void assert(bool cond, string errmsg = "")
 {
 	if (!cond)
 	{
 		cerr << "[Assert Fail] " <<  errmsg << endl;
+		exit(1);
+	}
+}
+
+template<typename FloatT>
+void assert_float_eq(FloatT f1, FloatT f2,
+		string errmsg = "", FloatT tol = 1e-4f)
+{
+	FloatT diff = abs(f1 - f2);
+	if (diff >= tol)
+	{
+		cerr << "[Assert Floating Fail]\n" <<
+			errmsg << (errmsg=="" ? "" : ":") << "\n(" <<
+			f1 << ") - (" << f2 << ") = " << diff;
 		exit(1);
 	}
 }
