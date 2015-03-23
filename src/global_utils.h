@@ -153,6 +153,28 @@ void assert_float_eq(FloatT f1, FloatT f2, FloatT tol = 1e-4f,
 	assert(diff < tol, errmsg, successmsg);
 }
 
+/**
+ * If the difference percentage (w.r.t average of two operand values)
+ * is greater than TOL, we assert failure.
+ */
+template<typename FloatT>
+void assert_float_percent_eq(FloatT f1, FloatT f2, FloatT percentTol = 1.0f,
+		string errmsg = "", string successmsg="")
+{
+	FloatT percentDiff = abs(f1 - f2) / (0.5*(f1 + f2)) * 100;
+	if (percentDiff >= percentTol)
+		errmsg = string(errmsg=="" ? "" : ":") +
+			"\n(" + to_str(f1) + ") != (" +
+			to_str(f2) + ") -> " +
+			to_str(percentDiff) + " % diff";
+	else if (successmsg != "")
+		successmsg += string(": (") +
+			to_str(f1) + ") == (" +
+			to_str(f2) + ")";
+
+	assert(percentDiff < percentTol, errmsg, successmsg);
+}
+
 void print_title(string title = "", int leng = 10)
 {
 	string sep = "";

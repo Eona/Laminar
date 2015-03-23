@@ -108,8 +108,12 @@ public:
 };
 
 
+/**
+ * % difference between analytic (backprop)
+ * and numeric (finite-difference) gradients
+ */
 inline void gradient_check(ForwardNetwork& net,
-		float perturb = 1e-3f, float tol = 5e-4f)
+		float perturb = 1e-3f, float percentTol = 0.5f)
 {
 	// for restoration
 	float oldInput = net.input;
@@ -138,7 +142,10 @@ inline void gradient_check(ForwardNetwork& net,
 			float outValPlus = net.lossLayer->outValue;
 			float numericGrad = (outValPlus - outValMinus) / (2.0 * perturb);
 
-			assert_float_eq(analyticGrad, numericGrad, tol,
+			// calculated percentage error
+			float percentError = (analyticGrad - numericGrad) / (0.5*(analyticGrad + numericGrad));
+
+			assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
 					"analytic != numeric", "gradient check success");
 		}
 		else if (constConn) { }
