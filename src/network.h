@@ -29,6 +29,12 @@ public:
 
 	virtual void initialize() = 0;
 
+	// TODO
+	virtual void topological_sort()
+	{
+		throw UnimplementedException("topological sort");
+	}
+
 	vector<LayerPtr> layers;
 	vector<ConnectionPtr> connections;
 	vector<ComponentPtr> components;
@@ -103,7 +109,7 @@ public:
 
 
 inline void gradient_check(ForwardNetwork& net,
-		float perturb = 1e-3f, float tol = 1e-4f)
+		float perturb = 1e-3f, float tol = 5e-4f)
 {
 	// for restoration
 	float oldInput = net.input;
@@ -132,8 +138,8 @@ inline void gradient_check(ForwardNetwork& net,
 			float outValPlus = net.lossLayer->outValue;
 			float numericGrad = (outValPlus - outValMinus) / (2.0 * perturb);
 
-			assert_float_eq(analyticGrad, numericGrad,
-					"analytic != numeric", tol);
+			assert_float_eq(analyticGrad, numericGrad, tol,
+					"analytic != numeric", "gradient check success");
 		}
 		else if (constConn) { }
 	}

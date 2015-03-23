@@ -125,27 +125,32 @@ void print_array(T *arr, int size)
 **************************************/
 #undef assert
 
-void assert(bool cond, string errmsg = "")
+void assert(bool cond, string errmsg = "", string successmsg="")
 {
 	if (!cond)
 	{
 		cerr << "[Assert Fail] " <<  errmsg << endl;
 		exit(1);
 	}
+	else if (successmsg != "")
+		cout << successmsg << endl;
 }
 
 template<typename FloatT>
-void assert_float_eq(FloatT f1, FloatT f2,
-		string errmsg = "", FloatT tol = 1e-4f)
+void assert_float_eq(FloatT f1, FloatT f2, FloatT tol = 1e-4f,
+		string errmsg = "", string successmsg="")
 {
 	FloatT diff = abs(f1 - f2);
 	if (diff >= tol)
-	{
-		cerr << "[Assert Floating Fail]\n" <<
-			errmsg << (errmsg=="" ? "" : ":") << "\n(" <<
-			f1 << ") - (" << f2 << ") = " << diff;
-		exit(1);
-	}
+		errmsg = string(errmsg=="" ? "" : ":") +
+			"\n(" + to_str(f1) + ") - (" +
+			to_str(f2) + ") = " + to_str(diff);
+	else if (successmsg != "")
+		successmsg += string(": (") +
+			to_str(f1) + ") == (" +
+			to_str(f2) + ")";
+
+	assert(diff < tol, errmsg, successmsg);
 }
 
 void print_title(string title = "", int leng = 10)
@@ -167,7 +172,20 @@ public:
 	{}
 
     virtual const char* what() const throw() {
-        return (string("[Neural exception] ") + msg).c_str();
+        return (string("[Neural error] ") + msg).c_str();
+    }
+};
+
+class UnimplementedException: public std::exception {
+private:
+    std::string msg;
+public:
+    UnimplementedException(const string& _msg):
+    	msg(_msg)
+	{}
+
+    virtual const char* what() const throw() {
+        return (string("[Unimplemented] ") + msg).c_str();
     }
 };
 
