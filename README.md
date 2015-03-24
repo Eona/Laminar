@@ -1,6 +1,8 @@
-#Cadenza
+#Project LAMINAR
 
-An artificial music improviser powered by GPU-based recurrent neural network. 
+**Laminar Accelerated and MInimalistic Neural ARchitecture**
+
+A general deep learning framework powered by GPUs. 
 
 ## Installation
 
