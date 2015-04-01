@@ -26,7 +26,7 @@ public:
 TypedefPtr(Component);
 
 template<typename ComponentT>
-ComponentPtr makeComponent(shared_ptr<ComponentT> compon)
+ComponentPtr make_component(shared_ptr<ComponentT> compon)
 {
 	return static_cast<ComponentPtr>(compon);
 }
