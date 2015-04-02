@@ -168,8 +168,18 @@ public:
 
 	virtual void backward_prop()
 	{
+		for (int i = recurConnections.size() - 1; i >= 0; --i)
+			recurConnections[i]->backward(time - 1, time);
+
 		for (int i = components.size() - 1; i >= 0; --i)
-			components[i]->backward();
+		{
+			auto compon = components[i];
+			auto conn = cast_component<Connection>(compon);
+			if (conn)
+				conn->backward(time, time);
+			else
+				compon->backward();
+		}
 	}
 
 	virtual void add_recurrent_connection(ConnectionPtr conn)
