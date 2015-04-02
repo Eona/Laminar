@@ -125,7 +125,7 @@ void print_array(T *arr, int size)
 ************ Exceptions **************
 **************************************/
 class AssertFailure: public std::exception {
-private:
+protected:
     std::string msg;
 public:
     AssertFailure(const string& _msg):
@@ -136,27 +136,46 @@ public:
     }
 };
 
-class NeuralException: public std::exception {
-private:
+class LaminarException: public std::exception {
+protected:
     std::string msg;
 public:
-    NeuralException(const string& _msg):
+    LaminarException(const string& _msg):
     	msg(_msg) {}
 
-    virtual const char* what() const throw() {
-        return (string("[Neural error] ") + msg).c_str();
+    // all sub-exceptions need to override this
+    virtual string error_header() const
+    {
+    	return "General error";
+    }
+
+    virtual const char* what() const throw()
+	{
+        return (string("[") + error_header() + "] " + msg).c_str();
     }
 };
 
-class UnimplementedException: public std::exception {
-private:
-    std::string msg;
+class NetworkException: public LaminarException {
 public:
-    UnimplementedException(const string& _msg):
-    	msg(_msg) {}
+    NetworkException(const string& msg):
+    	LaminarException(msg)
+	{}
 
-    virtual const char* what() const throw() {
-        return (string("[Unimplemented] ") + msg).c_str();
+    virtual string error_header() const
+    {
+    	return "Network error";
+    }
+};
+
+class UnimplementedException: public LaminarException {
+public:
+    UnimplementedException(const string& msg):
+    	LaminarException(msg)
+	{}
+
+    virtual string error_header() const
+    {
+    	return "Feature unimplemented";
     }
 };
 
