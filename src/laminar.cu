@@ -23,7 +23,8 @@ int main(int argc, char **argv)
 	auto l3_2 = make_layer<LinearLayer>(-2.3f);
 	auto l4 = make_layer<SquareLossLayer>();
 
-	ForwardNetwork net;
+	/*
+	RecurrentNetwork net;
 	net.set_input(input);
 	net.set_target(target);
 
@@ -47,4 +48,5 @@ int main(int argc, char **argv)
 	net.add_layer(l4);
 
 	gradient_check(net, 1e-2);
+	*/
 }
