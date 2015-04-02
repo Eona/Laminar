@@ -37,7 +37,7 @@ public:
 	virtual void initialize() = 0;
 
 	// TODO
-	virtual void topological_sort()
+	virtual void assemble()
 	{
 		throw UnimplementedException("topological sort");
 	}

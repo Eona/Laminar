@@ -19,7 +19,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test
 message("Folder src/")
 
 set(MAIN
-    cadenza)
+    laminar)
 
 set(SOURCES 
     ${MAIN}.cu)
