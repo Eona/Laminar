@@ -14,23 +14,31 @@
 class Layer : public Component
 {
 public:
-	Layer() {}
+	Layer() :
+		inValue(1, 0.0f),
+		inGradient(1, 0.0f),
+		outValue(1, 0.0f),
+		outGradient(1, 0.0f)
+	{ }
 
 	virtual ~Layer() {};
 
 	virtual void forward()
 	{
-		_forward(inValue, outValue);
+		_forward(inValue[time], outValue[time]);
 	}
 
 	virtual void backward()
 	{
-		_backward(inValue, inGradient, outValue, outGradient);
+		_backward(inValue[time], inGradient[time], outValue[time], outGradient[time]);
 	}
 
 	virtual void reset()
 	{
-		inValue = inGradient = outValue = outGradient = 0;
+		inValue.clear(); inValue.push_back(0);
+		inGradient.clear(); inGradient.push_back(0);
+		outValue.clear(); outValue.push_back(0);
+		outGradient.clear(); outGradient.push_back(0);
 	}
 
 	virtual void _forward(float& inValue, float& outValue) = 0;
@@ -46,10 +54,12 @@ public:
 		return os.str();
 	}
 
-	float inValue = 0,
-		inGradient = 0,
-		outValue = 0,
-		outGradient = 0;
+// private:
+	vector<float> inValue,
+		inGradient,
+		outValue,
+		outGradient;
+	int time = 0;
 };
 
 TypedefPtr(Layer);

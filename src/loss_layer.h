@@ -11,11 +11,14 @@
 class LossLayer : public Layer
 {
 public:
-	LossLayer() {}
+	LossLayer() :
+		Layer(),
+		targetValue(1, 0.0f)
+	{ }
 
 	virtual ~LossLayer() { }
 
-	float targetValue = 0;
+	vector<float> targetValue;
 };
 
 TypedefPtr(LossLayer);
@@ -30,12 +33,12 @@ public:
 	void _forward(float& inValue, float& outValue)
 	{
 		// which is loss value
-		outValue = 0.5f * (inValue - targetValue) * (inValue - targetValue);
+		outValue = 0.5f * (inValue - targetValue[time]) * (inValue - targetValue[time]);
 	}
 
 	void _backward(float& inValue, float& inGradient, float& outValue, float& outGradient)
 	{
-		inGradient = inValue - targetValue;
+		inGradient = inValue - targetValue[time];
 	}
 
 	string str()

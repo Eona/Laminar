@@ -66,11 +66,11 @@ public:
 
 	virtual void initialize()
 	{
-		layers[0]->inValue = this->input;
+		layers[0]->inValue[0] = this->input;
 		this->lossLayer = cast_layer<LossLayer>(layers[layers.size() - 1]);
 		if (lossLayer)
 		{
-			lossLayer->targetValue = this->target;
+			lossLayer->targetValue[0] = this->target;
 		}
 		else
 			throw NeuralException("Last layer must be a LossLayer");
@@ -140,12 +140,12 @@ inline void gradient_check(ForwardNetwork& net,
 			net.reset();
 			linearConn->param = oldParam - perturb;
 			net.forward_prop();
-			float outValMinus = net.lossLayer->outValue;
+			float outValMinus = net.lossLayer->outValue[0];
 
 			net.reset();
 			linearConn->param = oldParam + perturb;
 			net.forward_prop();
-			float outValPlus = net.lossLayer->outValue;
+			float outValPlus = net.lossLayer->outValue[0];
 
 			float numericGrad = (outValPlus - outValMinus) / (2.0 * perturb);
 
@@ -163,17 +163,17 @@ inline void gradient_check(ForwardNetwork& net,
 	net.reset();
 	net.forward_prop();
 	net.backward_prop();
-	float analyticGrad = net.layers[0]->inGradient;
+	float analyticGrad = net.layers[0]->inGradient[0];
 
 	net.set_input(oldInput - perturb);
 	net.reset();
 	net.forward_prop();
-	float outValMinus = net.lossLayer->outValue;
+	float outValMinus = net.lossLayer->outValue[0];
 
 	net.set_input(oldInput + perturb);
 	net.reset();
 	net.forward_prop();
-	float outValPlus = net.lossLayer->outValue;
+	float outValPlus = net.lossLayer->outValue[0];
 
 	float numericGrad = (outValPlus - outValMinus) / (2.0 * perturb);
 
