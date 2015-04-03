@@ -49,14 +49,14 @@ public:
 	void _forward(float& inValue, float& outValue)
 	{
 		// which is loss value if the network is feedforward
-		float tmp = inValue - targetValue[time_pt()];
+		float tmp = inValue - targetValue[frame()];
 		outValue = 0.5f * tmp * tmp;
 		totalLoss += outValue;
 	}
 
 	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
-		inGradient = inValue - targetValue[time_pt()];
+		inGradient = inValue - targetValue[frame()];
 	}
 
 	string str()

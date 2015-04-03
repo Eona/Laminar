@@ -23,20 +23,20 @@ public:
 
 	virtual ~Connection() {}
 
-	virtual void forward(int inTime = 0, int outTime = 0)
+	virtual void forward(int inFrame = 0, int outFrame = 0)
 	{
-		resize_on_demand(inLayer->outValue, inTime);
-		resize_on_demand(outLayer->inValue, outTime);
+		resize_on_demand(inLayer->outValue, inFrame);
+		resize_on_demand(outLayer->inValue, outFrame);
 
-		_forward(inLayer->outValue[inTime], outLayer->inValue[outTime]);
+		_forward(inLayer->outValue[inFrame], outLayer->inValue[outFrame]);
 	}
 
-	virtual void backward(int outTime = 0, int inTime = 0)
+	virtual void backward(int outFrame = 0, int inFrame = 0)
 	{
-		resize_on_demand(outLayer->inGradient, outTime);
-		resize_on_demand(inLayer->outGradient, inTime);
+		resize_on_demand(outLayer->inGradient, outFrame);
+		resize_on_demand(inLayer->outGradient, inFrame);
 
-		_backward(outLayer->inGradient[outTime], inLayer->outValue[inTime], inLayer->outGradient[inTime]);
+		_backward(outLayer->inGradient[outFrame], inLayer->outValue[inFrame], inLayer->outGradient[inFrame]);
 	}
 
 	virtual void _forward(float& inlayerOutval, float& outlayerInval) = 0;
@@ -106,7 +106,7 @@ public:
 		gradient(0.0f),
 		rnd(-3, 6)
 	{
-		param = rnd();
+		param = fakernd();
 	}
 
 	~LinearConnection() {}
@@ -144,7 +144,7 @@ public:
 	float gradient;
 	UniformRand<float> rnd;
 	// NOTE debug only
-	FakeRand<float>& _rnd = FakeRand<float>::instance();
+	FakeRand<float>& fakernd = FakeRand<float>::instance();
 };
 
 ostream& operator<<(ostream& os, LinearConnection& conn)

@@ -23,29 +23,29 @@ public:
 
 	virtual ~Layer() {};
 
-	virtual void forward(int inTime = 0, int outTime = 0)
+	virtual void forward(int inFrame = 0, int outFrame = 0)
 	{
-		if (inTime != outTime)
+		if (inFrame != outFrame)
 			throw UnimplementedException(
 					"Layer in/out time cannot be different for now.");
 
-		this->timept = inTime;
-		resize_on_demand(inValue, timept);
-		resize_on_demand(outValue, timept);
-		_forward(inValue[timept], outValue[timept]);
+		this->_frame = inFrame;
+		resize_on_demand(inValue, _frame);
+		resize_on_demand(outValue, _frame);
+		_forward(inValue[_frame], outValue[_frame]);
 	}
 
-	virtual void backward(int outTime = 0, int inTime = 0)
+	virtual void backward(int outFrame = 0, int inFrame = 0)
 	{
-		if (outTime != inTime)
+		if (outFrame != inFrame)
 			throw UnimplementedException(
 					"Layer in/out time cannot be different for now.");
 
-		this->timept = inTime;
+		this->_frame = inFrame;
 
-		resize_on_demand(outGradient, timept);
-		resize_on_demand(inGradient, timept);
-		_backward(outValue[timept], outGradient[timept], inValue[timept], inGradient[timept]);
+		resize_on_demand(outGradient, _frame);
+		resize_on_demand(inGradient, _frame);
+		_backward(outValue[_frame], outGradient[_frame], inValue[_frame], inGradient[_frame]);
 	}
 
 	virtual void reset()
@@ -59,8 +59,11 @@ public:
 	virtual void _forward(float& inValue, float& outValue) = 0;
 	virtual void _backward(float& inValue, float& inGradient, float& outValue, float& outGradient) = 0;
 
-	// current time set by forward() and backward()
-	int time_pt() { return this->timept; }
+	// current time frame set by forward() and backward()
+	int frame()
+	{
+		return this->_frame;
+	}
 
 	virtual string str()
 	{
@@ -77,8 +80,8 @@ public:
 		outValue,
 		outGradient;
 
-private: // time pointer
-	int timept = 0;
+private: // frame pointer
+	int _frame = 0;
 };
 
 TypedefPtr(Layer);

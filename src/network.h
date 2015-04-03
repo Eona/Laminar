@@ -156,23 +156,23 @@ public:
 	 */
 	virtual void forward_prop()
 	{
-		DEBUG_MSG("Forward time", time);
+		DEBUG_MSG("Forward frame", frame);
 
 		for (ComponentPtr compon : this->components)
 		{
 //			auto conn = cast_component<Connection>(compon);
 //			if (conn)
-//				conn->forward(time, time);
+//				conn->forward(frame, frame);
 //			else
-//				compon->forward(time, time);
-			compon->forward(time, time);
+//				compon->forward(frame, frame);
+			compon->forward(frame, frame);
 		}
 
 		// Recurrent forward prop
 		for (ConnectionPtr conn : this->recurConnections)
-			conn->forward(time, time + 1);
+			conn->forward(frame, frame + 1);
 
-		++ time;
+		++ frame;
 	}
 
 	// TODO check last timestamp (cannot forward beyond)
@@ -183,22 +183,22 @@ public:
 	 */
 	virtual void backward_prop()
 	{
-		-- time;
+		-- frame;
 
-		DEBUG_MSG("Backward time", time);
+		DEBUG_MSG("Backward frame", frame);
 
 		for (int i = recurConnections.size() - 1; i >= 0; --i)
-			recurConnections[i]->backward(time + 1, time);
+			recurConnections[i]->backward(frame + 1, frame);
 
 		for (int i = components.size() - 1; i >= 0; --i)
 		{
 //			auto compon = components[i];
 //			auto conn = cast_component<Connection>(compon);
 //			if (conn)
-//				conn->backward(time, time);
+//				conn->backward(frame, frame);
 //			else
 //				compon->backward();
-			components[i]->backward(time, time);
+			components[i]->backward(frame, frame);
 		}
 	}
 
@@ -223,13 +223,13 @@ public:
 		for (ConnectionPtr conn : this->recurConnections)
 			conn->reset();
 
-		time = 0;
+		frame = 0;
 
 		this->assemble();
 	}
 
 	vector<ConnectionPtr> recurConnections;
-	int time = 0;
+	int frame = 0;
 	vector<float> input, target;
 };
 

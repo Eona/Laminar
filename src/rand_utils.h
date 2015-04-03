@@ -65,7 +65,7 @@ class FakeRand
 private:
 	// fake args
 	FakeRand() :
-		preset { 3.24, -1.18, 2.47, 1.35, -4.62, 0.57, -1.25 }
+		preset { 3.24, -1.18, 0.47, 1.35, -0.62, 0.57, -1.25 }
 	{ }
 
 	// disable copying and assignment
