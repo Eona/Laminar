@@ -184,6 +184,7 @@ public:
 **************************************/
 #undef assert
 #define TERMINATE_ASSERT true
+#define DEBUG true
 
 void assert(bool cond, string errmsg = "", string successmsg="")
 {
@@ -254,6 +255,47 @@ void print_title(string title = "", int leng = 10)
 
 	cout << sep << " " << title << " " << sep << " \n";
 }
+
+/* *****
+ *	Variadic MACRO utilities. Used mainly for debugging
+ * Usage:
+ * #define example(...) VARARG(example, __VA_ARGS__)
+ * #define example_0() "with zero parameters"
+ * #define example_1() "with 1 parameter"
+ * #define example_3() "with 3 parameter"
+ * // call as if the 'example' macro is overloaded
+ * example() + example(66) + example(34, 23, 99)
+ */
+// The MSVC has a bug when parsing '__VA_ARGS__'. Workaround:
+#define VA_EXPAND(x) x
+// always return the fifth argument in place
+#define VARARG_INDEX(_0, _1, _2, _3, _4, _5, ...) _5
+// how many variadic parameters?
+#define VARARG_COUNT(...) VA_EXPAND(VARARG_INDEX(__VA_ARGS__, 5, 4, 3, 2, 1))
+#define VARARG_HELPER2(base, count, ...) base##_##count(__VA_ARGS__)
+#define VARARG_HELPER(base, count, ...) VARARG_HELPER2(base, count, __VA_ARGS__)
+#define VARARG(base, ...) VARARG_HELPER(base, VARARG_COUNT(__VA_ARGS__), __VA_ARGS__)
+// Define DEBUG_MSG_1 or _2 or _n to define a debug message printout macro with n args
+// intelliSense might underline this as syntax error. Ignore it and compile.
+#define DBG_MSG(...) VARARG(DBG_MSG,	 __VA_ARGS__)
+
+// More debugging info
+#if DEBUG
+#define DBG_DO(command) command
+#define DBG_DISP(msg) cout << msg << endl
+#define DBG_COND(cond, msg) if (cond) cout << msg << endl
+#define DBG_LOOP(forcond, msg) for (forcond) cout << msg << endl;
+// Write to debug file
+#define DBG_FILE_INIT(filename) ofstream fdbg(filename);
+#define DBG_FOUT(msg) fdbg << msg << endl
+#else
+#define DBG_DO(command)
+#define DBG_DISP(msg)
+#define DBG_COND(cond, msg)
+#define DBG_LOOP(forcond, msg)
+#define DBG_FILE_INIT(filename)
+#define DBG_FOUT(msg)
+#endif
 
 } // end of anonymous namespace
 #endif /* UTILS_H_ */
