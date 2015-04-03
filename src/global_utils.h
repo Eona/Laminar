@@ -184,7 +184,7 @@ public:
 **************************************/
 #undef assert
 #define TERMINATE_ASSERT false
-#define DEBUG false
+#define DEBUG true
 
 void assert(bool cond, string errmsg = "", string successmsg="")
 {
