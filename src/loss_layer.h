@@ -11,9 +11,9 @@
 class LossLayer : public Layer
 {
 public:
-	LossLayer() :
-		Layer(),
-		targetValue(1, 0.f),
+	LossLayer(int timeLength = 1) :
+		Layer(timeLength),
+		targetValue(timeLength, 0.f),
 		totalLoss(0.f)
 	{ }
 
@@ -40,20 +40,22 @@ TypedefPtr(LossLayer);
 class SquareLossLayer : public LossLayer
 {
 public:
-	SquareLossLayer() {}
+	SquareLossLayer(int timeLength = 1) :
+		LossLayer(timeLength)
+	{}
 
 	~SquareLossLayer() { }
 
 	void _forward(float& inValue, float& outValue)
 	{
 		// which is loss value if the network is feedforward
-		outValue = 0.5f * (inValue - targetValue[time]) * (inValue - targetValue[time]);
+		outValue = 0.5f * (inValue - targetValue[timept]) * (inValue - targetValue[timept]);
 		totalLoss += outValue;
 	}
 
 	void _backward(float& inValue, float& inGradient, float& outValue, float& outGradient)
 	{
-		inGradient = inValue - targetValue[time];
+		inGradient = inValue - targetValue[timept];
 	}
 
 	string str()

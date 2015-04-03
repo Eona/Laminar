@@ -14,9 +14,9 @@ public:
 
 	virtual ~Component() {}
 
-	virtual void forward() = 0;
+	virtual void forward(int inTime = 0, int outTime = 0) = 0;
 
-	virtual void backward() = 0;
+	virtual void backward(int inTime = 0, int outTime = 0) = 0;
 
 	virtual void reset() = 0;
 

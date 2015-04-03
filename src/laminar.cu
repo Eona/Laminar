@@ -17,9 +17,9 @@ int main(int argc, char **argv)
 	vector<float> input { 0.2, 0.3, 0.5 };
 	vector<float> target { 1.3, 1.5, 2.2 };
 
-	auto l1 = make_layer<LinearLayer>();
-	auto l2 = make_layer<SigmoidLayer>();
-	auto l3 = make_layer<SquareLossLayer>();
+	auto l1 = make_layer<LinearLayer>(1.f, 3);
+	auto l2 = make_layer<SigmoidLayer>(3);
+	auto l3 = make_layer<SquareLossLayer>(3);
 
 	RecurrentNetwork net;
 	net.set_input(input);
@@ -33,6 +33,9 @@ int main(int argc, char **argv)
 
 	net.new_recurrent_connection<LinearConnection>(l2, l2);
 
+	net.assemble();
+	net.forward_prop();
+	net.forward_prop();
 	net.forward_prop();
 	cout << net << endl;
 //	gradient_check(net, 1e-2);

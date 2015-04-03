@@ -138,11 +138,11 @@ public:
 		if (input.size() != target.size())
 			throw NetworkException("");
 
-		layers[0]->inValue[0] = this->input[0];
+		layers[0]->inValue = this->input;
 		this->lossLayer = cast_layer<LossLayer>(layers[layers.size() - 1]);
 		if (lossLayer)
 		{
-			lossLayer->targetValue[0] = this->target[0];
+			lossLayer->targetValue = this->target;
 		}
 		else
 			throw NetworkException("Last layer must be a LossLayer");
@@ -150,6 +150,8 @@ public:
 
 	virtual void forward_prop()
 	{
+		DBG_DISP("Forward prop " << time);
+
 		// Recurrent forward prop
 		for (ConnectionPtr conn : this->recurConnections)
 			conn->forward(time, time + 1);
@@ -160,7 +162,7 @@ public:
 			if (conn)
 				conn->forward(time, time);
 			else
-				compon->forward();
+				compon->forward(time, time);
 		}
 
 		++ time;

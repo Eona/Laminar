@@ -23,24 +23,14 @@ public:
 
 	virtual ~Connection() {}
 
-	virtual void forward(int inTime, int outTime)
+	virtual void forward(int inTime = 0, int outTime = 0)
 	{
 		_forward(inLayer->outValue[inTime], outLayer->inValue[outTime]);
 	}
 
-	virtual void forward()
-	{
-		this->forward(0, 0);
-	}
-
-	virtual void backward(int inTime, int outTime)
+	virtual void backward(int inTime = 0, int outTime = 0)
 	{
 		_backward(inLayer->outValue[inTime], inLayer->outGradient[inTime], outLayer->inGradient[outTime]);
-	}
-
-	virtual void backward()
-	{
-		this->backward(0, 0);
 	}
 
 	virtual void _forward(float& inlayerOutval, float& outlayerInval) = 0;

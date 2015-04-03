@@ -14,23 +14,33 @@
 class Layer : public Component
 {
 public:
-	Layer() :
-		inValue(1, 0.0f),
-		inGradient(1, 0.0f),
-		outValue(1, 0.0f),
-		outGradient(1, 0.0f)
+	Layer(int timeLength = 1) :
+		inValue(timeLength, 0.0f),
+		inGradient(timeLength, 0.0f),
+		outValue(timeLength, 0.0f),
+		outGradient(timeLength, 0.0f)
 	{ }
 
 	virtual ~Layer() {};
 
-	virtual void forward()
+	virtual void forward(int inTime = 0, int outTime = 0)
 	{
-		_forward(inValue[time], outValue[time]);
+		if (inTime != outTime)
+			throw UnimplementedException(
+					"Layer in/out time cannot be different for now.");
+
+		this->timept = inTime;
+		_forward(inValue[timept], outValue[timept]);
 	}
 
-	virtual void backward()
+	virtual void backward(int inTime = 0, int outTime = 0)
 	{
-		_backward(inValue[time], inGradient[time], outValue[time], outGradient[time]);
+		if (inTime != outTime)
+			throw UnimplementedException(
+					"Layer in/out time cannot be different for now.");
+
+		this->timept = inTime;
+		_backward(inValue[timept], inGradient[timept], outValue[timept], outGradient[timept]);
 	}
 
 	virtual void reset()
@@ -59,7 +69,7 @@ public:
 		inGradient,
 		outValue,
 		outGradient;
-	int time = 0;
+	int timept = 0;
 };
 
 TypedefPtr(Layer);
