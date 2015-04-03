@@ -30,7 +30,7 @@ public:
 	}
 
 	template<typename ConnectionT, typename ...ArgT>
-	void add_new_connection(ArgT&& ... args)
+	void new_connection(ArgT&& ... args)
 	{
 		this->add_connection(
 			make_connection<ConnectionT>(
@@ -188,7 +188,7 @@ public:
 	}
 
 	template<typename ConnectionT, typename ...ArgT>
-	void add_new_recurrent_connection(ArgT&& ... args)
+	void new_recurrent_connection(ArgT&& ... args)
 	{
 		this->add_recurrent_connection(
 			make_connection<ConnectionT>(

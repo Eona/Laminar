@@ -24,21 +24,21 @@ TEST(ForwardNet, FourLayerInterconnected)
 	net.add_connection(make_connection<LinearConnection>(l1, l2_1));
 	net.add_connection(make_connection<LinearConnection>(l1, l2_2));
 	// same as add_connection(make_connection<>)
-	net.add_new_connection<LinearConnection>(l1, l3_1);
-	net.add_new_connection<LinearConnection>(l1, l3_2);
-	net.add_new_connection<LinearConnection>(l1, l4);
+	net.new_connection<LinearConnection>(l1, l3_1);
+	net.new_connection<LinearConnection>(l1, l3_2);
+	net.new_connection<LinearConnection>(l1, l4);
 	net.add_layer(l2_1);
 	net.add_layer(l2_2);
-	net.add_new_connection<LinearConnection>(l2_1, l3_1);
-	net.add_new_connection<LinearConnection>(l2_1, l3_2);
-	net.add_new_connection<LinearConnection>(l2_1, l4);
-	net.add_new_connection<LinearConnection>(l2_2, l3_2);
-	net.add_new_connection<LinearConnection>(l2_2, l3_1);
-	net.add_new_connection<LinearConnection>(l2_2, l4);
+	net.new_connection<LinearConnection>(l2_1, l3_1);
+	net.new_connection<LinearConnection>(l2_1, l3_2);
+	net.new_connection<LinearConnection>(l2_1, l4);
+	net.new_connection<LinearConnection>(l2_2, l3_2);
+	net.new_connection<LinearConnection>(l2_2, l3_1);
+	net.new_connection<LinearConnection>(l2_2, l4);
 	net.add_layer(l3_1);
 	net.add_layer(l3_2);
-	net.add_new_connection<LinearConnection>(l3_1, l4);
-	net.add_new_connection<LinearConnection>(l3_2, l4);
+	net.new_connection<LinearConnection>(l3_1, l4);
+	net.new_connection<LinearConnection>(l3_2, l4);
 	net.add_layer(l4);
 
 	gradient_check(net, 1e-2, 0.1);

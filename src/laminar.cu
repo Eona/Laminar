@@ -26,12 +26,12 @@ int main(int argc, char **argv)
 	net.set_target(target);
 
 	net.add_layer(l1);
-	net.add_new_connection<LinearConnection>(l1, l2);
+	net.new_connection<LinearConnection>(l1, l2);
 	net.add_layer(l2);
-	net.add_new_connection<LinearConnection>(l2, l3);
+	net.new_connection<LinearConnection>(l2, l3);
 	net.add_layer(l3);
 
-	net.add_new_recurrent_connection<LinearConnection>(l2, l2);
+	net.new_recurrent_connection<LinearConnection>(l2, l2);
 
 	net.forward_prop();
 //	gradient_check(net, 1e-2);
