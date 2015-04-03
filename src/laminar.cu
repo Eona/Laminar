@@ -15,7 +15,7 @@
 int main(int argc, char **argv)
 {
 	vector<float> input { 0.2, 0.3, 0.5 };
-	vector<float> target { 1.3, 1.5, 2.2 };
+	vector<float> target { 1.3, 0.5, -3.2 };
 
 	auto l1 = make_layer<LinearLayer>();
 	auto l2 = make_layer<SigmoidLayer>();
@@ -37,9 +37,13 @@ int main(int argc, char **argv)
 	net.forward_prop();
 	net.forward_prop();
 	net.forward_prop();
-	net.backward_prop();
-	net.backward_prop();
+
 	net.backward_prop();
 	cout << net << endl;
+	net.backward_prop();
+	cout << net << endl;
+	net.backward_prop();
+	cout << net << endl;
+	cout << "Total loss = " << net.lossLayer->totalLoss << endl;
 //	gradient_check(net, 1e-2);
 }

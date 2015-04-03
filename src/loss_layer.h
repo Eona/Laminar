@@ -49,7 +49,8 @@ public:
 	void _forward(float& inValue, float& outValue)
 	{
 		// which is loss value if the network is feedforward
-		outValue = 0.5f * (inValue - targetValue[time_pt()]) * (inValue - targetValue[time_pt()]);
+		float tmp = inValue - targetValue[time_pt()];
+		outValue = 0.5f * tmp * tmp;
 		totalLoss += outValue;
 	}
 

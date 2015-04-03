@@ -151,7 +151,7 @@ public:
 	// TODO check last timestamp (cannot forward beyond)
 	virtual void forward_prop()
 	{
-		DBG_DISP("Forward prop " << time);
+		DEBUG_MSG("Forward time", time);
 
 		// Recurrent forward prop
 		for (ConnectionPtr conn : this->recurConnections)
@@ -173,8 +173,12 @@ public:
 	// TODO check last timestamp (cannot forward beyond)
 	virtual void backward_prop()
 	{
+		-- time;
+
+		DEBUG_MSG("Backward time", time);
+
 		for (int i = recurConnections.size() - 1; i >= 0; --i)
-			recurConnections[i]->backward(time - 1, time);
+			recurConnections[i]->backward(time, time + 1);
 
 		for (int i = components.size() - 1; i >= 0; --i)
 		{
@@ -186,8 +190,6 @@ public:
 //				compon->backward();
 			components[i]->backward(time, time);
 		}
-
-		-- time;
 	}
 
 	virtual void add_recurrent_connection(ConnectionPtr conn)
