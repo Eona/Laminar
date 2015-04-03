@@ -10,6 +10,7 @@
 #include "parameter.h"
 #include "lstm_layer.h"
 #include "network.h"
+#include "gradient_check.h"
 
 int main(int argc, char **argv)
 {
@@ -18,14 +19,13 @@ int main(int argc, char **argv)
 
 	auto l1 = make_layer<LinearLayer>();
 
-	/*
 	auto l2_1 = make_layer<LinearLayer>(1.7f);
 	auto l2_2 = make_layer<CosineLayer>();
 	auto l3_1 = make_layer<SigmoidLayer>();
 	auto l3_2 = make_layer<LinearLayer>(-2.3f);
 	auto l4 = make_layer<SquareLossLayer>();
 
-	RecurrentNetwork net;
+	ForwardNetwork net;
 	net.set_input(input);
 	net.set_target(target);
 
@@ -49,5 +49,4 @@ int main(int argc, char **argv)
 	net.add_layer(l4);
 
 	gradient_check(net, 1e-2);
-	*/
 }

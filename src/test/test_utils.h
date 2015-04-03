@@ -16,6 +16,7 @@
 #include "../parameter.h"
 #include "../lstm_layer.h"
 #include "../network.h"
+#include "../gradient_check.h"
 
 using namespace std;
 

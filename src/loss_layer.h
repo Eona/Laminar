@@ -13,12 +13,26 @@ class LossLayer : public Layer
 public:
 	LossLayer() :
 		Layer(),
-		targetValue(1, 0.0f)
+		targetValue(1, 0.f),
+		totalLoss(0.f)
 	{ }
 
 	virtual ~LossLayer() { }
 
+	virtual float total_loss()
+	{
+		return totalLoss;
+	}
+
+	virtual void reset()
+	{
+		Layer::reset();
+		totalLoss = 0;
+	}
+
 	vector<float> targetValue;
+
+	float totalLoss;
 };
 
 TypedefPtr(LossLayer);
@@ -32,8 +46,9 @@ public:
 
 	void _forward(float& inValue, float& outValue)
 	{
-		// which is loss value
+		// which is loss value if the network is feedforward
 		outValue = 0.5f * (inValue - targetValue[time]) * (inValue - targetValue[time]);
+		totalLoss += outValue;
 	}
 
 	void _backward(float& inValue, float& inGradient, float& outValue, float& outGradient)
