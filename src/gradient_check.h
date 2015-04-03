@@ -96,7 +96,7 @@ inline void gradient_check(RecurrentNetwork& net,
 			net.backward_prop();
 			net.backward_prop();
 			net.backward_prop();
-			DEBUG_MSG("orig net", net);
+//			DEBUG_MSG("orig net", net);
 			float analyticGrad = linearConn->gradient;
 			float oldParam = linearConn->param; // for restoration
 
@@ -107,18 +107,18 @@ inline void gradient_check(RecurrentNetwork& net,
 			net.forward_prop();
 			net.forward_prop();
 			net.forward_prop();
-			DEBUG_MSG("forward net", net);
+//			DEBUG_MSG("forward net", net);
 			float lossMinus = net.lossLayer->totalLoss;
-			DEBUG_MSG("lossMinus", lossMinus);
+//			DEBUG_MSG("lossMinus", lossMinus);
 
 			net.reset();
 			linearConn->param = oldParam + perturb;
 			net.forward_prop();
 			net.forward_prop();
 			net.forward_prop();
-			DEBUG_MSG("forward net", net);
+//			DEBUG_MSG("forward net", net);
 			float lossPlus = net.lossLayer->totalLoss;
-			DEBUG_MSG("lossPlus", lossPlus);
+//			DEBUG_MSG("lossPlus", lossPlus);
 
 			float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 

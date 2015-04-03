@@ -19,7 +19,8 @@ int main(int argc, char **argv)
 
 	auto l1 = make_layer<LinearLayer>();
 	auto l2 = make_layer<SigmoidLayer>();
-	auto l3 = make_layer<SquareLossLayer>();
+	auto l3 = make_layer<SigmoidLayer>();
+	auto l4 = make_layer<SquareLossLayer>();
 
 	RecurrentNetwork net;
 	net.set_input(input);
@@ -30,8 +31,12 @@ int main(int argc, char **argv)
 	net.add_layer(l2);
 	net.new_connection<LinearConnection>(l2, l3);
 	net.add_layer(l3);
+	net.new_connection<LinearConnection>(l3, l4);
+	net.add_layer(l4);
 
 	net.new_recurrent_connection<LinearConnection>(l2, l2);
+	net.new_recurrent_connection<LinearConnection>(l2, l3);
+	net.new_recurrent_connection<LinearConnection>(l3, l3);
 
 //	net.assemble();
 //	net.forward_prop();
