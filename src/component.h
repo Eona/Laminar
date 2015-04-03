@@ -16,7 +16,7 @@ public:
 
 	virtual void forward(int inTime = 0, int outTime = 0) = 0;
 
-	virtual void backward(int inTime = 0, int outTime = 0) = 0;
+	virtual void backward(int outTime = 0, int inTime = 0) = 0;
 
 	virtual void reset() = 0;
 

@@ -22,7 +22,7 @@ public:
 		outValue = 1.0f / (1.0f + exp(-inValue));
 	}
 
-	void _backward(float& inValue, float& inGradient, float& outValue, float& outGradient)
+	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
 		inGradient = outValue * (1.0f - outValue) * outGradient;
 	}
@@ -48,7 +48,7 @@ public:
 		outValue = cos(inValue);
 	}
 
-	void _backward(float& inValue, float& inGradient, float& outValue, float& outGradient)
+	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
 		inGradient = -sin(inValue) * outGradient;
 	}
@@ -75,7 +75,7 @@ public:
 		outValue = multiplier * inValue;
 	}
 
-	void _backward(float& inValue, float& inGradient, float& outValue, float& outGradient)
+	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
 		inGradient = multiplier * outGradient;
 	}

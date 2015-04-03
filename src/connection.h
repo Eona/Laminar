@@ -31,17 +31,17 @@ public:
 		_forward(inLayer->outValue[inTime], outLayer->inValue[outTime]);
 	}
 
-	virtual void backward(int inTime = 0, int outTime = 0)
+	virtual void backward(int outTime = 0, int inTime = 0)
 	{
-		resize_on_demand(inLayer->outGradient, inTime);
 		resize_on_demand(outLayer->inGradient, outTime);
+		resize_on_demand(inLayer->outGradient, inTime);
 
-		_backward(inLayer->outValue[inTime], inLayer->outGradient[inTime], outLayer->inGradient[outTime]);
+		_backward(outLayer->inGradient[outTime], inLayer->outValue[inTime], inLayer->outGradient[inTime]);
 	}
 
 	virtual void _forward(float& inlayerOutval, float& outlayerInval) = 0;
 
-	virtual void _backward(float& inlayerOutval, float& inlayerOutgrad, float& outlayerIngrad) = 0;
+	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad) = 0;
 
 	virtual void reset() {}
 
@@ -87,7 +87,7 @@ public:
 		outlayerInval = inlayerOutval;
 	}
 
-	void _backward(float& inlayerOutval, float& inlayerOutgrad, float& outlayerIngrad)
+	void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
 	{
 		inlayerOutgrad = outlayerIngrad;
 	}
@@ -117,7 +117,7 @@ public:
 		outlayerInval += param * inlayerOutval;
 	}
 
-	void _backward(float& inlayerOutval, float& inlayerOutgrad, float& outlayerIngrad)
+	void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
 	{
 		// NOTE matrix multiplication order applies here
 		// should check if input module actually has gradient

@@ -54,7 +54,7 @@ public:
 		totalLoss += outValue;
 	}
 
-	void _backward(float& inValue, float& inGradient, float& outValue, float& outGradient)
+	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
 		inGradient = inValue - targetValue[time_pt()];
 	}

@@ -35,17 +35,17 @@ public:
 		_forward(inValue[timept], outValue[timept]);
 	}
 
-	virtual void backward(int inTime = 0, int outTime = 0)
+	virtual void backward(int outTime = 0, int inTime = 0)
 	{
-		if (inTime != outTime)
+		if (outTime != inTime)
 			throw UnimplementedException(
 					"Layer in/out time cannot be different for now.");
 
 		this->timept = inTime;
 
-		resize_on_demand(inGradient, timept);
 		resize_on_demand(outGradient, timept);
-		_backward(inValue[timept], inGradient[timept], outValue[timept], outGradient[timept]);
+		resize_on_demand(inGradient, timept);
+		_backward(outValue[timept], outGradient[timept], inValue[timept], inGradient[timept]);
 	}
 
 	virtual void reset()

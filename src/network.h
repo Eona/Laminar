@@ -178,7 +178,7 @@ public:
 		DEBUG_MSG("Backward time", time);
 
 		for (int i = recurConnections.size() - 1; i >= 0; --i)
-			recurConnections[i]->backward(time, time + 1);
+			recurConnections[i]->backward(time + 1, time);
 
 		for (int i = components.size() - 1; i >= 0; --i)
 		{
