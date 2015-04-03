@@ -11,9 +11,9 @@
 class LossLayer : public Layer
 {
 public:
-	LossLayer(int timeLength = 1) :
-		Layer(timeLength),
-		targetValue(timeLength, 0.f),
+	LossLayer() :
+		Layer(),
+		targetValue(1, 0.f),
 		totalLoss(0.f)
 	{ }
 
@@ -40,8 +40,8 @@ TypedefPtr(LossLayer);
 class SquareLossLayer : public LossLayer
 {
 public:
-	SquareLossLayer(int timeLength = 1) :
-		LossLayer(timeLength)
+	SquareLossLayer() :
+		LossLayer()
 	{}
 
 	~SquareLossLayer() { }

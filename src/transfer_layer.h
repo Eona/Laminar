@@ -11,8 +11,8 @@
 class SigmoidLayer : public Layer
 {
 public:
-	SigmoidLayer(int timeLength = 1) :
-		Layer(timeLength)
+	SigmoidLayer() :
+		Layer()
 	{}
 
 	~SigmoidLayer() { }
@@ -37,8 +37,8 @@ public:
 class CosineLayer : public Layer
 {
 public:
-	CosineLayer(int timeLength = 1) :
-		Layer(timeLength)
+	CosineLayer() :
+		Layer()
 	{}
 
 	~CosineLayer() { }
@@ -63,8 +63,8 @@ public:
 class LinearLayer : public Layer
 {
 public:
-	LinearLayer(float _multiplier = 1.0f, int timeLength = 1):
-		Layer(timeLength),
+	LinearLayer(float _multiplier = 1.0f):
+		Layer(),
 		multiplier(_multiplier)
 	{}
 

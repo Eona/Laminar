@@ -14,11 +14,11 @@
 class Layer : public Component
 {
 public:
-	Layer(int timeLength = 1) :
-		inValue(timeLength, 0.0f),
-		inGradient(timeLength, 0.0f),
-		outValue(timeLength, 0.0f),
-		outGradient(timeLength, 0.0f)
+	Layer() :
+		inValue(1, 0.0f),
+		inGradient(1, 0.0f),
+		outValue(1, 0.0f),
+		outGradient(1, 0.0f)
 	{ }
 
 	virtual ~Layer() {};
