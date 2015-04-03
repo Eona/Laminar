@@ -17,6 +17,24 @@ public:
 
 	virtual ~Network() {}
 
+	virtual void set_input(vector<float>& input)
+	{
+		this->input = input;
+	}
+	virtual void set_input(vector<float>&& input)
+	{
+		this->input = input;
+	}
+
+	virtual void set_target(vector<float>& target)
+	{
+		this->target = target;
+	}
+	virtual void set_target(vector<float>&& target)
+	{
+		this->target = target;
+	}
+
 	virtual void add_layer(LayerPtr layer)
 	{
 		components.push_back(make_component(layer));
@@ -56,6 +74,8 @@ public:
 	vector<ComponentPtr> components;
 
 	LossLayerPtr lossLayer;
+
+	vector<float> input, target;
 };
 
 class ForwardNetwork : public Network
@@ -67,23 +87,13 @@ public:
 
 	~ForwardNetwork() {}
 
-	virtual void set_input(float input)
-	{
-		this->input = input;
-	}
-
-	virtual void set_target(float target)
-	{
-		this->target = target;
-	}
-
 	virtual void assemble()
 	{
-		layers[0]->inValue[0] = this->input;
+		layers[0]->inValue = this->input;
 		this->lossLayer = cast_layer<LossLayer>(layers[layers.size() - 1]);
 		if (lossLayer)
 		{
-			lossLayer->targetValue[0] = this->target;
+			lossLayer->targetValue = this->target;
 		}
 		else
 			throw NetworkException("Last layer must be a LossLayer");
@@ -107,14 +117,10 @@ public:
 			compon->reset();
 		this->assemble();
 	}
-
-	// DUMMY
-	float input = 0,
-		target = 0;
 };
 
 
-class RecurrentNetwork : public Network
+class RecurrentNetwork : public ForwardNetwork
 {
 public:
 	RecurrentNetwork() :
@@ -123,20 +129,11 @@ public:
 
 	~RecurrentNetwork() {}
 
-	virtual void set_input(vector<float> input)
-	{
-		this->input = input;
-	}
-
-	virtual void set_target(vector<float> target)
-	{
-		this->target = target;
-	}
-
 	virtual void assemble()
 	{
 		if (input.size() != target.size())
-			throw NetworkException("");
+			throw NetworkException(
+					"Input sequence length must be the same as output sequence.");
 
 		layers[0]->inValue = this->input;
 		this->lossLayer = cast_layer<LossLayer>(layers[layers.size() - 1]);
@@ -230,7 +227,6 @@ public:
 
 	vector<ConnectionPtr> recurConnections;
 	int frame = 0;
-	vector<float> input, target;
 };
 
 
