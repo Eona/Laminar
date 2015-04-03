@@ -184,7 +184,7 @@ public:
 **************************************/
 #undef assert
 #define TERMINATE_ASSERT false
-#define DEBUG true
+#define DEBUG false
 
 void assert(bool cond, string errmsg = "", string successmsg="")
 {
@@ -291,7 +291,7 @@ void print_title(string title = "", int leng = 10)
 #define DEBUG_FOUT(msg) fdbg << msg << endl
 #else
 #define DEBUG_MSG_1(msg)
-#define DEBUG_MSG_2(msg)
+#define DEBUG_MSG_2(msg1, msg2)
 #define DEBUG_DO(command)
 #define DEBUG_COND(cond, msg)
 #define DEBUG_LOOP(forcond, msg)
