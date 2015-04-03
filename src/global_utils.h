@@ -277,24 +277,26 @@ void print_title(string title = "", int leng = 10)
 #define VARARG(base, ...) VARARG_HELPER(base, VARARG_COUNT(__VA_ARGS__), __VA_ARGS__)
 // Define DEBUG_MSG_1 or _2 or _n to define a debug message printout macro with n args
 // intelliSense might underline this as syntax error. Ignore it and compile.
-#define DBG_MSG(...) VARARG(DBG_MSG,	 __VA_ARGS__)
+#define DEBUG_MSG(...) VARARG(DEBUG_MSG,	 __VA_ARGS__)
 
 // More debugging info
 #if DEBUG
-#define DBG_DO(command) command
-#define DBG_DISP(msg) cout << msg << endl
-#define DBG_COND(cond, msg) if (cond) cout << msg << endl
-#define DBG_LOOP(forcond, msg) for (forcond) cout << msg << endl;
+#define DEBUG_MSG_1(msg) cout << msg << endl
+#define DEBUG_MSG_2(name, msg) cout << "{" << name << "} " << msg << endl
+#define DEBUG_DO(command) command
+#define DEBUG_COND(cond, msg) if (cond) cout << msg << endl
+#define DEBUG_LOOP(forcond, msg) for (forcond) cout << msg << endl;
 // Write to debug file
-#define DBG_FILE_INIT(filename) ofstream fdbg(filename);
-#define DBG_FOUT(msg) fdbg << msg << endl
+#define DEBUG_FILE_INIT(filename) ofstream fdbg(filename);
+#define DEBUG_FOUT(msg) fdbg << msg << endl
 #else
-#define DBG_DO(command)
-#define DBG_DISP(msg)
-#define DBG_COND(cond, msg)
-#define DBG_LOOP(forcond, msg)
-#define DBG_FILE_INIT(filename)
-#define DBG_FOUT(msg)
+#define DEBUG_MSG_1(msg)
+#define DEBUG_MSG_2(msg)
+#define DEBUG_DO(command)
+#define DEBUG_COND(cond, msg)
+#define DEBUG_LOOP(forcond, msg)
+#define DEBUG_FILE_INIT(filename)
+#define DEBUG_FOUT(msg)
 #endif
 
 } // end of anonymous namespace
