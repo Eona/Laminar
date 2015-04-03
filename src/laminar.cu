@@ -33,17 +33,17 @@ int main(int argc, char **argv)
 
 	net.new_recurrent_connection<LinearConnection>(l2, l2);
 
-	net.assemble();
-	net.forward_prop();
-	net.forward_prop();
-	net.forward_prop();
-
-	net.backward_prop();
-	cout << net << endl;
-	net.backward_prop();
-	cout << net << endl;
-	net.backward_prop();
-	cout << net << endl;
-	cout << "Total loss = " << net.lossLayer->totalLoss << endl;
-//	gradient_check(net, 1e-2);
+//	net.assemble();
+//	net.forward_prop();
+//	net.forward_prop();
+//	net.forward_prop();
+//
+//	net.backward_prop();
+//	cout << net << endl;
+//	net.backward_prop();
+//	cout << net << endl;
+//	net.backward_prop();
+//	cout << net << endl;
+//	cout << "Total loss = " << net.lossLayer->totalLoss << endl;
+	gradient_check(net, 1e-2);
 }

@@ -149,13 +149,14 @@ public:
 	}
 
 	// TODO check last timestamp (cannot forward beyond)
+	// TODO add h0 as another parameter (first layer has no previous time)
+	/**
+	 * First feeds forward in current time frame,
+	 * then props to the next time frame
+	 */
 	virtual void forward_prop()
 	{
 		DEBUG_MSG("Forward time", time);
-
-		// Recurrent forward prop
-		for (ConnectionPtr conn : this->recurConnections)
-			conn->forward(time, time + 1);
 
 		for (ComponentPtr compon : this->components)
 		{
@@ -167,10 +168,19 @@ public:
 			compon->forward(time, time);
 		}
 
+		// Recurrent forward prop
+		for (ConnectionPtr conn : this->recurConnections)
+			conn->forward(time, time + 1);
+
 		++ time;
 	}
 
 	// TODO check last timestamp (cannot forward beyond)
+	// TODO compute gradient for h0
+	/**
+	 * First back-props to the previous time point,
+	 * then pass the gradient backward in current time.
+	 */
 	virtual void backward_prop()
 	{
 		-- time;
@@ -195,6 +205,7 @@ public:
 	virtual void add_recurrent_connection(ConnectionPtr conn)
 	{
 		recurConnections.push_back(conn);
+		connections.push_back(conn);
 	}
 
 	template<typename ConnectionT, typename ...ArgT>
@@ -223,11 +234,23 @@ public:
 };
 
 
-ostream& operator<<(ostream& os, Network& layer)
+ostream& operator<<(ostream& os, ForwardNetwork& layer)
 {
 	os << "[ForwardNet\n";
 	for (auto compon : layer.components)
 		os << "  " << compon->str() << "\n";
+	os << "]";
+	return os;
+}
+
+ostream& operator<<(ostream& os, RecurrentNetwork& layer)
+{
+	os << "[RecurrentNet\n";
+	for (auto compon : layer.components)
+		os << "  " << compon->str() << "\n";
+	os << " " << "recurrent connections:\n";
+	for (auto recConn : layer.recurConnections)
+		os << "  " << recConn->str() << "\n";
 	os << "]";
 	return os;
 }
