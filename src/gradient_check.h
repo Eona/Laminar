@@ -117,7 +117,7 @@ inline void gradient_check(RecurrentNetwork& net,
 	}
 
 	/****** perturb the input ******/
-	float oldInput = net.input[0]; // for restoration
+/*	vector<float> oldInput = net.input; // for restoration
 
 	net.reset();
 	net.forward_prop();
@@ -137,7 +137,7 @@ inline void gradient_check(RecurrentNetwork& net,
 	float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 
 	assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
-			"input analytic != numeric", "input gradcheck pass");
+			"input analytic != numeric", "input gradcheck pass");*/
 }
 
 #endif /* GRADIENT_CHECK_H_ */

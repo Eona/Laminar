@@ -14,39 +14,25 @@
 
 int main(int argc, char **argv)
 {
-	float input = 0.2;
-	float target = 1.5;
+	vector<float> input { 0.2, 0.3, 0.5 };
+	vector<float> target { 1.3, 1.5, 2.2 };
 
 	auto l1 = make_layer<LinearLayer>();
+	auto l2 = make_layer<SigmoidLayer>();
+	auto l3 = make_layer<SquareLossLayer>();
 
-	auto l2_1 = make_layer<LinearLayer>(1.7f);
-	auto l2_2 = make_layer<CosineLayer>();
-	auto l3_1 = make_layer<SigmoidLayer>();
-	auto l3_2 = make_layer<LinearLayer>(-2.3f);
-	auto l4 = make_layer<SquareLossLayer>();
-
-	ForwardNetwork net;
+	RecurrentNetwork net;
 	net.set_input(input);
 	net.set_target(target);
 
 	net.add_layer(l1);
-	net.add_connection(make_connection<LinearConnection>(l1, l2_1));
-	net.add_connection(make_connection<LinearConnection>(l1, l2_2));
-	// same as add_connection(make_connection<>)
-	net.add_new_connection<LinearConnection>(l1, l3_1);
-	net.add_new_connection<LinearConnection>(l1, l3_2);
-	net.add_new_connection<LinearConnection>(l1, l4);
-	net.add_layer(l2_1);
-	net.add_layer(l2_2);
-	net.add_new_connection<LinearConnection>(l2_1, l3_1);
-	net.add_new_connection<LinearConnection>(l2_1, l3_2);
-	net.add_new_connection<LinearConnection>(l2_2, l3_2);
-	net.add_new_connection<LinearConnection>(l2_2, l4);
-	net.add_layer(l3_1);
-	net.add_layer(l3_2);
-	net.add_new_connection<LinearConnection>(l3_1, l4);
-	net.add_new_connection<LinearConnection>(l3_2, l4);
-	net.add_layer(l4);
+	net.add_new_connection<LinearConnection>(l1, l2);
+	net.add_layer(l2);
+	net.add_new_connection<LinearConnection>(l2, l3);
+	net.add_layer(l3);
 
-	gradient_check(net, 1e-2);
+	net.add_new_recurrent_connection<LinearConnection>(l2, l2);
+
+	net.forward_prop();
+//	gradient_check(net, 1e-2);
 }

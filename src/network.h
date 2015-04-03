@@ -187,6 +187,14 @@ public:
 		recurConnections.push_back(conn);
 	}
 
+	template<typename ConnectionT, typename ...ArgT>
+	void add_new_recurrent_connection(ArgT&& ... args)
+	{
+		this->add_recurrent_connection(
+			make_connection<ConnectionT>(
+					std::forward<ArgT>(args)...));
+	}
+
 	virtual void reset()
 	{
 		for (ComponentPtr compon : this->components)
