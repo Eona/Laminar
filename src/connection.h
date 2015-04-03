@@ -25,11 +25,17 @@ public:
 
 	virtual void forward(int inTime = 0, int outTime = 0)
 	{
+		resize_on_demand(inLayer->outValue, inTime);
+		resize_on_demand(outLayer->inValue, outTime);
 		_forward(inLayer->outValue[inTime], outLayer->inValue[outTime]);
 	}
 
 	virtual void backward(int inTime = 0, int outTime = 0)
 	{
+		resize_on_demand(inLayer->outValue, inTime);
+		resize_on_demand(inLayer->outGradient, inTime);
+		resize_on_demand(outLayer->inGradient, outTime);
+
 		_backward(inLayer->outValue[inTime], inLayer->outGradient[inTime], outLayer->inGradient[outTime]);
 	}
 
@@ -42,6 +48,13 @@ public:
 protected:
 	LayerPtr inLayer;
 	LayerPtr outLayer;
+
+	// grow vector on demand
+	static void resize_on_demand(vector<float>& vec, int accessIdx)
+	{
+		if (accessIdx >= vec.size())
+			vec.resize(accessIdx + 1, 0);
+	}
 };
 
 TypedefPtr(Connection);

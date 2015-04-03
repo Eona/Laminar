@@ -17,9 +17,9 @@ int main(int argc, char **argv)
 	vector<float> input { 0.2, 0.3, 0.5 };
 	vector<float> target { 1.3, 1.5, 2.2 };
 
-	auto l1 = make_layer<LinearLayer>(1.f, 3);
-	auto l2 = make_layer<SigmoidLayer>(3);
-	auto l3 = make_layer<SquareLossLayer>(3);
+	auto l1 = make_layer<LinearLayer>();
+	auto l2 = make_layer<SigmoidLayer>();
+	auto l3 = make_layer<SquareLossLayer>();
 
 	RecurrentNetwork net;
 	net.set_input(input);

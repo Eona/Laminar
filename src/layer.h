@@ -54,6 +54,9 @@ public:
 	virtual void _forward(float& inValue, float& outValue) = 0;
 	virtual void _backward(float& inValue, float& inGradient, float& outValue, float& outGradient) = 0;
 
+	// current time set by forward() and backward()
+	int time_pt() { return this->timept; }
+
 	virtual string str()
 	{
 		ostringstream os;
@@ -64,11 +67,12 @@ public:
 		return os.str();
 	}
 
-// private:
 	vector<float> inValue,
 		inGradient,
 		outValue,
 		outGradient;
+
+private: // time pointer
 	int timept = 0;
 };
 
