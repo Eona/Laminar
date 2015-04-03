@@ -34,5 +34,6 @@ int main(int argc, char **argv)
 	net.new_recurrent_connection<LinearConnection>(l2, l2);
 
 	net.forward_prop();
+	cout << net << endl;
 //	gradient_check(net, 1e-2);
 }

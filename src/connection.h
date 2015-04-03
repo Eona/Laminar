@@ -107,10 +107,10 @@ class LinearConnection : public Connection
 public:
 	LinearConnection(LayerPtr _inLayer, LayerPtr _outLayer):
 		Connection(_inLayer, _outLayer),
-		gradient(0.0f),
-		rand(-3, 6)
+		gradient(0.0f)
+//		rnd(-3, 6) NOTE
 	{
-		param = rand();
+		param = rnd();
 	}
 
 	~LinearConnection() {}
@@ -146,7 +146,9 @@ public:
 
 	float param;
 	float gradient;
-	UniformRand<float> rand;
+	// NOTE debug only
+//	UniformRand<float> rnd;
+	FakeRand<float>& rnd = FakeRand<float>::instance();
 };
 
 ostream& operator<<(ostream& os, LinearConnection& conn)

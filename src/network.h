@@ -213,7 +213,7 @@ public:
 };
 
 
-ostream& operator<<(ostream& os, ForwardNetwork& layer)
+ostream& operator<<(ostream& os, Network& layer)
 {
 	os << "[ForwardNet\n";
 	for (auto compon : layer.components)
