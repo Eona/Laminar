@@ -21,6 +21,14 @@ public:
 	virtual void reset() = 0;
 
 	virtual string str() = 0;
+
+protected:
+	// utility: grow vector on demand
+	static inline void resize_on_demand(vector<float>& vec, int accessIdx)
+	{
+		if (accessIdx >= vec.size())
+			vec.resize(accessIdx + 1, 0);
+	}
 };
 
 TypedefPtr(Component);

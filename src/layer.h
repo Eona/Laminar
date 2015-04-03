@@ -30,6 +30,8 @@ public:
 					"Layer in/out time cannot be different for now.");
 
 		this->timept = inTime;
+		resize_on_demand(inValue, timept);
+		resize_on_demand(outValue, timept);
 		_forward(inValue[timept], outValue[timept]);
 	}
 
@@ -40,6 +42,9 @@ public:
 					"Layer in/out time cannot be different for now.");
 
 		this->timept = inTime;
+
+		resize_on_demand(inGradient, timept);
+		resize_on_demand(outGradient, timept);
 		_backward(inValue[timept], inGradient[timept], outValue[timept], outGradient[timept]);
 	}
 

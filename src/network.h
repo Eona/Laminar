@@ -158,11 +158,12 @@ public:
 
 		for (ComponentPtr compon : this->components)
 		{
-			auto conn = cast_component<Connection>(compon);
-			if (conn)
-				conn->forward(time, time);
-			else
-				compon->forward(time, time);
+//			auto conn = cast_component<Connection>(compon);
+//			if (conn)
+//				conn->forward(time, time);
+//			else
+//				compon->forward(time, time);
+			compon->forward(time, time);
 		}
 
 		++ time;
