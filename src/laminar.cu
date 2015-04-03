@@ -37,6 +37,9 @@ int main(int argc, char **argv)
 	net.forward_prop();
 	net.forward_prop();
 	net.forward_prop();
+	net.backward_prop();
+	net.backward_prop();
+	net.backward_prop();
 	cout << net << endl;
 //	gradient_check(net, 1e-2);
 }

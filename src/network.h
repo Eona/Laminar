@@ -148,6 +148,7 @@ public:
 			throw NetworkException("Last layer must be a LossLayer");
 	}
 
+	// TODO check last timestamp (cannot forward beyond)
 	virtual void forward_prop()
 	{
 		DBG_DISP("Forward prop " << time);
@@ -169,6 +170,7 @@ public:
 		++ time;
 	}
 
+	// TODO check last timestamp (cannot forward beyond)
 	virtual void backward_prop()
 	{
 		for (int i = recurConnections.size() - 1; i >= 0; --i)
@@ -176,13 +178,16 @@ public:
 
 		for (int i = components.size() - 1; i >= 0; --i)
 		{
-			auto compon = components[i];
-			auto conn = cast_component<Connection>(compon);
-			if (conn)
-				conn->backward(time, time);
-			else
-				compon->backward();
+//			auto compon = components[i];
+//			auto conn = cast_component<Connection>(compon);
+//			if (conn)
+//				conn->backward(time, time);
+//			else
+//				compon->backward();
+			components[i]->backward(time, time);
 		}
+
+		-- time;
 	}
 
 	virtual void add_recurrent_connection(ConnectionPtr conn)
