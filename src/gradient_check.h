@@ -32,14 +32,14 @@ inline void gradient_check(ForwardNetwork& net,
 			net.reset();
 			linearConn->param = oldParam - perturb;
 			net.forward_prop();
-			float outValMinus = net.lossLayer->outValue[0];
+			float lossMinus = net.lossLayer->totalLoss;
 
 			net.reset();
 			linearConn->param = oldParam + perturb;
 			net.forward_prop();
-			float outValPlus = net.lossLayer->outValue[0];
+			float lossPlus = net.lossLayer->totalLoss;
 
-			float numericGrad = (outValPlus - outValMinus) / (2.0 * perturb);
+			float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 
 			assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
 					"param analytic != numeric", "param gradcheck pass");
@@ -60,14 +60,14 @@ inline void gradient_check(ForwardNetwork& net,
 	net.set_input(oldInput - perturb);
 	net.reset();
 	net.forward_prop();
-	float outValMinus = net.lossLayer->outValue[0];
+	float lossMinus = net.lossLayer->totalLoss;
 
 	net.set_input(oldInput + perturb);
 	net.reset();
 	net.forward_prop();
-	float outValPlus = net.lossLayer->outValue[0];
+	float lossPlus = net.lossLayer->totalLoss;
 
-	float numericGrad = (outValPlus - outValMinus) / (2.0 * perturb);
+	float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 
 	assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
 			"input analytic != numeric", "input gradcheck pass");
@@ -99,14 +99,14 @@ inline void gradient_check(RecurrentNetwork& net,
 			net.reset();
 			linearConn->param = oldParam - perturb;
 			net.forward_prop();
-			float outValMinus = net.lossLayer->outValue[0];
+			float lossMinus = net.lossLayer->totalLoss;
 
 			net.reset();
 			linearConn->param = oldParam + perturb;
 			net.forward_prop();
-			float outValPlus = net.lossLayer->outValue[0];
+			float lossPlus = net.lossLayer->totalLoss;
 
-			float numericGrad = (outValPlus - outValMinus) / (2.0 * perturb);
+			float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 
 			assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
 					"param analytic != numeric", "param gradcheck pass");
@@ -124,19 +124,17 @@ inline void gradient_check(RecurrentNetwork& net,
 	net.backward_prop();
 	float analyticGrad = net.layers[0]->inGradient[0];
 
-	// TODO
 //	net.set_input(oldInput - perturb);
 	net.reset();
 	net.forward_prop();
-	float outValMinus = net.lossLayer->outValue[0];
+	float lossMinus = net.lossLayer->totalLoss;
 
-	// TODO
 //	net.set_input(oldInput + perturb);
 	net.reset();
 	net.forward_prop();
-	float outValPlus = net.lossLayer->outValue[0];
+	float lossPlus = net.lossLayer->totalLoss;
 
-	float numericGrad = (outValPlus - outValMinus) / (2.0 * perturb);
+	float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 
 	assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
 			"input analytic != numeric", "input gradcheck pass");
