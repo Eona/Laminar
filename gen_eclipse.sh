@@ -26,7 +26,7 @@ cd ..
 
 echo
 echo Patch eclipse project configurations:
-python patch_eclipse_nvcc_macro.py $BUILD_DIR
+python patch_eclipse_nvcc.py $BUILD_DIR
 
 echo
 echo DONE
