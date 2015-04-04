@@ -61,6 +61,8 @@ public:
 class ForwardNetwork : public Network
 {
 public:
+	using InputType = float;
+
 	ForwardNetwork() :
 		Network()
 	{ }
@@ -117,6 +119,8 @@ public:
 class RecurrentNetwork : public Network
 {
 public:
+	using InputType = vector<float>;
+
 	RecurrentNetwork() :
 		Network()
 	{ }
@@ -136,7 +140,8 @@ public:
 	virtual void assemble()
 	{
 		if (input.size() != target.size())
-			throw NetworkException("");
+			throw NetworkException(
+					"Input sequence must have the same length as the target sequence");
 
 		layers[0]->inValue = this->input;
 		this->lossLayer = cast_layer<LossLayer>(layers[layers.size() - 1]);

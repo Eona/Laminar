@@ -11,9 +11,16 @@
  * % difference between analytic (backprop)
  * and numeric (finite-difference) gradients
  */
-inline void gradient_check(ForwardNetwork& net,
+template<typename NetworkT>
+inline void gradient_check(NetworkT& net,
 		float perturb = 1e-2f, float percentTol = 1.0f)
 {
+	// if feedforward net, the length is simply 1
+	using InputType = typename NetworkT::InputType;
+	bool isForward = !is_vector<InputType>::value;
+//	int timeLength = isForward ? 1 : net.input.size();
+	int timeLength = 4;
+
 	/****** perturb parameters matrices stored in connections ******/
 	for (ConnectionPtr conn : net.connections)
 	{
@@ -23,20 +30,24 @@ inline void gradient_check(ForwardNetwork& net,
 		auto constConn = cast_connection<ConstantConnection>(conn);
 		if (linearConn)
 		{
-			net.forward_prop();
-			net.backward_prop();
+			for (int i = 0; i < timeLength; ++i)
+				net.forward_prop();
+			for (int i = 0; i < timeLength; ++i)
+				net.backward_prop();
 			float analyticGrad = linearConn->gradient;
 			float oldParam = linearConn->param; // for restoration
 
 			// perturb the parameter and run again
 			net.reset();
 			linearConn->param = oldParam - perturb;
-			net.forward_prop();
+			for (int i = 0; i < timeLength; ++i)
+				net.forward_prop();
 			float lossMinus = net.lossLayer->totalLoss;
 
 			net.reset();
 			linearConn->param = oldParam + perturb;
-			net.forward_prop();
+			for (int i = 0; i < timeLength; ++i)
+				net.forward_prop();
 			float lossPlus = net.lossLayer->totalLoss;
 
 			float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
@@ -50,14 +61,18 @@ inline void gradient_check(ForwardNetwork& net,
 	}
 
 	/****** perturb the input ******/
-	float oldInput = net.input; // for restoration
+	InputType oldInput = net.input; // for restoration
 
 	net.reset();
-	net.forward_prop();
-	net.backward_prop();
-	float analyticGrad = net.layers[0]->inGradient[0];
+	for (int i = 0; i < timeLength; ++i)
+		net.forward_prop();
+	for (int i = 0; i < timeLength; ++i)
+		net.backward_prop();
 
-	net.set_input(oldInput - perturb);
+	vector<float> analyticGrad = net.layers[0]->inGradient;
+	vector<float> numericGrad(timeLength);
+
+/*	net.set_input(oldInput - perturb);
 	net.reset();
 	net.forward_prop();
 	float lossMinus = net.lossLayer->totalLoss;
@@ -65,23 +80,25 @@ inline void gradient_check(ForwardNetwork& net,
 	net.set_input(oldInput + perturb);
 	net.reset();
 	net.forward_prop();
-	float lossPlus = net.lossLayer->totalLoss;
+	float lossPlus = net.lossLayer->totalLoss;*/
 
-	float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
+//	float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 
-	assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
-			"input analytic != numeric", "input gradcheck pass");
+
+	for (int i = 0; i < timeLength; ++i)
+		assert_float_percent_eq(analyticGrad[i], numericGrad[i], percentTol,
+				"input analytic != numeric", "input gradcheck pass");
 }
 
-
-/**
+/*
+*
  * % difference between analytic (backprop)
  * and numeric (finite-difference) gradients
- */
+
 inline void gradient_check(RecurrentNetwork& net,
 		float perturb = 1e-2f, float percentTol = 1.0f)
 {
-	/****** perturb parameters matrices stored in connections ******/
+	***** perturb parameters matrices stored in connections *****
 	for (ConnectionPtr conn : net.connections)
 	{
 		net.reset(); // refresh network
@@ -130,8 +147,8 @@ inline void gradient_check(RecurrentNetwork& net,
 		else if (constConn) { }
 	}
 
-	/****** perturb the input ******/
-/*	vector<float> oldInput = net.input; // for restoration
+	***** perturb the input *****
+	vector<float> oldInput = net.input; // for restoration
 
 	net.reset();
 	net.forward_prop();
@@ -151,7 +168,7 @@ inline void gradient_check(RecurrentNetwork& net,
 	float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 
 	assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
-			"input analytic != numeric", "input gradcheck pass");*/
-}
+			"input analytic != numeric", "input gradcheck pass");
+}*/
 
 #endif /* GRADIENT_CHECK_H_ */
