@@ -11,9 +11,10 @@
  * % difference between analytic (backprop)
  * and numeric (finite-difference) gradients
  */
-inline void gradient_check(ForwardNetwork& net,
+inline void gradient_check(Network& net,
 		float perturb = 1e-2f, float percentTol = 1.0f)
 {
+	int timeLength = net.input.size();
 	/****** perturb parameters matrices stored in connections ******/
 	for (ConnectionPtr conn : net.connections)
 	{
@@ -23,20 +24,24 @@ inline void gradient_check(ForwardNetwork& net,
 		auto constConn = cast_connection<ConstantConnection>(conn);
 		if (linearConn)
 		{
-			net.forward_prop();
-			net.backward_prop();
+			for (int i = 0; i < timeLength; ++i)
+				net.forward_prop();
+			for (int i = 0; i < timeLength; ++i)
+				net.backward_prop();
 			float analyticGrad = linearConn->gradient;
 			float oldParam = linearConn->param; // for restoration
 
 			// perturb the parameter and run again
 			net.reset();
 			linearConn->param = oldParam - perturb;
-			net.forward_prop();
+			for (int i = 0; i < timeLength; ++i)
+				net.forward_prop();
 			float lossMinus = net.lossLayer->totalLoss;
 
 			net.reset();
 			linearConn->param = oldParam + perturb;
-			net.forward_prop();
+			for (int i = 0; i < timeLength; ++i)
+				net.forward_prop();
 			float lossPlus = net.lossLayer->totalLoss;
 
 			float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
@@ -50,38 +55,54 @@ inline void gradient_check(ForwardNetwork& net,
 	}
 
 	/****** perturb the input ******/
-	float oldInput = net.input; // for restoration
+	vector<float> oldInput = net.input; // for restoration
 
 	net.reset();
-	net.forward_prop();
-	net.backward_prop();
-	float analyticGrad = net.layers[0]->inGradient[0];
+	for (int i = 0; i < timeLength; ++i)
+		net.forward_prop();
+	for (int i = 0; i < timeLength; ++i)
+		net.backward_prop();
 
-	net.set_input(oldInput - perturb);
-	net.reset();
-	net.forward_prop();
-	float lossMinus = net.lossLayer->totalLoss;
+	vector<float> analyticGrad = net.layers[0]->inGradient;
+	vector<float> numericGrad(net.input.size());
 
-	net.set_input(oldInput + perturb);
-	net.reset();
-	net.forward_prop();
-	float lossPlus = net.lossLayer->totalLoss;
+	// perturb each input in sequence
+	for (int inp = 0; inp < timeLength; ++inp)
+	{
+		float restoreInputVal = oldInput[inp];
 
-	float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
+		oldInput[inp] = restoreInputVal - perturb;
+		net.set_input(oldInput);
+		net.reset();
+		for (int i = 0; i < timeLength; ++i)
+			net.forward_prop();
+		float lossMinus = net.lossLayer->totalLoss;
 
-	assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
-			"input analytic != numeric", "input gradcheck pass");
+		oldInput[inp] = restoreInputVal + perturb;
+		net.set_input(oldInput);
+		net.reset();
+		for (int i = 0; i < timeLength; ++i)
+			net.forward_prop();
+		float lossPlus = net.lossLayer->totalLoss;
+
+		float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
+
+		assert_float_percent_eq(analyticGrad[inp], numericGrad, percentTol,
+				"input analytic != numeric", "input gradcheck pass");
+
+		oldInput[inp] = restoreInputVal; // restore
+	}
 }
 
-
-/**
+/*
+*
  * % difference between analytic (backprop)
  * and numeric (finite-difference) gradients
- */
+
 inline void gradient_check(RecurrentNetwork& net,
 		float perturb = 1e-2f, float percentTol = 1.0f)
 {
-	/****** perturb parameters matrices stored in connections ******/
+	***** perturb parameters matrices stored in connections *****
 	for (ConnectionPtr conn : net.connections)
 	{
 		net.reset(); // refresh network
@@ -130,8 +151,8 @@ inline void gradient_check(RecurrentNetwork& net,
 		else if (constConn) { }
 	}
 
-	/****** perturb the input ******/
-/*	vector<float> oldInput = net.input; // for restoration
+	***** perturb the input *****
+	vector<float> oldInput = net.input; // for restoration
 
 	net.reset();
 	net.forward_prop();
@@ -151,7 +172,7 @@ inline void gradient_check(RecurrentNetwork& net,
 	float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 
 	assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
-			"input analytic != numeric", "input gradcheck pass");*/
-}
+			"input analytic != numeric", "input gradcheck pass");
+}*/
 
 #endif /* GRADIENT_CHECK_H_ */

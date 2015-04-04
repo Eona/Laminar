@@ -107,6 +107,7 @@ public:
 		rnd(-3, 6)
 	{
 		param = fakernd();
+		param = rnd();
 	}
 
 	~LinearConnection() {}

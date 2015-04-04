@@ -87,6 +87,20 @@ public:
 
 	~ForwardNetwork() {}
 
+	// Unhide base class function with the same name but different signature
+	using Network::set_input;
+	using Network::set_target;
+
+	virtual void set_input(float input)
+	{
+		Network::set_input(vector<float> {input});
+	}
+
+	virtual void set_target(float target)
+	{
+		Network::set_target(vector<float> {target});
+	}
+
 	virtual void assemble()
 	{
 		layers[0]->inValue = this->input;
@@ -120,7 +134,7 @@ public:
 };
 
 
-class RecurrentNetwork : public ForwardNetwork
+class RecurrentNetwork : public Network
 {
 public:
 	RecurrentNetwork() :
@@ -132,7 +146,8 @@ public:
 	virtual void assemble()
 	{
 		if (input.size() != target.size())
-			throw NetworkException("");
+			throw NetworkException(
+					"Input sequence must have the same length as the target sequence");
 
 		layers[0]->inValue = this->input;
 		this->lossLayer = cast_layer<LossLayer>(layers[layers.size() - 1]);
