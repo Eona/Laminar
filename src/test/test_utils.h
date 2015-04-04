@@ -8,6 +8,7 @@
 
 #include <gtest/gtest.h>
 #include "../global_utils.h"
+#include "../rand_utils.h"
 #include "../timer.h"
 #include "../connection.h"
 #include "../recurrent_layer.h"

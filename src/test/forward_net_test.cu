@@ -6,6 +6,9 @@
 
 TEST(ForwardNet, FourLayerInterconnected)
 {
+	FakeRand::instance().set_rand_seq(
+			vector<float> { 2.51, 5.39, 5.80, -2.96, -2.73, -2.4, 0.55, -.47 });
+
 	float input = 0.2;
 	float target = 1.5;
 
@@ -43,3 +46,5 @@ TEST(ForwardNet, FourLayerInterconnected)
 
 	gradient_check(net, 1e-2, 0.1);
 }
+
+
