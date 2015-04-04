@@ -25,6 +25,7 @@
 #include <climits>
 #include <cstdarg>
 #include <utility>
+#include <type_traits>
 
 using std::vector;
 using std::string;
@@ -120,6 +121,11 @@ void print_array(T *arr, int size)
 #define TypedefPtr(Xclass) \
 	typedef shared_ptr<Xclass> Xclass##Ptr
 
+// Type trait
+template <typename Container>
+struct is_vector : std::false_type { };
+template <typename... Ts>
+struct is_vector<std::vector<Ts...> > : std::true_type { };
 
 /**************************************
 ************ Exceptions **************
@@ -184,7 +190,7 @@ public:
 **************************************/
 #undef assert
 #define TERMINATE_ASSERT false
-#define DEBUG true
+#define DEBUG false
 
 void assert(bool cond, string errmsg = "", string successmsg="")
 {
