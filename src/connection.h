@@ -106,8 +106,8 @@ public:
 		gradient(0.0f),
 		rnd(-3, 6)
 	{
-		param = fakernd();
 		param = rnd();
+		param = fakernd();
 	}
 
 	~LinearConnection() {}
@@ -145,7 +145,7 @@ public:
 	float gradient;
 	UniformRand<float> rnd;
 	// NOTE debug only
-	FakeRand<float>& fakernd = FakeRand<float>::instance();
+	FakeRand& fakernd = FakeRand::instance();
 };
 
 ostream& operator<<(ostream& os, LinearConnection& conn)

@@ -59,20 +59,20 @@ private:
 /**
  * DEBUG ONLY. Singleton pattern
  */
-template<typename FloatT>
 class FakeRand
 {
 private:
 	// fake args
 	FakeRand() :
-		preset { 3.24, -1.18, 0.47, 1.35, -0.62, 0.57, -1.25 }
+//		randSeq { 0.24, -1.18, 0.47, 1.35, -0.62, 0.57, -1.25, -.88 }
+		randSeq { 2.51, 5.39, 5.80, -2.96, -2.73, -2.4, 0.55, -.47 }
 	{ }
 
 	// disable copying and assignment
 	FakeRand(const FakeRand&) =delete;
 	FakeRand& operator=(const FakeRand&) =delete;
 
-	vector<FloatT> preset;
+	vector<float> randSeq;
 	int i = 0;
 
 public:
@@ -82,14 +82,23 @@ public:
 		return rnd;
 	}
 
-	FloatT operator() ()
+	/**
+	 * Manually set the internal 'random sequence'
+	 */
+	void set_rand_seq(vector<float>& _randSeq)
 	{
-		if (i >= preset.size())
-		{
-			cerr << "Fake random generator runs out. Start from beginning." << endl;
+		randSeq = _randSeq;
+	}
+	void set_rand_seq(vector<float>&& _randSeq)
+	{
+		randSeq = _randSeq;
+	}
+
+	float operator() ()
+	{
+		if (i >= randSeq.size())
 			i = 0;
-		}
-		return preset[i++];
+		return randSeq[i++];
 	}
 };
 
