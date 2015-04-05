@@ -120,7 +120,7 @@ public:
 
 	virtual void assemble()
 	{
-		layers[0]->inValue = this->input;
+		layers[0]->inValues = this->input;
 		this->lossLayer = Layer::cast<LossLayer>(layers[layers.size() - 1]);
 		if (lossLayer)
 		{
@@ -166,7 +166,7 @@ public:
 			throw NetworkException(
 					"Input sequence must have the same length as the target sequence");
 
-		layers[0]->inValue = this->input;
+		layers[0]->inValues = this->input;
 		this->lossLayer = Layer::cast<LossLayer>(layers[layers.size() - 1]);
 		if (lossLayer)
 		{

@@ -15,10 +15,10 @@ class Layer : public Component
 {
 public:
 	Layer() :
-		inValue(1, 0.0f),
-		inGradient(1, 0.0f),
-		outValue(1, 0.0f),
-		outGradient(1, 0.0f)
+		inValues(1, 0.0f),
+		inGradients(1, 0.0f),
+		outValues(1, 0.0f),
+		outGradients(1, 0.0f)
 	{ }
 
 	virtual ~Layer() {};
@@ -30,9 +30,9 @@ public:
 					"Layer in/out time cannot be different for now.");
 
 		this->_frame = inFrame;
-		resize_on_demand(inValue, _frame);
-		resize_on_demand(outValue, _frame);
-		_forward(inValue[_frame], outValue[_frame]);
+		resize_on_demand(inValues, _frame);
+		resize_on_demand(outValues, _frame);
+		_forward(inValues[_frame], outValues[_frame]);
 	}
 
 	virtual void backward(int outFrame = 0, int inFrame = 0)
@@ -43,17 +43,17 @@ public:
 
 		this->_frame = inFrame;
 
-		resize_on_demand(outGradient, _frame);
-		resize_on_demand(inGradient, _frame);
-		_backward(outValue[_frame], outGradient[_frame], inValue[_frame], inGradient[_frame]);
+		resize_on_demand(outGradients, _frame);
+		resize_on_demand(inGradients, _frame);
+		_backward(outValues[_frame], outGradients[_frame], inValues[_frame], inGradients[_frame]);
 	}
 
 	virtual void reset()
 	{
-		inValue.clear(); inValue.push_back(0);
-		inGradient.clear(); inGradient.push_back(0);
-		outValue.clear(); outValue.push_back(0);
-		outGradient.clear(); outGradient.push_back(0);
+		inValues.clear(); inValues.push_back(0);
+		inGradients.clear(); inGradients.push_back(0);
+		outValues.clear(); outValues.push_back(0);
+		outGradients.clear(); outGradients.push_back(0);
 	}
 
 	virtual void _forward(float& inValue, float& outValue) = 0;
@@ -68,17 +68,17 @@ public:
 	virtual string str()
 	{
 		ostringstream os;
-		os << "\tinVal=" << this->inValue
-			<< "\tinGrad=" << this->inGradient
-			<< "\n\toutVal=" << this->outValue
-			<< "\toutGrad=" << this->outGradient;
+		os << "\tinVal=" << this->inValues
+			<< "\tinGrad=" << this->inGradients
+			<< "\n\toutVal=" << this->outValues
+			<< "\toutGrad=" << this->outGradients;
 		return os.str();
 	}
 
-	vector<float> inValue,
-		inGradient,
-		outValue,
-		outGradient;
+	vector<float> inValues,
+		inGradients,
+		outValues,
+		outGradients;
 
 	/************************************/
 	typedef shared_ptr<Layer> Ptr;

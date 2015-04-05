@@ -26,18 +26,18 @@ public:
 
 	virtual void forward(int inFrame = 0, int outFrame = 0)
 	{
-		resize_on_demand(inLayer->outValue, inFrame);
-		resize_on_demand(outLayer->inValue, outFrame);
+		resize_on_demand(inLayer->outValues, inFrame);
+		resize_on_demand(outLayer->inValues, outFrame);
 
-		_forward(inLayer->outValue[inFrame], outLayer->inValue[outFrame]);
+		_forward(inLayer->outValues[inFrame], outLayer->inValues[outFrame]);
 	}
 
 	virtual void backward(int outFrame = 0, int inFrame = 0)
 	{
-		resize_on_demand(outLayer->inGradient, outFrame);
-		resize_on_demand(inLayer->outGradient, inFrame);
+		resize_on_demand(outLayer->inGradients, outFrame);
+		resize_on_demand(inLayer->outGradients, inFrame);
 
-		_backward(outLayer->inGradient[outFrame], inLayer->outValue[inFrame], inLayer->outGradient[inFrame]);
+		_backward(outLayer->inGradients[outFrame], inLayer->outValues[inFrame], inLayer->outGradients[inFrame]);
 	}
 
 	virtual void _forward(float& inlayerOutval, float& outlayerInval) = 0;

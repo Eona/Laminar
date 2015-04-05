@@ -67,7 +67,7 @@ inline void gradient_check(Network& net,
 	for (int i = 0; i < timeLength; ++i)
 		net.backward_prop();
 
-	vector<float> analyticGrad = net.layers[0]->inGradient;
+	vector<float> analyticGrad = net.layers[0]->inGradients;
 	vector<float> numericGrad(net.input.size());
 
 	// perturb each input in sequence
