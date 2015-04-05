@@ -37,13 +37,13 @@ public:
 
 	virtual void add_layer(LayerPtr layer)
 	{
-		components.push_back(Component::make(layer));
+		components.push_back(Component::upcast(layer));
 		layers.push_back(layer);
 	}
 
 	virtual void add_connection(ConnectionPtr conn)
 	{
-		components.push_back(Component::make(conn));
+		components.push_back(Component::upcast(conn));
 		connections.push_back(conn);
 	}
 

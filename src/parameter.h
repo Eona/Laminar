@@ -27,8 +27,19 @@ public:
 		}
 	}
 
+	/************************************/
+	typedef shared_ptr<ParameterContainer> Ptr;
+
+	template<typename ParameterContainerT>
+	static shared_ptr<ParameterContainerT> cast(ParameterContainer::Ptr param)
+	{
+		return std::dynamic_pointer_cast<ParameterContainerT>(param);
+	}
+
 	vector<float> paramValues;
 	vector<float> paramGradients;
 };
+
+TypedefPtr(ParameterContainer);
 
 #endif /* PARAMETER_H_ */
