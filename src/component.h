@@ -22,6 +22,21 @@ public:
 
 	virtual string str() = 0;
 
+	/************************************/
+	typedef shared_ptr<Component> Ptr;
+
+	template<typename ComponentT>
+	static Component::Ptr make(shared_ptr<ComponentT> compon)
+	{
+		return static_cast<Component::Ptr>(compon);
+	}
+
+	template<typename ComponentT>
+	static shared_ptr<ComponentT> cast(Component::Ptr compon)
+	{
+		return std::dynamic_pointer_cast<ComponentT>(compon);
+	}
+
 protected:
 	// utility: grow vector on demand
 	static inline void resize_on_demand(vector<float>& vec, int accessIdx)
@@ -32,17 +47,5 @@ protected:
 };
 
 TypedefPtr(Component);
-
-template<typename ComponentT>
-ComponentPtr make_component(shared_ptr<ComponentT> compon)
-{
-	return static_cast<ComponentPtr>(compon);
-}
-
-template<typename ComponentT>
-shared_ptr<ComponentT> cast_component(ComponentPtr compon)
-{
-	return std::dynamic_pointer_cast<ComponentT>(compon);
-}
 
 #endif /* COMPONENT_H_ */
