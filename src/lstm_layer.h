@@ -77,20 +77,41 @@ public:
 
 	void _forward(float& inValue, float& outValue)
 	{
+		resize_on_demand(cellValues, frame());
+
 		float h_last = frame() > 0 ?
 				this->outValues[frame() - 1] :
 				h_0;
 
 		float cell_last = frame() > 0 ?
-				this->cells[frame() - 1] :
+				this->cellValues[frame() - 1] :
 				cell_0;
 
 		float inputGate = gateActivator(
 				W_xi * inValue + W_hi * h_last + W_ci * cell_last + b_i);
+
+		float forgetGate = gateActivator(
+				W_xf * inValue + W_hf * h_last + W_cf * cell_last + b_f);
+
+		float cell_hat = cellInputActivator(
+				W_xc * inValue + W_hc * h_last + b_c);
+
+		float cell = inputGate * cell_hat + forgetGate * cell_last;
+
+		cellValues[frame()] = cell;
+
+		float outputGate = gateActivator(
+				W_xo * inValue + W_ho * h_last + W_co * cell + b_o);
+
+		outValue = outputGate * cellOutputActivator(cell);
 	}
 
 	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
+		resize_on_demand(cellGradients, frame());
+
+
+
 		inGradient = outValue * (1.0f - outValue) * outGradient;
 	}
 
@@ -100,7 +121,8 @@ public:
 				+ Layer::str() + "]";
 	}
 
-	vector<float> cells; // internal state history
+	vector<float> cellValues; // internal state history
+	vector<float> cellGradients;
 
 	function<float(float)>
 		gateActivator,
