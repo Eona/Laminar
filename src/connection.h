@@ -90,13 +90,17 @@ protected:
 	// Helper for backward/forward in/outLayer check
 	void check_layer_consistency(int inFrame, int outFrame)
 	{
-		assert(inLayer->get_max_temporal_skip() == outLayer->get_max_temporal_skip(),
-				"inLayer must have the same maxTemporalSkip as outLayer");
+		assert_throw(
+			inLayer->get_max_temporal_skip() == outLayer->get_max_temporal_skip(),
+			NetworkException(
+				"inLayer must have the same maxTemporalSkip as outLayer"));
 
 		if (!inLayer->is_full_gradient_history_saved())
 		{
-			assert(inFrame <= outFrame && outFrame <= inFrame + inLayer->get_max_temporal_skip(),
-					"Inconsistency: inFrame <= outFrame <= inFrame + layer.maxTemporalSkip");
+			assert_throw(
+				inFrame <= outFrame && outFrame <= inFrame + inLayer->get_max_temporal_skip(),
+				NetworkException(
+					"Inconsistency: inFrame <= outFrame <= inFrame + layer.maxTemporalSkip"));
 		}
 	}
 };

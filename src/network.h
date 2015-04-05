@@ -166,9 +166,9 @@ public:
 
 	virtual void assemble()
 	{
-		if (input.size() != target.size())
-			throw NetworkException(
-					"Input sequence must have the same length as the target sequence");
+		assert_throw(input.size() == target.size(),
+			NetworkException(
+				"Input sequence must have the same length as the target sequence"));
 
 		for (LayerPtr layer : layers)
 			layer->set_max_temporal_skip(this->maxTemporalSkip);

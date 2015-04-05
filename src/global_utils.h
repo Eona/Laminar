@@ -204,7 +204,7 @@ public:
 #define TERMINATE_ASSERT false
 #define DEBUG true
 
-void assert(bool cond, string errmsg = "", string successmsg="")
+inline void assert(bool cond, string errmsg = "", string successmsg="")
 {
 	if (!cond)
 	{
@@ -216,6 +216,12 @@ void assert(bool cond, string errmsg = "", string successmsg="")
 	}
 	else if (successmsg != "")
 		cout << successmsg << endl;
+}
+
+inline void assert_throw(bool cond, std::exception&& throwable)
+{
+	if (!cond)
+		throw throwable;
 }
 
 template<typename FloatT>

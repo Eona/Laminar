@@ -58,9 +58,9 @@ public:
 
 	virtual void forward(int inFrame = 0, int outFrame = 0)
 	{
-		if (inFrame != outFrame)
-			throw UnimplementedException(
-					"Layer in/out time cannot be different for now.");
+		assert_throw(inFrame == outFrame,
+			UnimplementedException(
+				"Layer in/out time cannot be different for now."));
 
 		this->_frame = inFrame;
 		resize_on_demand(inValues, _frame);
@@ -70,9 +70,9 @@ public:
 
 	virtual void backward(int outFrame = 0, int inFrame = 0)
 	{
-		if (outFrame != inFrame)
-			throw UnimplementedException(
-					"Layer in/out time cannot be different for now.");
+		assert_throw(inFrame == outFrame,
+			UnimplementedException(
+				"Layer in/out time cannot be different for now."));
 
 		this->_frame = inFrame;
 
