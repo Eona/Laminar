@@ -22,7 +22,8 @@ set(MAIN
     laminar)
 
 set(SOURCES 
-    ${MAIN}.cu)
+    ${MAIN}.cu
+    dummy.cu)
 
 cuda_add_executable(${MAIN} ${SOURCES})
 
