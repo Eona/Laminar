@@ -164,6 +164,7 @@ public:
 
 	~RecurrentNetwork() {}
 
+	/*********** Network operations ***********/
 	virtual void assemble()
 	{
 		assert_throw(input.size() == target.size(),
@@ -181,6 +182,14 @@ public:
 		}
 		else
 			throw NetworkException("Last layer must be a LossLayer");
+
+		// sort w.r.t. temporalSkip value
+		std::sort(recurConnectionInfos.begin(), recurConnectionInfos.end(),
+				[](const RecurConnectionInfo& info1, const RecurConnectionInfo& info2)
+				{
+					return info1.temporalSkip < info2.temporalSkip;
+				}
+			);
 	}
 
 	/**
@@ -207,8 +216,8 @@ public:
 		}
 
 		// Recurrent forward prop
-		for (ConnectionPtr conn : this->recurConnections)
-			conn->forward(frame, frame + 1);
+		for (auto& connInfo : this->recurConnectionInfos)
+			connInfo.conn->forward(frame, frame + connInfo.temporalSkip);
 
 		++ frame;
 	}
@@ -224,8 +233,11 @@ public:
 		-- frame;
 //		DEBUG_MSG("Backward frame", frame);
 
-		for (int i = recurConnections.size() - 1; i >= 0; --i)
-			recurConnections[i]->backward(frame + 1, frame);
+		for (int i = recurConnectionInfos.size() - 1; i >= 0; --i)
+		{
+			auto& connInfo = recurConnectionInfos[i];
+			connInfo.conn->backward(frame + connInfo.temporalSkip, frame);
+		}
 
 		for (LayerPtr layer : layers)
 			layer->shiftBackGradientWindow();
@@ -234,9 +246,14 @@ public:
 			components[i]->backward(frame, frame);
 	}
 
-	virtual void add_recurrent_connection(ConnectionPtr conn)
+	virtual void add_recurrent_connection(ConnectionPtr conn, int temporalSkip = 1)
 	{
-		recurConnections.push_back(conn);
+		assert_throw(temporalSkip <= maxTemporalSkip,
+			NetworkException("temporalSkip should be <= maxTemporalSkip."
+					"Use set_max_temporal_skip() to change the upper limit."
+					"Then call assemble() again on the network"));
+
+		recurConnectionInfos.push_back(RecurConnectionInfo(conn, temporalSkip));
 		connections.push_back(conn);
 		this->check_add_param_container(conn);
 	}
@@ -249,19 +266,40 @@ public:
 					std::forward<ArgT>(args)...));
 	}
 
+	template<typename ConnectionT, typename ...ArgT>
+	void new_recurrent_skip_connection(int temporalSkip, ArgT&& ... args)
+	{
+		this->add_recurrent_connection(
+			Connection::make<ConnectionT>(
+					std::forward<ArgT>(args)...),
+			temporalSkip);
+	}
+
 	virtual void reset()
 	{
 		for (ComponentPtr compon : this->components)
 			compon->reset();
-		for (ConnectionPtr conn : this->recurConnections)
-			conn->reset();
+		for (auto& connInfo : this->recurConnectionInfos)
+			connInfo.conn->reset();
 
 		frame = 0;
 
 		this->assemble();
 	}
 
-	vector<ConnectionPtr> recurConnections;
+	/************************************/
+	struct RecurConnectionInfo
+	{
+		RecurConnectionInfo(ConnectionPtr _conn, int _temporalSkip = 1) :
+			conn(_conn), temporalSkip(_temporalSkip)
+		{ }
+
+		ConnectionPtr conn;
+		int temporalSkip;
+	};
+	vector<RecurConnectionInfo> recurConnectionInfos;
+
+protected:
 	int frame = 0;
 	int maxTemporalSkip = 1;
 };
