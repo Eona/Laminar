@@ -22,12 +22,12 @@ float tanhGradient(float inValue, float outValue)
  * http://deeplearning.net/tutorial/lstm.html
  * LSTM is inherently recurrent. No need to add explicit recurrent connection.
  */
-class LstmLayer : public Layer, public ParameterContainer
+class LstmLayer : public Layer, public ParamContainer
 {
 public:
 	LstmLayer() :
 		Layer(),
-		ParameterContainer(LSTM_NUMBER_OF_PARAMS),
+		ParamContainer(LSTM_NUMBER_OF_PARAMS),
 		gateActivator(lmn::sigmoid),
 		cellInputActivator(lmn::tanh),
 		cellOutputActivator(lmn::tanh),

@@ -8,15 +8,15 @@
 
 #include "global_utils.h"
 
-class ParameterContainer
+class ParamContainer
 {
 public:
-	ParameterContainer(int numberOfParam = 1) :
+	ParamContainer(int numberOfParam = 1) :
 		paramValues(numberOfParam),
 		paramGradients(numberOfParam)
 	{ }
 
-	~ParameterContainer() =default;
+	~ParamContainer() =default;
 
 	void reset()
 	{
@@ -28,18 +28,24 @@ public:
 	}
 
 	/************************************/
-	typedef shared_ptr<ParameterContainer> Ptr;
+	typedef shared_ptr<ParamContainer> Ptr;
 
-	template<typename ParameterContainerT>
-	static shared_ptr<ParameterContainerT> cast(ParameterContainer::Ptr param)
+	template<typename ParamContainerT>
+	static ParamContainer::Ptr upcast(shared_ptr<ParamContainerT> compon)
 	{
-		return std::dynamic_pointer_cast<ParameterContainerT>(param);
+		return std::dynamic_pointer_cast<ParamContainer>(compon);
+	}
+
+	template<typename ParamContainerT>
+	static shared_ptr<ParamContainerT> cast(ParamContainer::Ptr param)
+	{
+		return std::dynamic_pointer_cast<ParamContainerT>(param);
 	}
 
 	vector<float> paramValues;
 	vector<float> paramGradients;
 };
 
-TypedefPtr(ParameterContainer);
+TypedefPtr(ParamContainer);
 
 #endif /* PARAMETER_H_ */

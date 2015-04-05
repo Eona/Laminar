@@ -102,12 +102,12 @@ public:
 	}
 };
 
-class LinearConnection : public Connection, public ParameterContainer
+class LinearConnection : public Connection, public ParamContainer
 {
 public:
 	LinearConnection(LayerPtr _inLayer, LayerPtr _outLayer):
 		Connection(_inLayer, _outLayer),
-		ParameterContainer(1),
+		ParamContainer(1),
 		param(paramValues[0]),
 		gradient(paramGradients[0]),
 		rnd(-3, 6)
