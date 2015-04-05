@@ -16,13 +16,6 @@ inline void gradient_check(Network& net,
 {
 	int timeLength = net.input.size();
 
-	// Save the full gradient history for debugging ONLY
-	try {
-		RecurrentNetwork& _net = dynamic_cast<RecurrentNetwork&>(net);
-		_net.set_max_temporal_skip(Layer::UNLIMITED_TEMPORAL_SKIP);
-	}
-	catch (std::bad_cast& err) { }
-
 	net.reset();
 	for (int i = 0; i < timeLength; ++i)
 		net.forward_prop();
@@ -64,6 +57,13 @@ inline void gradient_check(Network& net,
 	}
 
 	/****** perturb the input ******/
+	// Save the full gradient history for debugging ONLY
+	try {
+		RecurrentNetwork& _net = dynamic_cast<RecurrentNetwork&>(net);
+		_net.set_max_temporal_skip(Layer::UNLIMITED_TEMPORAL_SKIP);
+	}
+	catch (std::bad_cast& err) { }
+
 	vector<float> oldInput = net.input; // for restoration
 
 	net.reset();
