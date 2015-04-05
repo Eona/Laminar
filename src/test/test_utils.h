@@ -11,7 +11,6 @@
 #include "../rand_utils.h"
 #include "../timer.h"
 #include "../connection.h"
-#include "../recurrent_layer.h"
 #include "../transfer_layer.h"
 #include "../loss_layer.h"
 #include "../parameter.h"
