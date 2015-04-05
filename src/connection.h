@@ -26,17 +26,21 @@ public:
 
 	virtual void forward(int inFrame = 0, int outFrame = 0)
 	{
-		check_layer_consistency(inFrame, outFrame);
+		check_frame_consistency(inFrame, outFrame);
 
 		resize_on_demand(inLayer->outValues, inFrame);
 		resize_on_demand(outLayer->inValues, outFrame);
 
-		_forward(inLayer->outValues[inFrame], outLayer->inValues[outFrame]);
+		float inlayerOutvalue = 0;
+		if (inFrame >= 0)
+			inlayerOutvalue = inLayer->outValues[inFrame];
+
+		_forward(inlayerOutvalue, outLayer->inValues[outFrame]);
 	}
 
 	virtual void backward(int outFrame = 0, int inFrame = 0)
 	{
-		check_layer_consistency(inFrame, outFrame);
+		check_frame_consistency(inFrame, outFrame);
 
 		bool isHistorySaved = inLayer->is_full_gradient_history_saved();
 		if (isHistorySaved)
@@ -45,14 +49,15 @@ public:
 			resize_on_demand(outLayer->inGradients, outFrame);
 		}
 
+		if (inFrame >= 0)
 		_backward(outLayer->inGradients[
-					isHistorySaved ? outFrame : outFrame - inFrame],
+					isHistorySaved ? outFrame : 0],
 				inLayer->outValues[inFrame],
 				inLayer->outGradients[
-					isHistorySaved ? inFrame : 0]);
+					isHistorySaved ? inFrame : outFrame - inFrame]);
 	}
 
-	virtual void _forward(float& inlayerOutval, float& outlayerInval) = 0;
+	virtual void _forward(float inlayerOutval, float& outlayerInval) = 0;
 
 	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad) = 0;
 
@@ -86,7 +91,7 @@ protected:
 	LayerPtr outLayer;
 
 	// Helper for backward/forward in/outLayer check
-	void check_layer_consistency(int inFrame, int outFrame)
+	void check_frame_consistency(int inFrame, int outFrame)
 	{
 		assert_throw(
 			inLayer->get_max_temporal_skip() == outLayer->get_max_temporal_skip(),
@@ -115,7 +120,7 @@ public:
 
 	~ConstantConnection() {}
 
-	virtual void _forward(float& inlayerOutval, float& outlayerInval)
+	virtual void _forward(float inlayerOutval, float& outlayerInval)
 	{
 		outlayerInval = inlayerOutval;
 	}
@@ -146,7 +151,7 @@ public:
 
 	~LinearConnection() {}
 
-	virtual void _forward(float& inlayerOutval, float& outlayerInval)
+	virtual void _forward(float inlayerOutval, float& outlayerInval)
 	{
 		// NOTE matrix multiplication order applies here
 		outlayerInval += param * inlayerOutval;

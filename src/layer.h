@@ -58,9 +58,7 @@ public:
 
 	virtual void forward(int inFrame = 0, int outFrame = 0)
 	{
-		assert_throw(inFrame == outFrame,
-			UnimplementedException(
-				"Layer in/out time cannot be different for now."));
+		check_frame_consistency(inFrame, outFrame);
 
 		this->_frame = inFrame;
 		resize_on_demand(inValues, _frame);
@@ -70,9 +68,7 @@ public:
 
 	virtual void backward(int outFrame = 0, int inFrame = 0)
 	{
-		assert_throw(inFrame == outFrame,
-			UnimplementedException(
-				"Layer in/out time cannot be different for now."));
+		check_frame_consistency(inFrame, outFrame);
 
 		this->_frame = inFrame;
 
@@ -82,11 +78,11 @@ public:
 			resize_on_demand(outGradients, _frame);
 		}
 
-		int relative_frame = is_full_gradient_history_saved() ? _frame : 0;
+		int relativeFrame = is_full_gradient_history_saved() ? _frame : 0;
 		_backward(outValues[_frame],
-				outGradients[relative_frame],
+				outGradients[relativeFrame],
 				inValues[_frame],
-				inGradients[relative_frame]);
+				inGradients[relativeFrame]);
 	}
 
 	virtual void reset()
@@ -101,7 +97,7 @@ public:
 	 * Call after network does a full back_prop through all the layers
 	 * ONLY if recurrent network AND maxTemporalSkip != UNLIMITED_TEMPORAL_SKIP
 	 * Do this when we are not saving the full gradient history.
-	 * [11, 22, 33] => [0, 11, 22]
+	 * [11, 22, 33] => [22, 33, 0] // lower index is more recent frame
 	 */
 	virtual void shiftBackGradientWindow()
 	{
@@ -155,8 +151,17 @@ protected:
 	// Shift the gradient window
 	static void shiftBackVector(vector<float>& grad)
 	{
-		grad.insert(grad.begin(), 0);
-		grad.erase(grad.end() - 1);
+//		grad.insert(grad.begin(), 0);
+//		grad.erase(grad.end() - 1);
+		grad.push_back(0);
+		grad.erase(grad.begin());
+	}
+
+	void check_frame_consistency(float inFrame, float outFrame)
+	{
+		assert_throw(inFrame == outFrame,
+			UnimplementedException(
+				"Layer in/out time cannot be different for now."));
 	}
 
 	// Max temporal skip. negative to save full gradient history

@@ -200,12 +200,12 @@ public:
 	 */
 	virtual void forward_prop()
 	{
-		for (ComponentPtr compon : this->components)
-			compon->forward(frame, frame);
-
 		// Recurrent forward prop
 		for (auto& connInfo : this->recurConnectionInfos)
-			connInfo.conn->forward(frame, frame + connInfo.temporalSkip);
+			connInfo.conn->forward(frame - connInfo.temporalSkip, frame);
+
+		for (ComponentPtr compon : this->components)
+			compon->forward(frame, frame);
 
 		++ frame;
 	}
@@ -220,11 +220,11 @@ public:
 	{
 		-- frame;
 
-		for (auto& connInfo : this->recurConnectionInfos)
-			connInfo.conn->backward(frame + connInfo.temporalSkip, frame);
-
 		for (int i = components.size() - 1; i >= 0; --i)
 			components[i]->backward(frame, frame);
+
+		for (auto& connInfo : this->recurConnectionInfos)
+			connInfo.conn->backward(frame, frame - connInfo.temporalSkip);
 
 		for (LayerPtr layer : layers)
 			layer->shiftBackGradientWindow();
