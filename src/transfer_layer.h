@@ -19,7 +19,7 @@ public:
 
 	void _forward(float& inValue, float& outValue)
 	{
-		outValue = 1.0f / (1.0f + exp(-inValue));
+		outValue = sigmoid(inValue);
 	}
 
 	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)

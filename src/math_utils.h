@@ -13,4 +13,9 @@ inline float transpose(float x) { return x; }
 
 inline float softmax(float x) { return x; }
 
+inline float sigmoid(float x)
+{
+	return 1.0f / (1.0f + exp(-x));
+}
+
 #endif /* MATH_UTILS_H_ */
