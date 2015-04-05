@@ -6,6 +6,7 @@
 #define LSTM_LAYER_H_
 
 #include "layer.h"
+#include "parameter.h"
 
 float sigmoidGradient(float inValue, float outValue)
 {

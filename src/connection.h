@@ -9,6 +9,7 @@
 #include "rand_utils.h"
 #include "layer.h"
 #include "component.h"
+#include "parameter.h"
 
 /**
  * Contains the actual parameters
@@ -101,12 +102,14 @@ public:
 	}
 };
 
-class LinearConnection : public Connection
+class LinearConnection : public Connection, public ParameterContainer
 {
 public:
 	LinearConnection(LayerPtr _inLayer, LayerPtr _outLayer):
 		Connection(_inLayer, _outLayer),
-		gradient(0.0f),
+		ParameterContainer(1),
+		param(paramValues[0]),
+		gradient(paramGradients[0]),
 		rnd(-3, 6)
 	{
 		param = rnd();
@@ -144,11 +147,11 @@ public:
 		gradient = 0;
 	}
 
-	float param;
-	float gradient;
 	UniformRand<float> rnd;
 	// NOTE debug only
 	FakeRand& fakernd = FakeRand::instance();
+
+	float& param, gradient;
 };
 
 ostream& operator<<(ostream& os, LinearConnection& conn)

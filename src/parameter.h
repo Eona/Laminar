@@ -18,9 +18,6 @@ public:
 
 	~ParameterContainer() =default;
 
-	vector<float> paramValues;
-	vector<float> paramGradients;
-
 	void reset()
 	{
 		for (int i = 0; i < paramValues.size(); ++i)
@@ -29,6 +26,9 @@ public:
 			paramGradients[i] = 0;
 		}
 	}
+
+	vector<float> paramValues;
+	vector<float> paramGradients;
 };
 
 #endif /* PARAMETER_H_ */
