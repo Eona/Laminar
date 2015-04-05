@@ -4,7 +4,7 @@
 
 #include "test_utils.h"
 
-TEST(ForwardNet, FourLayerInterconnected)
+TEST(ForwardNet, Interconnected)
 {
 	FakeRand::instance().set_rand_seq(
 			vector<float> { 2.51, 5.39, 5.80, -2.96, -2.73, -2.4, 0.55, -.47 });
