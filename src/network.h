@@ -188,11 +188,6 @@ public:
 
 		for (ComponentPtr compon : this->components)
 		{
-//			auto conn = cast_component<Connection>(compon);
-//			if (conn)
-//				conn->forward(frame, frame);
-//			else
-//				compon->forward(frame, frame);
 			compon->forward(frame, frame);
 		}
 
@@ -219,12 +214,6 @@ public:
 
 		for (int i = components.size() - 1; i >= 0; --i)
 		{
-//			auto compon = components[i];
-//			auto conn = cast_component<Connection>(compon);
-//			if (conn)
-//				conn->backward(frame, frame);
-//			else
-//				compon->backward();
 			components[i]->backward(frame, frame);
 		}
 	}
