@@ -48,4 +48,20 @@ protected:
 
 TypedefPtr(Component);
 
+template<typename T>
+typename enable_if<is_base_of<Component, T>::value, ostream>::type&
+operator<<(ostream& os, T& compon)
+{
+	os << compon.str();
+	return os;
+}
+
+template<typename T>
+typename enable_if<is_base_of<Component, T>::value, ostream>::type&
+operator<<(ostream& os, T&& compon)
+{
+	os << compon.str();
+	return os;
+}
+
 #endif /* COMPONENT_H_ */

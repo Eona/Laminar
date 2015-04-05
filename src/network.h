@@ -250,23 +250,26 @@ public:
 	int frame = 0;
 };
 
-
-ostream& operator<<(ostream& os, ForwardNetwork& layer)
+template<typename T>
+typename enable_if<is_base_of<ForwardNetwork, T>::value, ostream>::type&
+operator<<(ostream& os, T& net)
 {
 	os << "[ForwardNet\n";
-	for (auto compon : layer.components)
+	for (auto compon : net.components)
 		os << "  " << compon->str() << "\n";
 	os << "]";
 	return os;
 }
 
-ostream& operator<<(ostream& os, RecurrentNetwork& layer)
+template<typename T>
+typename enable_if<is_base_of<RecurrentNetwork, T>::value, ostream>::type&
+operator<<(ostream& os, T& net)
 {
 	os << "[RecurrentNet\n";
-	for (auto compon : layer.components)
+	for (auto compon : net.components)
 		os << "  " << compon->str() << "\n";
 	os << " " << "recurrent connections:\n";
-	for (auto recConn : layer.recurConnections)
+	for (auto recConn : net.recurConnections)
 		os << "  " << recConn->str() << "\n";
 	os << "]";
 	return os;
