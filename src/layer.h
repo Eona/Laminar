@@ -82,14 +82,11 @@ public:
 			resize_on_demand(outGradients, _frame);
 		}
 
+		int relative_frame = is_full_gradient_history_saved() ? _frame : 0;
 		_backward(outValues[_frame],
-				is_full_gradient_history_saved() ?
-					outGradients[_frame] :
-					outGradients[0],
+				outGradients[relative_frame],
 				inValues[_frame],
-				is_full_gradient_history_saved() ?
-					inGradients[_frame] :
-					inGradients[0]);
+				inGradients[relative_frame]);
 	}
 
 	virtual void reset()

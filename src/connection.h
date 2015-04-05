@@ -45,13 +45,11 @@ public:
 			resize_on_demand(outLayer->inGradients, outFrame);
 		}
 
-		_backward(isHistorySaved ?
-					outLayer->inGradients[outFrame] :
-					outLayer->inGradients[outFrame - inFrame],
+		_backward(outLayer->inGradients[
+					isHistorySaved ? outFrame : outFrame - inFrame],
 				inLayer->outValues[inFrame],
-				isHistorySaved ?
-					inLayer->outGradients[inFrame] :
-					inLayer->outGradients[0]);
+				inLayer->outGradients[
+					isHistorySaved ? inFrame : 0]);
 	}
 
 	virtual void _forward(float& inlayerOutval, float& outlayerInval) = 0;
