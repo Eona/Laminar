@@ -140,10 +140,9 @@ public:
 		Connection(_inLayer, _outLayer),
 		ParamContainer(1),
 		param(paramValues[0]),
-		gradient(paramGradients[0]),
-		rnd(-3, 6)
+		gradient(paramGradients[0])
 	{
-		param = rnd();
+		param = debugrnd();
 		param = fakernd();
 	}
 
@@ -178,8 +177,8 @@ public:
 		ParamContainer::resetGradients();
 	}
 
-	UniformRand<float> rnd;
 	// NOTE debug only
+	UniformFloatSingleton<-3, 6>& debugrnd = UniformFloatSingleton<-3, 6>::instance();
 	FakeRand& fakernd = FakeRand::instance();
 
 	float& param; // aliases
