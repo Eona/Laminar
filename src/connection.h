@@ -158,27 +158,4 @@ public:
 	float& gradient;
 };
 
-ostream& operator<<(ostream& os, LinearConnection& conn)
-{
-	os << conn.str();
-	return os;
-}
-ostream& operator<<(ostream& os, LinearConnection&& conn)
-{
-	os << conn.str();
-	return os;
-}
-
-ostream& operator<<(ostream& os, ConstantConnection& conn)
-{
-	os << conn.str();
-	return os;
-}
-
-ostream& operator<<(ostream& os, ConstantConnection&& conn)
-{
-	os << conn.str();
-	return os;
-}
-
 #endif /* CONNECTION_H_ */

@@ -8,15 +8,19 @@
 #include "layer.h"
 #include "parameter.h"
 
-float sigmoidGradient(float inValue, float outValue)
+namespace lmn {
+
+inline float sigmoidGradient(float inValue, float outValue)
 {
 	return outValue * (1.f - outValue);
 }
 
-float tanhGradient(float inValue, float outValue)
+inline float tanhGradient(float inValue, float outValue)
 {
 	return 1 - outValue * outValue;
 }
+
+} // end of namespace lmn
 
 /**
  * http://deeplearning.net/tutorial/lstm.html
@@ -68,9 +72,9 @@ public:
 		gateActivator(lmn::sigmoid),
 		cellInputActivator(lmn::tanh),
 		cellOutputActivator(lmn::tanh),
-		gateActivatorGradient(sigmoidGradient),
-		cellInputActivatorGradient(tanhGradient),
-		cellOutputActivatorGradient(tanhGradient)
+		gateActivatorGradient(lmn::sigmoidGradient),
+		cellInputActivatorGradient(lmn::tanhGradient),
+		cellOutputActivatorGradient(lmn::tanhGradient)
 	{}
 
 	~LstmLayer() { }

@@ -37,6 +37,8 @@ using std::ostringstream;
 using std::move;
 using std::shared_ptr;
 using std::function;
+using std::enable_if;
+using std::is_base_of;
 typedef unsigned long ulong;
 typedef unsigned int uint;
 

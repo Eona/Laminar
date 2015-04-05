@@ -33,8 +33,6 @@ int main(int argc, char **argv)
 	net.new_connection<LinearConnection>(l2, l4);
 	net.add_layer(l4);
 
-	cout << LstmLayer::_W_ci << endl;
-
 //	net.new_recurrent_connection<LinearConnection>(l2, l3);
 //	net.new_recurrent_connection<LinearConnection>(l3, l3);
 

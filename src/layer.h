@@ -111,6 +111,15 @@ public:
 		return std::dynamic_pointer_cast<LayerT>(layer);
 	}
 
+/*
+	static int MaxFrameInterval;
+
+	static void setMaxFrameInterval(int _MaxFrameInterval)
+	{
+		MaxFrameInterval = _MaxFrameInterval;
+	}
+*/
+
 private:
 	// frame pointer
 	int _frame = 0;
@@ -120,5 +129,7 @@ private:
  * Both Layer::Ptr and LayerPtr works
  */
 TypedefPtr(Layer);
+
+//int Layer::MaxFrameInterval = 2;
 
 #endif /* LAYER_H_ */

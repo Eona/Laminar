@@ -90,27 +90,4 @@ private:
 	float multiplier;
 };
 
-
-ostream& operator<<(ostream& os, LinearLayer& layer)
-{
-	os << layer.str();
-	return os;
-}
-ostream& operator<<(ostream& os, LinearLayer&& layer)
-{
-	os << layer.str();
-	return os;
-}
-
-ostream& operator<<(ostream& os, SigmoidLayer& layer)
-{
-	os << layer.str();
-	return os;
-}
-ostream& operator<<(ostream& os, SigmoidLayer&& layer)
-{
-	os << layer.str();
-	return os;
-}
-
 #endif /* TRANSFER_LAYER_H_ */
