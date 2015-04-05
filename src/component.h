@@ -41,7 +41,8 @@ protected:
 	// utility: grow vector on demand
 	static inline void resize_on_demand(vector<float>& vec, int accessIdx)
 	{
-		if (accessIdx >= vec.size())
+	// WARNING when comparing negative number with size_t, -1 will be converted to positive!!!
+		if (accessIdx >= (int) vec.size())
 			vec.resize(accessIdx + 1, 0);
 	}
 };
