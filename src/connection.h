@@ -40,7 +40,8 @@ public:
 		assert(inFrame <= outFrame && outFrame <= inFrame + 1,
 				"inFrame <= outFrame <= inFrame + 1");
 
-		_backward(outLayer->inGradients[1], inLayer->outValues[inFrame], inLayer->outGradients[1 - (outFrame - inFrame)]);
+		_backward(vec_at(outLayer->inGradients, -1), inLayer->outValues[inFrame],
+				vec_at(inLayer->outGradients, -1 - (outFrame - inFrame)));
 	}
 
 	virtual void _forward(float& inlayerOutval, float& outlayerInval) = 0;

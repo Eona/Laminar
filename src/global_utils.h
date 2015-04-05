@@ -130,6 +130,15 @@ struct is_vector : std::false_type { };
 template <typename... Ts>
 struct is_vector<std::vector<Ts...> > : std::true_type { };
 
+// Emulate python style subscript
+template<typename T>
+T& vec_at(vector<T>& vec, int idx)
+{
+	if (idx < 0)
+		idx += vec.size();
+	return vec[idx];
+}
+
 /**************************************
 ************ Exceptions **************
 **************************************/

@@ -43,15 +43,16 @@ public:
 
 		this->_frame = inFrame;
 
-		_backward(outValues[_frame], outGradients[1], inValues[_frame], inGradients[1]);
+		_backward(outValues[_frame], vec_at(outGradients, -1),
+				inValues[_frame], vec_at(inGradients, -1));
 	}
 
 	virtual void reset()
 	{
-		inValues.clear(); inValues.push_back(0);
-		inGradients.clear(); inGradients.push_back(0);
-		outValues.clear(); outValues.push_back(0);
-		outGradients.clear(); outGradients.push_back(0);
+		std::fill(inValues.begin(), inValues.end(), 0);
+		std::fill(outValues.begin(), outValues.end(), 0);
+		std::fill(inGradients.begin(), inGradients.end(), 0);
+		std::fill(outGradients.begin(), outGradients.end(), 0);
 	}
 
 	/**
