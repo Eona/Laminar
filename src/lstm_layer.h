@@ -119,15 +119,21 @@ public:
 		inGradient = outValue * (1.0f - outValue) * outGradient;
 	}
 
+	virtual void shiftBackGradientWindow()
+	{
+		Layer::shiftBackGradientWindow();
+		Layer::shiftBackVector(cellGradients);
+	}
+
 	string str()
 	{
 		return string("[LstmLayer: \n")
 				+ Layer::str() + "]";
 	}
 
-	// internal state window
-	// keep up to 2 values
+	// internal state history
 	vector<float> cellValues;
+	// keep up to 2 values only (t and t-1)
 	vector<float> cellGradients;
 
 	function<float(float)>
