@@ -56,10 +56,9 @@ inline void gradient_check(Network& net,
 		}
 	}
 
-	assert(agpt == analyticGrads.size(), "analyticGrads not fully traversed");
-
 	/****** perturb the input ******/
-	vector<float> oldInput = net.input; // for restoration
+	// No longer supported because we are not saving the full gradient history.
+/*	vector<float> oldInput = net.input; // for restoration
 
 	net.reset();
 	for (int i = 0; i < timeLength; ++i)
@@ -95,7 +94,7 @@ inline void gradient_check(Network& net,
 				"input analytic != numeric", "input gradcheck pass");
 
 		oldInput[inp] = restoreInputVal; // restore
-	}
+	}*/
 }
 
 #endif /* GRADIENT_CHECK_H_ */

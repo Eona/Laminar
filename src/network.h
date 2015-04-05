@@ -212,10 +212,11 @@ public:
 		for (int i = recurConnections.size() - 1; i >= 0; --i)
 			recurConnections[i]->backward(frame + 1, frame);
 
+		for (LayerPtr layer : layers)
+			layer->shiftBackGradientWindow();
+
 		for (int i = components.size() - 1; i >= 0; --i)
-		{
 			components[i]->backward(frame, frame);
-		}
 	}
 
 	virtual void add_recurrent_connection(ConnectionPtr conn)

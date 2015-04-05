@@ -16,9 +16,9 @@ class Layer : public Component
 public:
 	Layer() :
 		inValues(1, 0.0f),
-		inGradients(1, 0.0f),
+		inGradients(2, 0.0f),
 		outValues(1, 0.0f),
-		outGradients(1, 0.0f)
+		outGradients(2, 0.0f)
 	{ }
 
 	virtual ~Layer() {};
@@ -43,9 +43,7 @@ public:
 
 		this->_frame = inFrame;
 
-		resize_on_demand(outGradients, _frame);
-		resize_on_demand(inGradients, _frame);
-		_backward(outValues[_frame], outGradients[_frame], inValues[_frame], inGradients[_frame]);
+		_backward(outValues[_frame], outGradients[1], inValues[_frame], inGradients[1]);
 	}
 
 	virtual void reset()
@@ -54,6 +52,19 @@ public:
 		inGradients.clear(); inGradients.push_back(0);
 		outValues.clear(); outValues.push_back(0);
 		outGradients.clear(); outGradients.push_back(0);
+	}
+
+	/**
+	 * Call after network does a full back_prop through all the layers
+	 * Recurrent network ONLY
+	 * Doing this because we are not saving the full gradient history.
+	 */
+	virtual void shiftBackGradientWindow()
+	{
+		outGradients[1] = outGradients[0];
+		outGradients[0] = 0;
+		inGradients[1] = inGradients[0];
+		inGradients[0] = 0;
 	}
 
 	virtual void _forward(float& inValue, float& outValue) = 0;
@@ -100,7 +111,8 @@ public:
 		return std::dynamic_pointer_cast<LayerT>(layer);
 	}
 
-private: // frame pointer
+private:
+	// frame pointer
 	int _frame = 0;
 };
 

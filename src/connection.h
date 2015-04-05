@@ -26,6 +26,9 @@ public:
 
 	virtual void forward(int inFrame = 0, int outFrame = 0)
 	{
+		assert(inFrame <= outFrame && outFrame <= inFrame + 1,
+				"inFrame <= outFrame <= inFrame + 1");
+
 		resize_on_demand(inLayer->outValues, inFrame);
 		resize_on_demand(outLayer->inValues, outFrame);
 
@@ -34,10 +37,10 @@ public:
 
 	virtual void backward(int outFrame = 0, int inFrame = 0)
 	{
-		resize_on_demand(outLayer->inGradients, outFrame);
-		resize_on_demand(inLayer->outGradients, inFrame);
+		assert(inFrame <= outFrame && outFrame <= inFrame + 1,
+				"inFrame <= outFrame <= inFrame + 1");
 
-		_backward(outLayer->inGradients[outFrame], inLayer->outValues[inFrame], inLayer->outGradients[inFrame]);
+		_backward(outLayer->inGradients[1], inLayer->outValues[inFrame], inLayer->outGradients[1 - (outFrame - inFrame)]);
 	}
 
 	virtual void _forward(float& inlayerOutval, float& outlayerInval) = 0;
