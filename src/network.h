@@ -39,12 +39,16 @@ public:
 	{
 		components.push_back(Component::upcast(layer));
 		layers.push_back(layer);
+
+		this->check_add_param_container(layer);
 	}
 
 	virtual void add_connection(ConnectionPtr conn)
 	{
 		components.push_back(Component::upcast(conn));
 		connections.push_back(conn);
+
+		this->check_add_param_container(conn);
 	}
 
 	template<typename ConnectionT, typename ...ArgT>
@@ -69,13 +73,23 @@ public:
 		throw UnimplementedException("topological sort");
 	}
 
-	vector<LayerPtr> layers;
-	vector<ConnectionPtr> connections;
-	vector<ComponentPtr> components;
+	vector<Layer::Ptr> layers;
+	vector<Connection::Ptr> connections;
+	vector<Component::Ptr> components;
+	vector<ParamContainer::Ptr> paramContainers;
 
 	LossLayerPtr lossLayer;
 
 	vector<float> input, target;
+
+protected:
+	template<typename T>
+	void check_add_param_container(T component)
+	{
+		ParamContainer::Ptr param = ParamContainer::upcast(component);
+		if (param)
+			paramContainers.push_back(param);
+	}
 };
 
 class ForwardNetwork : public Network
@@ -217,6 +231,7 @@ public:
 	{
 		recurConnections.push_back(conn);
 		connections.push_back(conn);
+		this->check_add_param_container(conn);
 	}
 
 	template<typename ConnectionT, typename ...ArgT>
