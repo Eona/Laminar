@@ -120,10 +120,12 @@ public:
 	 */
 	void set_rand_seq(vector<float>& _randSeq)
 	{
+		i = 0;
 		randSeq = _randSeq;
 	}
 	void set_rand_seq(vector<float>&& _randSeq)
 	{
+		i = 0;
 		randSeq = _randSeq;
 	}
 
