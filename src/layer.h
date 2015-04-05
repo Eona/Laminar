@@ -85,11 +85,11 @@ public:
 		_backward(outValues[_frame],
 				is_full_gradient_history_saved() ?
 					outGradients[_frame] :
-					vec_at(outGradients, -1),
+					outGradients[0],
 				inValues[_frame],
 				is_full_gradient_history_saved() ?
 					inGradients[_frame] :
-					vec_at(inGradients, -1));
+					inGradients[0]);
 	}
 
 	virtual void reset()

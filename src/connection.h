@@ -47,11 +47,11 @@ public:
 
 		_backward(isHistorySaved ?
 					outLayer->inGradients[outFrame] :
-					vec_at(outLayer->inGradients, -1),
+					outLayer->inGradients[outFrame - inFrame],
 				inLayer->outValues[inFrame],
 				isHistorySaved ?
 					inLayer->outGradients[inFrame] :
-					vec_at(inLayer->outGradients, -1 - (outFrame - inFrame)));
+					inLayer->outGradients[0]);
 	}
 
 	virtual void _forward(float& inlayerOutval, float& outlayerInval) = 0;

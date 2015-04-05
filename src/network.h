@@ -182,14 +182,6 @@ public:
 		}
 		else
 			throw NetworkException("Last layer must be a LossLayer");
-
-		// sort w.r.t. temporalSkip value
-		std::sort(recurConnectionInfos.begin(), recurConnectionInfos.end(),
-				[](const RecurConnectionInfo& info1, const RecurConnectionInfo& info2)
-				{
-					return info1.temporalSkip < info2.temporalSkip;
-				}
-			);
 	}
 
 	/**
@@ -208,12 +200,8 @@ public:
 	 */
 	virtual void forward_prop()
 	{
-//		DEBUG_MSG("Forward frame", frame);
-
 		for (ComponentPtr compon : this->components)
-		{
 			compon->forward(frame, frame);
-		}
 
 		// Recurrent forward prop
 		for (auto& connInfo : this->recurConnectionInfos)
@@ -231,24 +219,22 @@ public:
 	virtual void backward_prop()
 	{
 		-- frame;
-//		DEBUG_MSG("Backward frame", frame);
 
-		for (int i = recurConnectionInfos.size() - 1; i >= 0; --i)
-		{
-			auto& connInfo = recurConnectionInfos[i];
+		for (auto& connInfo : this->recurConnectionInfos)
 			connInfo.conn->backward(frame + connInfo.temporalSkip, frame);
-		}
-
-		for (LayerPtr layer : layers)
-			layer->shiftBackGradientWindow();
 
 		for (int i = components.size() - 1; i >= 0; --i)
 			components[i]->backward(frame, frame);
+
+		for (LayerPtr layer : layers)
+			layer->shiftBackGradientWindow();
 	}
 
 	virtual void add_recurrent_connection(ConnectionPtr conn, int temporalSkip = 1)
 	{
-		assert_throw(temporalSkip <= maxTemporalSkip,
+		assert_throw(
+			maxTemporalSkip == Layer::UNLIMITED_TEMPORAL_SKIP
+				|| temporalSkip <= maxTemporalSkip,
 			NetworkException("temporalSkip should be <= maxTemporalSkip.\n"
 					"Use set_max_temporal_skip() to change the upper limit.\n"
 					"Then call assemble() again on the network"));
