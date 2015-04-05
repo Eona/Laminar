@@ -15,7 +15,6 @@ class Layer : public Component
 {
 public:
 	Layer() :
-		maxTemporalSkip(1),
 		inValues(1, 0.0f),
 		inGradients(maxTemporalSkip + 1, 0.0f),
 		outValues(1, 0.0f),
@@ -26,27 +25,33 @@ public:
 
 	/**
 	 * Maximum temporal skip, allows a hidden layer to link (skip) to its
-	 * future at +skip timestep. Defaults to 1, the most typical RNN.
+	 * future at +skip timestep. The most typical RNN has maxTemporalSkip = 1.
+	 * Default to 0 for feed-forward network.
 	 * If the value is UNLIMITED_TEMPORAL_SKIP, we save the full gradient history
 	 * If you change maxTemporalSkip, the gradient vector will be extended or shrinked.
 	 * Need to manually reset the gradient to ensure consistency.
 	 */
-	void setMaxTemporalSkip(int maxTemporalSkip)
+	void set_max_temporal_skip(int maxTemporalSkip)
 	{
 		if (maxTemporalSkip != UNLIMITED_TEMPORAL_SKIP)
 		{
 			inGradients.resize(maxTemporalSkip + 1);
 			outGradients.resize(maxTemporalSkip + 1);
 		}
+		else
+		{
+			inGradients.clear();
+			outGradients.clear();
+		}
 		this->maxTemporalSkip = maxTemporalSkip;
 	}
 
-	int getMaxTemporalSkip()
+	int get_max_temporal_skip()
 	{
 		return this->maxTemporalSkip;
 	}
 
-	bool isFullGradientHistorySaved()
+	bool is_full_gradient_history_saved()
 	{
 		return this->maxTemporalSkip == UNLIMITED_TEMPORAL_SKIP;
 	}
@@ -78,11 +83,11 @@ public:
 		}
 
 		_backward(outValues[_frame],
-				isFullGradientHistorySaved() ?
+				is_full_gradient_history_saved() ?
 					outGradients[_frame] :
 					vec_at(outGradients, -1),
 				inValues[_frame],
-				isFullGradientHistorySaved() ?
+				is_full_gradient_history_saved() ?
 					inGradients[_frame] :
 					vec_at(inGradients, -1));
 	}
@@ -103,7 +108,7 @@ public:
 	 */
 	virtual void shiftBackGradientWindow()
 	{
-		if (maxTemporalSkip != UNLIMITED_TEMPORAL_SKIP)
+		if (!is_full_gradient_history_saved())
 		{
 			shiftBackVector(outGradients);
 			shiftBackVector(inGradients);
@@ -149,15 +154,6 @@ public:
 		return std::dynamic_pointer_cast<LayerT>(layer);
 	}
 
-/*
-	static int MaxFrameInterval;
-
-	static void setMaxFrameInterval(int _MaxFrameInterval)
-	{
-		MaxFrameInterval = _MaxFrameInterval;
-	}
-*/
-
 protected:
 	// Shift the gradient window
 	static void shiftBackVector(vector<float>& grad)
@@ -167,7 +163,7 @@ protected:
 	}
 
 	// Max temporal skip. negative to save full gradient history
-	int maxTemporalSkip = 1;
+	int maxTemporalSkip = 0;
 
 private:
 	// frame pointer

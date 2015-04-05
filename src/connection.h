@@ -38,11 +38,18 @@ public:
 	{
 		check_layer_consistency(inFrame, outFrame);
 
-		_backward(inLayer->isFullGradientHistorySaved() ?
+		bool isHistorySaved = inLayer->is_full_gradient_history_saved();
+		if (isHistorySaved)
+		{
+			resize_on_demand(inLayer->outGradients, inFrame);
+			resize_on_demand(outLayer->inGradients, outFrame);
+		}
+
+		_backward(isHistorySaved ?
 					outLayer->inGradients[outFrame] :
 					vec_at(outLayer->inGradients, -1),
 				inLayer->outValues[inFrame],
-				inLayer->isFullGradientHistorySaved() ?
+				isHistorySaved ?
 					inLayer->outGradients[inFrame] :
 					vec_at(inLayer->outGradients, -1 - (outFrame - inFrame)));
 	}
@@ -83,11 +90,14 @@ protected:
 	// Helper for backward/forward in/outLayer check
 	void check_layer_consistency(int inFrame, int outFrame)
 	{
-		assert(inLayer->getMaxTemporalSkip() == outLayer->getMaxTemporalSkip(),
+		assert(inLayer->get_max_temporal_skip() == outLayer->get_max_temporal_skip(),
 				"inLayer must have the same maxTemporalSkip as outLayer");
 
-		assert(inFrame <= outFrame && outFrame <= inFrame + inLayer->getMaxTemporalSkip(),
-				"Inconsistency: inFrame <= outFrame <= inFrame + layer.maxTemporalSkip");
+		if (!inLayer->is_full_gradient_history_saved())
+		{
+			assert(inFrame <= outFrame && outFrame <= inFrame + inLayer->get_max_temporal_skip(),
+					"Inconsistency: inFrame <= outFrame <= inFrame + layer.maxTemporalSkip");
+		}
 	}
 };
 

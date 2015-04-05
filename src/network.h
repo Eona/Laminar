@@ -73,6 +73,7 @@ public:
 		throw UnimplementedException("topological sort");
 	}
 
+
 	vector<Layer::Ptr> layers;
 	vector<Connection::Ptr> connections;
 	vector<Component::Ptr> components;
@@ -156,7 +157,10 @@ class RecurrentNetwork : public Network
 public:
 	RecurrentNetwork() :
 		Network()
-	{ }
+	{
+		// defaults to 1, the most typical RNN
+		set_max_temporal_skip(1);
+	}
 
 	~RecurrentNetwork() {}
 
@@ -166,6 +170,9 @@ public:
 			throw NetworkException(
 					"Input sequence must have the same length as the target sequence");
 
+		for (LayerPtr layer : layers)
+			layer->set_max_temporal_skip(this->maxTemporalSkip);
+
 		layers[0]->inValues = this->input;
 		this->lossLayer = Layer::cast<LossLayer>(layers[layers.size() - 1]);
 		if (lossLayer)
@@ -174,6 +181,14 @@ public:
 		}
 		else
 			throw NetworkException("Last layer must be a LossLayer");
+	}
+
+	/**
+	 * Call assemble() again to refresh maxTemporalSkip
+	 */
+	virtual void set_max_temporal_skip(int maxTemporalSkip)
+	{
+		this->maxTemporalSkip = maxTemporalSkip;
 	}
 
 	// TODO check last timestamp (cannot forward beyond)
@@ -248,6 +263,7 @@ public:
 
 	vector<ConnectionPtr> recurConnections;
 	int frame = 0;
+	int maxTemporalSkip = 1;
 };
 
 template<typename T>
