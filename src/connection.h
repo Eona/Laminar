@@ -33,9 +33,9 @@ public:
 
 		float inlayerOutvalue = 0;
 		if (inFrame >= 0)
-			inlayerOutvalue = inLayer->outValues[inFrame];
+			inlayerOutvalue = inLayer->outValue(inFrame);
 
-		_forward(inlayerOutvalue, outLayer->inValues[outFrame]);
+		_forward(inlayerOutvalue, outLayer->inValue(outFrame));
 	}
 
 	virtual void backward(int outFrame = 0, int inFrame = 0)
@@ -50,11 +50,11 @@ public:
 		}
 
 		if (inFrame >= 0)
-		_backward(outLayer->inGradients[
-					isHistorySaved ? outFrame : 0],
-				inLayer->outValues[inFrame],
-				inLayer->outGradients[
-					isHistorySaved ? inFrame : outFrame - inFrame]);
+		_backward(outLayer->inGradient(
+					isHistorySaved ? outFrame : 0),
+				inLayer->outValue(inFrame),
+				inLayer->outGradient(
+					isHistorySaved ? inFrame : outFrame - inFrame));
 	}
 
 	virtual void _forward(float inlayerOutval, float& outlayerInval) = 0;

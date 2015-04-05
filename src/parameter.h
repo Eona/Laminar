@@ -33,6 +33,12 @@ public:
 		return paramValues.size();
 	}
 
+	void resize(int newSize)
+	{
+		paramValues.resize(newSize);
+		paramGradients.resize(newSize);
+	}
+
 	/************************************/
 	typedef shared_ptr<ParamContainer> Ptr;
 

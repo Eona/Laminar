@@ -8,6 +8,24 @@
 
 #include "layer.h"
 
+/**
+ * Holds "prehistory" parameters h[-1], h[-2] ... h[-maxTemporalSkip]
+ */
+class SimpleTemporalLayer : public Layer, public ParamContainer
+{
+public:
+	SimpleTemporalLayer() :
+		Layer(),
+		ParamContainer(maxTemporalSkip)
+	{ }
+
+	virtual void set_max_temporal_skip(int maxTemporalSkip)
+	{
+		Layer::set_max_temporal_skip(maxTemporalSkip);
+		ParamContainer::resize(maxTemporalSkip);
+	}
+};
+
 class SigmoidLayer : public Layer
 {
 public:
