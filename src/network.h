@@ -104,7 +104,7 @@ public:
 	virtual void assemble()
 	{
 		layers[0]->inValue = this->input;
-		this->lossLayer = cast_layer<LossLayer>(layers[layers.size() - 1]);
+		this->lossLayer = Layer::cast<LossLayer>(layers[layers.size() - 1]);
 		if (lossLayer)
 		{
 			lossLayer->targetValue = this->target;
@@ -150,7 +150,7 @@ public:
 					"Input sequence must have the same length as the target sequence");
 
 		layers[0]->inValue = this->input;
-		this->lossLayer = cast_layer<LossLayer>(layers[layers.size() - 1]);
+		this->lossLayer = Layer::cast<LossLayer>(layers[layers.size() - 1]);
 		if (lossLayer)
 		{
 			lossLayer->targetValue = this->target;

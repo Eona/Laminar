@@ -12,10 +12,10 @@ TEST(RecurrentNet, TwoLayer)
 	vector<float> input { 1.2, -0.9, 0.57, -1.47, -3.08 };
 	vector<float> target { 1.39, 0.75, -0.45, -0.11, 1.55 };
 
-	auto l1 = make_layer<LinearLayer>();
-	auto l2 = make_layer<SigmoidLayer>();
-	auto l3 = make_layer<SigmoidLayer>();
-	auto l4 = make_layer<SquareLossLayer>();
+	auto l1 = Layer::make<LinearLayer>();
+	auto l2 = Layer::make<SigmoidLayer>();
+	auto l3 = Layer::make<SigmoidLayer>();
+	auto l4 = Layer::make<SquareLossLayer>();
 
 	RecurrentNetwork net;
 	net.set_input(input);

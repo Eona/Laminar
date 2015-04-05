@@ -80,30 +80,37 @@ public:
 		outValue,
 		outGradient;
 
+	/************************************/
+
+	/**
+	 * Make a polymorphic shared pointer
+	 */
+	typedef shared_ptr<Layer> Ptr;
+
+	template<typename LayerT, typename ...ArgT>
+	static Layer::Ptr make(ArgT&& ... args)
+	{
+		return static_cast<Layer::Ptr>(
+				std::make_shared<LayerT>(
+						std::forward<ArgT>(args) ...));
+	}
+
+	/**
+	 * Down cast LayerPtr to a specific layer type
+	 */
+	template<typename LayerT>
+	static shared_ptr<LayerT> cast(Layer::Ptr layer)
+	{
+		return std::dynamic_pointer_cast<LayerT>(layer);
+	}
+
 private: // frame pointer
 	int _frame = 0;
 };
 
+/**
+ * Both Layer::Ptr and LayerPtr works
+ */
 TypedefPtr(Layer);
-
-/**
- * Make a polymorphic shared pointer
- */
-template<typename LayerT, typename ...ArgT>
-LayerPtr make_layer(ArgT&& ... args)
-{
-	return static_cast<LayerPtr>(
-			std::make_shared<LayerT>(
-					std::forward<ArgT>(args) ...));
-}
-
-/**
- * Down cast LayerPtr to a specific layer type
- */
-template<typename LayerT>
-shared_ptr<LayerT> cast_layer(LayerPtr layer)
-{
-	return std::dynamic_pointer_cast<LayerT>(layer);
-}
 
 #endif /* LAYER_H_ */
