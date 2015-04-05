@@ -79,7 +79,7 @@ public:
 
 	~LstmLayer() { }
 
-	void _forward(float& inValue, float& outValue)
+	virtual void _forward(float& inValue, float& outValue)
 	{
 		resize_on_demand(cellValues, frame());
 
@@ -110,7 +110,7 @@ public:
 		outValue = outputGate * cellOutputActivator(cell);
 	}
 
-	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
+	virtual void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
 		resize_on_demand(cellGradients, frame());
 
@@ -125,7 +125,9 @@ public:
 				+ Layer::str() + "]";
 	}
 
-	vector<float> cellValues; // internal state history
+	// internal state window
+	// keep up to 2 values
+	vector<float> cellValues;
 	vector<float> cellGradients;
 
 	function<float(float)>

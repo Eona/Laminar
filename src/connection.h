@@ -115,12 +115,12 @@ public:
 
 	~ConstantConnection() {}
 
-	void _forward(float& inlayerOutval, float& outlayerInval)
+	virtual void _forward(float& inlayerOutval, float& outlayerInval)
 	{
 		outlayerInval = inlayerOutval;
 	}
 
-	void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
+	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
 	{
 		inlayerOutgrad = outlayerIngrad;
 	}
@@ -146,13 +146,13 @@ public:
 
 	~LinearConnection() {}
 
-	void _forward(float& inlayerOutval, float& outlayerInval)
+	virtual void _forward(float& inlayerOutval, float& outlayerInval)
 	{
 		// NOTE matrix multiplication order applies here
 		outlayerInval += param * inlayerOutval;
 	}
 
-	void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
+	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
 	{
 		// NOTE matrix multiplication order applies here
 		// should check if input module actually has gradient

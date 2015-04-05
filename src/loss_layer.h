@@ -46,7 +46,7 @@ public:
 
 	~SquareLossLayer() { }
 
-	void _forward(float& inValue, float& outValue)
+	virtual void _forward(float& inValue, float& outValue)
 	{
 		// which is loss value if the network is feedforward
 		float tmp = inValue - targetValue[frame()];
@@ -54,7 +54,7 @@ public:
 		totalLoss += outValue;
 	}
 
-	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
+	virtual void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
 		inGradient = inValue - targetValue[frame()];
 	}
