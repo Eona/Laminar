@@ -81,10 +81,6 @@ public:
 		outGradient;
 
 	/************************************/
-
-	/**
-	 * Make a polymorphic shared pointer
-	 */
 	typedef shared_ptr<Layer> Ptr;
 
 	template<typename LayerT, typename ...ArgT>

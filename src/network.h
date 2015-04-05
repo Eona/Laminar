@@ -83,6 +83,9 @@ public:
 	vector<float> input, target;
 
 protected:
+	/**
+	 * Add to paramContainers only if 'component' is a subtype
+	 */
 	template<typename T>
 	void check_add_param_container(T component)
 	{
