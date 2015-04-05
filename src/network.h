@@ -184,7 +184,7 @@ public:
 	 */
 	virtual void forward_prop()
 	{
-		DEBUG_MSG("Forward frame", frame);
+//		DEBUG_MSG("Forward frame", frame);
 
 		for (ComponentPtr compon : this->components)
 		{
@@ -212,8 +212,7 @@ public:
 	virtual void backward_prop()
 	{
 		-- frame;
-
-		DEBUG_MSG("Backward frame", frame);
+//		DEBUG_MSG("Backward frame", frame);
 
 		for (int i = recurConnections.size() - 1; i >= 0; --i)
 			recurConnections[i]->backward(frame + 1, frame);

@@ -27,7 +27,7 @@ class LstmLayer : public Layer, public ParamContainer
 public:
 	LstmLayer() :
 		Layer(),
-		ParamContainer(LSTM_NUMBER_OF_PARAMS),
+		ParamContainer(LSTM_PARAM_SIZE),
 		gateActivator(lmn::sigmoid),
 		cellInputActivator(lmn::tanh),
 		cellOutputActivator(lmn::tanh),
@@ -94,7 +94,7 @@ public:
 		W_ho,
 		W_co,
 		b_o,
-		LSTM_NUMBER_OF_PARAMS
+		LSTM_PARAM_SIZE
 	};
 };
 

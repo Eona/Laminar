@@ -144,14 +144,15 @@ public:
 
 	void reset()
 	{
-		gradient = 0;
+		ParamContainer::resetGradients();
 	}
 
 	UniformRand<float> rnd;
 	// NOTE debug only
 	FakeRand& fakernd = FakeRand::instance();
 
-	float& param, gradient;
+	float& param; // aliases
+	float& gradient;
 };
 
 ostream& operator<<(ostream& os, LinearConnection& conn)

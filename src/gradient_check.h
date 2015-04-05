@@ -15,44 +15,48 @@ inline void gradient_check(Network& net,
 		float perturb = 1e-2f, float percentTol = 1.0f)
 {
 	int timeLength = net.input.size();
-	/****** perturb parameters matrices stored in connections ******/
-	for (ConnectionPtr conn : net.connections)
+
+	net.reset();
+	for (int i = 0; i < timeLength; ++i)
+		net.forward_prop();
+	for (int i = 0; i < timeLength; ++i)
+		net.backward_prop();
+
+	vector<float> analyticGrads;
+	for (ParamContainerPtr param : net.paramContainers)
 	{
-		net.reset(); // refresh network
+		auto grads = param->paramGradients;
+		analyticGrads.insert(analyticGrads.end(), grads.begin(), grads.end());
+	}
 
-		auto linearConn = Connection::cast<LinearConnection>(conn);
-		auto constConn = Connection::cast<ConstantConnection>(conn);
-		if (linearConn)
+	/****** perturb parameters matrices stored in connections ******/
+	int agpt = 0; // point to analyticGrads
+	for (ParamContainerPtr param : net.paramContainers)
+	{
+		for (int p = 0; p < param->size(); ++p)
 		{
-			for (int i = 0; i < timeLength; ++i)
-				net.forward_prop();
-			for (int i = 0; i < timeLength; ++i)
-				net.backward_prop();
-			float analyticGrad = linearConn->gradient;
-			float oldParam = linearConn->param; // for restoration
-
-			// perturb the parameter and run again
-			net.reset();
-			linearConn->param = oldParam - perturb;
+			net.reset(); // refresh network
+			param->gradient_check_perturb(p, -perturb);
 			for (int i = 0; i < timeLength; ++i)
 				net.forward_prop();
 			float lossMinus = net.lossLayer->totalLoss;
+			param->gradient_check_restore();
 
-			net.reset();
-			linearConn->param = oldParam + perturb;
+			net.reset(); // refresh network
+			param->gradient_check_perturb(p, +perturb);
 			for (int i = 0; i < timeLength; ++i)
 				net.forward_prop();
 			float lossPlus = net.lossLayer->totalLoss;
+			param->gradient_check_restore();
 
 			float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 
-			assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
+			assert_float_percent_eq(analyticGrads[agpt++], numericGrad, percentTol,
 					"param analytic != numeric", "param gradcheck pass");
-
-			linearConn->param = oldParam;
 		}
-		else if (constConn) { }
 	}
+
+	assert(agpt == analyticGrads.size(), "analyticGrads not fully traversed");
 
 	/****** perturb the input ******/
 	vector<float> oldInput = net.input; // for restoration

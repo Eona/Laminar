@@ -11,20 +11,26 @@
 class ParamContainer
 {
 public:
-	ParamContainer(int numberOfParam = 1) :
-		paramValues(numberOfParam),
-		paramGradients(numberOfParam)
+	ParamContainer(int size = 1) :
+		paramValues(size),
+		paramGradients(size)
 	{ }
 
 	~ParamContainer() =default;
 
-	void reset()
+	void resetValues()
 	{
-		for (int i = 0; i < paramValues.size(); ++i)
-		{
-			paramValues[i] = 0;
-			paramGradients[i] = 0;
-		}
+		std::fill(paramValues.begin(), paramValues.end(), 0);
+	}
+
+	void resetGradients()
+	{
+		std::fill(paramGradients.begin(), paramGradients.end(), 0);
+	}
+
+	int size()
+	{
+		return paramValues.size();
 	}
 
 	/************************************/
@@ -43,9 +49,6 @@ public:
 	}
 
 	/*********** DEBUG ONLY ***********/
-	int lastChangedIdx;
-	float oldValue;
-
 	// restore() calls must correspond one-by-one to perturb() calls
 	void gradient_check_perturb(int changeIdx, float eps)
 	{
@@ -62,6 +65,9 @@ public:
 	/************************************/
 	vector<float> paramValues;
 	vector<float> paramGradients;
+
+private:
+	int lastChangedIdx; float oldValue; // DEBUG ONLY
 };
 
 TypedefPtr(ParamContainer);
