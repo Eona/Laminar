@@ -26,8 +26,7 @@ public:
 
 	virtual void forward(int inFrame = 0, int outFrame = 0)
 	{
-		assert(inFrame <= outFrame && outFrame <= inFrame + 1,
-				"inFrame <= outFrame <= inFrame + 1");
+		check_layer_consistency(inFrame, outFrame);
 
 		resize_on_demand(inLayer->outValues, inFrame);
 		resize_on_demand(outLayer->inValues, outFrame);
@@ -37,11 +36,15 @@ public:
 
 	virtual void backward(int outFrame = 0, int inFrame = 0)
 	{
-		assert(inFrame <= outFrame && outFrame <= inFrame + 1,
-				"inFrame <= outFrame <= inFrame + 1");
+		check_layer_consistency(inFrame, outFrame);
 
-		_backward(vec_at(outLayer->inGradients, -1), inLayer->outValues[inFrame],
-				vec_at(inLayer->outGradients, -1 - (outFrame - inFrame)));
+		_backward(inLayer->isFullGradientHistorySaved() ?
+					outLayer->inGradients[outFrame] :
+					vec_at(outLayer->inGradients, -1),
+				inLayer->outValues[inFrame],
+				inLayer->isFullGradientHistorySaved() ?
+					inLayer->outGradients[inFrame] :
+					vec_at(inLayer->outGradients, -1 - (outFrame - inFrame)));
 	}
 
 	virtual void _forward(float& inlayerOutval, float& outlayerInval) = 0;
@@ -76,6 +79,16 @@ public:
 protected:
 	LayerPtr inLayer;
 	LayerPtr outLayer;
+
+	// Helper for backward/forward in/outLayer check
+	void check_layer_consistency(int inFrame, int outFrame)
+	{
+		assert(inLayer->getMaxTemporalSkip() == outLayer->getMaxTemporalSkip(),
+				"inLayer must have the same maxTemporalSkip as outLayer");
+
+		assert(inFrame <= outFrame && outFrame <= inFrame + inLayer->getMaxTemporalSkip(),
+				"Inconsistency: inFrame <= outFrame <= inFrame + layer.maxTemporalSkip");
+	}
 };
 
 TypedefPtr(Connection);

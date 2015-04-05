@@ -15,13 +15,41 @@ class Layer : public Component
 {
 public:
 	Layer() :
+		maxTemporalSkip(1),
 		inValues(1, 0.0f),
-		inGradients(2, 0.0f),
+		inGradients(maxTemporalSkip + 1, 0.0f),
 		outValues(1, 0.0f),
-		outGradients(2, 0.0f)
+		outGradients(maxTemporalSkip + 1, 0.0f)
 	{ }
 
 	virtual ~Layer() {};
+
+	/**
+	 * Maximum temporal skip, allows a hidden layer to link (skip) to its
+	 * future at +skip timestep. Defaults to 1, the most typical RNN.
+	 * If the value is UNLIMITED_TEMPORAL_SKIP, we save the full gradient history
+	 * If you change maxTemporalSkip, the gradient vector will be extended or shrinked.
+	 * Need to manually reset the gradient to ensure consistency.
+	 */
+	void setMaxTemporalSkip(int maxTemporalSkip)
+	{
+		if (maxTemporalSkip != UNLIMITED_TEMPORAL_SKIP)
+		{
+			inGradients.resize(maxTemporalSkip + 1);
+			outGradients.resize(maxTemporalSkip + 1);
+		}
+		this->maxTemporalSkip = maxTemporalSkip;
+	}
+
+	int getMaxTemporalSkip()
+	{
+		return this->maxTemporalSkip;
+	}
+
+	bool isFullGradientHistorySaved()
+	{
+		return this->maxTemporalSkip == UNLIMITED_TEMPORAL_SKIP;
+	}
 
 	virtual void forward(int inFrame = 0, int outFrame = 0)
 	{
@@ -43,8 +71,20 @@ public:
 
 		this->_frame = inFrame;
 
-		_backward(outValues[_frame], vec_at(outGradients, -1),
-				inValues[_frame], vec_at(inGradients, -1));
+		if (maxTemporalSkip == UNLIMITED_TEMPORAL_SKIP)
+		{
+			resize_on_demand(inGradients, _frame);
+			resize_on_demand(outGradients, _frame);
+		}
+
+		_backward(outValues[_frame],
+				isFullGradientHistorySaved() ?
+					outGradients[_frame] :
+					vec_at(outGradients, -1),
+				inValues[_frame],
+				isFullGradientHistorySaved() ?
+					inGradients[_frame] :
+					vec_at(inGradients, -1));
 	}
 
 	virtual void reset()
@@ -57,14 +97,17 @@ public:
 
 	/**
 	 * Call after network does a full back_prop through all the layers
-	 * Recurrent network ONLY
-	 * Doing this because we are not saving the full gradient history.
+	 * ONLY if recurrent network AND maxTemporalSkip != UNLIMITED_TEMPORAL_SKIP
+	 * Do this when we are not saving the full gradient history.
 	 * [11, 22, 33] => [0, 11, 22]
 	 */
 	virtual void shiftBackGradientWindow()
 	{
-		shiftBackVector(outGradients);
-		shiftBackVector(inGradients);
+		if (maxTemporalSkip != UNLIMITED_TEMPORAL_SKIP)
+		{
+			shiftBackVector(outGradients);
+			shiftBackVector(inGradients);
+		}
 	}
 
 	virtual void _forward(float& inValue, float& outValue) = 0;
@@ -85,11 +128,6 @@ public:
 			<< "\toutGrad=" << this->outGradients;
 		return os.str();
 	}
-
-	vector<float> inValues,
-		inGradients,
-		outValues,
-		outGradients;
 
 	/************************************/
 	typedef shared_ptr<Layer> Ptr;
@@ -128,9 +166,22 @@ protected:
 		grad.erase(grad.end() - 1);
 	}
 
+	// Max temporal skip. negative to save full gradient history
+	int maxTemporalSkip = 1;
+
 private:
 	// frame pointer
 	int _frame = 0;
+
+public:
+	vector<float> inValues,
+		inGradients,
+		outValues,
+		outGradients;
+
+	enum : int {
+		UNLIMITED_TEMPORAL_SKIP = -1
+	};
 };
 
 /**
