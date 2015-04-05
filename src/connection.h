@@ -45,32 +45,35 @@ public:
 
 	virtual void reset() {}
 
+	/************************************/
+	typedef shared_ptr<Connection> Ptr;
+
+	/**
+	 * Make a polymorphic shared pointer
+	 */
+	template<typename ConnectionT, typename ...ArgT>
+	static Connection::Ptr make(ArgT&& ... args)
+	{
+		return static_cast<Connection::Ptr>(
+				std::make_shared<ConnectionT>(
+						std::forward<ArgT>(args) ...));
+	}
+
+	/**
+	 * Down cast ConnectionPtr to a specific connection type
+	 */
+	template<typename ConnectionT>
+	static shared_ptr<ConnectionT> cast(Connection::Ptr conn)
+	{
+		return std::dynamic_pointer_cast<ConnectionT>(conn);
+	}
+
 protected:
 	LayerPtr inLayer;
 	LayerPtr outLayer;
 };
 
 TypedefPtr(Connection);
-
-/**
- * Make a polymorphic shared pointer
- */
-template<typename ConnectionT, typename ...ArgT>
-ConnectionPtr make_connection(ArgT&& ... args)
-{
-	return static_cast<ConnectionPtr>(
-			std::make_shared<ConnectionT>(
-					std::forward<ArgT>(args) ...));
-}
-
-/**
- * Down cast ConnectionPtr to a specific connection type
- */
-template<typename ConnectionT>
-shared_ptr<ConnectionT> cast_connection(ConnectionPtr conn)
-{
-	return std::dynamic_pointer_cast<ConnectionT>(conn);
-}
 
 class ConstantConnection : public Connection
 {

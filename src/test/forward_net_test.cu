@@ -24,8 +24,8 @@ TEST(ForwardNet, FourLayerInterconnected)
 	net.set_target(target);
 
 	net.add_layer(l1);
-	net.add_connection(make_connection<LinearConnection>(l1, l2_1));
-	net.add_connection(make_connection<LinearConnection>(l1, l2_2));
+	net.add_connection(Connection::make<LinearConnection>(l1, l2_1));
+	net.add_connection(Connection::make<LinearConnection>(l1, l2_2));
 	// same as add_connection(make_connection<>)
 	net.new_connection<LinearConnection>(l1, l3_1);
 	net.new_connection<LinearConnection>(l1, l3_2);

@@ -51,7 +51,7 @@ public:
 	void new_connection(ArgT&& ... args)
 	{
 		this->add_connection(
-			make_connection<ConnectionT>(
+			Connection::make<ConnectionT>(
 					std::forward<ArgT>(args)...));
 	}
 
@@ -223,7 +223,7 @@ public:
 	void new_recurrent_connection(ArgT&& ... args)
 	{
 		this->add_recurrent_connection(
-			make_connection<ConnectionT>(
+			Connection::make<ConnectionT>(
 					std::forward<ArgT>(args)...));
 	}
 

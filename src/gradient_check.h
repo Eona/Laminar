@@ -20,8 +20,8 @@ inline void gradient_check(Network& net,
 	{
 		net.reset(); // refresh network
 
-		auto linearConn = cast_connection<LinearConnection>(conn);
-		auto constConn = cast_connection<ConstantConnection>(conn);
+		auto linearConn = Connection::cast<LinearConnection>(conn);
+		auto constConn = Connection::cast<ConstantConnection>(conn);
 		if (linearConn)
 		{
 			for (int i = 0; i < timeLength; ++i)
