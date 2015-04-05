@@ -122,8 +122,8 @@ public:
 	{
 		// NOTE matrix multiplication order applies here
 		// should check if input module actually has gradient
-		inlayerOutgrad += transpose(param) * outlayerIngrad;
-		this->gradient += outlayerIngrad * transpose(inlayerOutval);
+		inlayerOutgrad += lmn::transpose(param) * outlayerIngrad;
+		this->gradient += outlayerIngrad * lmn::transpose(inlayerOutval);
 	}
 
 	string str()

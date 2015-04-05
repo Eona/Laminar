@@ -19,7 +19,7 @@ public:
 
 	void _forward(float& inValue, float& outValue)
 	{
-		outValue = sigmoid(inValue);
+		outValue = lmn::sigmoid(inValue);
 	}
 
 	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)

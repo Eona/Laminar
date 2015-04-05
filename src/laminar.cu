@@ -18,8 +18,8 @@ int main(int argc, char **argv)
 	vector<float> target { 1.39, 0.75, -0.45, -0.11, 1.55 };
 
 	auto l1 = make_layer<LinearLayer>();
-	auto l2 = make_layer<SigmoidLayer>();
-	auto l3 = make_layer<SigmoidLayer>();
+	auto l2 = make_layer<LstmLayer>();
+//	auto l3 = make_layer<SigmoidLayer>();
 	auto l4 = make_layer<SquareLossLayer>();
 
 	RecurrentNetwork net;
@@ -29,14 +29,14 @@ int main(int argc, char **argv)
 	net.add_layer(l1);
 	net.new_connection<LinearConnection>(l1, l2);
 	net.add_layer(l2);
-	net.new_connection<LinearConnection>(l2, l3);
-	net.add_layer(l3);
-	net.new_connection<LinearConnection>(l3, l4);
+//	net.new_connection<LinearConnection>(l2, l3);
+//	net.add_layer(l3);
+	net.new_connection<LinearConnection>(l2, l4);
 	net.add_layer(l4);
 
 	net.new_recurrent_connection<LinearConnection>(l2, l2);
-	net.new_recurrent_connection<LinearConnection>(l2, l3);
-	net.new_recurrent_connection<LinearConnection>(l3, l3);
+//	net.new_recurrent_connection<LinearConnection>(l2, l3);
+//	net.new_recurrent_connection<LinearConnection>(l3, l3);
 
 //	net.assemble();
 //	net.forward_prop();
@@ -50,5 +50,5 @@ int main(int argc, char **argv)
 //	net.backward_prop();
 //	cout << net << endl;
 //	cout << "Total loss = " << net.lossLayer->totalLoss << endl;
-	gradient_check(net, 1e-2);
+//	gradient_check(net, 1e-2);
 }
