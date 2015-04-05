@@ -23,7 +23,7 @@ set(MAIN
 
 set(SOURCES 
     ${MAIN}.cu
-    dummy.cu)
+    )
 
 cuda_add_executable(${MAIN} ${SOURCES})
 

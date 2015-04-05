@@ -2,7 +2,7 @@ message("Folder test/ for gtest template")
 include(eona_gtest)
 
 set(TEST_SUITE 
-    cuda_test
+#    cuda_test
     forward_net_test
     recurrent_net_test
     )

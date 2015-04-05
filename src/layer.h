@@ -58,13 +58,12 @@ public:
 	 * Call after network does a full back_prop through all the layers
 	 * Recurrent network ONLY
 	 * Doing this because we are not saving the full gradient history.
+	 * [11, 22, 33] => [0, 11, 22]
 	 */
 	virtual void shiftBackGradientWindow()
 	{
-		outGradients[1] = outGradients[0];
-		outGradients[0] = 0;
-		inGradients[1] = inGradients[0];
-		inGradients[0] = 0;
+		shiftBackVector(outGradients);
+		shiftBackVector(inGradients);
 	}
 
 	virtual void _forward(float& inValue, float& outValue) = 0;
@@ -119,6 +118,14 @@ public:
 		MaxFrameInterval = _MaxFrameInterval;
 	}
 */
+
+protected:
+	// Shift the gradient window
+	static void shiftBackVector(vector<float>& grad)
+	{
+		grad.insert(grad.begin(), 0);
+		grad.erase(grad.end() - 1);
+	}
 
 private:
 	// frame pointer
