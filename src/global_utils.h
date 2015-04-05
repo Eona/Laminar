@@ -218,7 +218,9 @@ inline void assert(bool cond, string errmsg = "", string successmsg="")
 		cout << successmsg << endl;
 }
 
-inline void assert_throw(bool cond, std::exception&& throwable)
+template<typename T>
+typename enable_if<is_base_of<std::exception, T>::value, void>::type
+assert_throw(bool cond, T&& throwable)
 {
 	if (!cond)
 		throw throwable;

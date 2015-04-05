@@ -249,8 +249,8 @@ public:
 	virtual void add_recurrent_connection(ConnectionPtr conn, int temporalSkip = 1)
 	{
 		assert_throw(temporalSkip <= maxTemporalSkip,
-			NetworkException("temporalSkip should be <= maxTemporalSkip."
-					"Use set_max_temporal_skip() to change the upper limit."
+			NetworkException("temporalSkip should be <= maxTemporalSkip.\n"
+					"Use set_max_temporal_skip() to change the upper limit.\n"
 					"Then call assemble() again on the network"));
 
 		recurConnectionInfos.push_back(RecurConnectionInfo(conn, temporalSkip));
