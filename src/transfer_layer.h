@@ -60,6 +60,32 @@ public:
 	}
 };
 
+class TanhLayer : public Layer
+{
+public:
+	TanhLayer() :
+		Layer()
+	{}
+
+	~TanhLayer() { }
+
+	void _forward(float& inValue, float& outValue)
+	{
+		outValue = tanh(inValue);
+	}
+
+	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
+	{
+		inGradient = (1.f - outValue * outValue) * outGradient;
+	}
+
+	string str()
+	{
+		return string("[TanhLayer: \n")
+				+ Layer::str() + "]";
+	}
+};
+
 class LinearLayer : public Layer
 {
 public:

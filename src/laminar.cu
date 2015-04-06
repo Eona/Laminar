@@ -17,9 +17,9 @@ int main(int argc, char **argv)
 		0.163, 1.96, 1.09, 0.516, -0.585, 0.776, 1, -0.301, -0.167, 0.732
 	});
 
+	FakeRand::instance_connection().use_fake_seq();
 	FakeRand::instance_connection().use_uniform_rand(-1, 2);
 	FakeRand::instance_connection().set_rand_display(true);
-	FakeRand::instance_connection().use_fake_seq();
 
 	FakeRand::instance_prehistory().set_rand_seq(vector<float> {
 		.3
@@ -29,8 +29,13 @@ int main(int argc, char **argv)
 	vector<float> target { 1.39, 0.75, -0.45, -0.11, 1.55}; //, -.44, 2.39, 1.72, -3.06 };
 
 	auto l1 = Layer::make<LinearLayer>();
+
+	auto forgetGate = Layer::make<SigmoidLayer>();
+
+
 	auto l2 = Layer::make<SigmoidLayer>();
-	auto l3 = Layer::make<CosineLayer>(); // gate
+	auto l3 = Layer::make<TanhLayer>(); // gate
+
 	auto l4 = Layer::make<SquareLossLayer>();
 
 	// NOTE IMPORTANT RULE
@@ -57,7 +62,7 @@ int main(int argc, char **argv)
 	RecurrentNetwork net;
 	net.set_input(input);
 	net.set_target(target);
-	net.set_max_temporal_skip(3);
+//	net.set_max_temporal_skip(3);
 
 	net.add_layer(l1);
 
@@ -67,12 +72,15 @@ int main(int argc, char **argv)
 	net.add_connection(c12);
 	net.add_layer(l2);
 
-	net.add_recurrent_connection(g234_1);
-	net.add_recurrent_connection(g234_2, 2);
+	net.new_connection<LinearConnection>(l2, l4);
+	net.new_connection<LinearConnection>(l3, l4);
+
+//	net.add_recurrent_connection(g234_1);
+//	net.add_recurrent_connection(g234_2, 2);
 	net.add_layer(l4);
 
 	gradient_check(net, 1e-2, 1);
-
+/*
 	net.reset();
 	for (int i = 0; i < net.input.size(); ++i)
 	{
@@ -95,5 +103,5 @@ int main(int argc, char **argv)
 		if (key_exists(net.prehistoryLayerMap, l))
 		cout << std::setprecision(4) << static_cast<ParamContainerPtr>(net.prehistoryLayerMap[l])->paramGradients << "  ";
 	}
-	cout << endl;
+	cout << endl;*/
 }
