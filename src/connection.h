@@ -80,10 +80,15 @@ public:
 		if (isHistorySaved)
 			resize_on_demand(outLayer->inGradients, outFrame);
 
+//		DEBUG_MSG("VEC AT GRAD", vec_at(pcontainer->paramGradients, inFrame));
+//		DEBUG_MSG("VEC AT VAL", vec_at(pcontainer->paramValues, inFrame));
 		_backward(outLayer->inGradients[
 					isHistorySaved ? outFrame : 0],
+//				pcontainer->paramValues[-1-inFrame],
+//				pcontainer->paramGradients[-1-inFrame]);
 				vec_at(pcontainer->paramValues, inFrame),
 				vec_at(pcontainer->paramGradients, inFrame));
+
 //				inLayer->outGradients[
 //					isHistorySaved ? inFrame : outFrame - inFrame]);
 	}
@@ -181,8 +186,8 @@ public:
 		gradient(paramGradients[0])
 	{
 		// DUMMY
-		param = debugrnd();
 		param = fakernd();
+		param = debugrnd();
 	}
 
 	~LinearConnection() {}

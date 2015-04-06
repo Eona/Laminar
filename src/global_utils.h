@@ -136,7 +136,7 @@ template<typename T>
 T& vec_at(vector<T>& vec, int idx)
 {
 	if (idx < 0)
-		idx += vec.size();
+		idx += (int) vec.size();
 	return vec[idx];
 }
 

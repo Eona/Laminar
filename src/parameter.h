@@ -39,6 +39,13 @@ public:
 		paramGradients.resize(newSize);
 	}
 
+	template<typename RandEngineT>
+	void fill_rand(RandEngineT& randEngine)
+	{
+		for (int i = 0; i < size(); ++i)
+			paramValues[i] = randEngine();
+	}
+
 	/************************************/
 	typedef shared_ptr<ParamContainer> Ptr;
 

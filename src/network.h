@@ -261,14 +261,20 @@ public:
 
 		// Add the largest temporal skip for the layer
 		auto h_0 = prehistoryParams.find(conn->inLayer);
+//		auto& dummyRand = FakeRand::instance(); // DUMMY
+		auto& dummyRand = UniformFloatSingleton<-3, 6>::instance(); // DUMMY
 		if (h_0 == prehistoryParams.end())
 		{
 			auto newh_0 = ParamContainer::make(temporalSkip);
+			newh_0->fill_rand(dummyRand);
 			prehistoryParams[conn->inLayer] = newh_0;
 			paramContainers.push_back(newh_0);
 		}
 		else if (h_0->second->size() < temporalSkip)
-			prehistoryParams[conn->inLayer]->resize(temporalSkip);
+		{
+			h_0->second->resize(temporalSkip);
+			h_0->second->fill_rand(dummyRand);
+		}
 	}
 
 	template<typename ConnectionT, typename ...ArgT>
@@ -339,8 +345,8 @@ operator<<(ostream& os, T& net)
 	for (auto compon : net.components)
 		os << "  " << compon->str() << "\n";
 	os << " " << "recurrent connections:\n";
-	for (auto recConn : net.recurConnections)
-		os << "  " << recConn->str() << "\n";
+	for (auto recConn : net.recurConnectionInfos)
+		os << "  " << recConn.conn->str() << "\n";
 	os << "]";
 	return os;
 }
