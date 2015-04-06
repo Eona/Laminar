@@ -184,10 +184,10 @@ public:
 	}
 };
 
-class LinearConnection : public Connection, public ParamContainer
+class FullConnection : public Connection, public ParamContainer
 {
 public:
-	LinearConnection(LayerPtr _inLayer, LayerPtr _outLayer):
+	FullConnection(LayerPtr _inLayer, LayerPtr _outLayer):
 		Connection(_inLayer, _outLayer),
 		ParamContainer(1),
 		param(paramValues[0]),
@@ -196,7 +196,7 @@ public:
 		param = fakernd();
 	}
 
-	~LinearConnection() {}
+	~FullConnection() {}
 
 	virtual void _forward(float inlayerOutval, float& outlayerInval)
 	{

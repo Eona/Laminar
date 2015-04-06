@@ -25,13 +25,13 @@ TEST(RecurrentNet, Simple)
 	auto l4 = Layer::make<SquareLossLayer>();
 
 	// Naming: c<in><out>_<skip>
-	auto c12 = Connection::make<LinearConnection>(l1, l2);
-	auto c23 = Connection::make<LinearConnection>(l2, l3);
-	auto c34 = Connection::make<LinearConnection>(l3, l4);
+	auto c12 = Connection::make<FullConnection>(l1, l2);
+	auto c23 = Connection::make<FullConnection>(l2, l3);
+	auto c34 = Connection::make<FullConnection>(l3, l4);
 
-	auto c22_1 = Connection::make<LinearConnection>(l2, l2);
-	auto c23_1 = Connection::make<LinearConnection>(l2, l3);
-	auto c33_1 = Connection::make<LinearConnection>(l3, l3);
+	auto c22_1 = Connection::make<FullConnection>(l2, l2);
+	auto c23_1 = Connection::make<FullConnection>(l2, l3);
+	auto c33_1 = Connection::make<FullConnection>(l3, l3);
 
 	RecurrentNetwork net;
 	net.set_input(input);
@@ -96,17 +96,17 @@ TEST(RecurrentNet, TemporalSkip)
 	// Ideally you should add layer(alpha) before you add conn, but doesn't matter.
 
 	// Naming: c<in><out>_<skip>
-	auto c12 = Connection::make<LinearConnection>(l1, l2);
-	auto c23 = Connection::make<LinearConnection>(l2, l3);
-	auto c34 = Connection::make<LinearConnection>(l3, l4);
+	auto c12 = Connection::make<FullConnection>(l1, l2);
+	auto c23 = Connection::make<FullConnection>(l2, l3);
+	auto c34 = Connection::make<FullConnection>(l3, l4);
 
-	auto c22_1 = Connection::make<LinearConnection>(l2, l2);
-	auto c22_3 = Connection::make<LinearConnection>(l2, l2);
-	auto c23_1 = Connection::make<LinearConnection>(l2, l3);
-	auto c23_2 = Connection::make<LinearConnection>(l2, l3);
-	auto c32_3 = Connection::make<LinearConnection>(l3, l2);
-	auto c33_1 = Connection::make<LinearConnection>(l3, l3);
-	auto c33_2 = Connection::make<LinearConnection>(l3, l3);
+	auto c22_1 = Connection::make<FullConnection>(l2, l2);
+	auto c22_3 = Connection::make<FullConnection>(l2, l2);
+	auto c23_1 = Connection::make<FullConnection>(l2, l3);
+	auto c23_2 = Connection::make<FullConnection>(l2, l3);
+	auto c32_3 = Connection::make<FullConnection>(l3, l2);
+	auto c33_1 = Connection::make<FullConnection>(l3, l3);
+	auto c33_2 = Connection::make<FullConnection>(l3, l3);
 
 	RecurrentNetwork net;
 	net.set_input(input);
@@ -197,8 +197,8 @@ TEST(RecurrentNet, GatedConnection)
 
 	// Naming: c<in><out>_<skip>
 	// g<in><gate><out>_<skip>
-	auto c12 = Connection::make<LinearConnection>(l1, l2);
-	auto c13 = Connection::make<LinearConnection>(l1, l3);
+	auto c12 = Connection::make<FullConnection>(l1, l2);
+	auto c13 = Connection::make<FullConnection>(l1, l3);
 
 	auto g234_1 = Connection::make<GatedConnection>(l2, l3, l4);
 	auto g234_2 = Connection::make<GatedConnection>(l2, l3, l4);

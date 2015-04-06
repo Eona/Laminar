@@ -45,8 +45,8 @@ int main(int argc, char **argv)
 
 	// Naming: c<in><out>_<skip>
 	// g<in><gate><out>_<skip>
-	auto c12 = Connection::make<LinearConnection>(l1, l2);
-	auto c13 = Connection::make<LinearConnection>(l1, l3);
+	auto c12 = Connection::make<FullConnection>(l1, l2);
+	auto c13 = Connection::make<FullConnection>(l1, l3);
 
 	auto g234_1 = Connection::make<GatedConnection>(l2, l3, l4);
 	auto g234_2 = Connection::make<GatedConnection>(l2, l3, l4);
@@ -72,8 +72,8 @@ int main(int argc, char **argv)
 	net.add_connection(c12);
 	net.add_layer(l2);
 
-	net.new_connection<LinearConnection>(l2, l4);
-	net.new_connection<LinearConnection>(l3, l4);
+	net.new_connection<FullConnection>(l2, l4);
+	net.new_connection<FullConnection>(l3, l4);
 
 //	net.add_recurrent_connection(g234_1);
 //	net.add_recurrent_connection(g234_2, 2);
