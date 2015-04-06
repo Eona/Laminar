@@ -231,7 +231,7 @@ public:
 
 	// DUMMY
 	UniformFloatSingleton<-1, 2>& debugrnd = UniformFloatSingleton<-1, 2>::instance();
-	FakeRand& fakernd = FakeRand::instance();
+	FakeRand& fakernd = FakeRand::instance_connection();
 
 	float& param; // aliases
 	float& gradient;

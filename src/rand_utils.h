@@ -113,11 +113,16 @@ private:
 	int i = 0;
 
 public:
-	static FakeRand& instance()
-	{
-		static FakeRand rnd;
-		return rnd;
+// Separate instances with independent sequences
+#define MakeFakeRandInstance(name) \
+	static FakeRand& instance_##name() \
+	{ \
+		static FakeRand rnd; \
+		return rnd; \
 	}
+
+	MakeFakeRandInstance(connection);
+	MakeFakeRandInstance(prehistory);
 
 	/**
 	 * Manually set the internal 'random sequence'

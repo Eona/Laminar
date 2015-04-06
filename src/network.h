@@ -265,7 +265,7 @@ public:
 		// Add the largest temporal skip for the layer
 		auto h_0 = prehistoryLayerMap.find(conn->inLayer);
 #if DEBUG_RAND_USE_FAKE // DUMMY
-		auto& dummyRand = FakeRand::instance();
+		auto& dummyRand = FakeRand::instance_prehistory();
 #else
 		auto& dummyRand = UniformFloatSingleton<-3, 6>::instance();
 #endif
