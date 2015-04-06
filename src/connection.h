@@ -193,9 +193,11 @@ public:
 		param(paramValues[0]),
 		gradient(paramGradients[0])
 	{
-		// DUMMY
-		param = debugrnd();
+#if DEBUG_RAND_USE_FAKE	// DUMMY
 		param = fakernd();
+#else
+		param = debugrnd();
+#endif
 	}
 
 	~LinearConnection() {}

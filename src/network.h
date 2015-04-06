@@ -257,8 +257,11 @@ public:
 
 		// Add the largest temporal skip for the layer
 		auto h_0 = prehistoryParams.find(conn->inLayer);
-		auto& dummyRand = FakeRand::instance(); // DUMMY
-//		auto& dummyRand = UniformFloatSingleton<-3, 6>::instance(); // DUMMY
+#if DEBUG_RAND_USE_FAKE // DUMMY
+		auto& dummyRand = FakeRand::instance();
+#else
+		auto& dummyRand = UniformFloatSingleton<-3, 6>::instance();
+#endif
 		if (h_0 == prehistoryParams.end())
 		{
 			auto newh_0 = ParamContainer::make(temporalSkip);
