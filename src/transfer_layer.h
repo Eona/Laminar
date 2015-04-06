@@ -22,15 +22,41 @@ public:
 	virtual void set_max_temporal_skip(int maxTemporalSkip)
 	{
 		Layer::set_max_temporal_skip(maxTemporalSkip);
-		ParamContainer::resize(maxTemporalSkip);
+
+		if (!is_full_gradient_history_saved())
+			ParamContainer::resize(maxTemporalSkip);
+	}
+
+	// Override: if negative, use the parameter value
+	virtual float& inValue(int i)
+	{
+		if (i >= 0)
+			return Layer::inValue(i);
+		else
+			return paramValues[-1 - i];
+	}
+
+	// Override: if negative, use the parameter value
+	virtual float& outGradient(int i)
+	{
+		if (i >= 0)
+			return Layer::outGradient(i);
+		else
+			return paramGradients[-1 - i];
+	}
+
+	virtual void reset()
+	{
+		Layer::reset();
+		ParamContainer::resetGradients();
 	}
 };
 
-class SigmoidLayer : public Layer
+class SigmoidLayer : public SimpleTemporalLayer
 {
 public:
 	SigmoidLayer() :
-		Layer()
+		SimpleTemporalLayer()
 	{}
 
 	~SigmoidLayer() { }
@@ -52,11 +78,11 @@ public:
 	}
 };
 
-class CosineLayer : public Layer
+class CosineLayer : public SimpleTemporalLayer
 {
 public:
 	CosineLayer() :
-		Layer()
+		SimpleTemporalLayer()
 	{}
 
 	~CosineLayer() { }
@@ -78,11 +104,11 @@ public:
 	}
 };
 
-class LinearLayer : public Layer
+class LinearLayer : public SimpleTemporalLayer
 {
 public:
 	LinearLayer(float _multiplier = 1.0f):
-		Layer(),
+		SimpleTemporalLayer(),
 		multiplier(_multiplier)
 	{}
 
