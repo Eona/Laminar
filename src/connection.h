@@ -27,6 +27,8 @@ public:
 	virtual void forward(int inFrame = 0, int outFrame = 0)
 	{
 		check_frame_consistency(inFrame, outFrame);
+		this->_inFrame = inFrame;
+		this->_outFrame = outFrame;
 
 		resize_on_demand(inLayer->outValues, inFrame);
 		resize_on_demand(outLayer->inValues, outFrame);
@@ -41,6 +43,8 @@ public:
 	{
 		assert_throw(inFrame < 0,
 			NetworkException("inFrame should be < 0 for prehistory_forward"));
+		this->_inFrame = inFrame;
+		this->_outFrame = outFrame;
 
 		resize_on_demand(outLayer->inValues, outFrame);
 
@@ -51,6 +55,8 @@ public:
 	virtual void backward(int outFrame = 0, int inFrame = 0)
 	{
 		check_frame_consistency(inFrame, outFrame);
+		this->_inFrame = inFrame;
+		this->_outFrame = outFrame;
 
 		bool isHistorySaved = inLayer->is_full_gradient_history_saved();
 		if (isHistorySaved)
@@ -73,6 +79,8 @@ public:
 	{
 		assert_throw(inFrame < 0,
 			NetworkException("inFrame should be < 0 for prehistory_backward"));
+		this->_inFrame = inFrame;
+		this->_outFrame = outFrame;
 
 		bool isHistorySaved = inLayer->is_full_gradient_history_saved();
 		if (isHistorySaved)
@@ -89,6 +97,12 @@ public:
 	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad) = 0;
 
 	virtual void reset() {}
+
+	/**
+	 * Read only. Forward/backward latest frame number
+	 */
+	int in_frame() { return this->_inFrame; }
+	int out_frame() { return this->_outFrame; }
 
 	/************************************/
 	typedef shared_ptr<Connection> Ptr;
@@ -137,6 +151,9 @@ protected:
 					"Inconsistency: inFrame <= outFrame <= inFrame + layer.maxTemporalSkip"));
 		}
 	}
+
+private:
+	int _inFrame = 0, _outFrame = 0;
 };
 
 TypedefPtr(Connection);
@@ -221,7 +238,86 @@ public:
 
 class GatedConnection : public Connection
 {
+public:
+	GatedConnection(LayerPtr _inLayer, LayerPtr _gateLayer, LayerPtr _outLayer):
+		Connection(_inLayer, _outLayer),
+		gateLayer(_gateLayer)
+	{ }
 
+/*	virtual void forward(int inFrame = 0, int outFrame = 0)
+		{
+			check_frame_consistency(inFrame, outFrame);
+
+			resize_on_demand(inLayer->outValues, inFrame);
+			resize_on_demand(outLayer->inValues, outFrame);
+
+			_forward(inLayer->outValues[inFrame], outLayer->inValues[outFrame]);
+		}
+
+		*
+		 * handle h[-1], h[-2] ... h[-maxTemporalSkip]
+
+		virtual void prehistory_forward(ParamContainer::Ptr pcontainer, int inFrame, int outFrame)
+		{
+			assert_throw(inFrame < 0,
+				NetworkException("inFrame should be < 0 for prehistory_forward"));
+
+			resize_on_demand(outLayer->inValues, outFrame);
+
+			_forward(vec_at(pcontainer->paramValues, inFrame),
+				outLayer->inValues[outFrame]);
+		}
+
+		virtual void backward(int outFrame = 0, int inFrame = 0)
+		{
+			check_frame_consistency(inFrame, outFrame);
+
+			bool isHistorySaved = inLayer->is_full_gradient_history_saved();
+			if (isHistorySaved)
+			{
+				resize_on_demand(inLayer->outGradients, inFrame);
+				resize_on_demand(outLayer->inGradients, outFrame);
+			}
+
+			_backward(outLayer->inGradients[
+						isHistorySaved ? outFrame : 0],
+					inLayer->outValues[inFrame],
+					inLayer->outGradients[
+						isHistorySaved ? inFrame : outFrame - inFrame]);
+		}
+
+		*
+		 * Back prop to h[-1] ...
+
+		virtual void prehistory_backward(ParamContainer::Ptr pcontainer, int outFrame, int inFrame)
+		{
+			assert_throw(inFrame < 0,
+				NetworkException("inFrame should be < 0 for prehistory_backward"));
+
+			bool isHistorySaved = inLayer->is_full_gradient_history_saved();
+			if (isHistorySaved)
+				resize_on_demand(outLayer->inGradients, outFrame);
+
+			_backward(outLayer->inGradients[
+						isHistorySaved ? outFrame : 0],
+					vec_at(pcontainer->paramValues, inFrame),
+					vec_at(pcontainer->paramGradients, inFrame));
+		}
+
+	virtual void _forward(float inlayerOutval, float& outlayerInval)
+	{
+		outlayerInval += gateLayer->outValues * inlayerOutval;
+	}
+
+	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
+	{
+		// should check if input module actually has gradient
+		inlayerOutgrad += lmn::transpose(param) * outlayerIngrad;
+		this->gradient += outlayerIngrad * lmn::transpose(inlayerOutval);
+	}*/
+
+
+	LayerPtr gateLayer;
 };
 
 #endif /* CONNECTION_H_ */
