@@ -182,8 +182,8 @@ public:
 		gradient(paramGradients[0])
 	{
 		// DUMMY
-		param = fakernd();
 		param = debugrnd();
+		param = fakernd();
 	}
 
 	~LinearConnection() {}

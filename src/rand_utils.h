@@ -82,7 +82,9 @@ public:
 
 	float operator() ()
 	{
-		return distribution(generator);
+		float r = distribution(generator);
+//		cout << std::setprecision(3) << r << ", "; // sample a good unit test
+		return r;
 	}
 
 private:

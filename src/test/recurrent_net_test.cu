@@ -7,7 +7,7 @@
 TEST(RecurrentNet, Simple)
 {
 	FakeRand::instance().set_rand_seq(vector<float> {
-		2.51, 5.39, 5.80, -2.96, -2.73, -2.4
+		0.527, 1.54, 1.78, 1.45, 2.56, -0.874, -0.861, -0.0736
 	});
 
 	vector<float> input { 1.2, -0.9, 0.57, -1.47, -3.08 };
@@ -40,7 +40,7 @@ TEST(RecurrentNet, Simple)
 TEST(RecurrentNet, TemporalSkip)
 {
 	FakeRand::instance().set_rand_seq(vector<float> {
-		3.16, 2.90, -0.93, 3.75, 0.48, 1.90, -0.13, 3.75, -0.78, 1.28
+		1.39, 0.27, 1.1, -0.317, -1.41, 0.0649, 0.777, 3.58, 0.18, 1.72, -0.963, 1.46, -0.685, -0.0132, 0.471, 0.783, 0.19
 	});
 
 	vector<float> input { 1.2, -0.9, 0.57, -1.47, -3.08, 1.2, .31, -2.33, -0.89 };
