@@ -341,8 +341,8 @@ operator<<(ostream& os, T& net)
 	for (auto compon : net.components)
 		os << "  " << compon->str() << "\n";
 	os << " " << "recurrent connections:\n";
-	for (auto recConn : net.recurConnectionInfos)
-		os << "  " << recConn.conn->str() << "\n";
+	for (auto connInfo : net.recurConnectionInfos)
+		os << "  " << connInfo.conn->str() << "\n";
 	os << "]";
 	return os;
 }

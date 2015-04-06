@@ -125,15 +125,28 @@ public:
 		float outputGate = outputGateValues[frame()];
 		float cell = cellValues[frame()];
 
-		float outputGate_grad = outGradient * transpose(cellOutput);
 		float cellOutput_grad = transpose(outputGate) * outGradient;
+		float outputGate_grad = outGradient * transpose(cellOutput);
 
 		float cell_grad = cellOutputActivatorGradient(cellOutput);
 
-		int lastFrame = is_full_gradient_history_saved() ? frame() + 1 : 0 + 1;
-//		float& h_last_grad =
-//			this->outGradients;
-		inGradient += transpose(W_xo) * outputGate_grad;
+		// gradient window is stored in reverse-time order
+		int lastFrame = is_full_gradient_history_saved() ? frame() - 1 : 0 + 1;
+
+		float& h_last_grad = frame() < 1 ?
+				h_0_grad :
+				this->outGradients[lastFrame];
+		float h_last = frame() < 1 ?
+				h_0 :
+				this->outValues[lastFrame];
+
+		// prefix pre_ for sigma(pre_X) = X
+		float pre_outputGate_grad = gateActivatorGradient(outputGate) * outputGate_grad;
+		inGradient += transpose(W_xo) * pre_outputGate_grad;
+		W_xo_grad = pre_outputGate_grad * transpose(inValue);
+		h_last_grad += transpose(W_ho) * pre_outputGate_grad;
+		W_ho_grad = pre_outputGate_grad * transpose(h_last);
+
 
 
 
