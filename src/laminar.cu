@@ -46,6 +46,10 @@ int main(int argc, char **argv)
 	net.new_recurrent_connection<LinearConnection>(l3, l3);
 	net.new_recurrent_skip_connection<LinearConnection>(2, l3, l3);
 
+	cout << net.prehistoryParams.size() << "\n";
+	for (auto key : net.prehistoryParams)
+		cout << "size " <<  key.second->size() << "\n";
+
 	gradient_check(net, 1e-2, 1);
 //
 //

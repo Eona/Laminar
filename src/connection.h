@@ -38,6 +38,20 @@ public:
 		_forward(inlayerOutvalue, outLayer->inValues[outFrame]);
 	}
 
+	/**
+	 * handle h[-1], h[-2] ... h[-maxTemporalSkip]
+	 */
+	virtual void prehistory_forward(ParamContainer::Ptr pcontainer, int inFrame, int outFrame)
+	{
+		assert_throw(inFrame < 0,
+			NetworkException("inFrame should be < 0 for prehistory_forward"));
+
+		resize_on_demand(outLayer->inValues, outFrame);
+
+		_forward(vec_at(pcontainer->paramValues, inFrame),
+			outLayer->inValues[outFrame]);
+	}
+
 	virtual void backward(int outFrame = 0, int inFrame = 0)
 	{
 		check_frame_consistency(inFrame, outFrame);
@@ -55,6 +69,23 @@ public:
 				inLayer->outValues[inFrame],
 				inLayer->outGradients[
 					isHistorySaved ? inFrame : outFrame - inFrame]);
+	}
+
+	virtual void prehistory_backward(ParamContainer::Ptr pcontainer, int outFrame, int inFrame)
+	{
+		assert_throw(inFrame < 0,
+			NetworkException("inFrame should be < 0 for prehistory_backward"));
+
+		bool isHistorySaved = inLayer->is_full_gradient_history_saved();
+		if (isHistorySaved)
+			resize_on_demand(outLayer->inGradients, outFrame);
+
+		_backward(outLayer->inGradients[
+					isHistorySaved ? outFrame : 0],
+				vec_at(pcontainer->paramValues, inFrame),
+				vec_at(pcontainer->paramGradients, inFrame));
+//				inLayer->outGradients[
+//					isHistorySaved ? inFrame : outFrame - inFrame]);
 	}
 
 	virtual void _forward(float inlayerOutval, float& outlayerInval) = 0;
@@ -86,13 +117,17 @@ public:
 		return std::dynamic_pointer_cast<ConnectionT>(conn);
 	}
 
-protected:
 	LayerPtr inLayer;
 	LayerPtr outLayer;
+protected:
 
 	// Helper for backward/forward in/outLayer check
 	void check_frame_consistency(int inFrame, int outFrame)
 	{
+		assert_throw(inFrame >= 0 && outFrame >= 0,
+			NetworkException("Both inFrame and outFrame must be positive.\n"
+				"Otherwise use prehistory_forward"));
+
 		assert_throw(
 			inLayer->get_max_temporal_skip() == outLayer->get_max_temporal_skip(),
 			NetworkException(
@@ -145,6 +180,7 @@ public:
 		param(paramValues[0]),
 		gradient(paramGradients[0])
 	{
+		// DUMMY
 		param = debugrnd();
 		param = fakernd();
 	}
@@ -153,13 +189,11 @@ public:
 
 	virtual void _forward(float inlayerOutval, float& outlayerInval)
 	{
-		// NOTE matrix multiplication order applies here
 		outlayerInval += param * inlayerOutval;
 	}
 
 	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
 	{
-		// NOTE matrix multiplication order applies here
 		// should check if input module actually has gradient
 		inlayerOutgrad += lmn::transpose(param) * outlayerIngrad;
 		this->gradient += outlayerIngrad * lmn::transpose(inlayerOutval);
@@ -180,7 +214,7 @@ public:
 		ParamContainer::resetGradients();
 	}
 
-	// NOTE debug only
+	// DUMMY
 	UniformFloatSingleton<-3, 6>& debugrnd = UniformFloatSingleton<-3, 6>::instance();
 	FakeRand& fakernd = FakeRand::instance();
 

@@ -202,7 +202,15 @@ public:
 	{
 		// Recurrent forward prop
 		for (auto& connInfo : this->recurConnectionInfos)
-			connInfo.conn->forward(frame - connInfo.temporalSkip, frame);
+		{
+			int skip = connInfo.temporalSkip;
+			if (frame >= skip)
+				connInfo.conn->forward(frame - skip, frame);
+			else
+				connInfo.conn->prehistory_forward(
+						prehistoryParams[connInfo.conn->inLayer],
+						frame - skip, frame);
+		}
 
 		for (ComponentPtr compon : this->components)
 			compon->forward(frame, frame);
@@ -224,7 +232,15 @@ public:
 			components[i]->backward(frame, frame);
 
 		for (auto& connInfo : this->recurConnectionInfos)
-			connInfo.conn->backward(frame, frame - connInfo.temporalSkip);
+		{
+			int skip = connInfo.temporalSkip;
+			if (frame >= skip)
+				connInfo.conn->backward(frame, frame - skip);
+			else
+				connInfo.conn->prehistory_backward(
+						prehistoryParams[connInfo.conn->inLayer],
+						frame, frame - skip);
+		}
 
 		for (LayerPtr layer : layers)
 			layer->shiftBackGradientWindow();
@@ -242,6 +258,17 @@ public:
 		recurConnectionInfos.push_back(RecurConnectionInfo(conn, temporalSkip));
 		connections.push_back(conn);
 		this->check_add_param_container(conn);
+
+		// Add the largest temporal skip for the layer
+		auto h_0 = prehistoryParams.find(conn->inLayer);
+		if (h_0 == prehistoryParams.end())
+		{
+			auto newh_0 = ParamContainer::make(temporalSkip);
+			prehistoryParams[conn->inLayer] = newh_0;
+			paramContainers.push_back(newh_0);
+		}
+		else if (h_0->second->size() < temporalSkip)
+			prehistoryParams[conn->inLayer]->resize(temporalSkip);
 	}
 
 	template<typename ConnectionT, typename ...ArgT>
@@ -283,7 +310,10 @@ public:
 		ConnectionPtr conn;
 		int temporalSkip;
 	};
+
 	vector<RecurConnectionInfo> recurConnectionInfos;
+
+	std::unordered_map<LayerPtr, ParamContainerPtr> prehistoryParams;
 
 protected:
 	int frame = 0;

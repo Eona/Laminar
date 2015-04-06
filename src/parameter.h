@@ -54,6 +54,13 @@ public:
 		return std::dynamic_pointer_cast<ParamContainerT>(param);
 	}
 
+	template<typename ...ArgT>
+	static ParamContainer::Ptr make(ArgT&& ... args)
+	{
+		return std::make_shared<ParamContainer>(
+						std::forward<ArgT>(args) ...);
+	}
+
 	/*********** DEBUG ONLY ***********/
 	// restore() calls must correspond one-by-one to perturb() calls
 	void gradient_check_perturb(int changeIdx, float eps)
