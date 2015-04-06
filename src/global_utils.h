@@ -140,6 +140,12 @@ T& vec_at(vector<T>& vec, int idx)
 	return vec[idx];
 }
 
+template <typename KeyT, typename ValueT>
+bool key_exists(std::unordered_map<KeyT, ValueT>& map, KeyT& key)
+{
+	return map.find(key) != map.end();
+}
+
 /**************************************
 ************ Exceptions **************
 **************************************/

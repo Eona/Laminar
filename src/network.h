@@ -201,7 +201,7 @@ public:
 		for (ComponentPtr compon : this->components)
 		{
 			ConnectionPtr conn = Component::cast<Connection>(compon);
-			if (conn && recurConnectionMap.find(conn) != recurConnectionMap.end())
+			if (conn && key_exists(recurConnectionMap, conn))
 			{
 				int skip = recurConnectionMap[conn];
 				if (frame >= skip)
@@ -231,7 +231,7 @@ public:
 		{
 			ComponentPtr compon = components[i];
 			ConnectionPtr conn = Component::cast<Connection>(compon);
-			if (recurConnectionMap.find(conn) != recurConnectionMap.end())
+			if (key_exists(recurConnectionMap, conn))
 			{
 				int skip = recurConnectionMap[conn];
 				if (frame >= skip)
@@ -263,20 +263,20 @@ public:
 		this->check_add_param_container(conn);
 
 		// Add the largest temporal skip for the layer
-		auto h_0 = prehistoryLayerMap.find(conn->inLayer);
+		auto prehistoryEntry = prehistoryLayerMap.find(conn->inLayer);
 		auto& dummyRand = FakeRand::instance_prehistory();
 
-		if (h_0 == prehistoryLayerMap.end())
+		if (prehistoryEntry == prehistoryLayerMap.end())
 		{
-			auto newh_0 = ParamContainer::make(temporalSkip);
-			newh_0->fill_rand(dummyRand);
-			prehistoryLayerMap[conn->inLayer] = newh_0;
-			paramContainers.push_back(newh_0);
+			auto h_0 = ParamContainer::make(temporalSkip);
+			h_0->fill_rand(dummyRand);
+			prehistoryLayerMap[conn->inLayer] = h_0;
+			paramContainers.push_back(h_0);
 		}
-		else if (h_0->second->size() < temporalSkip)
+		else if (prehistoryEntry->second->size() < temporalSkip)
 		{
-			h_0->second->resize(temporalSkip);
-			h_0->second->fill_rand(dummyRand);
+			prehistoryEntry->second->resize(temporalSkip);
+			prehistoryEntry->second->fill_rand(dummyRand);
 		}
 
 		recurConnectionMap[conn] = temporalSkip;
