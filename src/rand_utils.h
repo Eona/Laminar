@@ -57,43 +57,6 @@ private:
 };
 
 /*********** DEBUG ONLY ***********/
-#define DEBUG_RAND_USE_FAKE true
-
-/**
- * Singleton random generator with compile-time low/high bounds
- */
-template<int low, int high>
-class UniformFloatSingleton
-{
-private:
-	UniformFloatSingleton()
-	: generator(UniformRand<float>::generateSeed()),
-	  distribution(uniform_real_distribution<float>{low * 1.f, high * 1.f})
-	{}
-
-	// disable copying and assignment
-	UniformFloatSingleton(const UniformFloatSingleton&) =delete;
-	UniformFloatSingleton& operator=(const UniformFloatSingleton&) =delete;
-
-public:
-	static UniformFloatSingleton& instance()
-	{
-		static UniformFloatSingleton rnd;
-		return rnd;
-	}
-
-	float operator() ()
-	{
-		float r = distribution(generator);
-//		cout << std::setprecision(3) << r << ", "; // sample a good unit test
-		return r;
-	}
-
-private:
-	default_random_engine generator;
-	uniform_real_distribution<float> distribution;
-};
-
 /**
  * Manually set the sequence
  */
@@ -119,15 +82,15 @@ private:
 
 public:
 // Separate instances with independent sequences
-#define MakeFakeRandInstance(name) \
+#define GenFakeRandInstance(name) \
 	static FakeRand& instance_##name() \
 	{ \
 		static FakeRand rnd; \
 		return rnd; \
 	}
 
-	MakeFakeRandInstance(connection);
-	MakeFakeRandInstance(prehistory);
+	GenFakeRandInstance(connection);
+	GenFakeRandInstance(prehistory);
 
 	/**
 	 * Manually set the internal 'random sequence'
