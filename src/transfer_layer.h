@@ -86,15 +86,15 @@ public:
 	}
 };
 
-class LinearLayer : public Layer
+class ScalorLayer : public Layer
 {
 public:
-	LinearLayer(float _multiplier = 1.0f):
+	ScalorLayer(float _multiplier = 1.0f):
 		Layer(),
 		multiplier(_multiplier)
 	{}
 
-	~LinearLayer() { }
+	~ScalorLayer() { }
 
 	void _forward(float& inValue, float& outValue)
 	{

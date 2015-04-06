@@ -19,7 +19,7 @@ TEST(RecurrentNet, Simple)
 	vector<float> input { 1.2, -0.9, 0.57, -1.47, -3.08 };
 	vector<float> target { 1.39, 0.75, -0.45, -0.11, 1.55 };
 
-	auto l1 = Layer::make<LinearLayer>();
+	auto l1 = Layer::make<ScalorLayer>();
 	auto l2 = Layer::make<SigmoidLayer>();
 	auto l3 = Layer::make<SigmoidLayer>();
 	auto l4 = Layer::make<SquareLossLayer>();
@@ -85,7 +85,7 @@ TEST(RecurrentNet, TemporalSkip)
 	vector<float> input { 1.2, -0.9, 0.57, -1.47, -3.08, 1.2, .31, -2.33, -0.89 };
 	vector<float> target { 1.39, 0.75, -0.45, -0.11, 1.55, -.44, 2.39, 1.72, -3.06 };
 
-	auto l1 = Layer::make<LinearLayer>();
+	auto l1 = Layer::make<ScalorLayer>();
 	auto l2 = Layer::make<SigmoidLayer>();
 	auto l3 = Layer::make<CosineLayer>();
 	auto l4 = Layer::make<SquareLossLayer>();
@@ -185,7 +185,7 @@ TEST(RecurrentNet, GatedConnection)
 	vector<float> input { 1.2, -0.9, 0.57, -1.47, -3.08, 1.2, .31, -2.33, -0.89 };
 	vector<float> target { 1.39, 0.75, -0.45, -0.11, 1.55, -.44, 2.39, 1.72, -3.06 };
 
-	auto l1 = Layer::make<LinearLayer>();
+	auto l1 = Layer::make<ScalorLayer>();
 	auto l2 = Layer::make<SigmoidLayer>();
 	auto l3 = Layer::make<CosineLayer>(); // gate
 	auto l4 = Layer::make<SquareLossLayer>();
