@@ -12,7 +12,7 @@ TEST(ForwardNet, Interconnected)
 	float input = 0.2;
 	float target = 1.5;
 
-	auto l1 = Layer::make<ScalorLayer>();
+	auto l1 = Layer::make<ConstantLayer>();
 	auto l2_1 = Layer::make<ScalorLayer>(1.7f);
 	auto l2_2 = Layer::make<CosineLayer>();
 	auto l3_1 = Layer::make<SigmoidLayer>();

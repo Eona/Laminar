@@ -86,6 +86,33 @@ public:
 	}
 };
 
+
+class ConstantLayer : public Layer
+{
+public:
+	ConstantLayer():
+		Layer()
+	{}
+
+	~ConstantLayer() { }
+
+	void _forward(float& inValue, float& outValue)
+	{
+		outValue = inValue;
+	}
+
+	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
+	{
+		inGradient = outGradient;
+	}
+
+	string str()
+	{
+		return string("[LinearLayer: \n")
+				+ Layer::str() + "]";
+	}
+};
+
 class ScalorLayer : public Layer
 {
 public:

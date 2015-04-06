@@ -180,7 +180,7 @@ public:
 
 	string str()
 	{
-		return "[ConstantConn]";
+		return "[ConstantConnection]";
 	}
 };
 
@@ -213,7 +213,7 @@ public:
 	string str()
 	{
 		ostringstream os;
-		os << "[LinearConn: "
+		os << "[FullConnection: "
 			<< "\n\tparam=" << this->param
 			<< "\tgrad=" << this->gradient
 			<< "]";
@@ -267,7 +267,7 @@ public:
 
 	string str()
 	{
-		return "[GatedConn]";
+		return "[GatedConnection]";
 	}
 
 	LayerPtr gateLayer;
