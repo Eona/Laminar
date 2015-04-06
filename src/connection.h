@@ -193,11 +193,7 @@ public:
 		param(paramValues[0]),
 		gradient(paramGradients[0])
 	{
-#if DEBUG_RAND_USE_FAKE	// DUMMY
 		param = fakernd();
-#else
-		param = debugrnd();
-#endif
 	}
 
 	~LinearConnection() {}
@@ -230,7 +226,6 @@ public:
 	}
 
 	// DUMMY
-	UniformFloatSingleton<-1, 2>& debugrnd = UniformFloatSingleton<-1, 2>::instance();
 	FakeRand& fakernd = FakeRand::instance_connection();
 
 	float& param; // aliases

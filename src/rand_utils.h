@@ -112,6 +112,11 @@ private:
 	vector<float> randSeq;
 	int i = 0;
 
+	default_random_engine generator;
+	uniform_real_distribution<float> distribution;
+
+	bool isDisplay = false;
+
 public:
 // Separate instances with independent sequences
 #define MakeFakeRandInstance(name) \
@@ -140,9 +145,34 @@ public:
 
 	float operator() ()
 	{
+		if (i < 0)
+		{
+			float r = distribution(generator);
+			if (isDisplay)
+				cout << std::setprecision(3) << r << ", "; // sample a good unit test
+			return r;
+		}
+
 		if (i >= randSeq.size())
 			i = 0;
 		return randSeq[i++];
+	}
+
+	void use_uniform_rand(float low, float high)
+	{
+		i = -1;
+		generator = default_random_engine(UniformRand<float>::generateSeed());
+		distribution = uniform_real_distribution<float>{low, high};
+	}
+
+	void use_fake_seq()
+	{
+		i = 0;
+	}
+
+	void is_rand_displayed(bool isDisplay)
+	{
+		this->isDisplay = isDisplay;
 	}
 };
 
