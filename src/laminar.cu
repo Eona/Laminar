@@ -35,11 +35,21 @@ int main(int argc, char **argv)
 	net.new_connection<LinearConnection>(l1, l3);
 	net.add_layer(l2);
 	net.add_layer(l3);
-	net.new_connection<LinearConnection>(l2, l4);
-	net.new_connection<LinearConnection>(l3, l4);
+//	net.new_connection<LinearConnection>(l2, l4);
+//	net.new_connection<LinearConnection>(l3, l4);
+	net.new_recurrent_connection<GatedConnection>(l2, l3, l4);
 	net.add_layer(l4);
 
-	net.new_recurrent_connection<GatedConnection>(l2, l3, l4);
+//	net.new_recurrent_connection<GatedConnection>(l2, l3, l4);
 
-	gradient_check(net, 1e-2, 1);
+	net.reset();
+	net.forward_prop();
+	cout << net << endl;
+	net.forward_prop();
+	cout << net << endl;
+	net.forward_prop();
+	cout << net << endl;
+	net.forward_prop();
+	cout << net << endl;
+//	gradient_check(net, 1e-2, 1);
 }

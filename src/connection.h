@@ -303,19 +303,19 @@ public:
 
 	virtual void _forward(float inlayerOutval, float& outlayerInval)
 	{
-		resize_on_demand(gateLayer->outValues, out_frame());
+//		resize_on_demand(gateLayer->outValues, out_frame());
+//		DEBUG_MSG(gateLayer->outValues[out_frame()]);
 		outlayerInval += gateLayer->outValues[out_frame()] * inlayerOutval;
 	}
 
 	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
 	{
-
 		inlayerOutgrad += gateLayer->outValues[out_frame()] * outlayerIngrad;
+
 		bool isHistorySaved = gateLayer->is_full_gradient_history_saved();
 		if (isHistorySaved)
-		{
 			resize_on_demand(gateLayer->outGradients, out_frame());
-		}
+
 		gateLayer->outGradients[
 			isHistorySaved ? out_frame() : 0] += outlayerIngrad * inlayerOutval;
 	}
@@ -324,6 +324,7 @@ public:
 	{
 		return "[GatedConn]";
 	}
+
 	LayerPtr gateLayer;
 };
 
