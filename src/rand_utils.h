@@ -57,7 +57,7 @@ private:
 };
 
 /*********** DEBUG ONLY ***********/
-#define DEBUG_RAND_USE_FAKE false
+#define DEBUG_RAND_USE_FAKE true
 
 /**
  * Singleton random generator with compile-time low/high bounds

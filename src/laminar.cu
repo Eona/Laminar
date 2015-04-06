@@ -42,6 +42,7 @@ int main(int argc, char **argv)
 
 //	net.new_recurrent_connection<GatedConnection>(l2, l3, l4);
 
+/*
 	net.reset();
 	net.forward_prop();
 	cout << net << endl;
@@ -51,5 +52,6 @@ int main(int argc, char **argv)
 	cout << net << endl;
 	net.forward_prop();
 	cout << net << endl;
-//	gradient_check(net, 1e-2, 1);
+*/
+	gradient_check(net, 1e-2, 1);
 }

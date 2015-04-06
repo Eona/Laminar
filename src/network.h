@@ -198,20 +198,22 @@ public:
 	 */
 	virtual void forward_prop()
 	{
-		// Recurrent forward prop
-		for (auto& connInfo : this->recurConnectionInfos)
-		{
-			int skip = connInfo.temporalSkip;
-			if (frame >= skip)
-				connInfo.conn->forward(frame - skip, frame);
-			else
-				connInfo.conn->prehistory_forward(
-						prehistoryParams[connInfo.conn->inLayer],
-						frame - skip, frame);
-		}
-
 		for (ComponentPtr compon : this->components)
-			compon->forward(frame, frame);
+		{
+			const ConnectionPtr conn = Component::cast<Connection>(compon);
+			if (conn && recurInfoMap.find(conn) != recurInfoMap.end())
+			{
+				int skip = recurInfoMap[conn];
+				if (frame >= skip)
+					conn->forward(frame - skip, frame);
+				else
+					conn->prehistory_forward(
+							prehistoryLayerMap[conn->inLayer],
+							frame - skip, frame);
+			}
+			else
+				compon->forward(frame, frame);
+		}
 
 		++ frame;
 	}
@@ -225,17 +227,21 @@ public:
 		-- frame;
 
 		for (int i = components.size() - 1; i >= 0; --i)
-			components[i]->backward(frame, frame);
-
-		for (auto& connInfo : this->recurConnectionInfos)
 		{
-			int skip = connInfo.temporalSkip;
-			if (frame >= skip)
-				connInfo.conn->backward(frame, frame - skip);
+			ComponentPtr compon = components[i];
+			ConnectionPtr conn = Component::cast<Connection>(compon);
+			if (recurInfoMap.find(conn) != recurInfoMap.end())
+			{
+				int skip = recurInfoMap[conn];
+				if (frame >= skip)
+					conn->backward(frame, frame - skip);
+				else
+					conn->prehistory_backward(
+							prehistoryLayerMap[conn->inLayer],
+							frame, frame - skip);
+			}
 			else
-				connInfo.conn->prehistory_backward(
-						prehistoryParams[connInfo.conn->inLayer],
-						frame, frame - skip);
+				compon->backward(frame, frame);
 		}
 
 		for (LayerPtr layer : layers)
@@ -251,22 +257,22 @@ public:
 					"Use set_max_temporal_skip() to change the upper limit.\n"
 					"Then call assemble() again on the network"));
 
-		recurConnectionInfos.push_back(RecurConnectionInfo(conn, temporalSkip));
+		components.push_back(Component::upcast(conn));
 		connections.push_back(conn);
 		this->check_add_param_container(conn);
 
 		// Add the largest temporal skip for the layer
-		auto h_0 = prehistoryParams.find(conn->inLayer);
+		auto h_0 = prehistoryLayerMap.find(conn->inLayer);
 #if DEBUG_RAND_USE_FAKE // DUMMY
 		auto& dummyRand = FakeRand::instance();
 #else
 		auto& dummyRand = UniformFloatSingleton<-3, 6>::instance();
 #endif
-		if (h_0 == prehistoryParams.end())
+		if (h_0 == prehistoryLayerMap.end())
 		{
 			auto newh_0 = ParamContainer::make(temporalSkip);
 			newh_0->fill_rand(dummyRand);
-			prehistoryParams[conn->inLayer] = newh_0;
+			prehistoryLayerMap[conn->inLayer] = newh_0;
 			paramContainers.push_back(newh_0);
 		}
 		else if (h_0->second->size() < temporalSkip)
@@ -274,6 +280,8 @@ public:
 			h_0->second->resize(temporalSkip);
 			h_0->second->fill_rand(dummyRand);
 		}
+
+		recurInfoMap[conn] = temporalSkip;
 	}
 
 	template<typename ConnectionT, typename ...ArgT>
@@ -297,8 +305,6 @@ public:
 	{
 		for (ComponentPtr compon : this->components)
 			compon->reset();
-		for (auto& connInfo : this->recurConnectionInfos)
-			connInfo.conn->reset();
 
 		frame = 0;
 
@@ -308,17 +314,25 @@ public:
 	/************************************/
 	struct RecurConnectionInfo
 	{
-		RecurConnectionInfo(ConnectionPtr _conn, int _temporalSkip = 1) :
-			conn(_conn), temporalSkip(_temporalSkip)
+		// must have default ctor for hashmap to work!!
+		RecurConnectionInfo() { }
+
+		RecurConnectionInfo(ParamContainerPtr _prehistory, int _temporalSkip = 1) :
+			prehistory(_prehistory), temporalSkip(_temporalSkip)
 		{ }
 
-		ConnectionPtr conn;
+/*		RecurConnectionInfo& operator=(const RecurConnectionInfo& other)
+		{
+			this->prehistory = other.
+		}*/
+
+		ParamContainerPtr prehistory;
 		int temporalSkip;
 	};
 
-	vector<RecurConnectionInfo> recurConnectionInfos;
+	std::unordered_map<LayerPtr, ParamContainerPtr> prehistoryLayerMap;
 
-	std::unordered_map<LayerPtr, ParamContainerPtr> prehistoryParams;
+	std::unordered_map<ConnectionPtr, int> recurInfoMap;
 
 protected:
 	int frame = 0;
@@ -344,9 +358,9 @@ operator<<(ostream& os, T& net)
 	for (auto compon : net.components)
 		os << "  " << compon->str() << "\n";
 	os << " " << "recurrent connections:\n";
-	for (auto connInfo : net.recurConnectionInfos)
-		os << "  " << connInfo.conn->str() << "\n";
-	os << "]";
+//	for (auto connInfo : net.recurConnectionInfos)
+//		os << "  " << connInfo.conn->str() << "\n";
+//	os << "]";
 	return os;
 }
 
