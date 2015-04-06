@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 	RecurrentNetwork net;
 	net.set_input(input);
 	net.set_target(target);
-	net.set_max_temporal_skip(Layer::UNLIMITED_TEMPORAL_SKIP);
+	net.set_max_temporal_skip(3);
 
 	net.add_layer(l1);
 	net.new_connection<LinearConnection>(l1, l2);
@@ -47,7 +47,6 @@ int main(int argc, char **argv)
 	net.new_recurrent_skip_connection<LinearConnection>(2, l3, l3);
 
 	gradient_check(net, 1e-2, 1);
-
 //
 //
 //	vector<float> input { 1.2, -0.9, 0.57, -1.47, -3.08 };

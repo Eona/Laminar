@@ -30,12 +30,12 @@ public:
 
 		resize_on_demand(inLayer->outValues, inFrame);
 		resize_on_demand(outLayer->inValues, outFrame);
-//
-//		float inlayerOutvalue = 0;
-//		if (inFrame >= 0)
-//			inlayerOutvalue = inLayer->outValue(inFrame);
 
-		_forward(inLayer->outValue(inFrame), outLayer->inValue(outFrame));
+		float inlayerOutvalue = 0;
+		if (inFrame >= 0)
+			inlayerOutvalue = inLayer->outValues[inFrame];
+
+		_forward(inlayerOutvalue, outLayer->inValues[outFrame]);
 	}
 
 	virtual void backward(int outFrame = 0, int inFrame = 0)
@@ -49,11 +49,12 @@ public:
 			resize_on_demand(outLayer->inGradients, outFrame);
 		}
 
-		_backward(outLayer->inGradient(
-					isHistorySaved ? outFrame : 0),
-				inLayer->outValue(inFrame),
-				inLayer->outGradient(
-					isHistorySaved ? inFrame : outFrame - inFrame));
+		if (inFrame >= 0)
+		_backward(outLayer->inGradients[
+					isHistorySaved ? outFrame : 0],
+				inLayer->outValues[inFrame],
+				inLayer->outGradients[
+					isHistorySaved ? inFrame : outFrame - inFrame]);
 	}
 
 	virtual void _forward(float inlayerOutval, float& outlayerInval) = 0;

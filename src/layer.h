@@ -10,7 +10,6 @@
 #include "math_utils.h"
 #include "connection.h"
 #include "component.h"
-#include "parameter.h"
 
 class Layer : public Component
 {
@@ -32,7 +31,7 @@ public:
 	 * If you change maxTemporalSkip, the gradient vector will be extended or shrinked.
 	 * Need to manually reset the gradient to ensure consistency.
 	 */
-	virtual void set_max_temporal_skip(int maxTemporalSkip)
+	void set_max_temporal_skip(int maxTemporalSkip)
 	{
 		if (maxTemporalSkip != UNLIMITED_TEMPORAL_SKIP)
 		{
@@ -118,26 +117,6 @@ public:
 		return this->_frame;
 	}
 
-	virtual float& outValue(int i)
-	{
-		return outValues[i];
-	}
-
-	virtual float& inValue(int i)
-	{
-		return inValues[i];
-	}
-
-	virtual float& outGradient(int i)
-	{
-		return outGradients[i];
-	}
-
-	virtual float& inGradient(int i)
-	{
-		return inGradients[i];
-	}
-
 	virtual string str()
 	{
 		ostringstream os;
@@ -207,5 +186,7 @@ public:
  * Both Layer::Ptr and LayerPtr works
  */
 TypedefPtr(Layer);
+
+//int Layer::MaxFrameInterval = 2;
 
 #endif /* LAYER_H_ */
