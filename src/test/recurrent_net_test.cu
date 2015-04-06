@@ -7,7 +7,7 @@
 TEST(RecurrentNet, Simple)
 {
 	FakeRand::instance_connection().set_rand_seq(vector<float> {
-		0.347, 1.48, 0.83, 0.709, 0.86, 1.99
+		0.543, 0.44, 1.47, 1.64, 1.31, -0.616
 	});
 	FakeRand::instance_prehistory().set_rand_seq(vector<float> {
 		.7
@@ -24,27 +24,47 @@ TEST(RecurrentNet, Simple)
 	auto l3 = Layer::make<SigmoidLayer>();
 	auto l4 = Layer::make<SquareLossLayer>();
 
+	// Naming: c<in><out>_<skip>
+	auto c12 = Connection::make<LinearConnection>(l1, l2);
+	auto c23 = Connection::make<LinearConnection>(l2, l3);
+	auto c34 = Connection::make<LinearConnection>(l3, l4);
+
+	auto c22_1 = Connection::make<LinearConnection>(l2, l2);
+	auto c23_1 = Connection::make<LinearConnection>(l2, l3);
+	auto c33_1 = Connection::make<LinearConnection>(l3, l3);
+
 	RecurrentNetwork net;
 	net.set_input(input);
 	net.set_target(target);
 
 	net.add_layer(l1);
-
-	net.new_connection<LinearConnection>(l1, l2);
-	net.new_recurrent_connection<LinearConnection>(l2, l2);
+	net.add_recurrent_connection(c22_1);
+	net.add_connection(c12);
 
 	net.add_layer(l2);
 
+	net.add_recurrent_connection(c23_1);
+	net.add_recurrent_connection(c33_1);
+	net.add_connection(c23);
+
+	net.add_layer(l3);
+	net.add_connection(c34);
+	net.add_layer(l4);
+/*
+	RecurrentNetwork net;
+	net.set_input(input);
+	net.set_target(target);
+	net.add_layer(l1);
+	net.new_connection<LinearConnection>(l1, l2);
+	net.new_recurrent_connection<LinearConnection>(l2, l2);
+	net.add_layer(l2);
 	net.new_recurrent_connection<LinearConnection>(l2, l3);
 	net.new_connection<LinearConnection>(l2, l3);
 	net.new_recurrent_connection<LinearConnection>(l3, l3);
-
 	net.add_layer(l3);
-
 	net.new_connection<LinearConnection>(l3, l4);
-
 	net.add_layer(l4);
-
+*/
 	gradient_check(net, 1e-2, 1);
 }
 
