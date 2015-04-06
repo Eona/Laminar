@@ -31,11 +31,7 @@ public:
 		resize_on_demand(inLayer->outValues, inFrame);
 		resize_on_demand(outLayer->inValues, outFrame);
 
-		float inlayerOutvalue = 0;
-		if (inFrame >= 0)
-			inlayerOutvalue = inLayer->outValues[inFrame];
-
-		_forward(inlayerOutvalue, outLayer->inValues[outFrame]);
+		_forward(inLayer->outValues[inFrame], outLayer->inValues[outFrame]);
 	}
 
 	/**
@@ -63,7 +59,6 @@ public:
 			resize_on_demand(outLayer->inGradients, outFrame);
 		}
 
-		if (inFrame >= 0)
 		_backward(outLayer->inGradients[
 					isHistorySaved ? outFrame : 0],
 				inLayer->outValues[inFrame],
@@ -221,6 +216,12 @@ public:
 
 	float& param; // aliases
 	float& gradient;
+};
+
+
+class GatedConnection : public Connection
+{
+
 };
 
 #endif /* CONNECTION_H_ */
