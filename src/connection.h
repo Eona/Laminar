@@ -71,6 +71,9 @@ public:
 					isHistorySaved ? inFrame : outFrame - inFrame]);
 	}
 
+	/**
+	 * Back prop to h[-1] ...
+	 */
 	virtual void prehistory_backward(ParamContainer::Ptr pcontainer, int outFrame, int inFrame)
 	{
 		assert_throw(inFrame < 0,
@@ -80,17 +83,10 @@ public:
 		if (isHistorySaved)
 			resize_on_demand(outLayer->inGradients, outFrame);
 
-//		DEBUG_MSG("VEC AT GRAD", vec_at(pcontainer->paramGradients, inFrame));
-//		DEBUG_MSG("VEC AT VAL", vec_at(pcontainer->paramValues, inFrame));
 		_backward(outLayer->inGradients[
 					isHistorySaved ? outFrame : 0],
-//				pcontainer->paramValues[-1-inFrame],
-//				pcontainer->paramGradients[-1-inFrame]);
 				vec_at(pcontainer->paramValues, inFrame),
 				vec_at(pcontainer->paramGradients, inFrame));
-
-//				inLayer->outGradients[
-//					isHistorySaved ? inFrame : outFrame - inFrame]);
 	}
 
 	virtual void _forward(float inlayerOutval, float& outlayerInval) = 0;
@@ -220,7 +216,7 @@ public:
 	}
 
 	// DUMMY
-	UniformFloatSingleton<-3, 6>& debugrnd = UniformFloatSingleton<-3, 6>::instance();
+	UniformFloatSingleton<-1, 2>& debugrnd = UniformFloatSingleton<-1, 2>::instance();
 	FakeRand& fakernd = FakeRand::instance();
 
 	float& param; // aliases
