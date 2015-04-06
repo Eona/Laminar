@@ -22,17 +22,17 @@ TEST(RecurrentNet, Simple)
 	net.set_input(input);
 	net.set_target(target);
 
+
 	net.add_layer(l1);
 	net.new_connection<LinearConnection>(l1, l2);
+	net.new_recurrent_connection<LinearConnection>(l2, l2);
 	net.add_layer(l2);
+	net.new_recurrent_connection<LinearConnection>(l2, l3);
 	net.new_connection<LinearConnection>(l2, l3);
+	net.new_recurrent_connection<LinearConnection>(l3, l3);
 	net.add_layer(l3);
 	net.new_connection<LinearConnection>(l3, l4);
 	net.add_layer(l4);
-
-	net.new_recurrent_connection<LinearConnection>(l2, l2);
-	net.new_recurrent_connection<LinearConnection>(l2, l3);
-	net.new_recurrent_connection<LinearConnection>(l3, l3);
 
 	gradient_check(net, 1e-2, 1);
 }
@@ -57,20 +57,23 @@ TEST(RecurrentNet, TemporalSkip)
 	net.set_max_temporal_skip(3);
 
 	net.add_layer(l1);
-	net.new_connection<LinearConnection>(l1, l2);
-	net.add_layer(l2);
-	net.new_connection<LinearConnection>(l2, l3);
-	net.add_layer(l3);
-	net.new_connection<LinearConnection>(l3, l4);
-	net.add_layer(l4);
 
 	net.new_recurrent_connection<LinearConnection>(l2, l2);
 	net.new_recurrent_skip_connection<LinearConnection>(3, l2, l2);
+	net.new_recurrent_skip_connection<LinearConnection>(3, l3, l2);
+	net.new_connection<LinearConnection>(l1, l2);
+
+	net.add_layer(l2);
+
+	net.new_connection<LinearConnection>(l2, l3);
 	net.new_recurrent_skip_connection<LinearConnection>(2, l2, l3);
 	net.new_recurrent_connection<LinearConnection>(l2, l3);
-	net.new_recurrent_skip_connection<LinearConnection>(3, l3, l2);
 	net.new_recurrent_connection<LinearConnection>(l3, l3);
 	net.new_recurrent_skip_connection<LinearConnection>(2, l3, l3);
+
+	net.add_layer(l3);
+	net.new_connection<LinearConnection>(l3, l4);
+	net.add_layer(l4);
 
 	gradient_check(net, 1e-2, 1);
 }
