@@ -200,7 +200,7 @@ public:
 	{
 		for (ComponentPtr compon : this->components)
 		{
-			const ConnectionPtr conn = Component::cast<Connection>(compon);
+			ConnectionPtr conn = Component::cast<Connection>(compon);
 			if (conn && recurInfoMap.find(conn) != recurInfoMap.end())
 			{
 				int skip = recurInfoMap[conn];
@@ -208,8 +208,9 @@ public:
 					conn->forward(frame - skip, frame);
 				else
 					conn->prehistory_forward(
-							prehistoryLayerMap[conn->inLayer],
-							frame - skip, frame);
+						// Ugly workaround for eclipse syntax highlighter
+						static_cast<ParamContainerPtr>(prehistoryLayerMap[conn->inLayer]),
+						frame - skip, frame);
 			}
 			else
 				compon->forward(frame, frame);
@@ -237,7 +238,7 @@ public:
 					conn->backward(frame, frame - skip);
 				else
 					conn->prehistory_backward(
-							prehistoryLayerMap[conn->inLayer],
+						static_cast<ParamContainerPtr>(prehistoryLayerMap[conn->inLayer]),
 							frame, frame - skip);
 			}
 			else
@@ -310,25 +311,6 @@ public:
 
 		this->assemble();
 	}
-
-	/************************************/
-	struct RecurConnectionInfo
-	{
-		// must have default ctor for hashmap to work!!
-		RecurConnectionInfo() { }
-
-		RecurConnectionInfo(ParamContainerPtr _prehistory, int _temporalSkip = 1) :
-			prehistory(_prehistory), temporalSkip(_temporalSkip)
-		{ }
-
-/*		RecurConnectionInfo& operator=(const RecurConnectionInfo& other)
-		{
-			this->prehistory = other.
-		}*/
-
-		ParamContainerPtr prehistory;
-		int temporalSkip;
-	};
 
 	std::unordered_map<LayerPtr, ParamContainerPtr> prehistoryLayerMap;
 
