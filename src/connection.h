@@ -244,19 +244,7 @@ public:
 		gateLayer(_gateLayer)
 	{ }
 
-/*	virtual void forward(int inFrame = 0, int outFrame = 0)
-		{
-			check_frame_consistency(inFrame, outFrame);
-
-			resize_on_demand(inLayer->outValues, inFrame);
-			resize_on_demand(outLayer->inValues, outFrame);
-
-			_forward(inLayer->outValues[inFrame], outLayer->inValues[outFrame]);
-		}
-
-		*
-		 * handle h[-1], h[-2] ... h[-maxTemporalSkip]
-
+/*
 		virtual void prehistory_forward(ParamContainer::Ptr pcontainer, int inFrame, int outFrame)
 		{
 			assert_throw(inFrame < 0,
@@ -266,24 +254,6 @@ public:
 
 			_forward(vec_at(pcontainer->paramValues, inFrame),
 				outLayer->inValues[outFrame]);
-		}
-
-		virtual void backward(int outFrame = 0, int inFrame = 0)
-		{
-			check_frame_consistency(inFrame, outFrame);
-
-			bool isHistorySaved = inLayer->is_full_gradient_history_saved();
-			if (isHistorySaved)
-			{
-				resize_on_demand(inLayer->outGradients, inFrame);
-				resize_on_demand(outLayer->inGradients, outFrame);
-			}
-
-			_backward(outLayer->inGradients[
-						isHistorySaved ? outFrame : 0],
-					inLayer->outValues[inFrame],
-					inLayer->outGradients[
-						isHistorySaved ? inFrame : outFrame - inFrame]);
 		}
 
 		*
@@ -304,19 +274,54 @@ public:
 					vec_at(pcontainer->paramGradients, inFrame));
 		}
 
+
+	virtual void forward(int inFrame = 0, int outFrame = 0)
+	{
+		_forward(inLayer->outValues[inFrame], outLayer->inValues[outFrame]);
+	}
+
+		virtual void backward(int outFrame = 0, int inFrame = 0)
+		{
+			check_frame_consistency(inFrame, outFrame);
+
+			bool isHistorySaved = inLayer->is_full_gradient_history_saved();
+			if (isHistorySaved)
+			{
+				resize_on_demand(inLayer->outGradients, inFrame);
+				resize_on_demand(outLayer->inGradients, outFrame);
+			}
+
+			_backward(outLayer->inGradients[
+						isHistorySaved ? outFrame : 0],
+					inLayer->outValues[inFrame],
+					inLayer->outGradients[
+						isHistorySaved ? inFrame : outFrame - inFrame]);
+		}
+		*/
+
 	virtual void _forward(float inlayerOutval, float& outlayerInval)
 	{
-		outlayerInval += gateLayer->outValues * inlayerOutval;
+		resize_on_demand(gateLayer->outValues, out_frame());
+		outlayerInval += gateLayer->outValues[out_frame()] * inlayerOutval;
 	}
 
 	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
 	{
-		// should check if input module actually has gradient
-		inlayerOutgrad += lmn::transpose(param) * outlayerIngrad;
-		this->gradient += outlayerIngrad * lmn::transpose(inlayerOutval);
-	}*/
 
+		inlayerOutgrad += gateLayer->outValues[out_frame()] * outlayerIngrad;
+		bool isHistorySaved = gateLayer->is_full_gradient_history_saved();
+		if (isHistorySaved)
+		{
+			resize_on_demand(gateLayer->outGradients, out_frame());
+		}
+		gateLayer->outGradients[
+			isHistorySaved ? out_frame() : 0] += outlayerIngrad * inlayerOutval;
+	}
 
+	string str()
+	{
+		return "[GatedConn]";
+	}
 	LayerPtr gateLayer;
 };
 

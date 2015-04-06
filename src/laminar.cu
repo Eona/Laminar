@@ -22,29 +22,24 @@ int main(int argc, char **argv)
 
 	auto l1 = Layer::make<LinearLayer>();
 	auto l2 = Layer::make<SigmoidLayer>();
-	auto l3 = Layer::make<SigmoidLayer>();
+	auto l3 = Layer::make<SigmoidLayer>(); // gate
 	auto l4 = Layer::make<SquareLossLayer>();
 
 	RecurrentNetwork net;
 	net.set_input(input);
 	net.set_target(target);
-	net.set_max_temporal_skip(Layer::UNLIMITED_TEMPORAL_SKIP);
+	net.set_max_temporal_skip(1);
 
 	net.add_layer(l1);
 	net.new_connection<LinearConnection>(l1, l2);
+	net.new_connection<LinearConnection>(l1, l3);
 	net.add_layer(l2);
-	net.new_connection<LinearConnection>(l2, l3);
 	net.add_layer(l3);
+	net.new_connection<LinearConnection>(l2, l4);
 	net.new_connection<LinearConnection>(l3, l4);
 	net.add_layer(l4);
 
-	net.new_recurrent_connection<LinearConnection>(l2, l2);
-	net.new_recurrent_skip_connection<LinearConnection>(2, l2, l2);
-	net.new_recurrent_skip_connection<LinearConnection>(2, l2, l3);
-	net.new_recurrent_connection<LinearConnection>(l2, l3);
-	net.new_recurrent_skip_connection<LinearConnection>(3, l3, l2);
-	net.new_recurrent_connection<LinearConnection>(l3, l3);
-	net.new_recurrent_skip_connection<LinearConnection>(2, l3, l3);
+	net.new_recurrent_connection<GatedConnection>(l2, l3, l4);
 
 	gradient_check(net, 1e-2, 1);
 }
