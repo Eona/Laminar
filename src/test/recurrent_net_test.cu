@@ -6,9 +6,15 @@
 
 TEST(RecurrentNet, Simple)
 {
-	FakeRand::instance().set_rand_seq(vector<float> {
-		0.527, 1.54, 1.78, 1.45, 2.56, -0.874, -0.861, -0.0736
+	FakeRand::instance_connection().set_rand_seq(vector<float> {
+		0.347, 1.48, 0.83, 0.709, 0.86, 1.99
 	});
+	FakeRand::instance_prehistory().set_rand_seq(vector<float> {
+		.7
+	});
+	FakeRand::instance_connection().use_fake_seq();
+//	FakeRand::instance_connection().use_uniform_rand(-1, 2);
+//	FakeRand::instance_connection().set_rand_display(true);
 
 	vector<float> input { 1.2, -0.9, 0.57, -1.47, -3.08 };
 	vector<float> target { 1.39, 0.75, -0.45, -0.11, 1.55 };
@@ -22,16 +28,21 @@ TEST(RecurrentNet, Simple)
 	net.set_input(input);
 	net.set_target(target);
 
-
 	net.add_layer(l1);
+
 	net.new_connection<LinearConnection>(l1, l2);
 	net.new_recurrent_connection<LinearConnection>(l2, l2);
+
 	net.add_layer(l2);
+
 	net.new_recurrent_connection<LinearConnection>(l2, l3);
 	net.new_connection<LinearConnection>(l2, l3);
 	net.new_recurrent_connection<LinearConnection>(l3, l3);
+
 	net.add_layer(l3);
+
 	net.new_connection<LinearConnection>(l3, l4);
+
 	net.add_layer(l4);
 
 	gradient_check(net, 1e-2, 1);
@@ -39,8 +50,16 @@ TEST(RecurrentNet, Simple)
 
 TEST(RecurrentNet, TemporalSkip)
 {
-	FakeRand::instance().set_rand_seq(vector<float> {
-		1.39, 0.27, 1.1, -0.317, -1.41, 0.0649, 0.777, 3.58, 0.18, 1.72, -0.963, 1.46, -0.685, -0.0132, 0.471, 0.783, 0.19
+	FakeRand::instance_connection().set_rand_seq(vector<float> {
+		0.163, 1.96, 1.09, 0.516, -0.585, 0.776, 1, -0.301, -0.167, 0.732
+	});
+
+	FakeRand::instance_connection().use_uniform_rand(-1, 2);
+	FakeRand::instance_connection().set_rand_display(true);
+	FakeRand::instance_connection().use_fake_seq();
+
+	FakeRand::instance_prehistory().set_rand_seq(vector<float> {
+		.3
 	});
 
 	vector<float> input { 1.2, -0.9, 0.57, -1.47, -3.08, 1.2, .31, -2.33, -0.89 };
@@ -50,6 +69,11 @@ TEST(RecurrentNet, TemporalSkip)
 	auto l2 = Layer::make<SigmoidLayer>();
 	auto l3 = Layer::make<CosineLayer>();
 	auto l4 = Layer::make<SquareLossLayer>();
+
+	// NOTE IMPORTANT RULE
+	// For recurrent linear connection conn[layer(alpha) => layer(beta)]
+	// Must be added before you add layer(beta).
+	// Ideally you should add layer(alpha) before you add conn, but doesn't matter.
 
 	// Naming: c<in><out>_<skip>
 	auto c12 = Connection::make<LinearConnection>(l1, l2);
@@ -71,16 +95,16 @@ TEST(RecurrentNet, TemporalSkip)
 
 	net.add_layer(l1);
 
+	net.add_connection(c12);
 	net.add_recurrent_connection(c22_1);
 	net.add_recurrent_connection(c22_3, 3);
 	net.add_recurrent_connection(c32_3, 3);
-	net.add_connection(c12);
 
 	net.add_layer(l2);
 
 	net.add_connection(c23);
-	net.add_recurrent_connection(c23_2, 2);
 	net.add_recurrent_connection(c23_1);
+	net.add_recurrent_connection(c23_2, 2);
 	net.add_recurrent_connection(c33_1);
 	net.add_recurrent_connection(c33_2, 2);
 
@@ -110,4 +134,17 @@ TEST(RecurrentNet, TemporalSkip)
 */
 
 	gradient_check(net, 1e-2, 1);
+
+	net.reset();
+	for (int i = 0; i < net.input.size(); ++i)
+		net.forward_prop();
+	for (int i = 0; i < net.input.size(); ++i)
+		net.backward_prop();
+
+/*	for (ConnectionPtr c : { c12, c23, c34, c22_1, c22_3, c23_1, c23_2, c32_3, c33_1, c33_2 })
+		cout << std::setprecision(4) << Connection::cast<LinearConnection>(c)->gradient << "  ";
+	cout << endl;
+	for (LayerPtr l : { l2, l3 })
+		cout << std::setprecision(4) << static_cast<ParamContainerPtr>(net.prehistoryLayerMap[l])->paramGradients << "  ";
+	cout << endl;*/
 }

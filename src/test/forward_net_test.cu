@@ -6,7 +6,7 @@
 
 TEST(ForwardNet, Interconnected)
 {
-	FakeRand::instance().set_rand_seq(
+	FakeRand::instance_connection().set_rand_seq(
 			vector<float> { 2.51, 5.39, 5.80, -2.96, -2.73, -2.4, 0.55, -.47 });
 
 	float input = 0.2;

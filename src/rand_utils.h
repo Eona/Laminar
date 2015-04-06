@@ -133,7 +133,7 @@ public:
 		i = 0;
 	}
 
-	void is_rand_displayed(bool isDisplay)
+	void set_rand_display(bool isDisplay)
 	{
 		this->isDisplay = isDisplay;
 	}
