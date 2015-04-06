@@ -187,6 +187,4 @@ public:
  */
 TypedefPtr(Layer);
 
-//int Layer::MaxFrameInterval = 2;
-
 #endif /* LAYER_H_ */

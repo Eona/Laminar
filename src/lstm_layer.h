@@ -8,14 +8,16 @@
 #include "layer.h"
 #include "parameter.h"
 
+using lmn::transpose;
+
 namespace lmn {
 
-inline float sigmoidGradient(float inValue, float outValue)
+inline float sigmoidGradient(float outValue)
 {
 	return outValue * (1.f - outValue);
 }
 
-inline float tanhGradient(float inValue, float outValue)
+inline float tanhGradient(float outValue)
 {
 	return 1 - outValue * outValue;
 }
@@ -69,6 +71,9 @@ public:
 		h_0_grad(paramGradients[_h_0]),
 		cell_0_grad(paramGradients[_cell_0]),
 
+		// Only keep t and t-1 window
+		cellGradients(2),
+
 		gateActivator(lmn::sigmoid),
 		cellInputActivator(lmn::tanh),
 		cellOutputActivator(lmn::tanh),
@@ -82,6 +87,7 @@ public:
 	virtual void _forward(float& inValue, float& outValue)
 	{
 		resize_on_demand(cellValues, frame());
+		resize_on_demand(cellOutputValues, frame());
 
 		float h_last = frame() > 0 ?
 				this->outValues[frame() - 1] :
@@ -101,22 +107,37 @@ public:
 				W_xc * inValue + W_hc * h_last + b_c);
 
 		float cell = inputGate * cell_hat + forgetGate * cell_last;
-
 		cellValues[frame()] = cell;
 
 		float outputGate = gateActivator(
 				W_xo * inValue + W_ho * h_last + W_co * cell + b_o);
+		outputGateValues[frame()] = outputGate;
 
-		outValue = outputGate * cellOutputActivator(cell);
+		float cellOutput = cellOutputActivator(cell);
+		cellOutputValues[frame()] = cellOutput;
+
+		outValue = outputGate * cellOutput;
 	}
 
 	virtual void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
-		resize_on_demand(cellGradients, frame());
+		float cellOutput = cellOutputValues[frame()];
+		float outputGate = outputGateValues[frame()];
+		float cell = cellValues[frame()];
+
+		float outputGate_grad = outGradient * transpose(cellOutput);
+		float cellOutput_grad = transpose(outputGate) * outGradient;
+
+		float cell_grad = cellOutputActivatorGradient(cellOutput);
+
+		int lastFrame = is_full_gradient_history_saved() ? frame() + 1 : 0 + 1;
+//		float& h_last_grad =
+//			this->outGradients;
+		inGradient += transpose(W_xo) * outputGate_grad;
 
 
 
-		inGradient = outValue * (1.0f - outValue) * outGradient;
+		// inGradient = outValue * (1.0f - outValue) * outGradient;
 	}
 
 	virtual void shiftBackGradientWindow()
@@ -133,8 +154,10 @@ public:
 
 	// internal state history
 	vector<float> cellValues;
+	vector<float> cellOutputValues;
 	// keep up to 2 values only (t and t-1)
 	vector<float> cellGradients;
+	vector<float> outputGateValues;
 
 	function<float(float)>
 		gateActivator,
@@ -143,9 +166,11 @@ public:
 
 	/**
 	 * Function like sigmoid's gradient can be more easily computed
-	 * given the output value
+	 * given the output value.
+	 * We do not support gradient computation given input, because of
+	 * storage concern.
 	 */
-	function<float(float, float)>
+	function<float(float)>
 		gateActivatorGradient,
 		cellInputActivatorGradient,
 		cellOutputActivatorGradient;
