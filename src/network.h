@@ -201,9 +201,9 @@ public:
 		for (ComponentPtr compon : this->components)
 		{
 			ConnectionPtr conn = Component::cast<Connection>(compon);
-			if (conn && recurInfoMap.find(conn) != recurInfoMap.end())
+			if (conn && recurConnectionMap.find(conn) != recurConnectionMap.end())
 			{
-				int skip = recurInfoMap[conn];
+				int skip = recurConnectionMap[conn];
 				if (frame >= skip)
 					conn->forward(frame - skip, frame);
 				else
@@ -231,9 +231,9 @@ public:
 		{
 			ComponentPtr compon = components[i];
 			ConnectionPtr conn = Component::cast<Connection>(compon);
-			if (recurInfoMap.find(conn) != recurInfoMap.end())
+			if (recurConnectionMap.find(conn) != recurConnectionMap.end())
 			{
-				int skip = recurInfoMap[conn];
+				int skip = recurConnectionMap[conn];
 				if (frame >= skip)
 					conn->backward(frame, frame - skip);
 				else
@@ -282,7 +282,7 @@ public:
 			h_0->second->fill_rand(dummyRand);
 		}
 
-		recurInfoMap[conn] = temporalSkip;
+		recurConnectionMap[conn] = temporalSkip;
 	}
 
 	template<typename ConnectionT, typename ...ArgT>
@@ -307,14 +307,16 @@ public:
 		for (ComponentPtr compon : this->components)
 			compon->reset();
 
+		for (auto& entry : prehistoryLayerMap)
+			entry.second->resetGradients();
+
 		frame = 0;
 
 		this->assemble();
 	}
 
 	std::unordered_map<LayerPtr, ParamContainerPtr> prehistoryLayerMap;
-
-	std::unordered_map<ConnectionPtr, int> recurInfoMap;
+	std::unordered_map<ConnectionPtr, int> recurConnectionMap;
 
 protected:
 	int frame = 0;
