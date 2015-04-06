@@ -28,10 +28,10 @@ inline float tanhGradient(float outValue)
  * http://deeplearning.net/tutorial/lstm.html
  * LSTM is inherently recurrent. No need to add explicit recurrent connection.
  */
-class LstmLayer : public Layer, public ParamContainer
+class LstmDebugLayer : public Layer, public ParamContainer
 {
 public:
-	LstmLayer() :
+	LstmDebugLayer() :
 		Layer(),
 		ParamContainer(LSTM_PARAM_SIZE),
 
@@ -82,7 +82,7 @@ public:
 		cellOutputActivatorGradient(lmn::tanhGradient)
 	{}
 
-	~LstmLayer() { }
+	~LstmDebugLayer() { }
 
 	virtual void _forward(float& inValue, float& outValue)
 	{
@@ -121,36 +121,9 @@ public:
 
 	virtual void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
-		float cellOutput = cellOutputValues[frame()];
-		float outputGate = outputGateValues[frame()];
-		float cell = cellValues[frame()];
-
-		float cellOutput_grad = transpose(outputGate) * outGradient;
-		float outputGate_grad = outGradient * transpose(cellOutput);
-
-		float cell_grad = cellOutputActivatorGradient(cellOutput);
-
-		// gradient window is stored in reverse-time order
-		int lastFrame = is_full_gradient_history_saved() ? frame() - 1 : 0 + 1;
-
-		float& h_last_grad = frame() < 1 ?
-				h_0_grad :
-				this->outGradients[lastFrame];
-		float h_last = frame() < 1 ?
-				h_0 :
-				this->outValues[lastFrame];
-
-		// prefix pre_ for sigma(pre_X) = X
-		float pre_outputGate_grad = gateActivatorGradient(outputGate) * outputGate_grad;
-		inGradient += transpose(W_xo) * pre_outputGate_grad;
-		W_xo_grad = pre_outputGate_grad * transpose(inValue);
-		h_last_grad += transpose(W_ho) * pre_outputGate_grad;
-		W_ho_grad = pre_outputGate_grad * transpose(h_last);
-
-
-
-
-		// inGradient = outValue * (1.0f - outValue) * outGradient;
+		throw UnimplementedException(
+				"This LSTM layer is for debugging only.\n"
+				"Backprop is not supported. ");
 	}
 
 	virtual void shiftBackGradientWindow()
@@ -161,7 +134,7 @@ public:
 
 	string str()
 	{
-		return string("[LstmLayer: \n")
+		return string("[LstmLayer (DEBUG ONLY): \n")
 				+ Layer::str() + "]";
 	}
 
