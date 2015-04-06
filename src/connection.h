@@ -236,70 +236,20 @@ public:
 class GatedConnection : public Connection
 {
 public:
+	/**
+	 * outLayer = inLayer * gateLayer
+	 * If used in a recurrent fashion, inLayer will be from the past while
+	 * gateLayer and outLayer will both be in the current timeframe.
+	 * outLayer[t] = inLayer[t - temporalSkip] * gateLayer[t]
+	 */
 	GatedConnection(LayerPtr _inLayer, LayerPtr _gateLayer, LayerPtr _outLayer):
 		Connection(_inLayer, _outLayer),
 		gateLayer(_gateLayer)
 	{ }
 
-/*
-		virtual void prehistory_forward(ParamContainer::Ptr pcontainer, int inFrame, int outFrame)
-		{
-			assert_throw(inFrame < 0,
-				NetworkException("inFrame should be < 0 for prehistory_forward"));
-
-			resize_on_demand(outLayer->inValues, outFrame);
-
-			_forward(vec_at(pcontainer->paramValues, inFrame),
-				outLayer->inValues[outFrame]);
-		}
-
-		*
-		 * Back prop to h[-1] ...
-
-		virtual void prehistory_backward(ParamContainer::Ptr pcontainer, int outFrame, int inFrame)
-		{
-			assert_throw(inFrame < 0,
-				NetworkException("inFrame should be < 0 for prehistory_backward"));
-
-			bool isHistorySaved = inLayer->is_full_gradient_history_saved();
-			if (isHistorySaved)
-				resize_on_demand(outLayer->inGradients, outFrame);
-
-			_backward(outLayer->inGradients[
-						isHistorySaved ? outFrame : 0],
-					vec_at(pcontainer->paramValues, inFrame),
-					vec_at(pcontainer->paramGradients, inFrame));
-		}
-
-
-	virtual void forward(int inFrame = 0, int outFrame = 0)
-	{
-		_forward(inLayer->outValues[inFrame], outLayer->inValues[outFrame]);
-	}
-
-		virtual void backward(int outFrame = 0, int inFrame = 0)
-		{
-			check_frame_consistency(inFrame, outFrame);
-
-			bool isHistorySaved = inLayer->is_full_gradient_history_saved();
-			if (isHistorySaved)
-			{
-				resize_on_demand(inLayer->outGradients, inFrame);
-				resize_on_demand(outLayer->inGradients, outFrame);
-			}
-
-			_backward(outLayer->inGradients[
-						isHistorySaved ? outFrame : 0],
-					inLayer->outValues[inFrame],
-					inLayer->outGradients[
-						isHistorySaved ? inFrame : outFrame - inFrame]);
-		}
-		*/
-
 	virtual void _forward(float inlayerOutval, float& outlayerInval)
 	{
 //		resize_on_demand(gateLayer->outValues, out_frame());
-//		DEBUG_MSG(gateLayer->outValues[out_frame()]);
 		outlayerInval += gateLayer->outValues[out_frame()] * inlayerOutval;
 	}
 
