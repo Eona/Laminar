@@ -101,6 +101,7 @@ inline void gradient_check(Network& net,
 
 		oldInput[inp] = restoreInputVal; // restore
 	}
+	net.set_input(oldInput);
 }
 
 #endif /* GRADIENT_CHECK_H_ */
