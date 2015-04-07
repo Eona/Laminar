@@ -22,7 +22,7 @@ public:
 
 	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
 	{
-		inlayerOutgrad = outlayerIngrad;
+		inlayerOutgrad += outlayerIngrad;
 	}
 
 	string str()
