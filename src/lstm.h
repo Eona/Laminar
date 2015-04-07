@@ -8,11 +8,8 @@
 #include "layer.h"
 #include "parameter.h"
 
-using lmn::transpose;
-
 /**
- * http://deeplearning.net/tutorial/lstm.html
- * LSTM is inherently recurrent. No need to add explicit recurrent connection.
+ * DEBUG ONLY
  */
 class LstmDebugLayer : public Layer, public ParamContainer
 {
@@ -57,9 +54,6 @@ public:
 		h_0_grad(paramGradients[_h_0]),
 		cell_0_grad(paramGradients[_cell_0]),
 
-		// Only keep t and t-1 window
-		cellGradients(2),
-
 		gateActivator(lmn::sigmoid),
 		cellInputActivator(lmn::tanh),
 		cellOutputActivator(lmn::tanh),
@@ -72,6 +66,17 @@ public:
 
 	virtual void _forward(float& inValue, float& outValue)
 	{
+	vector<float> dum {
+		-0.904, 0.312, -0.944, 1.34, -2.14, -1.69, -2.88, -0.889, -2.28, -0.414, -2.07
+	};
+	int pt = 0;
+	for (float* elem : { &W_xi, &W_hi, &W_ci, &W_xf, &W_hf, &W_cf, &W_xc, &W_hc, &W_xo, &W_ho, &W_co })
+		*elem = dum[pt ++];
+	for (float* elem : { &b_i, &b_f, &b_c, &b_o })
+		*elem = 0;
+	for (float* elem : { &h_0, &cell_0 })
+		*elem = 0.3f;
+
 		float h_last = frame() > 0 ?
 				this->outValues[frame() - 1] :
 				h_0;
@@ -90,14 +95,13 @@ public:
 				W_xc * inValue + W_hc * h_last + b_c);
 
 		float cell = inputGate * cell_hat + forgetGate * cell_last;
+		vec_resize_on_demand(cellValues, frame());
 		cellValues[frame()] = cell;
 
 		float outputGate = gateActivator(
 				W_xo * inValue + W_ho * h_last + W_co * cell + b_o);
-		outputGateValues[frame()] = outputGate;
 
 		float cellOutput = cellOutputActivator(cell);
-		cellOutputValues[frame()] = cellOutput;
 
 		outValue = outputGate * cellOutput;
 	}
@@ -109,12 +113,6 @@ public:
 				"Backprop is not supported. ");
 	}
 
-	virtual void shiftBackGradientWindow()
-	{
-		Layer::shiftBackGradientWindow();
-		Layer::shiftBackVector(cellGradients);
-	}
-
 	string str()
 	{
 		return string("[LstmLayer (DEBUG ONLY): \n")
@@ -123,10 +121,6 @@ public:
 
 	// internal state history
 	vector<float> cellValues;
-	vector<float> cellOutputValues;
-	// keep up to 2 values only (t and t-1)
-	vector<float> cellGradients;
-	vector<float> outputGateValues;
 
 	function<float(float)>
 		gateActivator,

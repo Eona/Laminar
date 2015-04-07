@@ -134,7 +134,36 @@ int main(int argc, char **argv)
 
 	net.add_layer(lossLayer);
 
-	gradient_check(net, 1e-2, 1);
+	net.assemble();
+	for (int i = 0; i < input.size(); ++i)
+		net.forward_prop();
+	cout << net.lossLayer->outValues << endl;
+
+
+	/************************************/
+	RecurrentNetwork lstm;
+	lstm.set_input(input);
+	lstm.set_target(target);
+	lstm.set_max_temporal_skip(1);
+
+	inLayer = Layer::make<ConstantLayer>();
+
+	auto lstmLayer = Layer::make<LstmDebugLayer>();
+
+	lossLayer = Layer::make<SquareLossLayer>();
+
+	lstm.add_layer(inLayer);
+	lstm.new_connection<ConstantConnection>(inLayer, lstmLayer);
+	lstm.add_layer(lstmLayer);
+	lstm.new_connection<ConstantConnection>(lstmLayer, lossLayer);
+	lstm.add_layer(lossLayer);
+
+	lstm.assemble();
+	for (int i = 0; i < input.size(); ++i)
+		lstm.forward_prop();
+	cout << lstm.lossLayer->outValues << endl;
+
+
 /*
 	for (ConnectionPtr c : fullConns)
 		cout << std::setprecision(4) << Connection::cast<FullConnection>(c)->param << "  \n";
