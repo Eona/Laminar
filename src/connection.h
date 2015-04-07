@@ -282,28 +282,35 @@ class GatedTanhConnection : public GatedConnection
 {
 public:
 	/**
-	 * outLayer = inLayer * gateLayer
+	 * outLayer = inLayer * tanh(gateLayer)
 	 * If used in a recurrent fashion, inLayer will be from the past while
 	 * gateLayer and outLayer will both be in the current timeframe.
-	 * outLayer[t] = inLayer[t - temporalSkip] * gateLayer[t]
+	 * outLayer[t] = inLayer[t - temporalSkip] * tanh(gateLayer[t])
 	 */
 	GatedTanhConnection(LayerPtr _inLayer, LayerPtr _gateLayer, LayerPtr _outLayer):
 		GatedConnection(_inLayer, _gateLayer, _outLayer)
 	{ }
 
-	virtual void _forward(float inlayerOutval, float& outlayerInval)
+	virtual void _gated_forward(float& inlayerOutval, float& gateOutval,
+		// output param:
+		float& outlayerInval)
 	{
-		outlayerInval += gateLayer->outValues[out_frame()] * lmn::tanh(inlayerOutval);
+		int t = out_frame();
+		resize_on_demand(cachedOutvals, t);
+
+		cachedOutvals[t] = lmn::tanh(inlayerOutval);
+
+		outlayerInval += gateOutval * cachedOutvals[t];
 	}
 
-	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
+	virtual void _gated_backward(float& outlayerIngrad, float& inlayerOutval, float& gateOutval,
+			// write to output params:
+			float& inlayerOutgrad, float& gateOutgrad)
 	{
-		inlayerOutgrad += gateLayer->outValues[out_frame()] * outlayerIngrad;
+		float cachedOutval = cachedOutvals[out_frame()];
 
-		bool isHistorySaved = gateLayer->is_full_gradient_history_saved();
-
-		gateLayer->outGradients[
-			isHistorySaved ? out_frame() : 0] += outlayerIngrad * inlayerOutval;
+		inlayerOutgrad += gateOutval * lmn::tanhGradient(cachedOutval) * outlayerIngrad;
+		gateOutgrad += outlayerIngrad * cachedOutval;
 	}
 
 	string str()
@@ -311,7 +318,9 @@ public:
 		return "[GatedTanhConnection]";
 	}
 
-	LayerPtr gateLayer;
+private:
+	// performance acceleration ONLY
+	vector<float> cachedOutvals;
 };
 
 #endif /* CONNECTION_H_ */

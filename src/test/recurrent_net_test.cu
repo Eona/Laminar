@@ -206,7 +206,7 @@ TEST(RecurrentNet, GatedConnection)
 	RecurrentNetwork net;
 	net.set_input(input);
 	net.set_target(target);
-	net.set_max_temporal_skip(3);
+	net.set_max_temporal_skip(2);
 
 	net.add_layer(l1);
 
@@ -219,6 +219,49 @@ TEST(RecurrentNet, GatedConnection)
 	net.add_recurrent_connection(g234_1);
 	net.add_recurrent_connection(g234_2, 2);
 
+	net.add_layer(l4);
+
+	gradient_check(net, 1e-2, 1);
+}
+
+
+TEST(RecurrentNet, GatedTanhConnection)
+{
+	FakeRand::instance_connection().set_rand_seq(vector<float> {
+			.798, 0.617
+	});
+	FakeRand::instance_connection().use_fake_seq();
+
+	FakeRand::instance_prehistory().set_rand_seq(vector<float> {
+		.3
+	});
+
+	vector<float> input { 1.2, -0.9, 0.57, -1.47, -3.08 };
+	vector<float> target { 1.39, 0.75, -0.45, -0.11, 1.55 };
+
+	auto l1 = Layer::make<ConstantLayer>();
+	auto l2 = Layer::make<ScalorLayer>(1.3f);
+	auto l3 = Layer::make<CosineLayer>(); // gate
+	auto l4 = Layer::make<SquareLossLayer>();
+
+	auto c12 = Connection::make<FullConnection>(l1, l2);
+	auto c13 = Connection::make<FullConnection>(l1, l3);
+
+	auto g234_1 = Connection::make<GatedTanhConnection>(l2, l3, l4);
+	auto g234_2 = Connection::make<GatedTanhConnection>(l2, l3, l4);
+
+	RecurrentNetwork net;
+	net.set_input(input);
+	net.set_target(target);
+	net.set_max_temporal_skip(2);
+
+	net.add_layer(l1);
+	net.add_connection(c13);
+	net.add_layer(l3);
+	net.add_connection(c12);
+	net.add_layer(l2);
+	net.add_recurrent_connection(g234_1);
+	net.add_recurrent_connection(g234_2, 2);
 	net.add_layer(l4);
 
 	gradient_check(net, 1e-2, 1);
