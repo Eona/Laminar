@@ -5,6 +5,8 @@
 #ifndef FULL_CONNECTION_H_
 #define FULL_CONNECTION_H_
 
+#include "connection.h"
+
 class ConstantConnection : public Connection
 {
 public:

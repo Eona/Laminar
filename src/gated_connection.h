@@ -2,9 +2,11 @@
  * Eona Studio (c) 2015
  */
 
-
 #ifndef GATED_CONNECTION_H_
 #define GATED_CONNECTION_H_
+
+#include "connection.h"
+#include "math_utils.h"
 
 class GatedConnection : public Connection
 {
@@ -63,17 +65,25 @@ protected:
 };
 
 
-class GatedTanhConnection : public GatedConnection
+/**
+ * Compute outLayer = gateLayer * nonlinear(inLayer)
+ * If used in a recurrent fashion, inLayer will be from the past while
+ * gateLayer and outLayer will both be in the current timeframe.
+ * outLayer[t] = gateLayer[t] * nonlinear(inLayer[t - temporalSkip])
+ *
+ * Some gated gradient can be calculated more efficiently given
+ * the stored output value from the history.
+ */
+class GatedCachedNonlinearConnection : public GatedConnection
 {
 public:
-	/**
-	 * outLayer = gateLayer * tanh(inLayer)
-	 * If used in a recurrent fashion, inLayer will be from the past while
-	 * gateLayer and outLayer will both be in the current timeframe.
-	 * outLayer[t] = gateLayer[t] * tanh(inLayer[t - temporalSkip])
-	 */
-	GatedTanhConnection(LayerPtr _inLayer, LayerPtr _gateLayer, LayerPtr _outLayer):
-		GatedConnection(_inLayer, _gateLayer, _outLayer)
+	GatedCachedNonlinearConnection(
+			LayerPtr _inLayer, LayerPtr _gateLayer, LayerPtr _outLayer,
+			lmn::TransferFunction _nonlinear,
+			lmn::TransferFunction _nonlinearGradient):
+		GatedConnection(_inLayer, _gateLayer, _outLayer),
+		nonlinear(_nonlinear),
+		nonlinearGradient(_nonlinearGradient)
 	{ }
 
 	virtual void _gated_forward(float& inlayerOutval, float& gateOutval,
@@ -83,7 +93,7 @@ public:
 		int t = out_frame();
 		vec_resize_on_demand(cachedOutvals, t);
 
-		cachedOutvals[t] = lmn::tanh(inlayerOutval);
+		cachedOutvals[t] = this->nonlinear(inlayerOutval);
 
 		outlayerInval += gateOutval * cachedOutvals[t];
 	}
@@ -94,18 +104,67 @@ public:
 	{
 		float cachedOutval = cachedOutvals[out_frame()];
 
-		inlayerOutgrad += gateOutval * lmn::tanhGradient(cachedOutval) * outlayerIngrad;
+		inlayerOutgrad += gateOutval * this->nonlinearGradient(cachedOutval) * outlayerIngrad;
 		gateOutgrad += outlayerIngrad * cachedOutval;
 	}
 
 	string str()
 	{
-		return "[GatedTanhConnection]";
+		return "[GatedCachedNonlinearConnection]";
 	}
+
+protected:
+	lmn::TransferFunction nonlinear;
+	lmn::TransferFunction nonlinearGradient;
 
 private:
 	// performance acceleration ONLY
 	vector<float> cachedOutvals;
+};
+
+
+/**
+ * outLayer = gateLayer * tanh(inLayer)
+ * If used in a recurrent fashion, inLayer will be from the past while
+ * gateLayer and outLayer will both be in the current timeframe.
+ * outLayer[t] = gateLayer[t] * tanh(inLayer[t - temporalSkip])
+ */
+class GatedTanhConnection : public GatedCachedNonlinearConnection
+{
+public:
+	GatedTanhConnection(
+			LayerPtr _inLayer, LayerPtr _gateLayer, LayerPtr _outLayer):
+		GatedCachedNonlinearConnection(_inLayer, _gateLayer, _outLayer,
+				lmn::tanh,
+				lmn::tanhGradient)
+	{ }
+
+	string str()
+	{
+		return "[GatedTanhConnection]";
+	}
+};
+
+/**
+ * outLayer = gateLayer * sigmoid(inLayer)
+ * If used in a recurrent fashion, inLayer will be from the past while
+ * gateLayer and outLayer will both be in the current timeframe.
+ * outLayer[t] = gateLayer[t] * sigmoid(inLayer[t - temporalSkip])
+ */
+class GatedSigmoidConnection : public GatedCachedNonlinearConnection
+{
+public:
+	GatedSigmoidConnection(
+			LayerPtr _inLayer, LayerPtr _gateLayer, LayerPtr _outLayer):
+		GatedCachedNonlinearConnection(_inLayer, _gateLayer, _outLayer,
+				lmn::sigmoid,
+				lmn::sigmoidGradient)
+	{ }
+
+	string str()
+	{
+		return "[GatedSigmoidConnection]";
+	}
 };
 
 #endif /* GATED_CONNECTION_H_ */
