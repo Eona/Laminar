@@ -10,20 +10,6 @@
 
 using lmn::transpose;
 
-namespace lmn {
-
-inline float sigmoidGradient(float outValue)
-{
-	return outValue * (1.f - outValue);
-}
-
-inline float tanhGradient(float outValue)
-{
-	return 1 - outValue * outValue;
-}
-
-} // end of namespace lmn
-
 /**
  * http://deeplearning.net/tutorial/lstm.html
  * LSTM is inherently recurrent. No need to add explicit recurrent connection.
