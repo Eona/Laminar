@@ -139,6 +139,7 @@ int main(int argc, char **argv)
 		net.forward_prop();
 	cout << net.lossLayer->outValues << endl;
 
+	gradient_check(net, 1e-2, 1);
 
 	/************************************/
 	RecurrentNetwork lstm;
