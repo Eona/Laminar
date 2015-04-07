@@ -10,10 +10,10 @@ class GatedConnection : public Connection
 {
 public:
 	/**
-	 * outLayer = inLayer * gateLayer
+	 * outLayer = gateLayer * inLayer
 	 * If used in a recurrent fashion, inLayer will be from the past while
 	 * gateLayer and outLayer will both be in the current timeframe.
-	 * outLayer[t] = inLayer[t - temporalSkip] * gateLayer[t]
+	 * outLayer[t] = gateLayer[t] * inLayer[t - temporalSkip]
 	 */
 	GatedConnection(LayerPtr _inLayer, LayerPtr _gateLayer, LayerPtr _outLayer):
 		Connection(_inLayer, _outLayer),
@@ -62,14 +62,15 @@ protected:
 	LayerPtr gateLayer;
 };
 
+
 class GatedTanhConnection : public GatedConnection
 {
 public:
 	/**
-	 * outLayer = inLayer * tanh(gateLayer)
+	 * outLayer = gateLayer * tanh(inLayer)
 	 * If used in a recurrent fashion, inLayer will be from the past while
 	 * gateLayer and outLayer will both be in the current timeframe.
-	 * outLayer[t] = inLayer[t - temporalSkip] * tanh(gateLayer[t])
+	 * outLayer[t] = gateLayer[t] * tanh(inLayer[t - temporalSkip])
 	 */
 	GatedTanhConnection(LayerPtr _inLayer, LayerPtr _gateLayer, LayerPtr _outLayer):
 		GatedConnection(_inLayer, _gateLayer, _outLayer)
