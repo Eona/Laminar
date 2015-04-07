@@ -24,11 +24,10 @@ FakeRand& rand_target = FakeRand::instance_target();
 int main(int argc, char **argv)
 {
 	rand_conn.set_rand_seq(vector<float> {
-		0.163, 1.96, 1.09, 0.516, -0.585, 0.776, 1, -0.301, -0.167, 0.732, -.38
+		-0.904, 0.312, -0.944, 1.34, -2.14, -1.69, -2.88, -0.889, -2.28, -0.414, -2.07
 	});
 
-	rand_conn.use_uniform_rand(0, 2);
-	rand_conn.set_rand_display(true);
+	rand_conn.use_uniform_rand(-3, 2); rand_conn.set_rand_display(false);
 	rand_conn.use_fake_seq();
 
 	rand_prehis.set_rand_seq(vector<float> {
@@ -36,10 +35,10 @@ int main(int argc, char **argv)
 	});
 
 	vector<float> input {
-		1.2, -0.9, 0.57, -1.47//, -3.08, 1.2, .31, -2.33, -0.89
+		1.2, -0.9, 0.57, -1.47, -3.08, 1.2, .31, -2.33, -0.89
 	};
 	vector<float> target {
-		1.39, 0.75, -0.45, -0.11//, 1.55, -.44, 2.39, 1.72, -3.06
+		1.39, 0.75, -0.45, -0.11, 1.55, -.44, 2.39, 1.72, -3.06
 	};
 
 //	rand_input.use_uniform_rand(-2, 2); rand_target.use_uniform_rand(-2, 2);
@@ -135,9 +134,8 @@ int main(int argc, char **argv)
 
 	net.add_layer(lossLayer);
 
-//	gradient_check(net, 1e-2, 1);
-//	exit(0);
-
+	gradient_check(net, 1e-2, 1);
+/*
 	for (ConnectionPtr c : fullConns)
 		cout << std::setprecision(4) << Connection::cast<FullConnection>(c)->param << "  \n";
 	cout << endl;
@@ -156,7 +154,6 @@ int main(int argc, char **argv)
 	}
 
 	for (ConnectionPtr c : fullConns)
-//	for (ConnectionPtr c : { c_in_inputGate, c_outLast_inputGate, c_cellLast_inputGate, c_in_forgetGate, c_outLast_forgetGate, c_cellLast_forgetGate, c_in_cellHat, c_outLast_cellHat, c_in_outputGate, c_outLast_outputGate, c_cell_outputGate })
 		cout << std::setprecision(4) << Connection::cast<FullConnection>(c)->gradient << "  \n";
 	cout << endl;
 
@@ -165,5 +162,5 @@ int main(int argc, char **argv)
 		if (key_exists(net.prehistoryLayerMap, l))
 		cout << std::setprecision(4) << static_cast<ParamContainerPtr>(net.prehistoryLayerMap[l])->paramGradients << "  ";
 	}
-	cout << endl;
+	cout << endl;*/
 }
