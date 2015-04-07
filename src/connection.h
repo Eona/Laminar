@@ -7,6 +7,7 @@
 
 #include "global_utils.h"
 #include "rand_utils.h"
+#include "math_utils.h"
 #include "layer.h"
 #include "component.h"
 #include "parameter.h"
@@ -237,8 +238,52 @@ public:
 
 	virtual void _forward(float inlayerOutval, float& outlayerInval)
 	{
-//		resize_on_demand(gateLayer->outValues, out_frame());
 		outlayerInval += gateLayer->outValues[out_frame()] * inlayerOutval;
+	}
+
+	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
+	{
+		gated_backward(outlayerIngrad, inlayerOutval, gateLayer->outValues[out_frame()],
+				// output params:
+				inlayerOutgrad, gateLayer->outGradients[
+							gateLayer->is_full_gradient_history_saved() ? out_frame() : 0]);
+	}
+
+	// Subclasses should override this:
+	virtual void gated_backward(float& outlayerIngrad, float& inlayerOutval, float& gateOutval,
+			// write to output params:
+			float& inlayerOutgrad, float& gateOutgrad)
+	{
+		inlayerOutgrad += gateOutval * outlayerIngrad;
+		gateOutgrad += outlayerIngrad * inlayerOutval;
+	}
+
+	string str()
+	{
+		return "[GatedConnection]";
+	}
+
+	LayerPtr gateLayer;
+};
+
+class GatedTanhConnection : public Connection
+{
+public:
+	/**
+	 * outLayer = inLayer * gateLayer
+	 * If used in a recurrent fashion, inLayer will be from the past while
+	 * gateLayer and outLayer will both be in the current timeframe.
+	 * outLayer[t] = inLayer[t - temporalSkip] * gateLayer[t]
+	 */
+	GatedTanhConnection(LayerPtr _inLayer, LayerPtr _gateLayer, LayerPtr _outLayer):
+		Connection(_inLayer, _outLayer),
+		gateLayer(_gateLayer)
+	{ }
+
+	virtual void _forward(float inlayerOutval, float& outlayerInval)
+	{
+//		resize_on_demand(gateLayer->outValues, out_frame());
+		outlayerInval += gateLayer->outValues[out_frame()] * lmn::tanh(inlayerOutval);
 	}
 
 	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
@@ -253,7 +298,7 @@ public:
 
 	string str()
 	{
-		return "[GatedConnection]";
+		return "[GatedTanhConnection]";
 	}
 
 	LayerPtr gateLayer;
