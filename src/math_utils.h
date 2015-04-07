@@ -25,6 +25,16 @@ namespace lmn
 		return std::tanh(x);
 	}
 
+	inline float sin(float x)
+	{
+		return std::sin(x);
+	}
+
+	inline float cos(float x)
+	{
+		return std::cos(x);
+	}
+
 	inline float sigmoidGradient(float outValue)
 	{
 		return outValue * (1.f - outValue);
@@ -32,7 +42,7 @@ namespace lmn
 
 	inline float tanhGradient(float outValue)
 	{
-		return 1 - outValue * outValue;
+		return 1.f - outValue * outValue;
 	}
 } // end of namespace
 

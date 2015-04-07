@@ -6,6 +6,7 @@
 #ifndef TRANSFER_LAYER_H_
 #define TRANSFER_LAYER_H_
 
+#include "math_utils.h"
 #include "layer.h"
 
 class SigmoidLayer : public Layer
@@ -24,7 +25,7 @@ public:
 
 	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
-		inGradient = outValue * (1.0f - outValue) * outGradient;
+		inGradient = lmn::sigmoidGradient(outValue) * outGradient;
 	}
 
 	string str()
@@ -45,12 +46,12 @@ public:
 
 	void _forward(float& inValue, float& outValue)
 	{
-		outValue = cos(inValue);
+		outValue = lmn::cos(inValue);
 	}
 
 	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
-		inGradient = -sin(inValue) * outGradient;
+		inGradient = -lmn::sin(inValue) * outGradient;
 	}
 
 	string str()
@@ -71,12 +72,12 @@ public:
 
 	void _forward(float& inValue, float& outValue)
 	{
-		outValue = tanh(inValue);
+		outValue = lmn::tanh(inValue);
 	}
 
 	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
-		inGradient = (1.f - outValue * outValue) * outGradient;
+		inGradient = lmn::tanhGradient(outValue) * outGradient;
 	}
 
 	string str()
