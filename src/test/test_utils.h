@@ -22,8 +22,8 @@
 
 using namespace std;
 
-#define make_full Connection::make<FullConnection>
-#define make_const Connection::make<ConstantConnection>
-#define make_gated Connection::make<GatedConnection>
+#define conn_full Connection::make<FullConnection>
+#define conn_const Connection::make<ConstantConnection>
+#define conn_gated Connection::make<GatedConnection>
 
 #endif /* TEST_H_ */

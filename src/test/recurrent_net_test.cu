@@ -100,17 +100,17 @@ TEST(RecurrentNet, TemporalSkip)
 	// Must be added before you add layer(beta). alpha doesn't matter
 
 	// Naming: c<in><out>_<skip>
-	auto c12 = Connection::make<FullConnection>(l1, l2);
-	auto c23 = Connection::make<FullConnection>(l2, l3);
-	auto c34 = Connection::make<FullConnection>(l3, l4);
+	auto c12 = conn_full(l1, l2);
+	auto c23 = conn_full(l2, l3);
+	auto c34 = conn_full(l3, l4);
 
-	auto c22_1 = Connection::make<FullConnection>(l2, l2);
-	auto c22_3 = Connection::make<FullConnection>(l2, l2);
-	auto c23_1 = Connection::make<FullConnection>(l2, l3);
-	auto c23_2 = Connection::make<FullConnection>(l2, l3);
-	auto c32_3 = Connection::make<FullConnection>(l3, l2);
-	auto c33_1 = Connection::make<FullConnection>(l3, l3);
-	auto c33_2 = Connection::make<FullConnection>(l3, l3);
+	auto c22_1 = conn_full(l2, l2);
+	auto c22_3 = conn_full(l2, l2);
+	auto c23_1 = conn_full(l2, l3);
+	auto c23_2 = conn_full(l2, l3);
+	auto c32_3 = conn_full(l3, l2);
+	auto c33_1 = conn_full(l3, l3);
+	auto c33_2 = conn_full(l3, l3);
 
 	RecurrentNetwork net;
 	net.set_input(input);
@@ -203,8 +203,8 @@ TEST(RecurrentNet, GatedConnection)
 
 	// Naming: c<in><out>_<skip>
 	// g<in><gate><out>_<skip>
-	auto c12 = Connection::make<FullConnection>(l1, l2);
-	auto c13 = Connection::make<FullConnection>(l1, l3);
+	auto c12 = conn_full(l1, l2);
+	auto c13 = conn_full(l1, l3);
 
 	auto g234_1 = Connection::make<GatedConnection>(l2, l3, l4);
 	auto g234_2 = Connection::make<GatedConnection>(l2, l3, l4);
@@ -250,8 +250,8 @@ TEST(RecurrentNet, GatedTanhConnection)
 	auto l3 = Layer::make<CosineLayer>(); // gate
 	auto l4 = Layer::make<SquareLossLayer>();
 
-	auto c12 = Connection::make<FullConnection>(l1, l2);
-	auto c13 = Connection::make<FullConnection>(l1, l3);
+	auto c12 = conn_full(l1, l2);
+	auto c13 = conn_full(l1, l3);
 
 	auto g234_1 = Connection::make<GatedTanhConnection>(l2, l3, l4);
 	auto g234_2 = Connection::make<GatedTanhConnection>(l2, l3, l4);
@@ -315,27 +315,27 @@ TEST(RecurrentNetwork, LSTM)
 
 	/*********** LSTM connections ***********/
 	// Naming: c<in><out>_<skip>, or gated: g<in><gate><out>_<skip>
-	auto c_in_inputGate = make_full(inLayer, inputGate);
-	auto c_outLast_inputGate_1 = make_full(outLayer, inputGate);
-	auto c_cellLast_inputGate_1 = make_full(cellLayer, inputGate);
+	auto c_in_inputGate = conn_full(inLayer, inputGate);
+	auto c_outLast_inputGate_1 = conn_full(outLayer, inputGate);
+	auto c_cellLast_inputGate_1 = conn_full(cellLayer, inputGate);
 
-	auto c_in_forgetGate = make_full(inLayer, forgetGate);
-	auto c_outLast_forgetGate_1 = make_full(outLayer, forgetGate);
-	auto c_cellLast_forgetGate_1 = make_full(cellLayer, forgetGate);
+	auto c_in_forgetGate = conn_full(inLayer, forgetGate);
+	auto c_outLast_forgetGate_1 = conn_full(outLayer, forgetGate);
+	auto c_cellLast_forgetGate_1 = conn_full(cellLayer, forgetGate);
 
-	auto c_in_cellHat = make_full(inLayer, cellHatLayer);
-	auto c_outLast_cellHat_1 = make_full(outLayer, cellHatLayer);
+	auto c_in_cellHat = conn_full(inLayer, cellHatLayer);
+	auto c_outLast_cellHat_1 = conn_full(outLayer, cellHatLayer);
 
-	auto g_cellHat_inputGate_cell = make_gated(cellHatLayer, inputGate, cellLayer);
-	auto g_cellLast_forgetGate_cell_1 = make_gated(cellLayer, forgetGate, cellLayer);
+	auto g_cellHat_inputGate_cell = conn_gated(cellHatLayer, inputGate, cellLayer);
+	auto g_cellLast_forgetGate_cell_1 = conn_gated(cellLayer, forgetGate, cellLayer);
 
-	auto c_in_outputGate = make_full(inLayer, outputGate);
-	auto c_outLast_outputGate_1 = make_full(outLayer, outputGate);
-	auto c_cell_outputGate = make_full(cellLayer, outputGate);
+	auto c_in_outputGate = conn_full(inLayer, outputGate);
+	auto c_outLast_outputGate_1 = conn_full(outLayer, outputGate);
+	auto c_cell_outputGate = conn_full(cellLayer, outputGate);
 
 	auto g_cell_outputGate_out = Connection::make<GatedTanhConnection>(cellLayer, outputGate, outLayer);
 
-	auto c_out_loss = make_const(outLayer, lossLayer);
+	auto c_out_loss = conn_const(outLayer, lossLayer);
 
 	vector<ConnectionPtr> lstmFullConnections {
 		c_in_inputGate,
