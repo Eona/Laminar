@@ -238,19 +238,30 @@ public:
 
 	virtual void _forward(float inlayerOutval, float& outlayerInval)
 	{
-		outlayerInval += gateLayer->outValues[out_frame()] * inlayerOutval;
+		_gated_forward(inlayerOutval, gateLayer->outValues[out_frame()],
+				// output param:
+				outlayerInval);
 	}
 
 	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
 	{
-		gated_backward(outlayerIngrad, inlayerOutval, gateLayer->outValues[out_frame()],
+		_gated_backward(outlayerIngrad, inlayerOutval, gateLayer->outValues[out_frame()],
 				// output params:
-				inlayerOutgrad, gateLayer->outGradients[
-							gateLayer->is_full_gradient_history_saved() ? out_frame() : 0]);
+				inlayerOutgrad,
+				gateLayer->outGradients[
+						gateLayer->is_full_gradient_history_saved() ?
+								out_frame() : 0]);
 	}
 
-	// Subclasses should override this:
-	virtual void gated_backward(float& outlayerIngrad, float& inlayerOutval, float& gateOutval,
+	/*********** Subclasses should override following ***********/
+	virtual void _gated_forward(float& inlayerOutval, float& gateOutval,
+			// output param:
+			float& outlayerInval)
+	{
+		outlayerInval += gateOutval * inlayerOutval;
+	}
+
+	virtual void _gated_backward(float& outlayerIngrad, float& inlayerOutval, float& gateOutval,
 			// write to output params:
 			float& inlayerOutgrad, float& gateOutgrad)
 	{
@@ -263,10 +274,11 @@ public:
 		return "[GatedConnection]";
 	}
 
+protected:
 	LayerPtr gateLayer;
 };
 
-class GatedTanhConnection : public Connection
+class GatedTanhConnection : public GatedConnection
 {
 public:
 	/**
@@ -276,13 +288,11 @@ public:
 	 * outLayer[t] = inLayer[t - temporalSkip] * gateLayer[t]
 	 */
 	GatedTanhConnection(LayerPtr _inLayer, LayerPtr _gateLayer, LayerPtr _outLayer):
-		Connection(_inLayer, _outLayer),
-		gateLayer(_gateLayer)
+		GatedConnection(_inLayer, _gateLayer, _outLayer)
 	{ }
 
 	virtual void _forward(float inlayerOutval, float& outlayerInval)
 	{
-//		resize_on_demand(gateLayer->outValues, out_frame());
 		outlayerInval += gateLayer->outValues[out_frame()] * lmn::tanh(inlayerOutval);
 	}
 
