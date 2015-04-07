@@ -227,6 +227,10 @@ public:
 #define TERMINATE_ASSERT false
 #define DEBUG true
 
+// enclose x as "x" in macro expansion
+#define _STRINGIFY(x) #x
+#define STRINGFY(x) _STRINGIFY(x)
+
 inline void assert(bool cond, string errmsg = "", string successmsg="")
 {
 	if (!cond)

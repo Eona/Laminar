@@ -64,8 +64,9 @@ class FakeRand
 {
 private:
 	// fake args
-	FakeRand() :
-		randSeq { 2.51, 5.39, 5.80, -2.96, -2.73, -2.4, 0.55, -.47 }
+	FakeRand(string _name) :
+		randSeq { 2.51, 5.39, 5.80, -2.96, -2.73, -2.4, 0.55, -.47 },
+		name(_name)
 	{ }
 
 	// disable copying and assignment
@@ -79,13 +80,15 @@ private:
 	uniform_real_distribution<float> distribution;
 
 	bool isDisplay = false;
+	bool printName = false;
+	string name;
 
 public:
 // Separate instances with independent sequences
 #define GenFakeRandInstance(name) \
 	static FakeRand& instance_##name() \
 	{ \
-		static FakeRand rnd; \
+		static FakeRand rnd(STRINGFY(name)); \
 		return rnd; \
 	}
 
@@ -114,7 +117,9 @@ public:
 		{
 			float r = distribution(generator);
 			if (isDisplay)
-				cout << std::setprecision(3) << r << ", "; // sample a good unit test
+				cout << std::setprecision(3)
+					<< (printName ? name.substr(0, 3) + " " : "")
+					<< r << ", "; // sample a good unit test
 			return r;
 		}
 
@@ -135,9 +140,10 @@ public:
 		i = 0;
 	}
 
-	void set_rand_display(bool isDisplay)
+	void set_rand_display(bool isDisplay, bool printName = false)
 	{
 		this->isDisplay = isDisplay;
+		this->printName = printName;
 	}
 };
 
