@@ -4,17 +4,22 @@
 
 #include "test_utils.h"
 
+FakeRand& rand_conn = FakeRand::instance_connection();
+FakeRand& rand_prehis = FakeRand::instance_prehistory();
+FakeRand& rand_input = FakeRand::instance_input();
+FakeRand& rand_target = FakeRand::instance_target();
+
 TEST(RecurrentNet, Simple)
 {
-	FakeRand::instance_connection().set_rand_seq(vector<float> {
+	rand_conn.set_rand_seq(vector<float> {
 		0.543, 0.44, 1.47, 1.64, 1.31, -0.616
 	});
-	FakeRand::instance_prehistory().set_rand_seq(vector<float> {
+	rand_prehis.set_rand_seq(vector<float> {
 		.7
 	});
-	FakeRand::instance_connection().use_fake_seq();
-//	FakeRand::instance_connection().use_uniform_rand(-1, 2);
-//	FakeRand::instance_connection().set_rand_display(true);
+	rand_conn.use_fake_seq();
+//	rand_conn.use_uniform_rand(-1, 2);
+//	rand_conn.set_rand_display(true);
 
 	vector<float> input { 1.2, -0.9, 0.57, -1.47, -3.08 };
 	vector<float> target { 1.39, 0.75, -0.45, -0.11, 1.55 };
@@ -70,15 +75,15 @@ TEST(RecurrentNet, Simple)
 
 TEST(RecurrentNet, TemporalSkip)
 {
-	FakeRand::instance_connection().set_rand_seq(vector<float> {
+	rand_conn.set_rand_seq(vector<float> {
 		0.163, 1.96, 1.09, 0.516, -0.585, 0.776, 1, -0.301, -0.167, 0.732
 	});
 
-//	FakeRand::instance_connection().use_uniform_rand(-1, 2);
-//	FakeRand::instance_connection().set_rand_display(true);
-	FakeRand::instance_connection().use_fake_seq();
+//	rand_conn.use_uniform_rand(-1, 2);
+//	rand_conn.set_rand_display(true);
+	rand_conn.use_fake_seq();
 
-	FakeRand::instance_prehistory().set_rand_seq(vector<float> {
+	rand_prehis.set_rand_seq(vector<float> {
 		.3
 	});
 
@@ -92,8 +97,7 @@ TEST(RecurrentNet, TemporalSkip)
 
 	// NOTE IMPORTANT RULE
 	// For recurrent linear connection conn[layer(alpha) => layer(beta)]
-	// Must be added before you add layer(beta).
-	// Ideally you should add layer(alpha) before you add conn, but doesn't matter.
+	// Must be added before you add layer(beta). alpha doesn't matter
 
 	// Naming: c<in><out>_<skip>
 	auto c12 = Connection::make<FullConnection>(l1, l2);
@@ -172,13 +176,13 @@ TEST(RecurrentNet, TemporalSkip)
 
 TEST(RecurrentNet, GatedConnection)
 {
-	FakeRand::instance_connection().set_rand_seq(vector<float> {
+	rand_conn.set_rand_seq(vector<float> {
 			0.163, 1.96, 1.09, 0.516, -0.585, 0.776, 1, -0.301, -0.167, 0.732
 	});
 
-	FakeRand::instance_connection().use_fake_seq();
+	rand_conn.use_fake_seq();
 
-	FakeRand::instance_prehistory().set_rand_seq(vector<float> {
+	rand_prehis.set_rand_seq(vector<float> {
 		.3
 	});
 
@@ -227,12 +231,12 @@ TEST(RecurrentNet, GatedConnection)
 
 TEST(RecurrentNet, GatedTanhConnection)
 {
-	FakeRand::instance_connection().set_rand_seq(vector<float> {
+	rand_conn.set_rand_seq(vector<float> {
 			.798, 0.617
 	});
-	FakeRand::instance_connection().use_fake_seq();
+	rand_conn.use_fake_seq();
 
-	FakeRand::instance_prehistory().set_rand_seq(vector<float> {
+	rand_prehis.set_rand_seq(vector<float> {
 		.3
 	});
 

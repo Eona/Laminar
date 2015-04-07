@@ -4,9 +4,13 @@
 
 #include "test_utils.h"
 
+FakeRand& rand_conn = FakeRand::instance_connection();
+//FakeRand& rand_input = FakeRand::instance_input();
+//FakeRand& rand_target = FakeRand::instance_target();
+
 TEST(ForwardNet, Interconnected)
 {
-	FakeRand::instance_connection().set_rand_seq(
+	rand_conn.set_rand_seq(
 			vector<float> { 2.51, 5.39, 5.80, -2.96, -2.73, -2.4, 0.55, -.47 });
 
 	float input = 0.2;
