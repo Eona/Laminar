@@ -109,7 +109,7 @@ public:
 
 	string str()
 	{
-		return string("[LinearLayer: \n")
+		return string("[ConstantLayer: \n")
 				+ Layer::str() + "]";
 	}
 };
@@ -136,7 +136,7 @@ public:
 
 	string str()
 	{
-		return string("[LinearLayer: \n")
+		return string("[ScalorLayer: \n")
 				+ Layer::str() + "]";
 	}
 

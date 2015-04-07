@@ -27,24 +27,24 @@ int main(int argc, char **argv)
 		0.163, 1.96, 1.09, 0.516, -0.585, 0.776, 1, -0.301, -0.167, 0.732
 	});
 
-	rand_conn.use_fake_seq();
 	rand_conn.use_uniform_rand(0, 2);
 	rand_conn.set_rand_display(true);
+	rand_conn.use_fake_seq();
 
 	rand_prehis.set_rand_seq(vector<float> {
 		.3
 	});
 
 	vector<float> input {
-		1.2, -0.9, 0.57, -1.47, -3.08, 1.2, .31, -2.33, -0.89
+		1.2, -0.9, 0.57, -1.47//, -3.08, 1.2, .31, -2.33, -0.89
 	};
 	vector<float> target {
-		1.39, 0.75, -0.45, -0.11, 1.55, -.44, 2.39, 1.72, -3.06
+		1.39, 0.75, -0.45, -0.11//, 1.55, -.44, 2.39, 1.72, -3.06
 	};
 
 	rand_input.use_uniform_rand(-2, 2); rand_target.use_uniform_rand(-2, 2);
 	rand_input.set_rand_display(true); rand_target.set_rand_display(true);
-	vec_apply(input, rand_input); cout << endl; vec_apply(target, rand_target);
+//	vec_apply(input, rand_input); cout << endl; vec_apply(target, rand_target);
 
 	auto inLayer = Layer::make<ConstantLayer>();
 
@@ -92,16 +92,17 @@ int main(int argc, char **argv)
 	net.add_recurrent_connection(c_outLast_inputGate);
 	net.add_recurrent_connection(c_cellLast_inputGate);
 
-	net.add_layer(inputGate);
 
+	net.add_layer(inputGate);
 	net.add_connection(c_in_forgetGate);
 	net.add_recurrent_connection(c_outLast_forgetGate);
 	net.add_recurrent_connection(c_cellLast_forgetGate);
 
-	net.add_layer(forgetGate);
 
+	net.add_layer(forgetGate);
 	net.add_connection(c_in_cellHat);
 	net.add_recurrent_connection(c_outLast_cellHat);
+
 	net.add_layer(cellHatLayer);
 
 	net.add_connection(g_cellHat_inputGate_cell);
@@ -123,29 +124,28 @@ int main(int argc, char **argv)
 
 	net.add_layer(lossLayer);
 
-	gradient_check(net, 1e-2, 1);
-/*
+//	gradient_check(net, 1e-2, 1);
 	net.reset();
 	for (int i = 0; i < net.input.size(); ++i)
 	{
 		net.forward_prop();
-		DEBUG_MSG(net);
+//		DEBUG_MSG(net);
 	}
 	DEBUG_MSG("BACKWARD");
 	for (int i = 0; i < net.input.size(); ++i)
 	{
 		net.backward_prop();
-		DEBUG_MSG(net);
+//		DEBUG_MSG(net);
 	}
 
-	for (ConnectionPtr c : { c12, c13 })
-		cout << std::setprecision(4) << Connection::cast<LinearConnection>(c)->gradient << "  ";
+	for (ConnectionPtr c : { c_in_inputGate, c_outLast_inputGate, c_cellLast_inputGate, c_in_forgetGate, c_outLast_forgetGate, c_cellLast_forgetGate, c_in_cellHat, c_outLast_cellHat, c_in_outputGate, c_outLast_outputGate, c_cell_outputGate })
+		cout << std::setprecision(4) << Connection::cast<FullConnection>(c)->gradient << "  \n";
 	cout << endl;
 
-	for (LayerPtr l : { l2, l3 })
+	for (LayerPtr l : { forgetGate, inputGate, cellHatLayer, cellLayer, outputGate, outLayer })
 	{
 		if (key_exists(net.prehistoryLayerMap, l))
 		cout << std::setprecision(4) << static_cast<ParamContainerPtr>(net.prehistoryLayerMap[l])->paramGradients << "  ";
 	}
-	cout << endl;*/
+	cout << endl;
 }

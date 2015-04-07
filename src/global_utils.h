@@ -238,7 +238,7 @@ inline void assert(bool cond, string errmsg = "", string successmsg="")
 	#if TERMINATE_ASSERT
 		throw AssertFailure(errmsg);
 	#else
-		cerr << "[Assert Error] " << errmsg << endl;
+		cout << "[Assert Error] " << errmsg << endl;
 	#endif
 	}
 	else if (successmsg != "")
