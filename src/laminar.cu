@@ -24,7 +24,7 @@ FakeRand& rand_target = FakeRand::instance_target();
 int main(int argc, char **argv)
 {
 	rand_conn.set_rand_seq(vector<float> {
-		0.163, 1.96, 1.09, 0.516, -0.585, 0.776, 1, -0.301, -0.167, 0.732
+		0.163, 1.96, 1.09, 0.516, -0.585, 0.776, 1, -0.301, -0.167, 0.732, -.38
 	});
 
 	rand_conn.use_uniform_rand(0, 2);
@@ -42,8 +42,8 @@ int main(int argc, char **argv)
 		1.39, 0.75, -0.45, -0.11//, 1.55, -.44, 2.39, 1.72, -3.06
 	};
 
-	rand_input.use_uniform_rand(-2, 2); rand_target.use_uniform_rand(-2, 2);
-	rand_input.set_rand_display(true); rand_target.set_rand_display(true);
+//	rand_input.use_uniform_rand(-2, 2); rand_target.use_uniform_rand(-2, 2);
+//	rand_input.set_rand_display(true); rand_target.set_rand_display(true);
 //	vec_apply(input, rand_input); cout << endl; vec_apply(target, rand_target);
 
 	auto inLayer = Layer::make<ConstantLayer>();
@@ -80,6 +80,19 @@ int main(int argc, char **argv)
 
 	auto c_out_loss = Connection::make<ConstantConnection>(outLayer, lossLayer);
 
+	vector<ConnectionPtr> fullConns {
+		c_in_inputGate,
+		c_outLast_inputGate,
+		c_cellLast_inputGate,
+		c_in_forgetGate,
+		c_outLast_forgetGate,
+		c_cellLast_forgetGate,
+		c_in_cellHat,
+		c_outLast_cellHat,
+		c_in_outputGate,
+		c_outLast_outputGate,
+		c_cell_outputGate
+	};
 
 	RecurrentNetwork net;
 	net.set_input(input);
@@ -91,15 +104,13 @@ int main(int argc, char **argv)
 	net.add_connection(c_in_inputGate);
 	net.add_recurrent_connection(c_outLast_inputGate);
 	net.add_recurrent_connection(c_cellLast_inputGate);
-
-
 	net.add_layer(inputGate);
+
 	net.add_connection(c_in_forgetGate);
 	net.add_recurrent_connection(c_outLast_forgetGate);
 	net.add_recurrent_connection(c_cellLast_forgetGate);
-
-
 	net.add_layer(forgetGate);
+
 	net.add_connection(c_in_cellHat);
 	net.add_recurrent_connection(c_outLast_cellHat);
 
@@ -125,6 +136,12 @@ int main(int argc, char **argv)
 	net.add_layer(lossLayer);
 
 //	gradient_check(net, 1e-2, 1);
+//	exit(0);
+
+	for (ConnectionPtr c : fullConns)
+		cout << std::setprecision(4) << Connection::cast<FullConnection>(c)->param << "  \n";
+	cout << endl;
+
 	net.reset();
 	for (int i = 0; i < net.input.size(); ++i)
 	{
@@ -138,7 +155,8 @@ int main(int argc, char **argv)
 //		DEBUG_MSG(net);
 	}
 
-	for (ConnectionPtr c : { c_in_inputGate, c_outLast_inputGate, c_cellLast_inputGate, c_in_forgetGate, c_outLast_forgetGate, c_cellLast_forgetGate, c_in_cellHat, c_outLast_cellHat, c_in_outputGate, c_outLast_outputGate, c_cell_outputGate })
+	for (ConnectionPtr c : fullConns)
+//	for (ConnectionPtr c : { c_in_inputGate, c_outLast_inputGate, c_cellLast_inputGate, c_in_forgetGate, c_outLast_forgetGate, c_cellLast_forgetGate, c_in_cellHat, c_outLast_cellHat, c_in_outputGate, c_outLast_outputGate, c_cell_outputGate })
 		cout << std::setprecision(4) << Connection::cast<FullConnection>(c)->gradient << "  \n";
 	cout << endl;
 

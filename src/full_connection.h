@@ -79,4 +79,6 @@ public:
 	float& gradient;
 };
 
+TypedefPtr(FullConnection);
+
 #endif /* FULL_CONNECTION_H_ */
