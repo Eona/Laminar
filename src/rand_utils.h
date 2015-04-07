@@ -91,6 +91,8 @@ public:
 
 	GenFakeRandInstance(connection);
 	GenFakeRandInstance(prehistory);
+	GenFakeRandInstance(input);
+	GenFakeRandInstance(target);
 
 	/**
 	 * Manually set the internal 'random sequence'

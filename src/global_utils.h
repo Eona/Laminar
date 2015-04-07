@@ -142,11 +142,18 @@ inline T& vec_at(vector<T>& vec, int idx)
 
 // utility: grow vector on demand
 template<typename T>
-inline void resize_on_demand(vector<T>& vec, int accessIdx)
+inline void vec_resize_on_demand(vector<T>& vec, int accessIdx)
 {
 // WARNING when comparing negative number with size_t, -1 will be converted to positive!!!
 	if (accessIdx >= (int) vec.size())
 		vec.resize(accessIdx + 1, 0);
+}
+
+template<typename T, typename Func>
+inline void vec_apply(vector<T>& vec, Func& f)
+{
+	for (T& elem : vec)
+		elem = f();
 }
 
 template <typename KeyT, typename ValueT>

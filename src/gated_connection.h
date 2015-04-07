@@ -81,7 +81,7 @@ public:
 		float& outlayerInval)
 	{
 		int t = out_frame();
-		resize_on_demand(cachedOutvals, t);
+		vec_resize_on_demand(cachedOutvals, t);
 
 		cachedOutvals[t] = lmn::tanh(inlayerOutval);
 
