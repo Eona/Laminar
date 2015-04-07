@@ -30,9 +30,6 @@ public:
 		this->_inFrame = inFrame;
 		this->_outFrame = outFrame;
 
-		resize_on_demand(inLayer->outValues, inFrame);
-		resize_on_demand(outLayer->inValues, outFrame);
-
 		_forward(inLayer->outValues[inFrame], outLayer->inValues[outFrame]);
 	}
 
@@ -46,8 +43,6 @@ public:
 		this->_inFrame = inFrame;
 		this->_outFrame = outFrame;
 
-		resize_on_demand(outLayer->inValues, outFrame);
-
 		_forward(vec_at(pcontainer->paramValues, inFrame),
 			outLayer->inValues[outFrame]);
 	}
@@ -59,11 +54,6 @@ public:
 		this->_outFrame = outFrame;
 
 		bool isHistorySaved = inLayer->is_full_gradient_history_saved();
-		if (isHistorySaved)
-		{
-			resize_on_demand(inLayer->outGradients, inFrame);
-			resize_on_demand(outLayer->inGradients, outFrame);
-		}
 
 		_backward(outLayer->inGradients[
 					isHistorySaved ? outFrame : 0],
@@ -83,8 +73,6 @@ public:
 		this->_outFrame = outFrame;
 
 		bool isHistorySaved = inLayer->is_full_gradient_history_saved();
-		if (isHistorySaved)
-			resize_on_demand(outLayer->inGradients, outFrame);
 
 		_backward(outLayer->inGradients[
 					isHistorySaved ? outFrame : 0],
@@ -258,8 +246,6 @@ public:
 		inlayerOutgrad += gateLayer->outValues[out_frame()] * outlayerIngrad;
 
 		bool isHistorySaved = gateLayer->is_full_gradient_history_saved();
-		if (isHistorySaved)
-			resize_on_demand(gateLayer->outGradients, out_frame());
 
 		gateLayer->outGradients[
 			isHistorySaved ? out_frame() : 0] += outlayerIngrad * inlayerOutval;

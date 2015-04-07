@@ -133,11 +133,20 @@ struct is_vector<std::vector<Ts...> > : std::true_type { };
 
 // Emulate python style subscript
 template<typename T>
-T& vec_at(vector<T>& vec, int idx)
+inline T& vec_at(vector<T>& vec, int idx)
 {
 	if (idx < 0)
 		idx += (int) vec.size();
 	return vec[idx];
+}
+
+// utility: grow vector on demand
+template<typename T>
+inline void resize_on_demand(vector<T>& vec, int accessIdx)
+{
+// WARNING when comparing negative number with size_t, -1 will be converted to positive!!!
+	if (accessIdx >= (int) vec.size())
+		vec.resize(accessIdx + 1, 0);
 }
 
 template <typename KeyT, typename ValueT>

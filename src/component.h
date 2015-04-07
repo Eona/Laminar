@@ -36,15 +36,6 @@ public:
 	{
 		return std::dynamic_pointer_cast<ComponentT>(compon);
 	}
-
-protected:
-	// utility: grow vector on demand
-	static inline void resize_on_demand(vector<float>& vec, int accessIdx)
-	{
-	// WARNING when comparing negative number with size_t, -1 will be converted to positive!!!
-		if (accessIdx >= (int) vec.size())
-			vec.resize(accessIdx + 1, 0);
-	}
 };
 
 TypedefPtr(Component);

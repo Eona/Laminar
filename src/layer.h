@@ -15,9 +15,11 @@ class Layer : public Component
 {
 public:
 	Layer() :
-		inValues(1, 0.0f),
+		historyLength(1),
+		maxTemporalSkip(0),
+		inValues(historyLength, 0.0f),
 		inGradients(maxTemporalSkip + 1, 0.0f),
-		outValues(1, 0.0f),
+		outValues(historyLength, 0.0f),
 		outGradients(maxTemporalSkip + 1, 0.0f)
 	{ }
 
@@ -33,7 +35,9 @@ public:
 	 */
 	void set_max_temporal_skip(int maxTemporalSkip)
 	{
-		if (maxTemporalSkip != UNLIMITED_TEMPORAL_SKIP)
+		this->maxTemporalSkip = maxTemporalSkip;
+
+		if (!is_full_gradient_history_saved())
 		{
 			inGradients.resize(maxTemporalSkip + 1);
 			outGradients.resize(maxTemporalSkip + 1);
@@ -43,7 +47,6 @@ public:
 			inGradients.clear();
 			outGradients.clear();
 		}
-		this->maxTemporalSkip = maxTemporalSkip;
 	}
 
 	int get_max_temporal_skip()
@@ -56,13 +59,29 @@ public:
 		return this->maxTemporalSkip == UNLIMITED_TEMPORAL_SKIP;
 	}
 
+	/**
+	 * Should be called by Network, NOT a user defined parameter.
+	 * Defaults to 1.
+	 */
+	void set_history_length(int historyLength)
+	{
+		this->historyLength = historyLength;
+		inValues.resize(historyLength);
+		outValues.resize(historyLength);
+
+		if (is_full_gradient_history_saved())
+		{
+			inGradients.resize(historyLength);
+			outGradients.resize(historyLength);
+		}
+	}
+
 	virtual void forward(int inFrame = 0, int outFrame = 0)
 	{
 		check_frame_consistency(inFrame, outFrame);
 
 		this->_frame = inFrame;
-		resize_on_demand(inValues, _frame);
-		resize_on_demand(outValues, _frame);
+
 		_forward(inValues[_frame], outValues[_frame]);
 	}
 
@@ -71,12 +90,6 @@ public:
 		check_frame_consistency(inFrame, outFrame);
 
 		this->_frame = inFrame;
-
-		if (maxTemporalSkip == UNLIMITED_TEMPORAL_SKIP)
-		{
-			resize_on_demand(inGradients, _frame);
-			resize_on_demand(outGradients, _frame);
-		}
 
 		int relativeFrame = is_full_gradient_history_saved() ? _frame : 0;
 		_backward(outValues[_frame],
@@ -164,8 +177,10 @@ protected:
 				"Layer in/out time cannot be different for now."));
 	}
 
+	int historyLength;
+
 	// Max temporal skip. negative to save full gradient history
-	int maxTemporalSkip = 0;
+	int maxTemporalSkip;
 
 private:
 	// frame pointer

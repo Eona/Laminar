@@ -65,7 +65,18 @@ public:
 
 	virtual void reset() = 0;
 
-	virtual void assemble() = 0;
+	virtual void assemble()
+	{
+		layers[0]->inValues = this->input;
+		this->lossLayer = Layer::cast<LossLayer>(layers[layers.size() - 1]);
+		if (lossLayer)
+			lossLayer->targetValue = this->target;
+		else
+			throw NetworkException("Last layer must be a LossLayer");
+
+		for (Layer::Ptr& l : layers)
+			l->set_history_length(this->input.size());
+	}
 
 	// TODO
 	virtual void topological_sort()
@@ -121,14 +132,7 @@ public:
 
 	virtual void assemble()
 	{
-		layers[0]->inValues = this->input;
-		this->lossLayer = Layer::cast<LossLayer>(layers[layers.size() - 1]);
-		if (lossLayer)
-		{
-			lossLayer->targetValue = this->target;
-		}
-		else
-			throw NetworkException("Last layer must be a LossLayer");
+		Network::assemble();
 	}
 
 	virtual void forward_prop()
@@ -174,14 +178,7 @@ public:
 		for (LayerPtr layer : layers)
 			layer->set_max_temporal_skip(this->maxTemporalSkip);
 
-		layers[0]->inValues = this->input;
-		this->lossLayer = Layer::cast<LossLayer>(layers[layers.size() - 1]);
-		if (lossLayer)
-		{
-			lossLayer->targetValue = this->target;
-		}
-		else
-			throw NetworkException("Last layer must be a LossLayer");
+		Network::assemble();
 	}
 
 	/**

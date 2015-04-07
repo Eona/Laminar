@@ -86,9 +86,6 @@ public:
 
 	virtual void _forward(float& inValue, float& outValue)
 	{
-		resize_on_demand(cellValues, frame());
-		resize_on_demand(cellOutputValues, frame());
-
 		float h_last = frame() > 0 ?
 				this->outValues[frame() - 1] :
 				h_0;
