@@ -74,16 +74,14 @@ protected:
  * Some gated gradient can be calculated more efficiently given
  * the stored output value from the history.
  */
+template<lmn::TransferFunction nonlinear,
+		lmn::TransferFunction nonlinearGradient>
 class GatedCachedNonlinearConnection : public GatedConnection
 {
 public:
 	GatedCachedNonlinearConnection(
-			LayerPtr _inLayer, LayerPtr _gateLayer, LayerPtr _outLayer,
-			lmn::TransferFunction _nonlinear,
-			lmn::TransferFunction _nonlinearGradient):
-		GatedConnection(_inLayer, _gateLayer, _outLayer),
-		nonlinear(_nonlinear),
-		nonlinearGradient(_nonlinearGradient)
+			LayerPtr _inLayer, LayerPtr _gateLayer, LayerPtr _outLayer):
+		GatedConnection(_inLayer, _gateLayer, _outLayer)
 	{ }
 
 	virtual void _gated_forward(float& inlayerOutval, float& gateOutval,
@@ -93,7 +91,7 @@ public:
 		int t = out_frame();
 		vec_resize_on_demand(cachedOutvals, t);
 
-		cachedOutvals[t] = this->nonlinear(inlayerOutval);
+		cachedOutvals[t] = nonlinear(inlayerOutval);
 
 		outlayerInval += gateOutval * cachedOutvals[t];
 	}
@@ -104,7 +102,7 @@ public:
 	{
 		float cachedOutval = cachedOutvals[out_frame()];
 
-		inlayerOutgrad += gateOutval * this->nonlinearGradient(cachedOutval) * outlayerIngrad;
+		inlayerOutgrad += gateOutval * nonlinearGradient(cachedOutval) * outlayerIngrad;
 		gateOutgrad += outlayerIngrad * cachedOutval;
 	}
 
@@ -112,10 +110,6 @@ public:
 	{
 		return "[GatedCachedNonlinearConnection]";
 	}
-
-protected:
-	lmn::TransferFunction nonlinear;
-	lmn::TransferFunction nonlinearGradient;
 
 private:
 	// performance acceleration ONLY
@@ -129,21 +123,9 @@ private:
  * gateLayer and outLayer will both be in the current timeframe.
  * outLayer[t] = gateLayer[t] * tanh(inLayer[t - temporalSkip])
  */
-class GatedTanhConnection : public GatedCachedNonlinearConnection
-{
-public:
-	GatedTanhConnection(
-			LayerPtr _inLayer, LayerPtr _gateLayer, LayerPtr _outLayer):
-		GatedCachedNonlinearConnection(_inLayer, _gateLayer, _outLayer,
-				lmn::tanh,
-				lmn::tanhGradient)
-	{ }
+typedef GatedCachedNonlinearConnection<lmn::tanh, lmn::tanhGradient>
+	GatedTanhConnection;
 
-	string str()
-	{
-		return "[GatedTanhConnection]";
-	}
-};
 
 /**
  * outLayer = gateLayer * sigmoid(inLayer)
@@ -151,20 +133,7 @@ public:
  * gateLayer and outLayer will both be in the current timeframe.
  * outLayer[t] = gateLayer[t] * sigmoid(inLayer[t - temporalSkip])
  */
-class GatedSigmoidConnection : public GatedCachedNonlinearConnection
-{
-public:
-	GatedSigmoidConnection(
-			LayerPtr _inLayer, LayerPtr _gateLayer, LayerPtr _outLayer):
-		GatedCachedNonlinearConnection(_inLayer, _gateLayer, _outLayer,
-				lmn::sigmoid,
-				lmn::sigmoidGradient)
-	{ }
-
-	string str()
-	{
-		return "[GatedSigmoidConnection]";
-	}
-};
+typedef GatedCachedNonlinearConnection<lmn::sigmoid, lmn::sigmoidGradient>
+	GatedSigmoidConnection;
 
 #endif /* GATED_CONNECTION_H_ */

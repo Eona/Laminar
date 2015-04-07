@@ -45,7 +45,7 @@ namespace lmn
 		return 1.f - outValue * outValue;
 	}
 
-	typedef function<float(float)> TransferFunction;
+	typedef float (*TransferFunction)(float);
 } // end of namespace
 
 #endif /* MATH_UTILS_H_ */

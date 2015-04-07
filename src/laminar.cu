@@ -167,4 +167,5 @@ int main(int argc, char **argv)
 	for (int i = 0; i < input.size(); ++i)
 		lstm.forward_prop();
 	cout << lstm.lossLayer->outValues << endl;
+
 }
