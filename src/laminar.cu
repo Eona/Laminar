@@ -22,17 +22,21 @@ FakeRand& rand_target = FakeRand::instance_target();
 #define make_gated Connection::make<GatedConnection>
 
 int main(int argc, char **argv)
-{
-	rand_conn.set_rand_seq(vector<float> {
+{/*********** FAKE_RAND ***********/
+	vector<float> LSTM_CONNECTION_WEIGHTS {
 		-0.904, 0.312, -0.944, 1.34, -2.14, -1.69, -2.88, -0.889, -2.28, -0.414, -2.07
-	});
+	};
+	vector<float> LSTM_PREHISTORY {
+		.3, -.47
+	};
 
-	rand_conn.use_uniform_rand(-3, 2); rand_conn.set_rand_display(false);
+	rand_conn.set_rand_seq(LSTM_CONNECTION_WEIGHTS);
+//	rand_conn.use_uniform_rand(-3, 2); rand_conn.set_rand_display(true);
 	rand_conn.use_fake_seq();
 
-	rand_prehis.set_rand_seq(vector<float> {
-		.3
-	});
+	rand_prehis.set_rand_seq(LSTM_PREHISTORY);
+
+	rand_prehis.set_rand_seq(LSTM_PREHISTORY);
 
 	vector<float> input {
 		1.2, -0.9, 0.57, -1.47, -3.08, 1.2, .31, -2.33, -0.89
@@ -149,7 +153,7 @@ int main(int argc, char **argv)
 
 	inLayer = Layer::make<ConstantLayer>();
 
-	auto lstmLayer = Layer::make<LstmDebugLayer>();
+	auto lstmLayer = Layer::make<LstmDebugLayer>(LSTM_CONNECTION_WEIGHTS, LSTM_PREHISTORY);
 
 	lossLayer = Layer::make<SquareLossLayer>();
 
@@ -163,34 +167,4 @@ int main(int argc, char **argv)
 	for (int i = 0; i < input.size(); ++i)
 		lstm.forward_prop();
 	cout << lstm.lossLayer->outValues << endl;
-
-
-/*
-	for (ConnectionPtr c : fullConns)
-		cout << std::setprecision(4) << Connection::cast<FullConnection>(c)->param << "  \n";
-	cout << endl;
-
-	net.reset();
-	for (int i = 0; i < net.input.size(); ++i)
-	{
-		net.forward_prop();
-//		DEBUG_MSG(net);
-	}
-	DEBUG_MSG("BACKWARD");
-	for (int i = 0; i < net.input.size(); ++i)
-	{
-		net.backward_prop();
-//		DEBUG_MSG(net);
-	}
-
-	for (ConnectionPtr c : fullConns)
-		cout << std::setprecision(4) << Connection::cast<FullConnection>(c)->gradient << "  \n";
-	cout << endl;
-
-	for (LayerPtr l : { forgetGate, inputGate, cellHatLayer, cellLayer, outputGate, outLayer })
-	{
-		if (key_exists(net.prehistoryLayerMap, l))
-		cout << std::setprecision(4) << static_cast<ParamContainerPtr>(net.prehistoryLayerMap[l])->paramGradients << "  ";
-	}
-	cout << endl;*/
 }

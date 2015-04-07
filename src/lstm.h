@@ -14,7 +14,8 @@
 class LstmDebugLayer : public Layer, public ParamContainer
 {
 public:
-	LstmDebugLayer() :
+	LstmDebugLayer(vector<float> dummyWeights,
+			vector<float> dummyPrehistory) :
 		Layer(),
 		ParamContainer(LSTM_PARAM_SIZE),
 
@@ -36,47 +37,29 @@ public:
 		h_0(paramValues[_h_0]),
 		cell_0(paramValues[_cell_0]),
 
-		W_xi_grad(paramGradients[_W_xi]),
-		W_hi_grad(paramGradients[_W_hi]),
-		W_ci_grad(paramGradients[_W_ci]),
-		b_i_grad(paramGradients[_b_i]),
-		W_xf_grad(paramGradients[_W_xf]),
-		W_hf_grad(paramGradients[_W_hf]),
-		W_cf_grad(paramGradients[_W_cf]),
-		b_f_grad(paramGradients[_b_f]),
-		W_xc_grad(paramGradients[_W_xc]),
-		W_hc_grad(paramGradients[_W_hc]),
-		b_c_grad(paramGradients[_b_c]),
-		W_xo_grad(paramGradients[_W_xo]),
-		W_ho_grad(paramGradients[_W_ho]),
-		W_co_grad(paramGradients[_W_co]),
-		b_o_grad(paramGradients[_b_o]),
-		h_0_grad(paramGradients[_h_0]),
-		cell_0_grad(paramGradients[_cell_0]),
-
 		gateActivator(lmn::sigmoid),
 		cellInputActivator(lmn::tanh),
 		cellOutputActivator(lmn::tanh),
 		gateActivatorGradient(lmn::sigmoidGradient),
 		cellInputActivatorGradient(lmn::tanhGradient),
 		cellOutputActivatorGradient(lmn::tanhGradient)
-	{}
+	{
+		int i = 0;
+		for (float* elem : { &W_xi, &W_hi, &W_ci, &W_xf, &W_hf, &W_cf, &W_xc, &W_hc, &W_xo, &W_ho, &W_co })
+			*elem = dummyWeights[i ++];
+		i = 0;
+		// TODO add biases
+		for (float* elem : { &b_i, &b_f, &b_c, &b_o })
+			*elem = 0;
+		i = 0;
+		for (float* elem : { &h_0, &cell_0 })
+			*elem = dummyPrehistory[i ++];
+	}
 
 	~LstmDebugLayer() { }
 
 	virtual void _forward(float& inValue, float& outValue)
 	{
-	vector<float> dum {
-		-0.904, 0.312, -0.944, 1.34, -2.14, -1.69, -2.88, -0.889, -2.28, -0.414, -2.07
-	};
-	int pt = 0;
-	for (float* elem : { &W_xi, &W_hi, &W_ci, &W_xf, &W_hf, &W_cf, &W_xc, &W_hc, &W_xo, &W_ho, &W_co })
-		*elem = dum[pt ++];
-	for (float* elem : { &b_i, &b_f, &b_c, &b_o })
-		*elem = 0;
-	for (float* elem : { &h_0, &cell_0 })
-		*elem = 0.3f;
-
 		float h_last = frame() > 0 ?
 				this->outValues[frame() - 1] :
 				h_0;
@@ -95,6 +78,7 @@ public:
 				W_xc * inValue + W_hc * h_last + b_c);
 
 		float cell = inputGate * cell_hat + forgetGate * cell_last;
+
 		vec_resize_on_demand(cellValues, frame());
 		cellValues[frame()] = cell;
 
@@ -187,25 +171,6 @@ public:
 		&b_o,
 		&h_0,
 		&cell_0;
-
-	// All parameter gradient aliases
-	float &W_xi_grad,
-		&W_hi_grad,
-		&W_ci_grad,
-		&b_i_grad,
-		&W_xf_grad,
-		&W_hf_grad,
-		&W_cf_grad,
-		&b_f_grad,
-		&W_xc_grad,
-		&W_hc_grad,
-		&b_c_grad,
-		&W_xo_grad,
-		&W_ho_grad,
-		&W_co_grad,
-		&b_o_grad,
-		&h_0_grad,
-		&cell_0_grad;
 };
 
 #endif /* LSTM_LAYER_H_ */

@@ -281,7 +281,7 @@ TEST(RecurrentNetwork, LSTM)
 		-0.904, 0.312, -0.944, 1.34, -2.14, -1.69, -2.88, -0.889, -2.28, -0.414, -2.07
 	};
 	vector<float> LSTM_PREHISTORY {
-		.3
+		.3, -.47
 	};
 
 	rand_conn.set_rand_seq(LSTM_CONNECTION_WEIGHTS);
@@ -395,19 +395,13 @@ TEST(RecurrentNetwork, LSTM)
 	/*********** Gradient check ***********/
 	gradient_check(net, 1e-2, 1);
 
-	net.reset();
-	for (int i = 0; i < input.size(); ++i)
-		net.forward_prop();
-	vector<float> netOutValues = net.lossLayer->outValues;
-	cout << netOutValues << endl;
-
 	/*********** Use hard-coded LSTM ***********/
 	RecurrentNetwork lstmDebugNet;
 	lstmDebugNet.set_input(input);
 	lstmDebugNet.set_target(target);
 
 	auto l0 = Layer::make<ConstantLayer>();
-	auto lstmLayer = Layer::make<LstmDebugLayer>();
+	auto lstmLayer = Layer::make<LstmDebugLayer>(LSTM_CONNECTION_WEIGHTS, LSTM_PREHISTORY);
 	auto l1 = Layer::make<SquareLossLayer>();
 
 	lstmDebugNet.add_layer(l0);
@@ -421,11 +415,14 @@ TEST(RecurrentNetwork, LSTM)
 		lstmDebugNet.forward_prop();
 
 	/*********** Output check against lstmDebugNet ***********/
+	net.reset();
 	for (int i = 0; i < input.size(); ++i)
-		EXPECT_NEAR(netOutValues[i],
+		net.forward_prop();
+
+	for (int i = 0; i < input.size(); ++i)
+		EXPECT_NEAR(net.lossLayer->outValues[i],
 				lstmDebugNet.lossLayer->outValues[i],
 				1e-4) << "LSTM output doesn't agree with LstmDebugLayer";
-	cout << lstmDebugNet.lossLayer->outValues << endl;
 
 /*
 	for (ConnectionPtr c : fullConns)
