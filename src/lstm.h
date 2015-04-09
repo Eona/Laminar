@@ -8,12 +8,13 @@
 #include "layer.h"
 #include "parameter.h"
 #include "composite.h"
+#include "network.h"
 
 class LstmComposite : public Composite<RecurrentNetwork>
 {
 public:
-	LstmComposite() :
-		Composite<RecurrentNetwork>()
+	LstmComposite(Layer::Ptr _inLayer) :
+		Composite<RecurrentNetwork>(_inLayer)
 	{ }
 
 	virtual ~LstmComposite() =default;
@@ -40,7 +41,7 @@ public:
 	 * Composite logic goes here.
 	 * Intended to work with network's "this" pointer
 	 */
-	virtual void manipulate(RecurrentNetwork& net)
+	virtual void manipulate(RecurrentNetwork *net)
 	{
 		auto forgetGate = get_layer("forget-gate");
 		auto inputGate = get_layer("input-gate");
@@ -48,36 +49,36 @@ public:
 		auto cell = get_layer("cell");
 		auto outputGate = get_layer("output-gate");
 
-		net.new_connection<FullConnection>(inLayer, inputGate);
-		net.new_recurrent_connection<FullConnection>(outLayer, inputGate);
-		net.new_recurrent_connection<FullConnection>(cell, inputGate);
+		net->new_connection<FullConnection>(inLayer, inputGate);
+		net->new_recurrent_connection<FullConnection>(outLayer, inputGate);
+		net->new_recurrent_connection<FullConnection>(cell, inputGate);
 
-		net.add_layer(inputGate);
+		net->add_layer(inputGate);
 
-		net.new_connection<FullConnection>(inLayer, forgetGate);
-		net.new_recurrent_connection<FullConnection>(outLayer, forgetGate);
-		net.new_recurrent_connection<FullConnection>(cell, forgetGate);
-		net.add_layer(forgetGate);
+		net->new_connection<FullConnection>(inLayer, forgetGate);
+		net->new_recurrent_connection<FullConnection>(outLayer, forgetGate);
+		net->new_recurrent_connection<FullConnection>(cell, forgetGate);
+		net->add_layer(forgetGate);
 
-		net.new_connection<FullConnection>(inLayer, cellhat);
-		net.new_recurrent_connection<FullConnection>(outLayer, cellhat);
+		net->new_connection<FullConnection>(inLayer, cellhat);
+		net->new_recurrent_connection<FullConnection>(outLayer, cellhat);
 
-		net.add_layer(cellhat);
+		net->add_layer(cellhat);
 
-		net.new_connection<GatedConnection>(cellhat, inputGate, cell);
-		net.new_recurrent_connection<GatedConnection>(cell, forgetGate, cell);
+		net->new_connection<GatedConnection>(cellhat, inputGate, cell);
+		net->new_recurrent_connection<GatedConnection>(cell, forgetGate, cell);
 
-		net.add_layer(cell);
+		net->add_layer(cell);
 
-		net.new_connection<FullConnection>(inLayer, outputGate);
-		net.new_recurrent_connection<FullConnection>(outLayer, outputGate);
-		net.new_connection<FullConnection>(cell, outputGate);
+		net->new_connection<FullConnection>(inLayer, outputGate);
+		net->new_recurrent_connection<FullConnection>(outLayer, outputGate);
+		net->new_connection<FullConnection>(cell, outputGate);
 
-		net.add_layer(outputGate);
+		net->add_layer(outputGate);
 
-		net.new_connection<GatedTanhConnection>(cell, outputGate, outLayer);
+		net->new_connection<GatedTanhConnection>(cell, outputGate, outLayer);
 
-		net.add_layer(outLayer);
+		net->add_layer(outLayer);
 	}
 };
 

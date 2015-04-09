@@ -22,10 +22,8 @@ static_assert(std::is_base_of<Network, NetworkT>::value,
 
 public:
 	Composite(Layer::Ptr _inLayer) :
-		inLayer(_inLayer),
-		outLayer(this->initialize_outlayer())
+		inLayer(_inLayer)
 	{
-		this->initialize_layers(this->_layerMap);
 	}
 
 	virtual ~Composite() =default;
@@ -45,7 +43,7 @@ public:
 	 * Composite logic goes here.
 	 * Intended to work with network's "this" pointer
 	 */
-	virtual void manipulate(NetworkT& net) = 0;
+	virtual void manipulate(NetworkT *net) = 0;
 
 	virtual Layer::Ptr& operator[](string name)
 	{
@@ -60,9 +58,23 @@ public:
 	/************************************/
 	typedef shared_ptr<Composite<NetworkT> > Ptr;
 
-	static shared_ptr<Composite<NetworkT> > cast(Ptr composite)
+	template<typename CompositeT, typename ...ArgT>
+	static Composite<NetworkT>::Ptr make(ArgT&& ... args)
 	{
-		return std::dynamic_pointer_cast<Composite<NetworkT> >(composite);
+		auto compos = static_cast<Composite<NetworkT>::Ptr>(
+				std::make_shared<CompositeT>(
+						std::forward<ArgT>(args) ...));
+
+		compos->outLayer = compos->initialize_outlayer();
+		compos->initialize_layers(compos->_layerMap);
+
+		return compos;
+	}
+
+	template<typename CompositeT>
+	static shared_ptr<CompositeT> cast(Composite<NetworkT>::Ptr layer)
+	{
+		return std::dynamic_pointer_cast<CompositeT>(layer);
 	}
 
 protected:

@@ -48,9 +48,10 @@ int main(int argc, char **argv)
 //	rand_input.use_uniform_rand(-2, 2); rand_target.use_uniform_rand(-2, 2);
 //	rand_input.set_rand_display(true); rand_target.set_rand_display(true);
 //	vec_apply(input, rand_input); cout << endl; vec_apply(target, rand_target);
-
 	auto inLayer = Layer::make<ConstantLayer>();
 
+	auto lossLayer = Layer::make<SquareLossLayer>();
+/*
 	auto forgetGate = Layer::make<SigmoidLayer>();
 	auto inputGate = Layer::make<SigmoidLayer>();
 	auto cellHatLayer = Layer::make<TanhLayer>();
@@ -58,7 +59,6 @@ int main(int argc, char **argv)
 	auto outputGate = Layer::make<SigmoidLayer>();
 	auto outLayer = Layer::make<ConstantLayer>();
 
-	auto lossLayer = Layer::make<SquareLossLayer>();
 
 	// Naming: c<in><out>_<skip>, or gated: g<in><gate><out>_<skip>
 	auto c_in_inputGate = make_full(inLayer, inputGate);
@@ -95,7 +95,7 @@ int main(int argc, char **argv)
 		c_in_outputGate,
 		c_outLast_outputGate,
 		c_cell_outputGate
-	};
+	};*/
 
 	RecurrentNetwork net;
 	net.set_input(input);
@@ -104,37 +104,11 @@ int main(int argc, char **argv)
 
 	net.add_layer(inLayer);
 
-	net.add_connection(c_in_inputGate);
-	net.add_recurrent_connection(c_outLast_inputGate);
-	net.add_recurrent_connection(c_cellLast_inputGate);
-	net.add_layer(inputGate);
+	auto lstmComp = Composite<RecurrentNetwork>::make<LstmComposite>(inLayer);
 
-	net.add_connection(c_in_forgetGate);
-	net.add_recurrent_connection(c_outLast_forgetGate);
-	net.add_recurrent_connection(c_cellLast_forgetGate);
-	net.add_layer(forgetGate);
+	net.add_composite<RecurrentNetwork>(lstmComp);
 
-	net.add_connection(c_in_cellHat);
-	net.add_recurrent_connection(c_outLast_cellHat);
-
-	net.add_layer(cellHatLayer);
-
-	net.add_connection(g_cellHat_inputGate_cell);
-	net.add_recurrent_connection(g_cellLast_forgetGate_cell);
-
-	net.add_layer(cellLayer);
-
-	net.add_connection(c_in_outputGate);
-	net.add_recurrent_connection(c_outLast_outputGate);
-	net.add_connection(c_cell_outputGate);
-
-	net.add_layer(outputGate);
-
-	net.add_connection(g_cell_outputGate_out);
-
-	net.add_layer(outLayer);
-
-	net.add_connection(c_out_loss);
+	net.new_connection<ConstantConnection>(lstmComp->out_layer(), lossLayer);
 
 	net.add_layer(lossLayer);
 
