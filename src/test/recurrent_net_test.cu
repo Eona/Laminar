@@ -274,7 +274,7 @@ TEST(RecurrentNet, GatedTanhConnection)
 }
 
 
-TEST(RecurrentNetwork, LSTM)
+TEST(RecurrentNet, LSTM)
 {
 	/*********** FAKE_RAND ***********/
 	vector<float> LSTM_CONNECTION_WEIGHTS {
@@ -352,7 +352,7 @@ TEST(RecurrentNetwork, LSTM)
 	};
 
 	/*********** Construct the network ***********/
-	// order of topology see "NOTE" sections in simple RNN gtests.
+	// order of topology see "NOTE" sections in simple RecurrentNet gtests.
 	RecurrentNetwork net;
 	net.set_input(input);
 	net.set_target(target);
@@ -453,4 +453,45 @@ TEST(RecurrentNetwork, LSTM)
 	}
 	cout << endl;
 */
+}
+
+TEST(Composite, LSTM)
+{
+	// same fake params as RecurrentNet.LSTM test
+	vector<float> LSTM_CONNECTION_WEIGHTS {
+		-0.236, -0.648, -0.669, 0.76, -0.607, 0.323, -0.932, -0.737, 0.315, -0.109, 0.764
+	};
+	vector<float> LSTM_PREHISTORY {
+		.3, -.47
+	};
+	rand_conn.set_rand_seq(LSTM_CONNECTION_WEIGHTS);
+	rand_prehis.set_rand_seq(LSTM_PREHISTORY);
+	vector<float> input {
+		1.2, -0.9, 0.57, -1.47, 2.2
+	};
+	vector<float> target {
+		1.39, 0.75, -0.45, -0.11, 1.9
+	};
+
+	auto inLayer = Layer::make<ConstantLayer>();
+
+	auto lossLayer = Layer::make<SquareLossLayer>();
+
+	RecurrentNetwork net;
+	net.set_input(input);
+	net.set_target(target);
+	net.set_max_temporal_skip(1);
+
+	net.add_layer(inLayer);
+
+	auto lstmComposite = Composite<RecurrentNetwork>::make<LstmComposite>(inLayer);
+
+	net.add_composite<RecurrentNetwork>(lstmComposite);
+
+	net.new_connection<ConstantConnection>(lstmComposite->out_layer(), lossLayer);
+
+	net.add_layer(lossLayer);
+
+	gradient_check(net, 1e-2, 1);
+
 }
