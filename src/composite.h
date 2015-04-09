@@ -48,18 +48,38 @@ public:
 
 	/**
 	 * Initialize outLayer and other layers
+	 * @return pointer
 	 */
 	template<typename CompositeT, typename ...ArgT>
 	static Composite<NetworkT>::Ptr make(ArgT&& ... args)
 	{
-		auto compos = static_cast<Composite<NetworkT>::Ptr>(
+		auto compositePtr = static_cast<Composite<NetworkT>::Ptr>(
 				std::make_shared<CompositeT>(
 						std::forward<ArgT>(args) ...));
 
-		compos->outLayer = compos->initialize_outlayer();
-		compos->initialize_layers(compos->_layerMap);
+		compositePtr->outLayer = compositePtr->initialize_outlayer();
+		compositePtr->initialize_layers(compositePtr->_layerMap);
 
-		return compos;
+		return compositePtr;
+	}
+
+	/**
+	 * @return object
+	 */
+	template<typename CompositeT, typename ...ArgT>
+	static CompositeT create(ArgT&& ... args)
+	{
+		CompositeT composite(std::forward<ArgT>(args) ...);
+
+		// WARNING workaround: if operate on object directly, all methods of the 
+		// subclass must be public, otherwise compiler throws inaccessible error. 
+		// Only reference and pointer types are polymorphic.
+		Composite<NetworkT>& comp = composite;
+
+		comp.outLayer = comp.initialize_outlayer();
+		comp.initialize_layers(comp._layerMap);
+
+		return composite;
 	}
 
 	template<typename CompositeT>

@@ -58,11 +58,11 @@ int main(int argc, char **argv)
 
 	net.add_layer(inLayer);
 
-	auto lstmComp = Composite<RecurrentNetwork>::make<LstmComposite>(inLayer);
+	auto lstmComp = Composite<RecurrentNetwork>::create<LstmComposite>(inLayer);
 
 	net.add_composite(lstmComp);
 
-	net.new_connection<ConstantConnection>(lstmComp->out_layer(), lossLayer);
+	net.new_connection<ConstantConnection>(lstmComp.out_layer(), lossLayer);
 
 	net.add_layer(lossLayer);
 
@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 		net.forward_prop();
 	cout << net.lossLayer->outValues << endl;
 
-	cout << *(*lstmComp)["forget-gate"] << endl;
+	cout << *(lstmComp["forget-gate"]) << "\n";
 
 	gradient_check(net, 1e-2, 1);
 

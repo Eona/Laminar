@@ -61,6 +61,12 @@ public:
 		composite->manipulate(this);
 	}
 
+	template<typename CompositeT>
+	void add_composite(CompositeT& composite)
+	{
+		composite.manipulate(this);
+	}
+
 	template<typename ConnectionT, typename ...ArgT>
 	void new_connection(ArgT&& ... args)
 	{
