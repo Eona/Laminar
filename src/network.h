@@ -6,6 +6,7 @@
 #define NETWORK_H_
 
 #include "component.h"
+#include "composite.h"
 #include "layer.h"
 #include "connection.h"
 
@@ -49,6 +50,15 @@ public:
 		connections.push_back(conn);
 
 		this->check_add_param_container(conn);
+	}
+
+	/**
+	 * Cannot add a composite that requires a more specialized network.
+	 */
+	template<typename NetworkT>
+	void add_composite(typename Composite<NetworkT>::Ptr composite)
+	{
+		composite->manipulate(this);
 	}
 
 	template<typename ConnectionT, typename ...ArgT>
