@@ -104,7 +104,7 @@ public:
 
 	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
-		inGradient += outGradient;
+		inGradient = outGradient;
 	}
 
 	string str()
