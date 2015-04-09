@@ -7,6 +7,48 @@
 
 #include "layer.h"
 #include "parameter.h"
+#include "composite.h"
+
+class LstmComposite : public Composite<RecurrentNetwork>
+{
+public:
+	LstmComposite() :
+		Composite<RecurrentNetwork>()
+	{ }
+
+	virtual ~LstmComposite() =default;
+
+	virtual Layer::Ptr initialize_inlayer_if_null()
+	{
+		return Layer::make<ConstantLayer>();
+	}
+
+	/**
+	 * Will be called if outLayer is not specified
+	 */
+	virtual Layer::Ptr initialize_outlayer_if_null()
+	{
+		return Layer::make<ConstantLayer>();
+	}
+
+	/**
+	 * Will be called in constructor
+	 */
+	virtual void initialize_layers(
+			std::unordered_map<string, Layer::Ptr>& layerMap)
+	{
+
+	}
+
+	/**
+	 * Composite logic goes here.
+	 * Intended to work with network's "this" pointer
+	 */
+	virtual void manipulate(RecurrentNetwork *net)
+	{
+
+	}
+};
 
 /**
  * DEBUG ONLY
