@@ -19,11 +19,13 @@ public:
 
 	virtual ~LstmComposite() =default;
 
+
+protected:
 	/**
 	 * Composite logic goes here.
 	 * Intended to work with network's "this" pointer
 	 */
-	virtual void manipulate(RecurrentNetwork *net)
+	virtual void _manipulate(RecurrentNetwork *net)
 	{
 		auto forgetGate = get_layer("forget-gate");
 		auto inputGate = get_layer("input-gate");
@@ -63,7 +65,6 @@ public:
 		net->add_layer(outLayer);
 	}
 
-protected:
 	virtual Layer::Ptr initialize_outlayer()
 	{
 		return Layer::make<ConstantLayer>();

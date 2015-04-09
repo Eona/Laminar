@@ -28,11 +28,10 @@ public:
 
 	virtual ~Composite() =default;
 
-	/**
-	 * Composite logic goes here.
-	 * Intended to work with network's "this" pointer
-	 */
-	virtual void manipulate(NetworkT *net) = 0;
+	virtual void manipulate(Network *net)
+	{
+		this->_manipulate(dynamic_cast<NetworkT *>(net));
+	}
 
 	virtual Layer::Ptr& operator[](string name)
 	{
@@ -70,6 +69,12 @@ public:
 	}
 
 protected:
+	/**
+	 * Composite logic goes here.
+	 * Intended to work with network's "this" pointer
+	 */
+	virtual void _manipulate(NetworkT *net) = 0;
+
 	/**
 	 * Will be called in static ::make
 	 */

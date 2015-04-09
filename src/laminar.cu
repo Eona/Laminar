@@ -49,53 +49,7 @@ int main(int argc, char **argv)
 //	rand_input.set_rand_display(true); rand_target.set_rand_display(true);
 //	vec_apply(input, rand_input); cout << endl; vec_apply(target, rand_target);
 	auto inLayer = Layer::make<ConstantLayer>();
-
 	auto lossLayer = Layer::make<SquareLossLayer>();
-/*
-	auto forgetGate = Layer::make<SigmoidLayer>();
-	auto inputGate = Layer::make<SigmoidLayer>();
-	auto cellHatLayer = Layer::make<TanhLayer>();
-	auto cellLayer = Layer::make<ConstantLayer>();
-	auto outputGate = Layer::make<SigmoidLayer>();
-	auto outLayer = Layer::make<ConstantLayer>();
-
-
-	// Naming: c<in><out>_<skip>, or gated: g<in><gate><out>_<skip>
-	auto c_in_inputGate = make_full(inLayer, inputGate);
-	auto c_outLast_inputGate = make_full(outLayer, inputGate);
-	auto c_cellLast_inputGate = make_full(cellLayer, inputGate);
-
-	auto c_in_forgetGate = make_full(inLayer, forgetGate);
-	auto c_outLast_forgetGate = make_full(outLayer, forgetGate);
-	auto c_cellLast_forgetGate = make_full(cellLayer, forgetGate);
-
-	auto c_in_cellHat = make_full(inLayer, cellHatLayer);
-	auto c_outLast_cellHat = make_full(outLayer, cellHatLayer);
-
-	auto g_cellHat_inputGate_cell = make_gated(cellHatLayer, inputGate, cellLayer);
-	auto g_cellLast_forgetGate_cell = make_gated(cellLayer, forgetGate, cellLayer);
-
-	auto c_in_outputGate = make_full(inLayer, outputGate);
-	auto c_outLast_outputGate = make_full(outLayer, outputGate);
-	auto c_cell_outputGate = make_full(cellLayer, outputGate);
-
-	auto g_cell_outputGate_out = Connection::make<GatedTanhConnection>(cellLayer, outputGate, outLayer);
-
-	auto c_out_loss = Connection::make<ConstantConnection>(outLayer, lossLayer);
-
-	vector<ConnectionPtr> fullConns {
-		c_in_inputGate,
-		c_outLast_inputGate,
-		c_cellLast_inputGate,
-		c_in_forgetGate,
-		c_outLast_forgetGate,
-		c_cellLast_forgetGate,
-		c_in_cellHat,
-		c_outLast_cellHat,
-		c_in_outputGate,
-		c_outLast_outputGate,
-		c_cell_outputGate
-	};*/
 
 	RecurrentNetwork net;
 	net.set_input(input);
@@ -106,7 +60,7 @@ int main(int argc, char **argv)
 
 	auto lstmComp = Composite<RecurrentNetwork>::make<LstmComposite>(inLayer);
 
-	net.add_composite<RecurrentNetwork>(lstmComp);
+	net.add_composite(lstmComp);
 
 	net.new_connection<ConstantConnection>(lstmComp->out_layer(), lossLayer);
 
@@ -116,6 +70,8 @@ int main(int argc, char **argv)
 	for (int i = 0; i < input.size(); ++i)
 		net.forward_prop();
 	cout << net.lossLayer->outValues << endl;
+
+	cout << *(*lstmComp)["forget-gate"] << endl;
 
 	gradient_check(net, 1e-2, 1);
 

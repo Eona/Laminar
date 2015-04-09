@@ -55,10 +55,10 @@ public:
 	/**
 	 * Cannot add a composite that requires a more specialized network.
 	 */
-	template<typename NetworkT>
-	void add_composite(typename Composite<NetworkT>::Ptr composite)
+	template<typename CompositeT>
+	void add_composite(std::shared_ptr<CompositeT> composite)
 	{
-		composite->manipulate(dynamic_cast<NetworkT *>(this));
+		composite->manipulate(this);
 	}
 
 	template<typename ConnectionT, typename ...ArgT>

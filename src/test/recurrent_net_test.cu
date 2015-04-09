@@ -486,7 +486,7 @@ TEST(Composite, LSTM)
 
 	auto lstmComposite = Composite<RecurrentNetwork>::make<LstmComposite>(inLayer);
 
-	net.add_composite<RecurrentNetwork>(lstmComposite);
+	net.add_composite(lstmComposite);
 
 	net.new_connection<ConstantConnection>(lstmComposite->out_layer(), lossLayer);
 
