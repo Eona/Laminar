@@ -29,17 +29,6 @@ public:
 	virtual ~Composite() =default;
 
 	/**
-	 * Will be called in constructor
-	 */
-	virtual void initialize_layers(
-			std::unordered_map<string, Layer::Ptr>& layerMap) = 0;
-
-	/**
-	 * Will be called in constructor
-	 */
-	virtual Layer::Ptr initialize_outlayer() = 0;
-
-	/**
 	 * Composite logic goes here.
 	 * Intended to work with network's "this" pointer
 	 */
@@ -58,6 +47,9 @@ public:
 	/************************************/
 	typedef shared_ptr<Composite<NetworkT> > Ptr;
 
+	/**
+	 * Initialize outLayer and other layers
+	 */
 	template<typename CompositeT, typename ...ArgT>
 	static Composite<NetworkT>::Ptr make(ArgT&& ... args)
 	{
@@ -78,6 +70,17 @@ public:
 	}
 
 protected:
+	/**
+	 * Will be called in static ::make
+	 */
+	virtual void initialize_layers(
+			std::unordered_map<string, Layer::Ptr>& layerMap) = 0;
+
+	/**
+	 * Will be called in static ::make
+	 */
+	virtual Layer::Ptr initialize_outlayer() = 0;
+
 	Layer::Ptr get_layer(string name)
 	{
 		return _layerMap[name];

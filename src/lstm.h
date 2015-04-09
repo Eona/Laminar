@@ -19,24 +19,6 @@ public:
 
 	virtual ~LstmComposite() =default;
 
-	virtual Layer::Ptr initialize_outlayer()
-	{
-		return Layer::make<ConstantLayer>();
-	}
-
-	/**
-	 * Will be called in constructor
-	 */
-	virtual void initialize_layers(
-			std::unordered_map<string, Layer::Ptr>& layerMap)
-	{
-		layerMap["forget-gate"] = Layer::make<SigmoidLayer>();
-		layerMap["input-gate"] = Layer::make<SigmoidLayer>();
-		layerMap["cellhat"] = Layer::make<TanhLayer>();
-		layerMap["cell"]  = Layer::make<ConstantLayer>();
-		layerMap["output-gate"]  = Layer::make<SigmoidLayer>();
-	}
-
 	/**
 	 * Composite logic goes here.
 	 * Intended to work with network's "this" pointer
@@ -79,6 +61,25 @@ public:
 		net->new_connection<GatedTanhConnection>(cell, outputGate, outLayer);
 
 		net->add_layer(outLayer);
+	}
+
+protected:
+	virtual Layer::Ptr initialize_outlayer()
+	{
+		return Layer::make<ConstantLayer>();
+	}
+
+	/**
+	 * Will be called in constructor
+	 */
+	virtual void initialize_layers(
+			std::unordered_map<string, Layer::Ptr>& layerMap)
+	{
+		layerMap["forget-gate"] = Layer::make<SigmoidLayer>();
+		layerMap["input-gate"] = Layer::make<SigmoidLayer>();
+		layerMap["cellhat"] = Layer::make<TanhLayer>();
+		layerMap["cell"]  = Layer::make<ConstantLayer>();
+		layerMap["output-gate"]  = Layer::make<SigmoidLayer>();
 	}
 };
 
