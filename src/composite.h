@@ -30,7 +30,12 @@ public:
 
 	virtual void manipulate(Network *net)
 	{
-		this->_manipulate(dynamic_cast<NetworkT *>(net));
+		NetworkT *netCast = dynamic_cast<NetworkT *>(net);
+
+		if (netCast)
+			this->_manipulate(netCast);
+		else
+			throw NetworkException("Composite is applied on a wrong Network type. ");
 	}
 
 	virtual Layer::Ptr& operator[](string name)
@@ -116,5 +121,18 @@ protected:
 private:
 	std::unordered_map<string, Layer::Ptr> _layerMap;
 };
+
+/**
+ * Type trait
+ */
+template <class T>
+std::true_type is_composite_impl(const Composite<T>* impl);
+
+std::false_type is_composite_impl(...);
+
+template <class Derived>
+using is_composite =
+		// simulate creation of a new Derived* pointer
+    decltype(is_composite_impl(std::declval<Derived*>()));
 
 #endif /* COMPOSITE_H_ */

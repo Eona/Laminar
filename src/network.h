@@ -58,12 +58,17 @@ public:
 	template<typename CompositeT>
 	void add_composite(std::shared_ptr<CompositeT> composite)
 	{
+		static_assert(is_composite<CompositeT>(),
+				"Not a valid composite type");
+//		static_assert(std::is_same<Composite<std::remove_pointer<decltype(this)>::type>, CompositeT>::value, "err");
 		composite->manipulate(this);
 	}
 
 	template<typename CompositeT>
 	void add_composite(CompositeT& composite)
 	{
+		static_assert(is_composite<CompositeT>(),
+				"Not a valid composite type");
 		composite.manipulate(this);
 	}
 
