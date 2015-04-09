@@ -10,6 +10,10 @@
 
 class Network;
 
+/**
+ * Given an input layer, manipulate (add layers and connections)
+ * to the network and return a new output layer.
+ */
 template<typename NetworkT>
 class Composite
 {
@@ -17,21 +21,11 @@ static_assert(std::is_base_of<Network, NetworkT>::value,
 		"Composite<> template argument must be a subclass of Network type");
 
 public:
-	Composite(Layer::Ptr _inLayer, Layer::Ptr _outLayer) :
-		inLayer(bool(_inLayer) ?
-				_inLayer : initialize_inlayer_if_null()),
-		outLayer(bool(_outLayer) ?
-				_outLayer : initialize_outlayer_if_null())
+	Composite(Layer::Ptr _inLayer) :
+		inLayer(_inLayer),
+		outLayer(this->initialize_outlayer())
 	{
 		this->initialize_layers(this->_layerMap);
-	}
-
-	/**
-	 * Pass null pointers for in/outLayer
-	 */
-	Composite() :
-		Composite(Layer::Ptr(), Layer::Ptr())
-	{
 	}
 
 	virtual ~Composite() =default;
@@ -43,14 +37,9 @@ public:
 			std::unordered_map<string, Layer::Ptr>& layerMap) = 0;
 
 	/**
-	 * Will be called if inLayer is not specified
+	 * Will be called in constructor
 	 */
-	virtual Layer::Ptr initialize_inlayer_if_null() = 0;
-
-	/**
-	 * Will be called if outLayer is not specified
-	 */
-	virtual Layer::Ptr initialize_outlayer_if_null() = 0;
+	virtual Layer::Ptr initialize_outlayer() = 0;
 
 	/**
 	 * Composite logic goes here.
@@ -61,6 +50,11 @@ public:
 	virtual Layer::Ptr& operator[](string name)
 	{
 		return this->_layerMap[name];
+	}
+
+	Layer::Ptr out_layer()
+	{
+		return this->outLayer;
 	}
 
 	/************************************/

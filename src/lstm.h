@@ -18,15 +18,7 @@ public:
 
 	virtual ~LstmComposite() =default;
 
-	virtual Layer::Ptr initialize_inlayer_if_null()
-	{
-		return Layer::make<ConstantLayer>();
-	}
-
-	/**
-	 * Will be called if outLayer is not specified
-	 */
-	virtual Layer::Ptr initialize_outlayer_if_null()
+	virtual Layer::Ptr initialize_outlayer()
 	{
 		return Layer::make<ConstantLayer>();
 	}
@@ -37,7 +29,11 @@ public:
 	virtual void initialize_layers(
 			std::unordered_map<string, Layer::Ptr>& layerMap)
 	{
-
+		layerMap["forget-gate"] = Layer::make<SigmoidLayer>();
+		layerMap["input-gate"] = Layer::make<SigmoidLayer>();
+		layerMap["cellhat"] = Layer::make<TanhLayer>();
+		layerMap["cell"]  = Layer::make<ConstantLayer>();
+		layerMap["output-gate"]  = Layer::make<SigmoidLayer>();
 	}
 
 	/**
@@ -46,6 +42,12 @@ public:
 	 */
 	virtual void manipulate(RecurrentNetwork *net)
 	{
+		auto forgetGate = get_layer("forget-gate");
+		auto inputGate = get_layer("input-gate");
+		auto cellHatLayer = get_layer("cellhat");
+		auto cellLayer = get_layer("cell");
+		auto outputGate = get_layer("output-gate");
+
 
 	}
 };
