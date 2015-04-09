@@ -45,7 +45,7 @@ public:
 	 * Composite logic goes here.
 	 * Intended to work with network's "this" pointer
 	 */
-	virtual void manipulate(NetworkT *net) = 0;
+	virtual void manipulate(NetworkT& net) = 0;
 
 	virtual Layer::Ptr& operator[](string name)
 	{

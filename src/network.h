@@ -58,7 +58,7 @@ public:
 	template<typename NetworkT>
 	void add_composite(typename Composite<NetworkT>::Ptr composite)
 	{
-		composite->manipulate(this);
+		composite->manipulate(*this);
 	}
 
 	template<typename ConnectionT, typename ...ArgT>
