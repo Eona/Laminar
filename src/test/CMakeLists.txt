@@ -5,7 +5,7 @@ set(TEST_SUITE
     forward_net_test
     recurrent_net_test
 #    cuda_test
-    misc_test
+#    misc_test
     )
     
 #add_gtest(${TEST_SUITE} ${TEST_SUITE}.cpp)

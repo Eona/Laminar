@@ -13,11 +13,7 @@ TEST(Composite, NetworkMismatch)
 	auto lstm = Composite<RecurrentNetwork>
 			::create<LstmComposite>(Layer::make<ConstantLayer>());
 
-	try {
+	EXPECTED_LAMINAR_FAILURE(
 		net.add_composite(lstm);
-	}
-	catch (LaminarException& e)
-	{
-		cout << "Expected failure: " << e.what() << endl;
-	}
+	)
 }

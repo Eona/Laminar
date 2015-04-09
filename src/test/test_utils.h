@@ -26,4 +26,18 @@ using namespace std;
 #define conn_const Connection::make<ConstantConnection>
 #define conn_gated Connection::make<GatedConnection>
 
+#define EXPECTED_LAMINAR_FAILURE(stmt) \
+	{ \
+		bool is_expected_thrown = false; \
+		try { stmt } \
+		catch (LaminarException& e) { \
+			cout << "Expected failure: " << e.what() << endl; \
+			is_expected_thrown = true; \
+		} \
+		if (!is_expected_thrown) \
+			throw std::logic_error( \
+				"LaminarException should have been thrown, but no throwing detected."); \
+	}
+
+
 #endif /* TEST_H_ */
