@@ -23,7 +23,7 @@ public:
 		outGradients(maxTemporalSkip + 1, 0.0f)
 	{ }
 
-	virtual ~Layer() {};
+	virtual ~Layer() =default;
 
 	/**
 	 * Maximum temporal skip, allows a hidden layer to link (skip) to its

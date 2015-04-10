@@ -16,7 +16,7 @@ public:
 		paramGradients(size)
 	{ }
 
-	~ParamContainer() =default;
+	virtual ~ParamContainer() =default;
 
 	void resetValues()
 	{

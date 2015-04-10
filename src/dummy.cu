@@ -8,7 +8,7 @@
 #include "transfer_layer.h"
 #include "loss_layer.h"
 #include "parameter.h"
-#include "lstm_layer.h"
+#include "lstm.h"
 #include "network.h"
 #include "gradient_check.h"
 

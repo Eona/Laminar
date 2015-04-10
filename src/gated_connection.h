@@ -22,6 +22,8 @@ public:
 		gateLayer(_gateLayer)
 	{ }
 
+	virtual ~GatedConnection() =default;
+
 	virtual void _forward(float inlayerOutval, float& outlayerInval)
 	{
 		_gated_forward(inlayerOutval, gateLayer->outValues[out_frame()],
@@ -83,6 +85,8 @@ public:
 			Layer::Ptr _inLayer, Layer::Ptr _gateLayer, Layer::Ptr _outLayer):
 		GatedConnection(_inLayer, _gateLayer, _outLayer)
 	{ }
+
+	virtual ~GatedCachedNonlinearConnection() =default;
 
 	virtual void _gated_forward(float& inlayerOutval, float& gateOutval,
 		// output param:
