@@ -323,7 +323,7 @@ public:
 			compon->reset();
 
 		for (auto& entry : prehistoryLayerMap)
-			entry.second->resetGradients();
+			entry.second->reset_gradients();
 
 		frame = 0;
 

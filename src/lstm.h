@@ -25,7 +25,7 @@ protected:
 	 * Composite logic goes here.
 	 * Intended to work with network's "this" pointer
 	 */
-	virtual void _manipulate(RecurrentNetwork *net)
+	virtual void manipulate_impl(RecurrentNetwork *net)
 	{
 		auto forgetGate = get_layer("forget-gate");
 		auto inputGate = get_layer("input-gate");
@@ -134,7 +134,7 @@ public:
 
 	~LstmDebugLayer() { }
 
-	virtual void _forward(float& inValue, float& outValue)
+	virtual void forward_impl(float& inValue, float& outValue)
 	{
 		float h_last = frame() > 0 ?
 				this->outValues[frame() - 1] :
@@ -166,7 +166,7 @@ public:
 		outValue = outputGate * cellOutput;
 	}
 
-	virtual void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
+	virtual void backward_impl(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
 		throw UnimplementedException(
 				"This LSTM layer is for debugging only.\n"

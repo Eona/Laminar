@@ -33,7 +33,7 @@ public:
 		NetworkT *netCast = dynamic_cast<NetworkT *>(net);
 
 		if (netCast)
-			this->_manipulate(netCast);
+			this->manipulate_impl(netCast);
 		else
 			throw NetworkException("Composite is applied on a wrong Network type. ");
 	}
@@ -98,7 +98,7 @@ protected:
 	 * Composite logic goes here.
 	 * Intended to work with network's "this" pointer
 	 */
-	virtual void _manipulate(NetworkT *net) = 0;
+	virtual void manipulate_impl(NetworkT *net) = 0;
 
 	/**
 	 * Will be called in static ::make

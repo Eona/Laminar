@@ -17,12 +17,12 @@ public:
 
 	virtual ~ConstantConnection() =default;
 
-	virtual void _forward(float inlayerOutval, float& outlayerInval)
+	virtual void forward_impl(float inlayerOutval, float& outlayerInval)
 	{
 		outlayerInval = inlayerOutval;
 	}
 
-	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
+	virtual void backward_impl(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
 	{
 		inlayerOutgrad += outlayerIngrad;
 	}
@@ -47,12 +47,12 @@ public:
 
 	virtual ~FullConnection() =default;
 
-	virtual void _forward(float inlayerOutval, float& outlayerInval)
+	virtual void forward_impl(float inlayerOutval, float& outlayerInval)
 	{
 		outlayerInval += param * inlayerOutval;
 	}
 
-	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
+	virtual void backward_impl(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
 	{
 		// should check if input module actually has gradient
 		inlayerOutgrad += lmn::transpose(param) * outlayerIngrad;
@@ -71,7 +71,7 @@ public:
 
 	void reset()
 	{
-		ParamContainer::resetGradients();
+		ParamContainer::reset_gradients();
 	}
 
 	// DUMMY

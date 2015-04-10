@@ -82,7 +82,7 @@ public:
 
 		this->_frame = inFrame;
 
-		_forward(inValues[_frame], outValues[_frame]);
+		forward_impl(inValues[_frame], outValues[_frame]);
 	}
 
 	virtual void backward(int outFrame = 0, int inFrame = 0)
@@ -92,7 +92,7 @@ public:
 		this->_frame = inFrame;
 
 		int relativeFrame = is_full_gradient_history_saved() ? _frame : 0;
-		_backward(outValues[_frame],
+		backward_impl(outValues[_frame],
 				outGradients[relativeFrame],
 				inValues[_frame],
 				inGradients[relativeFrame]);
@@ -121,8 +121,8 @@ public:
 		}
 	}
 
-	virtual void _forward(float& inValue, float& outValue) = 0;
-	virtual void _backward(float& inValue, float& inGradient, float& outValue, float& outGradient) = 0;
+	virtual void forward_impl(float& inValue, float& outValue) = 0;
+	virtual void backward_impl(float& inValue, float& inGradient, float& outValue, float& outGradient) = 0;
 
 	// current time frame set by forward() and backward()
 	int frame()

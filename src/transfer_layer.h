@@ -18,12 +18,12 @@ public:
 
 	virtual ~SigmoidLayer() =default;
 
-	void _forward(float& inValue, float& outValue)
+	void forward_impl(float& inValue, float& outValue)
 	{
 		outValue = lmn::sigmoid(inValue);
 	}
 
-	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
+	void backward_impl(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
 		inGradient = lmn::sigmoidGradient(outValue) * outGradient;
 	}
@@ -44,12 +44,12 @@ public:
 
 	virtual ~CosineLayer() =default;
 
-	void _forward(float& inValue, float& outValue)
+	void forward_impl(float& inValue, float& outValue)
 	{
 		outValue = lmn::cos(inValue);
 	}
 
-	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
+	void backward_impl(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
 		inGradient = -lmn::sin(inValue) * outGradient;
 	}
@@ -70,12 +70,12 @@ public:
 
 	virtual ~TanhLayer() =default;
 
-	void _forward(float& inValue, float& outValue)
+	void forward_impl(float& inValue, float& outValue)
 	{
 		outValue = lmn::tanh(inValue);
 	}
 
-	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
+	void backward_impl(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
 		inGradient = lmn::tanhGradient(outValue) * outGradient;
 	}
@@ -97,12 +97,12 @@ public:
 
 	virtual ~ConstantLayer() =default;
 
-	void _forward(float& inValue, float& outValue)
+	void forward_impl(float& inValue, float& outValue)
 	{
 		outValue = inValue;
 	}
 
-	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
+	void backward_impl(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
 		inGradient = outGradient;
 	}
@@ -124,12 +124,12 @@ public:
 
 	virtual ~ScalorLayer() =default;
 
-	void _forward(float& inValue, float& outValue)
+	void forward_impl(float& inValue, float& outValue)
 	{
 		outValue = multiplier * inValue;
 	}
 
-	void _backward(float& outValue, float& outGradient, float& inValue, float& inGradient)
+	void backward_impl(float& outValue, float& outGradient, float& inValue, float& inGradient)
 	{
 		inGradient = multiplier * outGradient;
 	}

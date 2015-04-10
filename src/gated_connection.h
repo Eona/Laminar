@@ -24,16 +24,16 @@ public:
 
 	virtual ~GatedConnection() =default;
 
-	virtual void _forward(float inlayerOutval, float& outlayerInval)
+	virtual void forward_impl(float inlayerOutval, float& outlayerInval)
 	{
-		_gated_forward(inlayerOutval, gateLayer->outValues[out_frame()],
+		gated_forward_impl(inlayerOutval, gateLayer->outValues[out_frame()],
 				// output param:
 				outlayerInval);
 	}
 
-	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
+	virtual void backward_impl(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
 	{
-		_gated_backward(outlayerIngrad, inlayerOutval, gateLayer->outValues[out_frame()],
+		gated_backward_impl(outlayerIngrad, inlayerOutval, gateLayer->outValues[out_frame()],
 				// output params:
 				inlayerOutgrad,
 				gateLayer->outGradients[
@@ -42,14 +42,14 @@ public:
 	}
 
 	/*********** Subclasses should override following ***********/
-	virtual void _gated_forward(float& inlayerOutval, float& gateOutval,
+	virtual void gated_forward_impl(float& inlayerOutval, float& gateOutval,
 			// output param:
 			float& outlayerInval)
 	{
 		outlayerInval += gateOutval * inlayerOutval;
 	}
 
-	virtual void _gated_backward(float& outlayerIngrad, float& inlayerOutval, float& gateOutval,
+	virtual void gated_backward_impl(float& outlayerIngrad, float& inlayerOutval, float& gateOutval,
 			// write to output params:
 			float& inlayerOutgrad, float& gateOutgrad)
 	{
@@ -88,7 +88,7 @@ public:
 
 	virtual ~GatedCachedNonlinearConnection() =default;
 
-	virtual void _gated_forward(float& inlayerOutval, float& gateOutval,
+	virtual void gated_forward_impl(float& inlayerOutval, float& gateOutval,
 		// output param:
 		float& outlayerInval)
 	{
@@ -100,7 +100,7 @@ public:
 		outlayerInval += gateOutval * cachedOutvals[t];
 	}
 
-	virtual void _gated_backward(float& outlayerIngrad, float& inlayerOutval, float& gateOutval,
+	virtual void gated_backward_impl(float& outlayerIngrad, float& inlayerOutval, float& gateOutval,
 			// write to output params:
 			float& inlayerOutgrad, float& gateOutgrad)
 	{

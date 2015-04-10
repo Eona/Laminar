@@ -18,12 +18,12 @@ public:
 
 	virtual ~ParamContainer() =default;
 
-	void resetValues()
+	void reset_values()
 	{
 		std::fill(paramValues.begin(), paramValues.end(), 0);
 	}
 
-	void resetGradients()
+	void reset_gradients()
 	{
 		std::fill(paramGradients.begin(), paramGradients.end(), 0);
 	}

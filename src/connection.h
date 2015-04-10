@@ -31,7 +31,7 @@ public:
 		this->_inFrame = inFrame;
 		this->_outFrame = outFrame;
 
-		_forward(inLayer->outValues[inFrame], outLayer->inValues[outFrame]);
+		forward_impl(inLayer->outValues[inFrame], outLayer->inValues[outFrame]);
 	}
 
 	/**
@@ -44,7 +44,7 @@ public:
 		this->_inFrame = inFrame;
 		this->_outFrame = outFrame;
 
-		_forward(vec_at(pcontainer->paramValues, inFrame),
+		forward_impl(vec_at(pcontainer->paramValues, inFrame),
 			outLayer->inValues[outFrame]);
 	}
 
@@ -56,7 +56,7 @@ public:
 
 		bool isHistorySaved = inLayer->is_full_gradient_history_saved();
 
-		_backward(outLayer->inGradients[
+		backward_impl(outLayer->inGradients[
 					isHistorySaved ? outFrame : 0],
 				inLayer->outValues[inFrame],
 				inLayer->outGradients[
@@ -75,15 +75,15 @@ public:
 
 		bool isHistorySaved = inLayer->is_full_gradient_history_saved();
 
-		_backward(outLayer->inGradients[
+		backward_impl(outLayer->inGradients[
 					isHistorySaved ? outFrame : 0],
 				vec_at(pcontainer->paramValues, inFrame),
 				vec_at(pcontainer->paramGradients, inFrame));
 	}
 
-	virtual void _forward(float inlayerOutval, float& outlayerInval) = 0;
+	virtual void forward_impl(float inlayerOutval, float& outlayerInval) = 0;
 
-	virtual void _backward(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad) = 0;
+	virtual void backward_impl(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad) = 0;
 
 	virtual void reset() {}
 
