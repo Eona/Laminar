@@ -36,7 +36,7 @@ public:
 		this->target = target;
 	}
 
-	virtual void add_layer(LayerPtr layer)
+	virtual void add_layer(Layer::Ptr layer)
 	{
 		components.push_back(Component::upcast(layer));
 		layers.push_back(layer);
@@ -44,7 +44,7 @@ public:
 		this->check_add_param_container(layer);
 	}
 
-	virtual void add_connection(ConnectionPtr conn)
+	virtual void add_connection(Connection::Ptr conn)
 	{
 		components.push_back(Component::upcast(conn));
 		connections.push_back(conn);
@@ -158,7 +158,7 @@ public:
 
 	virtual void forward_prop()
 	{
-		for (ComponentPtr compon : this->components)
+		for (Component::Ptr compon : this->components)
 			compon->forward();
 	}
 
@@ -170,7 +170,7 @@ public:
 
 	virtual void reset()
 	{
-		for (ComponentPtr compon : this->components)
+		for (Component::Ptr compon : this->components)
 			compon->reset();
 		this->assemble();
 	}
@@ -196,7 +196,7 @@ public:
 			NetworkException(
 				"Input sequence must have the same length as the target sequence"));
 
-		for (LayerPtr layer : layers)
+		for (Layer::Ptr layer : layers)
 			layer->set_max_temporal_skip(this->maxTemporalSkip);
 
 		Network::assemble();
@@ -216,9 +216,9 @@ public:
 	 */
 	virtual void forward_prop()
 	{
-		for (ComponentPtr compon : this->components)
+		for (Component::Ptr compon : this->components)
 		{
-			ConnectionPtr conn = Component::cast<Connection>(compon);
+			Connection::Ptr conn = Component::cast<Connection>(compon);
 			if (conn && key_exists(recurConnectionMap, conn))
 			{
 				int skip = recurConnectionMap[conn];
@@ -227,7 +227,7 @@ public:
 				else
 					conn->prehistory_forward(
 						// Ugly workaround for eclipse syntax highlighter
-						static_cast<ParamContainerPtr>(prehistoryLayerMap[conn->inLayer]),
+						static_cast<ParamContainer::Ptr>(prehistoryLayerMap[conn->inLayer]),
 						frame - skip, frame);
 			}
 			else
@@ -247,8 +247,8 @@ public:
 
 		for (int i = components.size() - 1; i >= 0; --i)
 		{
-			ComponentPtr compon = components[i];
-			ConnectionPtr conn = Component::cast<Connection>(compon);
+			Component::Ptr compon = components[i];
+			Connection::Ptr conn = Component::cast<Connection>(compon);
 			if (key_exists(recurConnectionMap, conn))
 			{
 				int skip = recurConnectionMap[conn];
@@ -256,18 +256,18 @@ public:
 					conn->backward(frame, frame - skip);
 				else
 					conn->prehistory_backward(
-						static_cast<ParamContainerPtr>(prehistoryLayerMap[conn->inLayer]),
+						static_cast<ParamContainer::Ptr>(prehistoryLayerMap[conn->inLayer]),
 							frame, frame - skip);
 			}
 			else
 				compon->backward(frame, frame);
 		}
 
-		for (LayerPtr layer : layers)
+		for (Layer::Ptr layer : layers)
 			layer->shiftBackGradientWindow();
 	}
 
-	virtual void add_recurrent_connection(ConnectionPtr conn, int temporalSkip = 1)
+	virtual void add_recurrent_connection(Connection::Ptr conn, int temporalSkip = 1)
 	{
 		assert_throw(
 			maxTemporalSkip == Layer::UNLIMITED_TEMPORAL_SKIP
@@ -319,7 +319,7 @@ public:
 
 	virtual void reset()
 	{
-		for (ComponentPtr compon : this->components)
+		for (Component::Ptr compon : this->components)
 			compon->reset();
 
 		for (auto& entry : prehistoryLayerMap)
@@ -330,8 +330,8 @@ public:
 		this->assemble();
 	}
 
-	std::unordered_map<LayerPtr, ParamContainerPtr> prehistoryLayerMap;
-	std::unordered_map<ConnectionPtr, int> recurConnectionMap;
+	std::unordered_map<Layer::Ptr, ParamContainer::Ptr> prehistoryLayerMap;
+	std::unordered_map<Connection::Ptr, int> recurConnectionMap;
 
 protected:
 	int frame = 0;

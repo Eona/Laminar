@@ -17,7 +17,7 @@ public:
 	 * gateLayer and outLayer will both be in the current timeframe.
 	 * outLayer[t] = gateLayer[t] * inLayer[t - temporalSkip]
 	 */
-	GatedConnection(LayerPtr _inLayer, LayerPtr _gateLayer, LayerPtr _outLayer):
+	GatedConnection(Layer::Ptr _inLayer, Layer::Ptr _gateLayer, Layer::Ptr _outLayer):
 		Connection(_inLayer, _outLayer),
 		gateLayer(_gateLayer)
 	{ }
@@ -61,7 +61,7 @@ public:
 	}
 
 protected:
-	LayerPtr gateLayer;
+	Layer::Ptr gateLayer;
 };
 
 
@@ -80,7 +80,7 @@ class GatedCachedNonlinearConnection : public GatedConnection
 {
 public:
 	GatedCachedNonlinearConnection(
-			LayerPtr _inLayer, LayerPtr _gateLayer, LayerPtr _outLayer):
+			Layer::Ptr _inLayer, Layer::Ptr _gateLayer, Layer::Ptr _outLayer):
 		GatedConnection(_inLayer, _gateLayer, _outLayer)
 	{ }
 

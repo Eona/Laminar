@@ -23,7 +23,7 @@ inline void gradient_check(Network& net,
 		net.backward_prop();
 
 	vector<float> analyticGrads;
-	for (ParamContainerPtr param : net.paramContainers)
+	for (ParamContainer::Ptr param : net.paramContainers)
 	{
 		auto grads = param->paramGradients;
 		analyticGrads.insert(analyticGrads.end(), grads.begin(), grads.end());
@@ -31,7 +31,7 @@ inline void gradient_check(Network& net,
 
 	/****** perturb parameters matrices stored in connections ******/
 	int agpt = 0; // point to analyticGrads
-	for (ParamContainerPtr param : net.paramContainers)
+	for (ParamContainer::Ptr param : net.paramContainers)
 	{
 		for (int p = 0; p < param->size(); ++p)
 		{

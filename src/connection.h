@@ -18,7 +18,7 @@
 class Connection : public Component
 {
 public:
-	Connection(LayerPtr _inLayer, LayerPtr _outLayer):
+	Connection(Layer::Ptr _inLayer, Layer::Ptr _outLayer):
 		inLayer(_inLayer), outLayer(_outLayer)
     {
     }
@@ -116,8 +116,8 @@ public:
 		return std::dynamic_pointer_cast<ConnectionT>(conn);
 	}
 
-	LayerPtr inLayer;
-	LayerPtr outLayer;
+	Layer::Ptr inLayer;
+	Layer::Ptr outLayer;
 protected:
 
 	// Helper for backward/forward in/outLayer check

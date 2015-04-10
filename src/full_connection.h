@@ -10,7 +10,7 @@
 class ConstantConnection : public Connection
 {
 public:
-	ConstantConnection(LayerPtr _inLayer, LayerPtr _outLayer):
+	ConstantConnection(Layer::Ptr _inLayer, Layer::Ptr _outLayer):
 		Connection(_inLayer, _outLayer)
 	{
 	}
@@ -36,7 +36,7 @@ public:
 class FullConnection : public Connection, public ParamContainer
 {
 public:
-	FullConnection(LayerPtr _inLayer, LayerPtr _outLayer):
+	FullConnection(Layer::Ptr _inLayer, Layer::Ptr _outLayer):
 		Connection(_inLayer, _outLayer),
 		ParamContainer(1),
 		param(paramValues[0]),
