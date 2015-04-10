@@ -2,7 +2,7 @@
 
 **Laminar Accelerated and MInimalistic Neural ARchitecture**
 
-A general deep learning framework powered by GPUs. 
+A generic deep learning framework powered by drop-in Laminar virtual engines. 
 
 ## Installation
 
