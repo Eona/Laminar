@@ -20,8 +20,11 @@ struct TensorBase
 
 	virtual ~TensorBase()
 	{
-		engine->upload(Instruction("destroy", {}, addr));
-		this->addr = -1;
+		if (this->addr != -1)
+		{
+			engine->upload(Instruction("destroy", {}, addr));
+			this->addr = -1;
+		}
 	}
 
 	// Copy ctor
@@ -48,6 +51,7 @@ struct TensorBase
 		addr(other.addr)
 	{
 		DEBUG_MSG("Move Ctor");
+		other.addr = -1;
 	}
 
 	// Move assignment
@@ -55,6 +59,7 @@ struct TensorBase
 	{
 		DEBUG_MSG("Move Assign");
 		this->addr = other.addr;
+		other.addr = -1;
 		return *this;
 	}
 
