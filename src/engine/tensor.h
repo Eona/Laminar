@@ -68,39 +68,6 @@ struct TensorBase
 	int addr;
 };
 
-struct Tensor : public TensorBase
-{
-	Tensor(EngineBase::Ptr _engine) :
-		TensorBase(_engine)
-	{ }
-
-	virtual ~Tensor() {}
-
-	// Copy ctor
-	Tensor(const Tensor& other) :
-		TensorBase(other)
-	{ }
-
-	// Copy assignment
-	Tensor& operator=(const Tensor& other)
-	{
-		TensorBase::operator=(other);
-		return *this;
-	}
-
-	// Move ctor
-	Tensor(Tensor&& other) :
-		TensorBase(std::move(other))
-	{ }
-
-	// Move assignment
-/*	Tensor& operator=(Tensor&& other)
-	{
-		TensorBase::operator=(std::move(other));
-		return *this;
-	}*/
-};
-
 struct Scalor : public TensorBase
 {
 	Scalor(EngineBase::Ptr _engine) :
@@ -132,6 +99,81 @@ struct Scalor : public TensorBase
 		TensorBase::operator=(std::move(other));
 		return *this;
 	}*/
+
+	Scalor& operator+=(const Scalor& other)
+	{
+		engine->upload(Instruction("s+s", {this->addr, other.addr}, this->addr));
+		return *this;
+	}
+
+	Scalor& operator-=(const Scalor& other)
+	{
+		engine->upload(Instruction("s-s", {this->addr, other.addr}, this->addr));
+		return *this;
+	}
+
+	Scalor& operator*=(const Scalor& other)
+	{
+		engine->upload(Instruction("s*s", {this->addr, other.addr}, this->addr));
+		return *this;
+	}
+};
+
+struct Tensor : public TensorBase
+{
+	Tensor(EngineBase::Ptr _engine) :
+		TensorBase(_engine)
+	{ }
+
+	virtual ~Tensor() {}
+
+	// Copy ctor
+	Tensor(const Tensor& other) :
+		TensorBase(other)
+	{ }
+
+	// Copy assignment
+	Tensor& operator=(const Tensor& other)
+	{
+		TensorBase::operator=(other);
+		return *this;
+	}
+
+	// Move ctor
+	Tensor(Tensor&& other) :
+		TensorBase(std::move(other))
+	{ }
+
+	// Move assignment
+/*	Tensor& operator=(Tensor&& other)
+	{
+		TensorBase::operator=(std::move(other));
+		return *this;
+	}*/
+
+	Tensor& operator+=(const Tensor& other)
+	{
+		engine->upload(Instruction("t+t", {this->addr, other.addr}, this->addr));
+		return *this;
+	}
+
+	Tensor& operator-=(const Tensor& other)
+	{
+		engine->upload(Instruction("t-t", {this->addr, other.addr}, this->addr));
+		return *this;
+	}
+
+	Tensor& operator*=(const Tensor& other)
+	{
+		engine->upload(Instruction("t*t", {this->addr, other.addr}, this->addr));
+		return *this;
+	}
+
+	Tensor& operator*=(const Scalor& other)
+	{
+		engine->upload(Instruction("t*s", {this->addr, other.addr}, this->addr));
+		return *this;
+	}
 };
 
 /*
