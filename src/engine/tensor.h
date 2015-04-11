@@ -112,14 +112,14 @@ Tensor operator+(const Tensor& x1, const Tensor& x2)
 {
 	Tensor ans(x1.engine);
 	x1.engine->upload(Instruction("t+t", {x1.addr, x2.addr}, ans.addr));
-	return std::move(ans);
+	return ans;
 }
 
 Scalor operator+(const Scalor& x1, const Scalor& x2)
 {
 	Scalor ans(x1.engine);
 	x1.engine->upload(Instruction("s+s", {x1.addr, x2.addr}, ans.addr));
-	return std::move(ans);
+	return ans;
 }
 
 /**
@@ -129,14 +129,14 @@ Tensor operator-(const Tensor& x1, const Tensor& x2)
 {
 	Tensor ans(x1.engine);
 	x1.engine->upload(Instruction("t-t", {x1.addr, x2.addr}, ans.addr));
-	return std::move(ans);
+	return ans;
 }
 
 Scalor operator-(const Scalor& x1, const Scalor& x2)
 {
 	Scalor ans(x1.engine);
 	x1.engine->upload(Instruction("s-s", {x1.addr, x2.addr}, ans.addr));
-	return std::move(ans);
+	return ans;
 }
 
 /**
@@ -146,14 +146,14 @@ Tensor operator-(const Tensor& x)
 {
 	Tensor ans(x.engine);
 	x.engine->upload(Instruction("-t", {x.addr}, ans.addr));
-	return std::move(ans);
+	return ans;
 }
 
 Scalor operator-(const Scalor& x)
 {
 	Scalor ans(x.engine);
 	x.engine->upload(Instruction("-s", {x.addr}, ans.addr));
-	return std::move(ans);
+	return ans;
 }
 
 /**
@@ -163,28 +163,28 @@ Tensor operator*(const Tensor& x1, const Tensor& x2)
 {
 	Tensor ans(x1.engine);
 	x1.engine->upload(Instruction("t*t", {x1.addr, x2.addr}, ans.addr));
-	return std::move(ans);
+	return ans;
 }
 
 Tensor operator*(const Tensor& x1, const Scalor& x2)
 {
 	Tensor ans(x1.engine);
 	x1.engine->upload(Instruction("t*s", {x1.addr, x2.addr}, ans.addr));
-	return std::move(ans);
+	return ans;
 }
 
 Tensor operator*(const Scalor& x1, const Tensor& x2)
 {
 	Tensor ans(x1.engine);
 	x1.engine->upload(Instruction("s*t", {x1.addr, x2.addr}, ans.addr));
-	return std::move(ans);
+	return ans;
 }
 
 Scalor operator*(const Scalor& x1, const Scalor& x2)
 {
 	Scalor ans(x1.engine);
 	x1.engine->upload(Instruction("s*s", {x1.addr, x2.addr}, ans.addr));
-	return std::move(ans);
+	return ans;
 }
 
 #endif /* TENSOR_H_ */
