@@ -155,6 +155,21 @@ using is_different_tensor_type =
 		std::is_base_of<TensorBase, TensorT2>::value &&
 		!std::is_same<TensorT1, TensorT2>::value>;
 
+template<typename T>
+struct tensor_class_name {};
+
+template<>
+struct tensor_class_name<Tensor>
+{
+	static constexpr const char *name = "Tensor";
+};
+
+template<>
+struct tensor_class_name<Scalor>
+{
+	static constexpr const char *name = "Scalor";
+};
+
 /**
  * Only Tensor + Tensor or Scalor + Scalor
  */
@@ -177,8 +192,10 @@ typename std::enable_if<
 	is_different_tensor_type<TensorT1, TensorT2>::value, TensorBase>::type
 operator+(const TensorT1& x1, const TensorT2& x2)
 {
-	throw TensorException("operator+ type mismatch: "
-			"only Tensor+Tensor or Scalor+Scalor supported.");
+	throw TensorException(string("operator+ type mismatch: ")
+			+ tensor_class_name<TensorT1>::name + "+"
+			+ tensor_class_name<TensorT2>::name + ". "
+			+ "Only Tensor+Tensor or Scalor+Scalor supported.");
 }
 
 /**
