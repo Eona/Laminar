@@ -175,9 +175,8 @@ public:
 						Instruction(instr_2.code, instr_2.readAddrs, instr_1.writeAddr));
 				}
 			}
-
 		}
-		while (i < instructions.end());
+		while (++i < instructions.end());
 	}
 
 protected:

@@ -40,7 +40,8 @@ int main(int argc, char **argv)
 
 	dummyEng->print_instructions();
 
-	DEBUG_MSG("After elimination");
+	cout << endl;
+	print_title("After elimination");
 	dummyEng->eliminate_temporary();
 	dummyEng->print_instructions();
 
