@@ -9,5 +9,9 @@
 #include "engine.h"
 #include "tensor.h"
 
+class DummyEngine : public Engine<float>
+{
+
+};
 
 #endif /* DUMMY_ENGINE_H_ */

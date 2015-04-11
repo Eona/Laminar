@@ -12,6 +12,9 @@
 #include "lstm.h"
 #include "network.h"
 #include "gradient_check.h"
+#include "engine/engine.h"
+#include "engine/tensor.h"
+#include "engine/dummy_engine.h"
 
 FakeRand& rand_conn = FakeRand::instance_connection();
 FakeRand& rand_prehis = FakeRand::instance_prehistory();
@@ -22,8 +25,14 @@ FakeRand& rand_target = FakeRand::instance_target();
 #define make_gated Connection::make<GatedConnection>
 
 int main(int argc, char **argv)
-{/*********** FAKE_RAND ***********/
-	vector<float> LSTM_CONNECTION_WEIGHTS {
+{
+	MemoryPool<float> pool;
+	int newaddr = pool.alloc();
+	pool.write(newaddr, 3);
+
+	cout << pool << endl;
+
+/*	vector<float> LSTM_CONNECTION_WEIGHTS {
 		-0.904, 0.312, -0.944, 1.34, -2.14, -1.69, -2.88, -0.889, -2.28, -0.414, -2.07
 	};
 	vector<float> LSTM_PREHISTORY {
@@ -75,7 +84,6 @@ int main(int argc, char **argv)
 
 	gradient_check(net, 1e-2, 1);
 
-	/************************************/
 	RecurrentNetwork lstm;
 	lstm.set_input(input);
 	lstm.set_target(target);
@@ -96,6 +104,6 @@ int main(int argc, char **argv)
 	lstm.assemble();
 	for (int i = 0; i < input.size(); ++i)
 		lstm.forward_prop();
-	cout << lstm.lossLayer->outValues << endl;
+	cout << lstm.lossLayer->outValues << endl;*/
 
 }

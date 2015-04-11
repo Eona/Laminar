@@ -8,5 +8,14 @@
 
 #include "../global_utils.h"
 
+class Tensor
+{
+
+};
+
+class Scalor
+{
+
+};
 
 #endif /* TENSOR_H_ */
