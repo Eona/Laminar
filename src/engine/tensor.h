@@ -9,8 +9,9 @@
 #include "../global_utils.h"
 #include "engine.h"
 
-struct TensorBase
+class TensorBase
 {
+public:
 	TensorBase(EngineBase::Ptr _engine) :
 		engine(_engine)
 	{
@@ -68,8 +69,9 @@ struct TensorBase
 	int addr;
 };
 
-struct Scalor : public TensorBase
+class Scalor : public TensorBase
 {
+public:
 	Scalor(EngineBase::Ptr _engine) :
 		TensorBase(_engine)
 	{ }
@@ -119,8 +121,9 @@ struct Scalor : public TensorBase
 	}
 };
 
-struct Tensor : public TensorBase
+class Tensor : public TensorBase
 {
+public:
 	Tensor(EngineBase::Ptr _engine) :
 		TensorBase(_engine)
 	{ }
@@ -174,6 +177,20 @@ struct Tensor : public TensorBase
 		engine->upload(Instruction("t*s", {this->addr, other.addr}, this->addr));
 		return *this;
 	}
+};
+
+/*********** Expression tree ***********/
+struct TensorNode
+{
+	TensorNode(int _addr) :
+		addr(_addr)
+	{}
+
+	typedef shared_ptr<TensorNode> Ptr;
+
+	vector<Ptr> children;
+	vector<Ptr> parents;
+	int addr; // real memory address in Engine
 };
 
 /*
