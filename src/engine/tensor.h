@@ -29,6 +29,7 @@ struct TensorBase
 		engine(other.engine),
 		addr(engine->alloc())
 	{
+		DEBUG_MSG("Copy Ctor");
 		engine->upload(Instruction("create", {}, this->addr));
 		engine->upload(Instruction("copy", {other.addr}, this->addr));
 	}
@@ -36,6 +37,7 @@ struct TensorBase
 	// Copy assignment
 	TensorBase& operator=(const TensorBase& other)
 	{
+		DEBUG_MSG("Copy Assign");
 		engine->upload(Instruction("copy", {other.addr}, this->addr));
 		return *this;
 	}
@@ -44,11 +46,14 @@ struct TensorBase
 	TensorBase(TensorBase&& other) :
 		engine(other.engine),
 		addr(other.addr)
-	{ }
+	{
+		DEBUG_MSG("Move Ctor");
+	}
 
 	// Move assignment
 	TensorBase& operator=(TensorBase&& other)
 	{
+		DEBUG_MSG("Move Assign");
 		this->addr = other.addr;
 		return *this;
 	}
@@ -66,6 +71,29 @@ struct Tensor : public TensorBase
 
 	virtual ~Tensor() {}
 
+	// Copy ctor
+	Tensor(const Tensor& other) :
+		TensorBase(other)
+	{ }
+
+	// Copy assignment
+	Tensor& operator=(const Tensor& other)
+	{
+		TensorBase::operator=(other);
+		return *this;
+	}
+
+	// Move ctor
+	Tensor(Tensor&& other) :
+		TensorBase(std::move(other))
+	{ }
+
+	// Move assignment
+	Tensor& operator=(Tensor&& other)
+	{
+		TensorBase::operator=(std::move(other));
+		return *this;
+	}
 };
 
 struct Scalor : public TensorBase
