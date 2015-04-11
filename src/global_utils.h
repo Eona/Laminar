@@ -43,7 +43,6 @@ using std::is_base_of;
 typedef unsigned long ulong;
 typedef unsigned int uint;
 
-/****** Recognition macros ******/
 #if __cplusplus > 201100l
 #define is_CPP_11
 #else
@@ -62,7 +61,7 @@ namespace {
 ************ Printing **************
 **************************************/
 template<typename Container>
-string container2str(Container& vec,
+string container2str(const Container& vec,
 		string leftDelimiter="[", string rightDelimiter="]")
 {
 //	using ElemType = typename Container::value_type;
@@ -76,11 +75,22 @@ string container2str(Container& vec,
 	return (s.size() > leftDelimiter.size() ?
 			s.substr(0, s.size() - 2) : s) + rightDelimiter;
 }
+template<typename Container>
+string container2str(Container&& vec,
+		string leftDelimiter="[", string rightDelimiter="]")
+{
+	return container2str(vec, leftDelimiter, rightDelimiter);
+}
 
 template<typename T>
-ostream& operator<<(ostream& oss, vector<T>& vec)
+ostream& operator<<(ostream& oss, const vector<T>& vec)
 {
 	return oss << container2str(vec);
+}
+template<typename T>
+ostream& operator<<(ostream& oss, vector<T>&& vec)
+{
+	return oss << vec;
 }
 
 template<typename T>
@@ -90,22 +100,6 @@ string to_str(T val)
 	oss << val;
 	return oss.str();
 }
-
-/****** Rvalue overloaded printing ******/
-#ifdef is_CPP_11
-template<typename Container>
-string container2str(Container&& vec,
-		string leftDelimiter="[", string rightDelimiter="]")
-{
-	return container2str(vec, leftDelimiter, rightDelimiter);
-}
-
-template<typename T>
-ostream& operator<<(ostream& oss, vector<T>&& vec)
-{
-	return oss << vec;
-}
-#endif
 
 // print basic array
 template <typename T>
