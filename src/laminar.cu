@@ -26,17 +26,16 @@ FakeRand& rand_target = FakeRand::instance_target();
 
 int main(int argc, char **argv)
 {
-	MemoryPool<vector<float> > pool;
-	int newaddr = pool.alloc();
-	pool.write(newaddr, vector<float>{2.3, 3});
-	pool.alloc();
-	pool.alloc();
-	{
-		vector<float> f { 66, 6.4 };
-		pool.push(f);
-	}
+	auto dummyEng = EngineBase::make<DummyEngine>();
 
-	cout << pool << endl;
+	Tensor t1(dummyEng);
+	Tensor t2(dummyEng);
+	Tensor t3 = t1 + t2;
+	t3 = t3 + t3 ;
+	t1 = t3 + t1;
+	t3 = t1;
+
+	dummyEng->print_instructions();
 
 /*	vector<float> LSTM_CONNECTION_WEIGHTS {
 		-0.904, 0.312, -0.944, 1.34, -2.14, -1.69, -2.88, -0.889, -2.28, -0.414, -2.07

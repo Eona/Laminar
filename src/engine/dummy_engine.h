@@ -11,7 +11,10 @@
 
 class DummyEngine : public Engine<float>
 {
-
+public:
+	DummyEngine() :
+		Engine<float>()
+	{}
 };
 
 #endif /* DUMMY_ENGINE_H_ */

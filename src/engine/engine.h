@@ -19,7 +19,7 @@ public:
 	MemoryPool()
 	{ }
 
-	virtual ~MemoryPool() =default;
+	virtual ~MemoryPool() {};
 
 	using DataType = DataT;
 
@@ -86,7 +86,7 @@ public:
 	EngineBase()
 	{ }
 
-	virtual ~EngineBase() =default;
+	virtual ~EngineBase() {};
 
 	void upload(Instruction instr)
 	{
@@ -98,12 +98,11 @@ public:
 	/************************************/
 	typedef shared_ptr<EngineBase> Ptr;
 
-	template<typename EngineBaseT, typename ...ArgT>
-	static EngineBase::Ptr make(ArgT&& ... args)
+	template<typename EngineT, typename ...ArgT>
+	static shared_ptr<EngineT> make(ArgT&& ... args)
 	{
-		return static_cast<EngineBase::Ptr>(
-				std::make_shared<EngineBaseT>(
-						std::forward<ArgT>(args) ...));
+		return std::make_shared<EngineT>(
+						std::forward<ArgT>(args) ...);
 	}
 
 	/**
@@ -130,12 +129,18 @@ public:
 		EngineBase()
 	{ }
 
-	int alloc()
+	virtual ~Engine() {};
+
+	virtual int alloc()
 	{
 		return memoryPool.alloc();
 	}
 
-	virtual ~Engine() =default;
+	virtual void print_instructions()
+	{
+		for (auto& instr : this->instructions)
+			cout << instr << "\n";
+	}
 
 protected:
 	MemoryPool<DataT> memoryPool;

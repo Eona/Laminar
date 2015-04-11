@@ -18,6 +18,11 @@ struct OpCode
 		name(_name)
 	{ }
 
+	operator string() const
+	{
+		return name;
+	}
+
 	string name;
 };
 
@@ -31,10 +36,25 @@ struct Instruction
 		code(_code), readAddrs(_readAddrs), writeAddr(_writeAddr)
 	{ }
 
+	virtual ~Instruction() {}
+
 	OpCode code;
 	vector<int> readAddrs;
 	int writeAddr;
+
+	virtual operator string() const
+	{
+		return "{" + string(code) + ": "
+				+ container2str(readAddrs) + " -> "
+				+ to_str(writeAddr)
+				+ "}";
+	}
 };
 
+ostream& operator<<(ostream& os, Instruction instr)
+{
+	os << string(instr);
+	return os;
+}
 
 #endif /* INSTRUCTIONS_H_ */
