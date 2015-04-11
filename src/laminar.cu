@@ -26,9 +26,15 @@ FakeRand& rand_target = FakeRand::instance_target();
 
 int main(int argc, char **argv)
 {
-	MemoryPool<float> pool;
+	MemoryPool<vector<float> > pool;
 	int newaddr = pool.alloc();
-	pool.write(newaddr, 3);
+	pool.write(newaddr, vector<float>{2.3, 3});
+	pool.alloc();
+	pool.alloc();
+	{
+		vector<float> f { 66, 6.4 };
+		pool.push(f);
+	}
 
 	cout << pool << endl;
 

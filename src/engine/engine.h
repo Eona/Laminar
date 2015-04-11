@@ -7,10 +7,14 @@
 #define ENGINE_H_
 
 #include "../global_utils.h"
+#include "instructions.h"
 
 template<typename DataT>
 class MemoryPool
 {
+static_assert(std::is_default_constructible<DataT>::value,
+		"Data type in MemoryPool must be default constructible.");
+
 public:
 	MemoryPool()
 	{ }
@@ -19,10 +23,15 @@ public:
 
 	using DataType = DataT;
 
+	int push(const DataT& data)
+	{
+		memory.push_back(data);
+		return size() - 1;
+	}
+
 	int alloc()
 	{
-		memory.push_back(DataT());
-		return size() - 1;
+		return this->push(DataT());
 	}
 
 	DataT& read(int i)
@@ -54,7 +63,7 @@ public:
 	template<typename T>
 	friend ostream& operator<<(ostream& os, MemoryPool<T>& memoryPool);
 
-protected:
+private:
 	vector<DataT> memory;
 };
 
@@ -101,9 +110,16 @@ template<typename DataT>
 class Engine : EngineBase
 {
 public:
+	Engine()
+	{ }
+
+	virtual ~Engine() =default;
+
+
 
 protected:
 	MemoryPool<DataT> memoryPool;
+	vector<Instruction> instructions;
 };
 
 
