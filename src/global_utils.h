@@ -181,6 +181,22 @@ struct typeTraitFuncName<className<Ts...> > : std::true_type { };
 
 GenTemplateTypeTrait(is_vector, std::vector);
 
+/**
+ * select_type<bool, TypeTrue, TypeFalse>::type
+ * if bool is true, select TypeTrue, else TypeFalse
+ */
+template<bool, typename TypeTrue, typename TypeFalse>
+struct select_type
+{
+	using type = TypeFalse;
+};
+template<typename TypeTrue, typename TypeFalse>
+struct select_type<true, TypeTrue, TypeFalse>
+{
+	using type = TypeTrue;
+};
+
+
 /**************************************
 ************ Exceptions **************
 **************************************/

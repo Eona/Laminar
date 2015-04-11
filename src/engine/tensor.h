@@ -148,42 +148,47 @@ struct is_different_tensor_type<TensorT1, TensorT2,
 	>::type
 >: std::true_type {};
 */
+template<typename TensorT>
+using is_tensor_base =
+	std::integral_constant<bool,
+		std::is_base_of<TensorBase, TensorT>::value>;
+
 template<typename TensorT1, typename TensorT2 >
 using is_different_tensor_type =
 	std::integral_constant<bool,
-		std::is_base_of<TensorBase, TensorT1>::value &&
-		std::is_base_of<TensorBase, TensorT2>::value &&
+		is_tensor_base<TensorT1>::value &&
+		is_tensor_base<TensorT2>::value &&
 		!std::is_same<TensorT1, TensorT2>::value>;
 
 template<typename T>
-struct tensor_class_name {};
+struct tensor_class_info {};
 
 template<>
-struct tensor_class_name<Tensor>
+struct tensor_class_info<Tensor>
 {
 	static constexpr const char *name = "Tensor";
+	static constexpr const char *operand = "t";
 };
 
 template<>
-struct tensor_class_name<Scalor>
+struct tensor_class_info<Scalor>
 {
 	static constexpr const char *name = "Scalor";
+	static constexpr const char *operand = "s";
 };
 
 /**
  * Only Tensor + Tensor or Scalor + Scalor
  */
-Tensor operator+(const Tensor& x1, const Tensor& x2)
+template<typename TensorT>
+typename std::enable_if<
+	is_tensor_base<TensorT>::value, TensorT>::type
+operator+(const TensorT& x1, const TensorT& x2)
 {
-	Tensor ans(x1.engine);
-	x1.engine->upload(Instruction("t+t", {x1.addr, x2.addr}, ans.addr));
-	return ans;
-}
-
-Scalor operator+(const Scalor& x1, const Scalor& x2)
-{
-	Scalor ans(x1.engine);
-	x1.engine->upload(Instruction("s+s", {x1.addr, x2.addr}, ans.addr));
+	TensorT ans(x1.engine);
+	string operand = tensor_class_info<TensorT>::operand;
+	x1.engine->upload(
+		Instruction(operand + "+" + operand, {x1.addr, x2.addr}, ans.addr));
 	return ans;
 }
 
@@ -193,73 +198,76 @@ typename std::enable_if<
 operator+(const TensorT1& x1, const TensorT2& x2)
 {
 	throw TensorException(string("operator+ type mismatch: ")
-			+ tensor_class_name<TensorT1>::name + "+"
-			+ tensor_class_name<TensorT2>::name + ". "
+			+ tensor_class_info<TensorT1>::name + "+"
+			+ tensor_class_info<TensorT2>::name + ". "
 			+ "Only Tensor+Tensor or Scalor+Scalor supported.");
 }
 
 /**
  * Only Tensor - Tensor or Scalor - Scalor
  */
-Tensor operator-(const Tensor& x1, const Tensor& x2)
+template<typename TensorT>
+typename std::enable_if<
+	is_tensor_base<TensorT>::value, TensorT>::type
+operator-(const TensorT& x1, const TensorT& x2)
 {
-	Tensor ans(x1.engine);
-	x1.engine->upload(Instruction("t-t", {x1.addr, x2.addr}, ans.addr));
+	TensorT ans(x1.engine);
+	string operand = tensor_class_info<TensorT>::operand;
+	x1.engine->upload(
+		Instruction(operand + "-" + operand, {x1.addr, x2.addr}, ans.addr));
 	return ans;
 }
 
-Scalor operator-(const Scalor& x1, const Scalor& x2)
+template<typename TensorT1, typename TensorT2>
+typename std::enable_if<
+	is_different_tensor_type<TensorT1, TensorT2>::value, TensorBase>::type
+operator-(const TensorT1& x1, const TensorT2& x2)
 {
-	Scalor ans(x1.engine);
-	x1.engine->upload(Instruction("s-s", {x1.addr, x2.addr}, ans.addr));
-	return ans;
+	throw TensorException(string("operator- type mismatch: ")
+			+ tensor_class_info<TensorT1>::name + "-"
+			+ tensor_class_info<TensorT2>::name + ". "
+			+ "Only Tensor-Tensor or Scalor-Scalor supported.");
 }
 
 /**
  * Unary negate
  */
-Tensor operator-(const Tensor& x)
+template<typename TensorT>
+typename std::enable_if<
+	is_tensor_base<TensorT>::value, TensorT>::type
+operator-(const TensorT& x)
 {
-	Tensor ans(x.engine);
-	x.engine->upload(Instruction("-t", {x.addr}, ans.addr));
-	return ans;
-}
-
-Scalor operator-(const Scalor& x)
-{
-	Scalor ans(x.engine);
-	x.engine->upload(Instruction("-s", {x.addr}, ans.addr));
+	TensorT ans(x.engine);
+	string operand = tensor_class_info<TensorT>::operand;
+	x.engine->upload(
+		Instruction("-" + operand, {x.addr}, ans.addr));
 	return ans;
 }
 
 /**
  * Multiply
+ * Tensor * Tensor, Tensor * Scalor, Scalor * Tensor -> return Tensor
+ * Scalor * Scalor -> Scalor
  */
-Tensor operator*(const Tensor& x1, const Tensor& x2)
-{
-	Tensor ans(x1.engine);
-	x1.engine->upload(Instruction("t*t", {x1.addr, x2.addr}, ans.addr));
-	return ans;
-}
+template<typename TensorT1, typename TensorT2>
+using select_multiply_return =
+	select_type<std::is_same<TensorT1, Scalor>::value
+		&& std::is_same<TensorT2, Scalor>::value,
+		Scalor, Tensor>;
 
-Tensor operator*(const Tensor& x1, const Scalor& x2)
+template<typename TensorT1, typename TensorT2>
+typename std::enable_if<is_tensor_base<TensorT1>::value
+		&& is_tensor_base<TensorT2>::value,
+	typename select_multiply_return<TensorT1, TensorT2>::type>::type
+operator*(const TensorT1& x1, const TensorT2& x2)
 {
-	Tensor ans(x1.engine);
-	x1.engine->upload(Instruction("t*s", {x1.addr, x2.addr}, ans.addr));
-	return ans;
-}
-
-Tensor operator*(const Scalor& x1, const Tensor& x2)
-{
-	Tensor ans(x1.engine);
-	x1.engine->upload(Instruction("s*t", {x1.addr, x2.addr}, ans.addr));
-	return ans;
-}
-
-Scalor operator*(const Scalor& x1, const Scalor& x2)
-{
-	Scalor ans(x1.engine);
-	x1.engine->upload(Instruction("s*s", {x1.addr, x2.addr}, ans.addr));
+	using AnsType = typename select_multiply_return<TensorT1, TensorT2>::type;
+	AnsType ans(x1.engine);
+	string oper1 = tensor_class_info<TensorT1>::operand;
+	string oper2 = tensor_class_info<TensorT1>::operand;
+	x1.engine->upload(Instruction(
+			oper1 + "*" + oper2,
+			{x1.addr, x2.addr}, ans.addr));
 	return ans;
 }
 
