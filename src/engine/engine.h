@@ -25,7 +25,8 @@ public:
 
 	int push(const DataT& data)
 	{
-		memory.push_back(data);
+		this->memory.push_back(data);
+		this->initialized.push_back(false);
 		return size() - 1;
 	}
 
@@ -60,6 +61,11 @@ public:
 		memory[i] = data;
 	}
 
+	bool is_initialized(int i)
+	{
+		return this->initialized[i];
+	}
+
 	int size()
 	{
 		return memory.size();
@@ -70,6 +76,8 @@ public:
 
 private:
 	vector<DataT> memory;
+	// test if things are default initialized.
+	vector<bool> initialized;
 };
 
 template<typename T>
