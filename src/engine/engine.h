@@ -142,6 +142,44 @@ public:
 			cout << instr << "\n";
 	}
 
+	virtual void eliminate_temporary()
+	{
+		auto i = instructions.begin() + 3; // at least from 3rd instr onwards
+		do {
+			auto instr = *i;
+			if (instr.code == "destroy")
+			{
+				auto instr_1 = i[-1]; // *(i - 1)
+				auto instr_2 = i[-2];
+				// instr_2 { t+t: [2, 2] -> 4 }
+				// instr_1 { copy: [4] -> 3 }
+				// instr { destroy: [] -> 4 }
+				// optimize and eliminate temporary '4'
+				// instr_new { t+t: [2, 2] -> 3 }
+				if (instr_1.code == "copy"
+					&& instr_1.readAddrs[0] == instr.writeAddr
+					&& instr_2.writeAddr == instr_1.readAddrs[0])
+				{
+					// instr_3 might have { create: [] -> 4 }
+					auto instr_3 = i[-3];
+					if (instr_3.code == "create"
+						&& instr_3.writeAddr == instr.writeAddr)
+					{
+						// eliminate all 4 instructions instr_3 ... instr, inclusive
+						i = instructions.erase(i - 3, i + 1);
+					}
+					else
+						i = instructions.erase(i - 2, i + 1);
+					// Add new combined instr
+					instructions.insert(i,
+						Instruction(instr_2.code, instr_2.readAddrs, instr_1.writeAddr));
+				}
+			}
+
+		}
+		while (i < instructions.end());
+	}
+
 protected:
 	MemoryPool<DataT> memoryPool;
 };
