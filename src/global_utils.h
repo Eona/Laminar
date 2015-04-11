@@ -162,6 +162,23 @@ bool key_exists(std::unordered_map<KeyT, ValueT>& map, KeyT& key)
 	return map.find(key) != map.end();
 }
 
+/**
+ * Example: suppose we have template<typename T> MyClass;
+ * IsDerivedTemplateTypeFunction(is_myclass, MyClass)
+ * generates a type trait function is_myclass<X>() that
+ * returns true if there exists a type T such that X inherits from MyClass<T>
+ *
+ * std::declval() simulates creation of a new Derived* pointer
+ * http://stackoverflow.com/questions/29531536/c-check-inheritance-at-compile-time/
+ */
+#define GenDerivedTemplateTypeTrait(typeTraitFuncName, className) \
+template <class T> \
+std::true_type typeTraitFuncName##_impl(const className<T>* impl); \
+std::false_type typeTraitFuncName_impl(...); \
+template <class Derived> \
+using typeTraitFuncName = \
+    decltype(typeTraitFuncName##_impl(std::declval<Derived*>()));
+
 /**************************************
 ************ Exceptions **************
 **************************************/
@@ -217,6 +234,18 @@ public:
     virtual string error_header() const
     {
     	return "Feature unimplemented";
+    }
+};
+
+class EngineException: public LaminarException {
+public:
+    EngineException(const string& msg):
+    	LaminarException(msg)
+	{}
+
+    virtual string error_header() const
+    {
+    	return "Engine error";
     }
 };
 

@@ -125,14 +125,6 @@ private:
 /**
  * Type trait
  */
-template <class T>
-std::true_type is_composite_impl(const Composite<T>* impl);
-
-std::false_type is_composite_impl(...);
-
-template <class Derived>
-using is_composite =
-		// simulate creation of a new Derived* pointer
-    decltype(is_composite_impl(std::declval<Derived*>()));
+GenDerivedTemplateTypeTrait(is_composite, Composite);
 
 #endif /* COMPOSITE_H_ */
