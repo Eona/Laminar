@@ -108,6 +108,30 @@ struct Scalor : public TensorBase
 	{ }
 
 	virtual ~Scalor() {}
+
+	// Copy ctor
+	Scalor(const Scalor& other) :
+		TensorBase(other)
+	{ }
+
+	// Copy assignment
+	Scalor& operator=(const Scalor& other)
+	{
+		TensorBase::operator=(other);
+		return *this;
+	}
+
+	// Move ctor
+	Scalor(Scalor&& other) :
+		TensorBase(std::move(other))
+	{ }
+
+	// Move assignment
+/*	Scalor& operator=(Scalor&& other)
+	{
+		TensorBase::operator=(std::move(other));
+		return *this;
+	}*/
 };
 
 /**
