@@ -58,8 +58,9 @@ struct TensorBase
 	TensorBase& operator=(TensorBase&& other)
 	{
 		DEBUG_MSG("Move Assign");
-		this->addr = other.addr;
-		other.addr = -1;
+//		this->addr = other.addr;
+		engine->upload(Instruction("copy", {other.addr}, this->addr));
+//		other.addr = -1;
 		return *this;
 	}
 

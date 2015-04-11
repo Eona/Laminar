@@ -23,6 +23,16 @@ struct OpCode
 		return name;
 	}
 
+	bool operator==(const string str) const
+	{
+		return name == str;
+	}
+
+	bool operator!=(const string str) const
+	{
+		return !operator==(str);
+	}
+
 	string name;
 };
 
