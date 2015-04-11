@@ -179,19 +179,6 @@ public:
 	}
 };
 
-/*********** Expression tree ***********/
-struct TensorNode
-{
-	TensorNode(int _addr) :
-		addr(_addr)
-	{}
-
-	typedef shared_ptr<TensorNode> Ptr;
-
-	vector<Ptr> children;
-	vector<Ptr> parents;
-	int addr; // real memory address in Engine
-};
 
 /*
 // same as below. Type alias is more idiomatic in c++11

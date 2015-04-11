@@ -79,6 +79,28 @@ ostream& operator<<(ostream& os, MemoryPool<T>& memoryPool)
 	return os;
 }
 
+/*********** Expression tree ***********/
+// TensorNode only contains an int address to the memory pool
+// It's agnostic of Tensor
+struct TensorNode
+{
+	TensorNode(int _addr) :
+		addr(_addr)
+	{}
+
+	typedef shared_ptr<TensorNode> Ptr;
+
+	template<typename ...ArgT>
+	static TensorNode::Ptr make(ArgT&& ... args)
+	{
+		return std::make_shared<TensorNode>(
+						std::forward<ArgT>(args) ...);
+	}
+
+	vector<Ptr> children;
+	vector<Ptr> parents;
+	int addr; // real memory address in Engine
+};
 
 class EngineBase
 {
