@@ -41,6 +41,11 @@ public:
 		return memory[i];
 	}
 
+	DataT& operator[](int i)
+	{
+		return this->read(i);
+	}
+
 	void write(int i, const DataT& data)
 	{
 		assert_throw(i < size(),
@@ -83,6 +88,14 @@ public:
 
 	virtual ~EngineBase() =default;
 
+	void upload(Instruction instr)
+	{
+		instructions.push_back(instr);
+	}
+
+	virtual int alloc() = 0;
+
+	/************************************/
 	typedef shared_ptr<EngineBase> Ptr;
 
 	template<typename EngineBaseT, typename ...ArgT>
@@ -101,27 +114,31 @@ public:
 	{
 		return std::dynamic_pointer_cast<EngineBaseT>(layer);
 	}
+
+protected:
+	vector<Instruction> instructions;
 };
 
 TypedefPtr(EngineBase);
 
 
 template<typename DataT>
-class Engine : EngineBase
+class Engine : public EngineBase
 {
 public:
-	Engine()
+	Engine() :
+		EngineBase()
 	{ }
+
+	int alloc()
+	{
+		return memoryPool.alloc();
+	}
 
 	virtual ~Engine() =default;
 
-
-
 protected:
 	MemoryPool<DataT> memoryPool;
-	vector<Instruction> instructions;
 };
-
-
 
 #endif /* ENGINE_H_ */

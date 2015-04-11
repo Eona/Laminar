@@ -14,6 +14,10 @@ struct OpCode
 		name(_name)
 	{ }
 
+	OpCode(const char *_name) :
+		name(_name)
+	{ }
+
 	string name;
 };
 
@@ -23,7 +27,7 @@ struct Instruction
 		code(_code), readAddrs(_readAddrs), writeAddr(_writeAddr)
 	{ }
 
-	Instruction(OpCode _code, std::initializer_list<int> _readAddrs, int _writeAddr) :
+	Instruction(OpCode _code, const std::initializer_list<int>& _readAddrs, int _writeAddr) :
 		code(_code), readAddrs(_readAddrs), writeAddr(_writeAddr)
 	{ }
 
