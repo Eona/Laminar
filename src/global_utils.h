@@ -251,6 +251,18 @@ public:
     }
 };
 
+class TensorException: public LaminarException {
+public:
+    TensorException(const string& msg):
+    	LaminarException(msg)
+	{}
+
+    virtual string error_header() const
+    {
+    	return "Tensor error";
+    }
+};
+
 /**************************************
 ************ Debugging **************
 **************************************/

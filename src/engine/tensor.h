@@ -134,6 +134,27 @@ struct Scalor : public TensorBase
 	}*/
 };
 
+/*
+// same as below. Type alias is more idiomatic in c++11
+template<typename TensorT1, typename TensorT2, typename JudgeT = void>
+struct is_different_tensor_type : std::false_type {};
+
+template<typename TensorT1, typename TensorT2 >
+struct is_different_tensor_type<TensorT1, TensorT2,
+	typename std::enable_if<
+		std::is_base_of<TensorBase, TensorT1>::value &&
+		std::is_base_of<TensorBase, TensorT2>::value &&
+		!std::is_same<TensorT1, TensorT2>::value
+	>::type
+>: std::true_type {};
+*/
+template<typename TensorT1, typename TensorT2 >
+using is_different_tensor_type =
+	std::integral_constant<bool,
+		std::is_base_of<TensorBase, TensorT1>::value &&
+		std::is_base_of<TensorBase, TensorT2>::value &&
+		!std::is_same<TensorT1, TensorT2>::value>;
+
 /**
  * Only Tensor + Tensor or Scalor + Scalor
  */
@@ -149,6 +170,15 @@ Scalor operator+(const Scalor& x1, const Scalor& x2)
 	Scalor ans(x1.engine);
 	x1.engine->upload(Instruction("s+s", {x1.addr, x2.addr}, ans.addr));
 	return ans;
+}
+
+template<typename TensorT1, typename TensorT2>
+typename std::enable_if<
+	is_different_tensor_type<TensorT1, TensorT2>::value, TensorBase>::type
+operator+(const TensorT1& x1, const TensorT2& x2)
+{
+	throw TensorException("operator+ type mismatch: "
+			"only Tensor+Tensor or Scalor+Scalor supported.");
 }
 
 /**

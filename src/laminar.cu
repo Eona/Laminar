@@ -31,10 +31,13 @@ int main(int argc, char **argv)
 	Tensor t1(dummyEng);
 	Tensor t2(dummyEng);
 	Tensor t3 = t1 + t2;
+	Scalor s1(dummyEng);
+	Scalor s2(dummyEng);
+	s1 + t3;
 	cout << "t3 " << t3.addr << endl;
-	t3 = t3 + t3 ;
+	t3 = t3 + t3 - t1;
 	cout << "t3 " << t3.addr << endl;
-	t1 = t3 + t1;
+	t1 = t3 + t1 + t3;
 	t3 = t1;
 	cout << "t3 " << t3.addr << endl;
 
