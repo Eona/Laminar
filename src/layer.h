@@ -130,7 +130,7 @@ public:
 		return this->_frame;
 	}
 
-	virtual string str()
+	virtual explicit operator string() const
 	{
 		ostringstream os;
 		os << "\tinVal=" << this->inValues

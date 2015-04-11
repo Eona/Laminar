@@ -57,7 +57,7 @@ public:
 		gateOutgrad += outlayerIngrad * inlayerOutval;
 	}
 
-	string str()
+	virtual explicit operator string() const
 	{
 		return "[GatedConnection]";
 	}
@@ -110,7 +110,7 @@ public:
 		gateOutgrad += outlayerIngrad * cachedOutval;
 	}
 
-	string str()
+	virtual explicit operator string() const
 	{
 		return "[GatedCachedNonlinearConnection]";
 	}

@@ -344,7 +344,7 @@ operator<<(ostream& os, T& net)
 {
 	os << "[ForwardNet\n";
 	for (auto compon : net.components)
-		os << "  " << compon->str() << "\n";
+		os << "  " << string(*compon) << "\n";
 	os << "]";
 	return os;
 }
@@ -355,7 +355,7 @@ operator<<(ostream& os, T& net)
 {
 	os << "[RecurrentNet\n";
 	for (auto compon : net.components)
-		os << "  " << compon->str() << "\n";
+		os << "  " << string(*compon) << "\n";
 	os << " " << "recurrent connections:\n";
 //	for (auto connInfo : net.recurConnectionInfos)
 //		os << "  " << connInfo.conn->str() << "\n";

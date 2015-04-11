@@ -28,10 +28,10 @@ public:
 		inGradient = lmn::sigmoidGradient(outValue) * outGradient;
 	}
 
-	string str()
+	virtual explicit operator string() const
 	{
 		return string("[SigmoidLayer: \n")
-				+ Layer::str() + "]";
+				+ Layer::operator string() + "]";
 	}
 };
 
@@ -54,10 +54,10 @@ public:
 		inGradient = -lmn::sin(inValue) * outGradient;
 	}
 
-	string str()
+	virtual explicit operator string() const
 	{
 		return string("[CosineLayer: \n")
-				+ Layer::str() + "]";
+				+ Layer::operator string() + "]";
 	}
 };
 
@@ -80,10 +80,10 @@ public:
 		inGradient = lmn::tanhGradient(outValue) * outGradient;
 	}
 
-	string str()
+	virtual explicit operator string() const
 	{
 		return string("[TanhLayer: \n")
-				+ Layer::str() + "]";
+				+ Layer::operator string() + "]";
 	}
 };
 
@@ -107,10 +107,10 @@ public:
 		inGradient = outGradient;
 	}
 
-	string str()
+	virtual explicit operator string() const
 	{
 		return string("[ConstantLayer: \n")
-				+ Layer::str() + "]";
+				+ Layer::operator string() + "]";
 	}
 };
 
@@ -134,10 +134,10 @@ public:
 		inGradient = multiplier * outGradient;
 	}
 
-	string str()
+	virtual explicit operator string() const
 	{
 		return string("[ScalorLayer: \n")
-				+ Layer::str() + "]";
+				+ Layer::operator string() + "]";
 	}
 
 private:

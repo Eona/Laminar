@@ -20,7 +20,7 @@ public:
 
 	virtual void reset() = 0;
 
-	virtual string str() = 0;
+	virtual explicit operator string() const = 0;
 
 	/************************************/
 	typedef shared_ptr<Component> Ptr;

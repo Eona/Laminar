@@ -59,10 +59,10 @@ public:
 		inGradient = inValue - targetValue[frame()];
 	}
 
-	string str()
+	virtual explicit operator string() const
 	{
 		return string("[SquareLossLayer: \n")
-				+ Layer::str() + "]";
+				+ Layer::operator string() + "]";
 	}
 };
 

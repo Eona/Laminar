@@ -173,10 +173,10 @@ public:
 				"Backprop is not supported. ");
 	}
 
-	string str()
+	virtual explicit operator string() const
 	{
 		return string("[LstmLayer (DEBUG ONLY): \n")
-				+ Layer::str() + "]";
+				+ Layer::operator string() + "]";
 	}
 
 	// internal state history

@@ -27,7 +27,7 @@ public:
 		inlayerOutgrad += outlayerIngrad;
 	}
 
-	string str()
+	virtual explicit operator string() const
 	{
 		return "[ConstantConnection]";
 	}
@@ -59,7 +59,7 @@ public:
 		this->gradient += outlayerIngrad * lmn::transpose(inlayerOutval);
 	}
 
-	string str()
+	virtual explicit operator string() const
 	{
 		ostringstream os;
 		os << "[FullConnection: "
