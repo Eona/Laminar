@@ -24,6 +24,35 @@ struct TensorBase
 		this->addr = -1;
 	}
 
+	// Copy ctor
+	TensorBase(const TensorBase& other) :
+		engine(other.engine),
+		addr(engine->alloc())
+	{
+		engine->upload(Instruction("create", {}, this->addr));
+		engine->upload(Instruction("copy", {other.addr}, this->addr));
+	}
+
+	// Copy assignment
+	TensorBase& operator=(const TensorBase& other)
+	{
+		engine->upload(Instruction("copy", {other.addr}, this->addr));
+		return *this;
+	}
+
+	// Move ctor
+	TensorBase(TensorBase&& other) :
+		engine(other.engine),
+		addr(other.addr)
+	{ }
+
+	// Move assignment
+	TensorBase& operator=(TensorBase&& other)
+	{
+		this->addr = other.addr;
+		return *this;
+	}
+
 	EngineBase::Ptr engine;
 	// memory address in the engine, if negative -> destroyed
 	int addr;
@@ -51,24 +80,82 @@ struct Scalor : public TensorBase
 /**
  * Only Tensor + Tensor or Scalor + Scalor
  */
-template<typename TensorT>
-typename std::enable_if<std::is_base_of<TensorBase, TensorT>::value, Tensor>::type
-operator+(const TensorT& t1, const TensorT& t2)
+Tensor operator+(const Tensor& x1, const Tensor& x2)
 {
-	TensorT ans(t1.engine);
-	t1.engine->upload(Instruction("add", {t1.addr, t2.addr}, ans.addr));
+	Tensor ans(x1.engine);
+	x1.engine->upload(Instruction("t+t", {x1.addr, x2.addr}, ans.addr));
+	return ans;
+}
+
+Scalor operator+(const Scalor& x1, const Scalor& x2)
+{
+	Scalor ans(x1.engine);
+	x1.engine->upload(Instruction("s+s", {x1.addr, x2.addr}, ans.addr));
 	return ans;
 }
 
 /**
  * Only Tensor - Tensor or Scalor - Scalor
  */
-template<typename TensorT>
-typename std::enable_if<std::is_base_of<TensorBase, TensorT>::value, Tensor>::type
-operator-(const TensorT& t1, const TensorT& t2)
+Tensor operator-(const Tensor& x1, const Tensor& x2)
 {
-	TensorT ans(t1.engine);
-	t1.engine->upload(Instruction("subtract", {t1.addr, t2.addr}, ans.addr));
+	Tensor ans(x1.engine);
+	x1.engine->upload(Instruction("t-t", {x1.addr, x2.addr}, ans.addr));
+	return ans;
+}
+
+Scalor operator-(const Scalor& x1, const Scalor& x2)
+{
+	Scalor ans(x1.engine);
+	x1.engine->upload(Instruction("s-s", {x1.addr, x2.addr}, ans.addr));
+	return ans;
+}
+
+/**
+ * Unary negate
+ */
+Tensor operator-(const Tensor& x)
+{
+	Tensor ans(x.engine);
+	x.engine->upload(Instruction("-t", {x.addr}, ans.addr));
+	return ans;
+}
+
+Scalor operator-(const Scalor& x)
+{
+	Scalor ans(x.engine);
+	x.engine->upload(Instruction("-s", {x.addr}, ans.addr));
+	return ans;
+}
+
+/**
+ * Multiply
+ */
+Tensor operator*(const Tensor& x1, const Tensor& x2)
+{
+	Tensor ans(x1.engine);
+	x1.engine->upload(Instruction("t*t", {x1.addr, x2.addr}, ans.addr));
+	return ans;
+}
+
+Tensor operator*(const Tensor& x1, const Scalor& x2)
+{
+	Tensor ans(x1.engine);
+	x1.engine->upload(Instruction("t*s", {x1.addr, x2.addr}, ans.addr));
+	return ans;
+}
+
+Tensor operator*(const Scalor& x1, const Tensor& x2)
+{
+	Tensor ans(x1.engine);
+	x1.engine->upload(Instruction("s*t", {x1.addr, x2.addr}, ans.addr));
+	return ans;
+}
+
+Scalor operator*(const Scalor& x1, const Scalor& x2)
+{
+	Scalor ans(x1.engine);
+	x1.engine->upload(Instruction("s*s", {x1.addr, x2.addr}, ans.addr));
 	return ans;
 }
 
