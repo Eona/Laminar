@@ -125,12 +125,6 @@ void print_array(T *arr, int size)
 #define TypedefPtr(Xclass) \
 	typedef shared_ptr<Xclass> Xclass##Ptr
 
-// Type trait
-template <typename Container>
-struct is_vector : std::false_type { };
-template <typename... Ts>
-struct is_vector<std::vector<Ts...> > : std::true_type { };
-
 // Emulate python style subscript
 template<typename T>
 inline T& vec_at(vector<T>& vec, int idx)
@@ -164,7 +158,7 @@ bool key_exists(std::unordered_map<KeyT, ValueT>& map, KeyT& key)
 
 /**
  * Example: suppose we have template<typename T> MyClass;
- * IsDerivedTemplateTypeFunction(is_myclass, MyClass)
+ * GenDerivedTemplateTypeTrait(is_myclass, MyClass)
  * generates a type trait function is_myclass<X>() that
  * returns true if there exists a type T such that X inherits from MyClass<T>
  *
@@ -172,12 +166,26 @@ bool key_exists(std::unordered_map<KeyT, ValueT>& map, KeyT& key)
  * http://stackoverflow.com/questions/29531536/c-check-inheritance-at-compile-time/
  */
 #define GenDerivedTemplateTypeTrait(typeTraitFuncName, className) \
-template <class T> \
+template <typename T> \
 std::true_type typeTraitFuncName##_impl(const className<T>* impl); \
 std::false_type typeTraitFuncName_impl(...); \
-template <class Derived> \
+template <typename Derived> \
 using typeTraitFuncName = \
     decltype(typeTraitFuncName##_impl(std::declval<Derived*>()));
+
+/**
+ * Example: suppose we have template<typename T> MyClass;
+ * GenTemplateTypeTrait(is_myclass, MyClass)
+ * generates a type trait function is_myclass<X>() that
+ * returns true if there exists a type T such that X == MyClass<T>
+ */
+#define GenTemplateTypeTrait(typeTraitFuncName, className) \
+template <typename T> \
+struct typeTraitFuncName : std::false_type { }; \
+template <typename... Ts> \
+struct typeTraitFuncName<className<Ts...> > : std::true_type { };
+
+GenTemplateTypeTrait(is_vector, std::vector);
 
 /**************************************
 ************ Exceptions **************
