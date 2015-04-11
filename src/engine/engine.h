@@ -84,23 +84,67 @@ ostream& operator<<(ostream& os, MemoryPool<T>& memoryPool)
 // It's agnostic of Tensor
 struct TensorNode
 {
+	// Use static ::make to construct
 	TensorNode(int _addr) :
 		addr(_addr)
 	{}
 
-	typedef shared_ptr<TensorNode> Ptr;
+	TensorNode(const TensorNode&) =delete;
+	TensorNode& operator=(const TensorNode&) =delete;
+	TensorNode(TensorNode&&) =delete;
+	TensorNode& operator=(TensorNode&&) =delete;
 
-	template<typename ...ArgT>
-	static TensorNode::Ptr make(ArgT&& ... args)
+	bool has_child() const
 	{
-		return std::make_shared<TensorNode>(
-						std::forward<ArgT>(args) ...);
+		return !this->children.empty();
 	}
 
+	bool has_parent() const
+	{
+		return !this->parents.empty();
+	}
+
+	typedef shared_ptr<TensorNode> Ptr;
+
+	static TensorNode::Ptr make(int addr)
+	{
+		return std::make_shared<TensorNode>(addr);
+	}
+
+	static TensorNode::Ptr create_alias(const TensorNode::Ptr other)
+	{
+		return std::make_shared<TensorNode>(other->addr);
+	}
+
+	explicit operator string() const
+	{
+		return string("Node{")
+			+ to_str(addr) + ", "
+			+ "child=" + node_vec_str(this->children) + ", "
+			+ "parent=" + node_vec_str(this->parents)
+			+ "}";
+	}
+
+	int addr; // real memory address in Engine
 	vector<Ptr> children;
 	vector<Ptr> parents;
-	int addr; // real memory address in Engine
+
+private:
+	string node_vec_str(const vector<Ptr>& vec) const
+	{
+		string s = "[";
+		for (Ptr p : vec)
+			s += to_str(p->addr) + ", ";
+		return (s.size() > 1 ?
+				s.substr(0, s.size() - 2) : s) + "]";
+	}
 };
+
+ostream& operator<<(ostream& os, TensorNode& node)
+{
+	os << string(node);
+	return os;
+}
 
 class EngineBase
 {
@@ -117,6 +161,44 @@ public:
 
 	// Requires knowledge of the memory pool
 	virtual int alloc() = 0;
+
+	/**
+	 * Construct a DAG of data dependencies
+	 */
+	virtual void construct_graph()
+	{
+		for (Instruction& instr : this->instructions)
+		{
+			vector<int>& reads = instr.readAddrs;
+			int write = instr.writeAddr;
+			string op = string(instr.code);
+			if(op == "create")
+			{
+				// The node is stored at the same int index as the memory pool
+				this->createdNodes.push_back(TensorNode::make(write));
+			}
+			else
+			{
+				// If the write node is not freshly created (has children),
+				// it's an assignment and we create a new node alias
+				// with the same internal memory addr
+				TensorNode::Ptr node = this->createdNodes[write];
+				if (node->has_child())
+					node = TensorNode::create_alias(node);
+				for (int read : reads)
+				{
+					node->children.push_back(this->createdNodes[read]);
+					this->createdNodes[read]->parents.push_back(node);
+				}
+			}
+		}
+	}
+
+	virtual void print_graph()
+	{
+		for (auto node : this->createdNodes)
+			cout << string(*node) << "\n";
+	}
 
 	virtual void eliminate_temporary()
 	{
@@ -182,6 +264,10 @@ public:
 
 protected:
 	vector<Instruction> instructions;
+	/**
+	 * Only contains TensorNodes created by "create" opcode.
+	 */
+	vector<TensorNode::Ptr> createdNodes;
 };
 
 TypedefPtr(EngineBase);

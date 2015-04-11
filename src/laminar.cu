@@ -51,10 +51,11 @@ int main(int argc, char **argv)
 
 	dummyEng->print_instructions();
 
-	cout << endl;
-	print_title("After elimination");
-	dummyEng->eliminate_temporary();
-	dummyEng->print_instructions();
+	print_title("Graph");
+	dummyEng->construct_graph();
+	dummyEng->print_graph();
+
+	DEBUG_MSG("done");
 
 /*	vector<float> LSTM_CONNECTION_WEIGHTS {
 		-0.904, 0.312, -0.944, 1.34, -2.14, -1.69, -2.88, -0.889, -2.28, -0.414, -2.07
