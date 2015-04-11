@@ -55,14 +55,13 @@ struct TensorBase
 	}
 
 	// Move assignment
-	TensorBase& operator=(TensorBase&& other)
+/*	TensorBase& operator=(TensorBase&& other)
 	{
 		DEBUG_MSG("Move Assign");
-//		this->addr = other.addr;
-		engine->upload(Instruction("copy", {other.addr}, this->addr));
-//		other.addr = -1;
+		this->addr = other.addr;
+		other.addr = -1;
 		return *this;
-	}
+	}*/
 
 	EngineBase::Ptr engine;
 	// memory address in the engine, if negative -> destroyed
@@ -95,11 +94,11 @@ struct Tensor : public TensorBase
 	{ }
 
 	// Move assignment
-	Tensor& operator=(Tensor&& other)
+/*	Tensor& operator=(Tensor&& other)
 	{
 		TensorBase::operator=(std::move(other));
 		return *this;
-	}
+	}*/
 };
 
 struct Scalor : public TensorBase
