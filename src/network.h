@@ -16,7 +16,7 @@ public:
 	Network()
 	{ }
 
-	virtual ~Network() =default;
+	virtual ~Network() {};
 
 	virtual void set_input(vector<float>& input)
 	{
@@ -135,7 +135,7 @@ public:
 		Network()
 	{ }
 
-	virtual ~ForwardNetwork() =default;
+	virtual ~ForwardNetwork() {};
 
 	// Unhide base class function with the same name but different signature
 	using Network::set_input;
@@ -187,7 +187,7 @@ public:
 		set_max_temporal_skip(1);
 	}
 
-	virtual ~RecurrentNetwork() =default;
+	virtual ~RecurrentNetwork() {};
 
 	/*********** Network operations ***********/
 	virtual void assemble()

@@ -26,7 +26,7 @@ public:
 	{
 	}
 
-	virtual ~Composite() =default;
+	virtual ~Composite() {};
 
 	virtual void manipulate(Network *net)
 	{

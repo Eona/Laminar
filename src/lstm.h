@@ -17,7 +17,7 @@ public:
 		Composite<RecurrentNetwork>(_inLayer)
 	{ }
 
-	virtual ~LstmComposite() =default;
+	virtual ~LstmComposite() {};
 
 
 protected:
@@ -132,7 +132,7 @@ public:
 			*elem = dummyPrehistory[i ++];
 	}
 
-	~LstmDebugLayer() { }
+	virtual ~LstmDebugLayer() { }
 
 	virtual void forward_impl(float& inValue, float& outValue)
 	{

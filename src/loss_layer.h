@@ -17,7 +17,7 @@ public:
 		totalLoss(0.f)
 	{ }
 
-	virtual ~LossLayer() =default;
+	virtual ~LossLayer() {};
 
 	virtual float total_loss()
 	{
@@ -44,7 +44,7 @@ public:
 		LossLayer()
 	{}
 
-	~SquareLossLayer() =default;
+	~SquareLossLayer() {};
 
 	virtual void forward_impl(float& inValue, float& outValue)
 	{

@@ -15,7 +15,7 @@ public:
 	{
 	}
 
-	virtual ~ConstantConnection() =default;
+	virtual ~ConstantConnection() {};
 
 	virtual void forward_impl(float inlayerOutval, float& outlayerInval)
 	{
@@ -45,7 +45,7 @@ public:
 		param = fakernd();
 	}
 
-	virtual ~FullConnection() =default;
+	virtual ~FullConnection() {};
 
 	virtual void forward_impl(float inlayerOutval, float& outlayerInval)
 	{

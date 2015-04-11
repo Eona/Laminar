@@ -16,7 +16,7 @@ public:
 		Layer()
 	{}
 
-	virtual ~SigmoidLayer() =default;
+	virtual ~SigmoidLayer() {};
 
 	void forward_impl(float& inValue, float& outValue)
 	{
@@ -42,7 +42,7 @@ public:
 		Layer()
 	{}
 
-	virtual ~CosineLayer() =default;
+	virtual ~CosineLayer() {};
 
 	void forward_impl(float& inValue, float& outValue)
 	{
@@ -68,7 +68,7 @@ public:
 		Layer()
 	{}
 
-	virtual ~TanhLayer() =default;
+	virtual ~TanhLayer() {};
 
 	void forward_impl(float& inValue, float& outValue)
 	{
@@ -95,7 +95,7 @@ public:
 		Layer()
 	{}
 
-	virtual ~ConstantLayer() =default;
+	virtual ~ConstantLayer() {};
 
 	void forward_impl(float& inValue, float& outValue)
 	{
@@ -122,7 +122,7 @@ public:
 		multiplier(_multiplier)
 	{}
 
-	virtual ~ScalorLayer() =default;
+	virtual ~ScalorLayer() {};
 
 	void forward_impl(float& inValue, float& outValue)
 	{

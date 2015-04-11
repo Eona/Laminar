@@ -22,7 +22,7 @@ public:
 		gateLayer(_gateLayer)
 	{ }
 
-	virtual ~GatedConnection() =default;
+	virtual ~GatedConnection() {};
 
 	virtual void forward_impl(float inlayerOutval, float& outlayerInval)
 	{
@@ -86,7 +86,7 @@ public:
 		GatedConnection(_inLayer, _gateLayer, _outLayer)
 	{ }
 
-	virtual ~GatedCachedNonlinearConnection() =default;
+	virtual ~GatedCachedNonlinearConnection() {};
 
 	virtual void gated_forward_impl(float& inlayerOutval, float& gateOutval,
 		// output param:

@@ -12,7 +12,7 @@ class Component
 public:
 	Component() {}
 
-	virtual ~Component() =default;
+	virtual ~Component() {};
 
 	virtual void forward(int inFrame = 0, int outFrame = 0) = 0;
 

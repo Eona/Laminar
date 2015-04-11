@@ -23,7 +23,7 @@ public:
     {
     }
 
-	virtual ~Connection() =default;
+	virtual ~Connection() {};
 
 	virtual void forward(int inFrame = 0, int outFrame = 0)
 	{
