@@ -35,7 +35,7 @@ struct tensor_op<SCALOR>
 
 void create(float* write, vector<int> dim)
 {
-	DEBUG_MSG("DummyImpl::create");
+	DEBUG_MSG("DummyImpl::create dim=" << dim);
 	*write = 0;
 }
 

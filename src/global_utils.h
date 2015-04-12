@@ -61,25 +61,16 @@ namespace {
 ************ Printing **************
 **************************************/
 template<typename Container>
-string container2str(const Container& vec,
+string container2str(Container&& vec,
 		string leftDelimiter="[", string rightDelimiter="]")
 {
-//	using ElemType = typename Container::value_type;
 	std::ostringstream oss;
 	oss << leftDelimiter;
-//	for (ElemType& ele : vec)
-//		oss << ele << ", ";
 	for (int i = 0; i < vec.size(); ++i)
 		oss << vec[i] << ", ";
 	string s = oss.str();
 	return (s.size() > leftDelimiter.size() ?
 			s.substr(0, s.size() - 2) : s) + rightDelimiter;
-}
-template<typename Container>
-string container2str(Container&& vec,
-		string leftDelimiter="[", string rightDelimiter="]")
-{
-	return container2str(vec, leftDelimiter, rightDelimiter);
 }
 
 template<typename T>
