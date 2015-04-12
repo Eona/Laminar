@@ -146,6 +146,10 @@ bool key_exists(std::unordered_map<KeyT, ValueT>& map, KeyT& key)
 	return map.find(key) != map.end();
 }
 
+// enclose x as "x" in macro expansion
+#define _Stringfy(x) #x
+#define Stringfy(x) _Stringfy(x)
+
 /**
  * Example: suppose we have template<typename T> MyClass;
  * GenDerivedTemplateTypeTrait(is_myclass, MyClass)
@@ -281,10 +285,6 @@ public:
 #undef assert
 #define TERMINATE_ASSERT false
 #define DEBUG true
-
-// enclose x as "x" in macro expansion
-#define _STRINGIFY(x) #x
-#define STRINGFY(x) _STRINGIFY(x)
 
 inline void assert(bool cond, string errmsg = "", string successmsg="")
 {

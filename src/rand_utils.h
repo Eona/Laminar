@@ -88,7 +88,7 @@ public:
 #define GenFakeRandInstance(name) \
 	static FakeRand& instance_##name() \
 	{ \
-		static FakeRand rnd(STRINGFY(name)); \
+		static FakeRand rnd(Stringfy(name)); \
 		return rnd; \
 	}
 

@@ -114,4 +114,39 @@ operator*(const TensorT1& x1, const TensorT2& x2)
 	return ans;
 }
 
+/**
+ * Other common deep learning operations
+ */
+namespace lmn
+{
+
+// Macro generate single tensor element-wise math operation
+#define GenElementwiseTensorOp(fname) \
+	template<typename TensorT> \
+	typename std::enable_if<is_tensor_base<TensorT>::value, TensorT>::type \
+	fname(const TensorT& x) \
+	{ \
+		Tensor ans(x.engine); \
+		x.engine->upload(Instruction(Stringfy(fname), {x.addr}, ans.addr)); \
+		return ans; \
+	}
+
+	GenElementwiseTensorOp(transpose);
+
+	GenElementwiseTensorOp(sigmoid);
+
+	GenElementwiseTensorOp(sigmoid_gradient);
+
+	GenElementwiseTensorOp(tanh);
+
+	GenElementwiseTensorOp(tanh_gradient);
+
+	GenElementwiseTensorOp(sin);
+
+	GenElementwiseTensorOp(cos);
+
+	// TODO
+//	inline float softmax(float x) { return x; }
+} // end of lmn::
+
 #endif /* TENSOR_OPS_H_ */
