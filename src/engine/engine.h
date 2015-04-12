@@ -37,12 +37,12 @@ public:
 		return memory[i];
 	}
 
-	bool is_initialized(int i)
+	bool is_init(int i)
 	{
 		return this->initialized[i];
 	}
 
-	void set_initialized(int i, bool val = true)
+	void set_init(int i, bool val = true)
 	{
 		this->initialized[i] = val;
 	}
@@ -353,10 +353,10 @@ public:
 				vector<int> dim = memoryPool.dim(writeAddr);
 				CreateFuncType assembly_create = this->assembly_create;
 				assembly.push_back([=]() {
-					if (!this->memoryPool.is_initialized(writeAddr))
+					if (!this->memoryPool.is_init(writeAddr))
 					{
 						assembly_create(write, dim);
-						memoryPool.set_initialized(writeAddr);
+						memoryPool.set_init(writeAddr);
 					}
 				});
 			}
@@ -369,8 +369,8 @@ public:
 				OpcodeFuncType assembly_op = this->assembly_map[instr.opcode];
 				// value capture by '=' includes 'this'
 				assembly.push_back([=]() {
-					assembly_op(reads, write, this->memoryPool.is_initialized(writeAddr));
-					memoryPool.set_initialized(writeAddr);
+					assembly_op(reads, write, this->memoryPool.is_init(writeAddr));
+					memoryPool.set_init(writeAddr);
 				});
 			}
 		}
