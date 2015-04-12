@@ -45,7 +45,8 @@ namespace std {
   {
     size_t operator()(const Opcode& opcode) const
     {
-    	return std::hash<std::string>(opcode.name);
+    	// WARNING don't forget double ()!
+    	return std::hash<std::string>()(opcode.name);
     }
   };
 }

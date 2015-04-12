@@ -94,7 +94,7 @@ ostream& operator<<(ostream& oss, vector<T>&& vec)
 }
 
 template<typename T>
-string to_str(T val)
+inline string to_str(T val)
 {
 	ostringstream oss;
 	oss << val;
@@ -110,6 +110,11 @@ void print_array(T *arr, int size)
 	for (i = 0; i < size - 1; ++i)
 		cout << arr[i] << ", ";
 	cout << arr[i] << "]\n";
+}
+
+inline bool starts_with(string str, string prefix)
+{
+	return str.find(prefix) == 0;
 }
 
 /**************************************

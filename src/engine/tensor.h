@@ -15,16 +15,7 @@ public:
 	TensorBase(EngineBase::Ptr _engine) :
 		engine(_engine),
 		addr(engine->alloc())
-	{
-		engine->upload(Instruction( "create_null", {}, addr));
-	}
-
-	TensorBase(EngineBase::Ptr _engine, vector<int> dim) :
-		engine(_engine),
-		addr(engine->alloc_dim(dim))
-	{
-		engine->upload(Instruction( "create", {}, addr));
-	}
+	{ }
 
 	virtual ~TensorBase()
 	{
@@ -41,15 +32,12 @@ public:
 		addr(engine->alloc())
 	{
 		DEBUG_MSG("Copy Ctor");
-		engine->upload(Instruction("create_null", {}, this->addr));
-		engine->upload(Instruction("copy", {other.addr}, this->addr));
 	}
 
 	// Copy assignment
 	TensorBase& operator=(const TensorBase& other)
 	{
 		DEBUG_MSG("Copy Assign");
-		engine->upload(Instruction("copy", {other.addr}, this->addr));
 		return *this;
 	}
 
@@ -81,19 +69,25 @@ class Scalor : public TensorBase
 public:
 	Scalor(EngineBase::Ptr _engine) :
 		TensorBase(_engine)
-	{ }
+	{
+		engine->upload(Instruction( "create_null_s", {}, addr));
+	}
 
 	virtual ~Scalor() {}
 
 	// Copy ctor
 	Scalor(const Scalor& other) :
 		TensorBase(other)
-	{ }
+	{
+		engine->upload(Instruction("create_null_s", {}, this->addr));
+		engine->upload(Instruction("s=s", {other.addr}, this->addr));
+	}
 
 	// Copy assignment
 	Scalor& operator=(const Scalor& other)
 	{
 		TensorBase::operator=(other);
+		engine->upload(Instruction("s=s", {other.addr}, this->addr));
 		return *this;
 	}
 
@@ -133,23 +127,32 @@ class Tensor : public TensorBase
 public:
 	Tensor(EngineBase::Ptr _engine) :
 		TensorBase(_engine)
-	{ }
+	{
+		engine->upload(Instruction( "create_null_t", {}, addr));
+	}
 
 	Tensor(EngineBase::Ptr _engine, vector<int> dim) :
-		TensorBase(_engine, dim)
-	{ }
+		TensorBase(_engine)
+	{
+		engine->set_dim(this->addr, dim);
+		engine->upload(Instruction( "create", {}, addr));
+	}
 
 	virtual ~Tensor() {}
 
 	// Copy ctor
 	Tensor(const Tensor& other) :
 		TensorBase(other)
-	{ }
+	{
+		engine->upload(Instruction("create_null_t", {}, this->addr));
+		engine->upload(Instruction("t=t", {other.addr}, this->addr));
+	}
 
 	// Copy assignment
 	Tensor& operator=(const Tensor& other)
 	{
 		TensorBase::operator=(other);
+		engine->upload(Instruction("t=t", {other.addr}, this->addr));
 		return *this;
 	}
 
