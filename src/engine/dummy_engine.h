@@ -39,21 +39,19 @@ void create(float* write, vector<int> dim)
 	*write = 0;
 }
 
-template<int TensorT1, int TensorT2>
+template<int TensorT>
 void add(vector<float*> reads, float* write, bool is_initialized)
 {
-	string op1 = tensor_op<TensorT1>::operand;
-	string op2 = tensor_op<TensorT2>::operand;
-	DEBUG_MSG(("DummyImpl::" + op1 + "+" + op2 + " ->init=") << std::boolalpha << is_initialized);
+	string op = tensor_op<TensorT>::operand;
+	DEBUG_MSG(("DummyImpl::" + op + "+" + op + " ->init=") << std::boolalpha << is_initialized);
 	*write = *reads[0] + *reads[1];
 }
 
-template<int TensorT1, int TensorT2>
+template<int TensorT>
 void sub(vector<float*> reads, float* write, bool is_initialized)
 {
-	string op1 = tensor_op<TensorT1>::operand;
-	string op2 = tensor_op<TensorT2>::operand;
-	DEBUG_MSG(("DummyImpl::" + op1 + "-" + op2 + " ->init=") << std::boolalpha << is_initialized);
+	string op = tensor_op<TensorT>::operand;
+	DEBUG_MSG(("DummyImpl::" + op + "-" + op + " ->init=") << std::boolalpha << is_initialized);
 	*write = *reads[0] - *reads[1];
 }
 
@@ -66,12 +64,11 @@ void mult(vector<float*> reads, float* write, bool is_initialized)
 	*write = (*reads[0]) * (*reads[1]);
 }
 
-template<int TensorT1, int TensorT2>
+template<int TensorT>
 void assign(vector<float*> reads, float* write, bool is_initialized)
 {
-	string op1 = tensor_op<TensorT1>::operand;
-	string op2 = tensor_op<TensorT2>::operand;
-	DEBUG_MSG(("DummyImpl::" + op1 + "=" + op2 + " ->init=") << std::boolalpha << is_initialized);
+	string op = tensor_op<TensorT>::operand;
+	DEBUG_MSG(("DummyImpl::" + op + "=" + op + " ->init=") << std::boolalpha << is_initialized);
 	*write = *reads[0];
 }
 
@@ -93,16 +90,16 @@ public:
 		const int T = Impl::TENSOR;
 		const int S = Impl::SCALOR;
 		register_create(Impl::create);
-		register_opcode("t+t", Impl::add<T, T>);
-		register_opcode("s+s", Impl::add<S, S>);
-		register_opcode("t-t", Impl::sub<T, T>);
-		register_opcode("s-s", Impl::sub<S, S>);
+		register_opcode("t+t", Impl::add<T>);
+		register_opcode("s+s", Impl::add<S>);
+		register_opcode("t-t", Impl::sub<T>);
+		register_opcode("s-s", Impl::sub<S>);
 		register_opcode("t*t", Impl::mult<T, T>);
 		register_opcode("t*s", Impl::mult<T, S>);
 		register_opcode("s*t", Impl::mult<S, T>);
 		register_opcode("s*s", Impl::mult<S, S>);
-		register_opcode("t=t", Impl::assign<T, T>);
-		register_opcode("s=s", Impl::assign<S, S>);
+		register_opcode("t=t", Impl::assign<T>);
+		register_opcode("s=s", Impl::assign<S>);
 		register_opcode("destroy", Impl::destroy);
 	}
 };
