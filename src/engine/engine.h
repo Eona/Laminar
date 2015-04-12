@@ -23,47 +23,44 @@ public:
 
 	using DataType = DataT;
 
-	int push(const DataT& data)
+	/**
+	 * Dimension of the tensor
+	 */
+	int alloc(vector<int> dim)
 	{
-		this->memory.push_back(data);
+		this->memory.push_back(DataT());
 		this->initialized.push_back(false);
+		this->dimensions.push_back(dim);
 		return size() - 1;
 	}
 
-	int alloc()
+	DataT* memory_ptr(int i)
 	{
-		return this->push(DataT());
+		assert_throw(i < size(),
+			EngineException("memory pointer request out of bound."));
+		return &memory[i];
 	}
 
-	DataT& read(int i)
+	DataT& operator[](int i)
 	{
 		assert_throw(i < size(),
 			EngineException("memory read out of bound."));
 		return memory[i];
 	}
 
-	DataT& operator[](int i)
-	{
-		return this->read(i);
-	}
-
-	void write(int i, const DataT& data)
-	{
-		assert_throw(i < size(),
-			EngineException("(lvalue) memory write out of bound."));
-		memory[i] = data;
-	}
-
-	void write(int i, DataT&& data)
-	{
-		assert_throw(i < size(),
-			EngineException("(rvalue) memory write out of bound."));
-		memory[i] = data;
-	}
-
 	bool is_initialized(int i)
 	{
 		return this->initialized[i];
+	}
+
+	void set_initialized(int i, bool val = true)
+	{
+		this->initialized[i] = val;
+	}
+
+	vector<int> dim(int i)
+	{
+		return this->dimensions[i];
 	}
 
 	int size()
@@ -75,9 +72,12 @@ public:
 	friend ostream& operator<<(ostream& os, MemoryPool<T>& memoryPool);
 
 private:
+	// All the following should have the same size
 	vector<DataT> memory;
 	// test if things are default initialized.
 	vector<bool> initialized;
+	// dimension of each tensor
+	vector<vector<int> > dimensions;
 };
 
 template<typename T>
