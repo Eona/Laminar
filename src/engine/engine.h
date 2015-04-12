@@ -337,24 +337,26 @@ public:
 				vector<int> dim = memoryPool.dim(writeAddr);
 				CreateFuncType assembly_create = this->assembly_create;
 				assembly.push_back([=]() {
-					assembly_create(write, dim);
+					if (!this->memoryPool.is_initialized(writeAddr))
+					{
+						assembly_create(write, dim);
+						memoryPool.set_initialized(writeAddr);
+					}
 				});
 			}
 			else
 			{
-				bool is_initialized = memoryPool.is_initialized(writeAddr);
-
 				if (!key_exists(this->assembly_map, instr.opcode))
 					throw EngineException(string("Engine compilation failure: ") +
 							"Opcode \"" + string(instr.opcode) + "\" not registered.");
 
 				OpcodeFuncType assembly_op = this->assembly_map[instr.opcode];
+				// value capture by '=' includes 'this'
 				assembly.push_back([=]() {
-					assembly_op(reads, write, is_initialized);
+					assembly_op(reads, write, this->memoryPool.is_initialized(writeAddr));
+					memoryPool.set_initialized(writeAddr);
 				});
 			}
-
-			memoryPool.set_initialized(writeAddr);
 		}
 
 		return assembly;

@@ -391,6 +391,7 @@ void print_title(string title = "", int leng = 10)
 #if DEBUG
 #define DEBUG_MSG_1(msg) cout << msg << "\n"
 #define DEBUG_MSG_2(name, msg) cout << "{" << name << "} " << msg << "\n"
+#define DEBUG_TITLE(msg) print_title(msg)
 #define DEBUG_DO(command) command
 #define DEBUG_COND(cond, msg) if (cond) cout << msg << "\n"
 #define DEBUG_LOOP(forcond, msg) for (forcond) cout << msg << "\n";
@@ -400,6 +401,7 @@ void print_title(string title = "", int leng = 10)
 #else
 #define DEBUG_MSG_1(msg)
 #define DEBUG_MSG_2(msg1, msg2)
+#define DEBUG_TITLE(msg)
 #define DEBUG_DO(command)
 #define DEBUG_COND(cond, msg)
 #define DEBUG_LOOP(forcond, msg)
