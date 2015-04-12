@@ -303,7 +303,7 @@ public:
 	/*********** Register "assembly" implementation ***********/
 	// (readAddrs, writeAddr, is_initialized)
 	typedef std::function<void(vector<DataT*>, DataT*, bool)> OpcodeFuncType;
-	// specifically for OpCode create_dim(writeAddr, dim)
+	// specifically for Opcode create_dim(writeAddr, dim)
 	typedef std::function<void(DataT*, vector<int>)> CreateFuncType;
 
 	// Call in Engine ctor
@@ -313,7 +313,7 @@ public:
 	}
 
 	// Call in Engine ctor
-	void register_opcode(OpCode op, OpcodeFuncType opFunc)
+	void register_opcode(Opcode op, OpcodeFuncType opFunc)
 	{
 		this->assembly_map[op] = opFunc;
 	}
@@ -371,9 +371,9 @@ public:
 	MemoryPool<DataT> memoryPool;
 
 	/**
-	 * Add your "assembly" function addresses for each OpCode
+	 * Add your "assembly" function addresses for each Opcode
 	 */
-	std::unordered_map<OpCode, OpcodeFuncType> assembly_map;
+	std::unordered_map<Opcode, OpcodeFuncType> assembly_map;
 	CreateFuncType assembly_create;
 };
 

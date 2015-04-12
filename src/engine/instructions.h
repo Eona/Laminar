@@ -8,13 +8,13 @@
 
 #include "../global_utils.h"
 
-struct OpCode
+struct Opcode
 {
-	OpCode(string _name) :
+	Opcode(string _name) :
 		name(_name)
 	{ }
 
-	OpCode(const char *_name) :
+	Opcode(const char *_name) :
 		name(_name)
 	{ }
 
@@ -41,9 +41,9 @@ struct OpCode
  */
 namespace std {
   template<>
-  struct hash<OpCode>
+  struct hash<Opcode>
   {
-    size_t operator()(const OpCode& opcode) const
+    size_t operator()(const Opcode& opcode) const
     {
     	return std::hash<std::string>(opcode.name);
     }
@@ -52,17 +52,17 @@ namespace std {
 
 struct Instruction
 {
-	Instruction(OpCode _code, vector<int>& _readAddrs, int _writeAddr) :
+	Instruction(Opcode _code, vector<int>& _readAddrs, int _writeAddr) :
 		code(_code), readAddrs(_readAddrs), writeAddr(_writeAddr)
 	{ }
 
-	Instruction(OpCode _code, const std::initializer_list<int>& _readAddrs, int _writeAddr) :
+	Instruction(Opcode _code, const std::initializer_list<int>& _readAddrs, int _writeAddr) :
 		code(_code), readAddrs(_readAddrs), writeAddr(_writeAddr)
 	{ }
 
 	virtual ~Instruction() {}
 
-	OpCode code;
+	Opcode code;
 	vector<int> readAddrs;
 	int writeAddr;
 
