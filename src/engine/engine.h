@@ -38,13 +38,6 @@ public:
 		return addr;
 	}
 
-	DataT* memory_ptr(int i)
-	{
-		assert_throw(i < size(),
-			EngineException("memory pointer request out of bound."));
-		return &memory[i];
-	}
-
 	DataT& operator[](int i)
 	{
 		assert_throw(i < size(),
@@ -175,6 +168,7 @@ public:
 
 	virtual int alloc_dim(vector<int> dim) = 0;
 
+
 	/**
 	 * Construct a DAG of data dependencies
 	 */
@@ -185,7 +179,7 @@ public:
 			vector<int>& reads = instr.readAddrs;
 			int write = instr.writeAddr;
 			string op = string(instr.code);
-			if(op == "create")
+			if(op == "create_null")
 			{
 				// The node is stored at the same int index as the memory pool
 				this->createdNodes.push_back(TensorNode::make(write));
@@ -233,7 +227,7 @@ public:
 				{
 					// instr_3 might have { create: [] -> 4 }
 					auto instr_3 = i[-3];
-					if (instr_3.code == "create"
+					if (instr_3.code == "create_null"
 						&& instr_3.writeAddr == instr.writeAddr)
 					{
 						// eliminate all 4 instructions instr_3 ... instr, inclusive
@@ -301,14 +295,86 @@ public:
 		return memoryPool.alloc();
 	}
 
-
 	virtual int alloc_dim(vector<int> dim)
 	{
 		return memoryPool.alloc_dim(dim);
 	}
 
+	/*********** Register "assembly" implementation ***********/
+	// (readAddrs, writeAddr, is_initialized)
+	typedef std::function<void(vector<DataT*>, DataT*, bool)> OpcodeFuncType;
+	// specifically for OpCode create_dim(writeAddr, dim)
+	typedef std::function<void(DataT*, vector<int>)> CreateFuncType;
+
+	// Call in Engine ctor
+	void register_create(CreateFuncType createFunc)
+	{
+		this->assembly_create = createFunc;
+	}
+
+	// Call in Engine ctor
+	void register_opcode(OpCode op, OpcodeFuncType opFunc)
+	{
+		this->assembly_map[op] = opFunc;
+	}
+
+	/*********** Compilation and execution ***********/
+	vector<std::function(void)> compile()
+	{
+		vector<std::function<void()>> assembly;
+
+		for (Instruction& instr : this->instructions)
+		{
+			vector<DataT*> reads;
+			for (int addr : instr.readAddrs)
+				reads.push_back(&memoryPool[addr]);
+
+			int writeAddr = instr.writeAddr;
+
+			DataT *write = &memoryPool[writeAddr];
+
+			if (instr.code == "create")
+			{
+				vector<int> dim = memoryPool.dim(writeAddr);
+				CreateFuncType assembly_create = this->assembly_create;
+				assembly.push_back([=]() {
+					assembly_create(write, dim);
+				});
+			}
+			else
+			{
+				bool is_initialized = memoryPool.is_initialized(writeAddr);
+
+				if (!key_exists(this->assembly_map, instr.code))
+					throw EngineException(string("Engine compilation failure: ") +
+							"Opcode \"" + instr.code + "\" not registered.");
+
+				OpcodeFuncType assembly_op = this->assembly_map[instr.code];
+				assembly.push_back([=]() {
+					assembly_op(reads, write, is_initialized);
+				});
+			}
+
+			memoryPool.set_initialized(writeAddr);
+		}
+
+		return assembly;
+	}
+
+	void execute()
+	{
+		for (auto& assembly : this->compile())
+			assembly();
+	}
+
 //protected:
 	MemoryPool<DataT> memoryPool;
+
+	/**
+	 * Add your "assembly" function addresses for each OpCode
+	 */
+	std::unordered_map<OpCode, OpcodeFuncType> assembly_map;
+	CreateFuncType assembly_create;
 };
 
 #endif /* ENGINE_H_ */

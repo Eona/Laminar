@@ -16,14 +16,14 @@ public:
 		engine(_engine),
 		addr(engine->alloc())
 	{
-		engine->upload(Instruction( "create", {}, addr));
+		engine->upload(Instruction( "create_null", {}, addr));
 	}
 
 	TensorBase(EngineBase::Ptr _engine, vector<int> dim) :
 		engine(_engine),
 		addr(engine->alloc_dim(dim))
 	{
-		engine->upload(Instruction( "create_dim", {}, addr));
+		engine->upload(Instruction( "create", {}, addr));
 	}
 
 	virtual ~TensorBase()
@@ -41,7 +41,7 @@ public:
 		addr(engine->alloc())
 	{
 		DEBUG_MSG("Copy Ctor");
-		engine->upload(Instruction("create", {}, this->addr));
+		engine->upload(Instruction("create_null", {}, this->addr));
 		engine->upload(Instruction("copy", {other.addr}, this->addr));
 	}
 

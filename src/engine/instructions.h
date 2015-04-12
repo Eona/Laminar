@@ -36,6 +36,20 @@ struct OpCode
 	string name;
 };
 
+/**
+ * Hashing
+ */
+namespace std {
+  template<>
+  struct hash<OpCode>
+  {
+    size_t operator()(const OpCode& opcode) const
+    {
+    	return std::hash<std::string>(opcode.name);
+    }
+  };
+}
+
 struct Instruction
 {
 	Instruction(OpCode _code, vector<int>& _readAddrs, int _writeAddr) :
