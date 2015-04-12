@@ -30,14 +30,6 @@ public:
 		return size() - 1;
 	}
 
-	// Allocate with dimension
-	int alloc_dim(vector<int> dim)
-	{
-		int addr = this->alloc();
-		this->dimensions[addr] = dim;
-		return addr;
-	}
-
 	DataT& operator[](int i)
 	{
 		assert_throw(i < size(),
@@ -53,6 +45,11 @@ public:
 	void set_initialized(int i, bool val = true)
 	{
 		this->initialized[i] = val;
+	}
+
+	void set_dim(int i, vector<int> dim)
+	{
+		this->dimensions[i] = dim;
 	}
 
 	vector<int>& dim(int i)
@@ -166,8 +163,7 @@ public:
 
 	virtual int alloc() = 0;
 
-	virtual int alloc_dim(vector<int> dim) = 0;
-
+	virtual void set_dim(int addr, vector<int> dim) = 0;
 
 	/**
 	 * Construct a DAG of data dependencies
@@ -178,8 +174,7 @@ public:
 		{
 			vector<int>& reads = instr.readAddrs;
 			int write = instr.writeAddr;
-			string op = string(instr.opcode);
-			if(op == "create_null")
+			if(starts_with(instr.opcode, "create"))
 			{
 				// The node is stored at the same int index as the memory pool
 				this->createdNodes.push_back(TensorNode::make(write));
@@ -221,13 +216,13 @@ public:
 				// instr { destroy: [] -> 4 }
 				// optimize and eliminate temporary '4'
 				// instr_new { t+t: [2, 2] -> 3 }
-				if (instr_1.opcode == "copy"
+				if ((instr_1.opcode == "t=t" || instr_1.opcode == "s=s")
 					&& instr_1.readAddrs[0] == instr.writeAddr
 					&& instr_2.writeAddr == instr_1.readAddrs[0])
 				{
 					// instr_3 might have { create: [] -> 4 }
 					auto instr_3 = i[-3];
-					if (instr_3.opcode == "create_null"
+					if (starts_with(instr_3.opcode, "create_null")
 						&& instr_3.writeAddr == instr.writeAddr)
 					{
 						// eliminate all 4 instructions instr_3 ... instr, inclusive
@@ -295,9 +290,9 @@ public:
 		return memoryPool.alloc();
 	}
 
-	virtual int alloc_dim(vector<int> dim)
+	virtual void set_dim(int addr, vector<int> dim)
 	{
-		return memoryPool.alloc_dim(dim);
+		memoryPool.set_dim(addr, dim);
 	}
 
 	/*********** Register "assembly" implementation ***********/
@@ -319,12 +314,16 @@ public:
 	}
 
 	/*********** Compilation and execution ***********/
-	vector<std::function(void)> compile()
+	vector<std::function<void()>> compile()
 	{
 		vector<std::function<void()>> assembly;
 
 		for (Instruction& instr : this->instructions)
 		{
+			// TODO do we need this op?
+			if (starts_with(instr.opcode, "create_null"))
+				continue;
+
 			vector<DataT*> reads;
 			for (int addr : instr.readAddrs)
 				reads.push_back(&memoryPool[addr]);
@@ -347,7 +346,7 @@ public:
 
 				if (!key_exists(this->assembly_map, instr.opcode))
 					throw EngineException(string("Engine compilation failure: ") +
-							"Opcode \"" + instr.opcode + "\" not registered.");
+							"Opcode \"" + string(instr.opcode) + "\" not registered.");
 
 				OpcodeFuncType assembly_op = this->assembly_map[instr.opcode];
 				assembly.push_back([=]() {

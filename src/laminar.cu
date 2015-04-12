@@ -49,6 +49,11 @@ int main(int argc, char **argv)
 	t3 = t1;
 	cout << "t3 " << t3.addr << endl;
 
+	dummyEng->execute(); exit(0);
+
+	dummyEng->print_instructions();
+	print_title("optimize");
+	dummyEng->eliminate_temporary();
 	dummyEng->print_instructions();
 
 	for (auto pr : dummyEng->memoryPool.dimensions)
