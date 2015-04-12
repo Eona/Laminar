@@ -243,6 +243,18 @@ public:
     }
 };
 
+class ComponentException: public LaminarException {
+public:
+    ComponentException(const string& msg):
+    	LaminarException(msg)
+	{}
+
+    virtual string error_header() const
+    {
+    	return "Network component error";
+    }
+};
+
 class UnimplementedException: public LaminarException {
 public:
     UnimplementedException(const string& msg):
