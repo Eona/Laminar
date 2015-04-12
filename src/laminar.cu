@@ -14,6 +14,7 @@
 #include "gradient_check.h"
 #include "engine/engine.h"
 #include "engine/tensor.h"
+#include "engine/tensor_ops.h"
 #include "engine/dummy_engine.h"
 
 FakeRand& rand_conn = FakeRand::instance_connection();
