@@ -12,13 +12,18 @@
 class TensorBase
 {
 public:
-	TensorBase(EngineBase::Ptr _engine, vector<int> dim = vector<int>{}) :
+	TensorBase(EngineBase::Ptr _engine) :
 		engine(_engine),
-		addr(engine->alloc(dim))
+		addr(engine->alloc())
 	{
-		engine->upload(Instruction(
-				dim.size() == 0 ? "create" : "create_dim",
-				{}, addr));
+		engine->upload(Instruction( "create", {}, addr));
+	}
+
+	TensorBase(EngineBase::Ptr _engine, vector<int> dim) :
+		engine(_engine),
+		addr(engine->alloc_dim(dim))
+	{
+		engine->upload(Instruction( "create_dim", {}, addr));
 	}
 
 	virtual ~TensorBase()
@@ -74,8 +79,8 @@ public:
 class Scalor : public TensorBase
 {
 public:
-	Scalor(EngineBase::Ptr _engine, vector<int> dim = vector<int>{}) :
-		TensorBase(_engine, dim)
+	Scalor(EngineBase::Ptr _engine) :
+		TensorBase(_engine)
 	{ }
 
 	virtual ~Scalor() {}
@@ -126,7 +131,11 @@ public:
 class Tensor : public TensorBase
 {
 public:
-	Tensor(EngineBase::Ptr _engine, vector<int> dim = vector<int>{}) :
+	Tensor(EngineBase::Ptr _engine) :
+		TensorBase(_engine)
+	{ }
+
+	Tensor(EngineBase::Ptr _engine, vector<int> dim) :
 		TensorBase(_engine, dim)
 	{ }
 

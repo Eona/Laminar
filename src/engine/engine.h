@@ -23,15 +23,19 @@ public:
 
 	using DataType = DataT;
 
-	/**
-	 * Dimension of the tensor
-	 */
-	int alloc(vector<int> dim = vector<int>{})
+	int alloc()
 	{
 		this->memory.push_back(DataT());
 		this->initialized.push_back(false);
-		this->dimensions.push_back(dim);
 		return size() - 1;
+	}
+
+	// Allocate with dimension
+	int alloc_dim(vector<int> dim)
+	{
+		int addr = this->alloc();
+		this->dimensions[addr] = dim;
+		return addr;
 	}
 
 	DataT* memory_ptr(int i)
@@ -58,7 +62,7 @@ public:
 		this->initialized[i] = val;
 	}
 
-	vector<int> dim(int i)
+	vector<int>& dim(int i)
 	{
 		return this->dimensions[i];
 	}
@@ -71,13 +75,13 @@ public:
 	template<typename T>
 	friend ostream& operator<<(ostream& os, MemoryPool<T>& memoryPool);
 
-private:
+//private:
 	// All the following should have the same size
 	vector<DataT> memory;
 	// test if things are default initialized.
 	vector<bool> initialized;
-	// dimension of each tensor
-	vector<vector<int> > dimensions;
+	// dimension of initialized tensor at memory addr
+	std::unordered_map<int, vector<int> > dimensions;
 };
 
 template<typename T>
@@ -167,8 +171,9 @@ public:
 		instructions.push_back(instr);
 	}
 
-	// Requires knowledge of the memory pool
-	virtual int alloc(vector<int> dim = vector<int> { }) = 0;
+	virtual int alloc() = 0;
+
+	virtual int alloc_dim(vector<int> dim) = 0;
 
 	/**
 	 * Construct a DAG of data dependencies
@@ -291,12 +296,18 @@ public:
 
 	virtual ~Engine() {};
 
-	virtual int alloc(vector<int> dim = vector<int> { })
+	virtual int alloc()
 	{
-		return memoryPool.alloc(dim);
+		return memoryPool.alloc();
 	}
 
-protected:
+
+	virtual int alloc_dim(vector<int> dim)
+	{
+		return memoryPool.alloc_dim(dim);
+	}
+
+//protected:
 	MemoryPool<DataT> memoryPool;
 };
 

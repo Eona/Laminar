@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 	auto dummyEng = EngineBase::make<DummyEngine>();
 
 	Tensor t1(dummyEng, { 2, 3 });
-	Tensor t2(dummyEng);
+	Tensor t2(dummyEng, {5, 7});
 	Tensor t3 = t1 + t2;
 	Scalor s1(dummyEng);
 	Scalor s2(dummyEng);
@@ -50,6 +50,9 @@ int main(int argc, char **argv)
 	cout << "t3 " << t3.addr << endl;
 
 	dummyEng->print_instructions();
+
+	for (auto pr : dummyEng->memoryPool.dimensions)
+		DEBUG_MSG(pr.first << " " << pr.second);
 
 	print_title("Graph");
 	dummyEng->construct_graph();
