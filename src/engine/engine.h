@@ -265,12 +265,12 @@ public:
 	}
 
 	/**
-	 * Down cast EngineBasePtr to a specific layer type
+	 * Downcast
 	 */
 	template<typename EngineBaseT>
-	static shared_ptr<EngineBaseT> cast(EngineBase::Ptr layer)
+	static shared_ptr<EngineBaseT> cast(EngineBase::Ptr engine)
 	{
-		return std::dynamic_pointer_cast<EngineBaseT>(layer);
+		return std::dynamic_pointer_cast<EngineBaseT>(engine);
 	}
 
 protected:
