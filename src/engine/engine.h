@@ -178,7 +178,7 @@ public:
 		{
 			vector<int>& reads = instr.readAddrs;
 			int write = instr.writeAddr;
-			string op = string(instr.code);
+			string op = string(instr.opcode);
 			if(op == "create_null")
 			{
 				// The node is stored at the same int index as the memory pool
@@ -212,7 +212,7 @@ public:
 		auto i = instructions.begin() + 3; // at least from 3rd instr onwards
 		do {
 			auto instr = *i;
-			if (instr.code == "destroy")
+			if (instr.opcode == "destroy")
 			{
 				auto instr_1 = i[-1]; // *(i - 1)
 				auto instr_2 = i[-2];
@@ -221,13 +221,13 @@ public:
 				// instr { destroy: [] -> 4 }
 				// optimize and eliminate temporary '4'
 				// instr_new { t+t: [2, 2] -> 3 }
-				if (instr_1.code == "copy"
+				if (instr_1.opcode == "copy"
 					&& instr_1.readAddrs[0] == instr.writeAddr
 					&& instr_2.writeAddr == instr_1.readAddrs[0])
 				{
 					// instr_3 might have { create: [] -> 4 }
 					auto instr_3 = i[-3];
-					if (instr_3.code == "create_null"
+					if (instr_3.opcode == "create_null"
 						&& instr_3.writeAddr == instr.writeAddr)
 					{
 						// eliminate all 4 instructions instr_3 ... instr, inclusive
@@ -237,7 +237,7 @@ public:
 						i = instructions.erase(i - 2, i + 1);
 					// Add new combined instr
 					instructions.insert(i,
-						Instruction(instr_2.code, instr_2.readAddrs, instr_1.writeAddr));
+						Instruction(instr_2.opcode, instr_2.readAddrs, instr_1.writeAddr));
 				}
 			}
 		}
@@ -333,7 +333,7 @@ public:
 
 			DataT *write = &memoryPool[writeAddr];
 
-			if (instr.code == "create")
+			if (instr.opcode == "create")
 			{
 				vector<int> dim = memoryPool.dim(writeAddr);
 				CreateFuncType assembly_create = this->assembly_create;
@@ -345,11 +345,11 @@ public:
 			{
 				bool is_initialized = memoryPool.is_initialized(writeAddr);
 
-				if (!key_exists(this->assembly_map, instr.code))
+				if (!key_exists(this->assembly_map, instr.opcode))
 					throw EngineException(string("Engine compilation failure: ") +
-							"Opcode \"" + instr.code + "\" not registered.");
+							"Opcode \"" + instr.opcode + "\" not registered.");
 
-				OpcodeFuncType assembly_op = this->assembly_map[instr.code];
+				OpcodeFuncType assembly_op = this->assembly_map[instr.opcode];
 				assembly.push_back([=]() {
 					assembly_op(reads, write, is_initialized);
 				});

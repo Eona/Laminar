@@ -53,22 +53,22 @@ namespace std {
 struct Instruction
 {
 	Instruction(Opcode _code, vector<int>& _readAddrs, int _writeAddr) :
-		code(_code), readAddrs(_readAddrs), writeAddr(_writeAddr)
+		opcode(_code), readAddrs(_readAddrs), writeAddr(_writeAddr)
 	{ }
 
 	Instruction(Opcode _code, const std::initializer_list<int>& _readAddrs, int _writeAddr) :
-		code(_code), readAddrs(_readAddrs), writeAddr(_writeAddr)
+		opcode(_code), readAddrs(_readAddrs), writeAddr(_writeAddr)
 	{ }
 
 	virtual ~Instruction() {}
 
-	Opcode code;
+	Opcode opcode;
 	vector<int> readAddrs;
 	int writeAddr;
 
 	virtual operator string() const
 	{
-		return "{" + string(code) + ": "
+		return "{" + string(opcode) + ": "
 				+ container2str(readAddrs) + " -> "
 				+ to_str(writeAddr)
 				+ "}";
