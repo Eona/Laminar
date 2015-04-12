@@ -260,6 +260,8 @@ public:
 	template<typename EngineT, typename ...ArgT>
 	static shared_ptr<EngineT> make(ArgT&& ... args)
 	{
+		static_assert(std::is_base_of<EngineBase, EngineT>::value,
+				"Engine type parameter must be a subclass of EngineBase");
 		return std::make_shared<EngineT>(
 						std::forward<ArgT>(args) ...);
 	}
@@ -378,7 +380,7 @@ public:
 
 	void execute()
 	{
-		for (auto& assembly : this->compile())
+		for (auto assembly : this->compile())
 			assembly();
 	}
 

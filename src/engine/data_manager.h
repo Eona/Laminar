@@ -10,7 +10,11 @@
 class DataManagerBase
 {
 public:
-	virtual ~DataManagerBase() {}
+	DataManagerBase()
+	{}
+
+	virtual ~DataManagerBase()
+	{}
 
 	/************************************/
 	typedef shared_ptr<DataManagerBase> Ptr;
@@ -18,6 +22,8 @@ public:
 	template<typename ManagerT, typename ...ArgT>
 	static shared_ptr<ManagerT> make(ArgT&& ... args)
 	{
+		static_assert(std::is_base_of<DataManagerBase, ManagerT>::value,
+				"DataManager type parameter must be a subclass of DataManagerBase");
 		return std::make_shared<ManagerT>(
 						std::forward<ArgT>(args) ...);
 	}

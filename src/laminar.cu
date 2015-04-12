@@ -49,9 +49,18 @@ int main(int argc, char **argv)
 	t3 = t1;
 	cout << "t3 " << t3.addr << endl;
 
-	dummyEng->execute(); exit(0);
+	auto instr = dummyEng->compile();
+	for (auto f : instr)
+		f();
+	DEBUG_TITLE("second exec");
+	for (auto f : instr)
+		f();
+	DEBUG_TITLE("third exec");
+	for (auto f : instr)
+		f();
 
-	dummyEng->print_instructions();
+
+/*	dummyEng->print_instructions();
 	print_title("optimize");
 	dummyEng->eliminate_temporary();
 	dummyEng->print_instructions();
@@ -61,7 +70,7 @@ int main(int argc, char **argv)
 
 	print_title("Graph");
 	dummyEng->construct_graph();
-	dummyEng->print_graph();
+	dummyEng->print_graph();*/
 
 	DEBUG_MSG("done");
 
