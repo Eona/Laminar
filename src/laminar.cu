@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 {
 	auto dummyEng = EngineBase::make<DummyEngine>();
 
-	Tensor t1(dummyEng);
+	Tensor t1(dummyEng, { 2, 3 });
 	Tensor t2(dummyEng);
 	Tensor t3 = t1 + t2;
 	Scalor s1(dummyEng);

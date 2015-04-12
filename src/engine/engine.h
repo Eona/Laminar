@@ -26,7 +26,7 @@ public:
 	/**
 	 * Dimension of the tensor
 	 */
-	int alloc(vector<int> dim)
+	int alloc(vector<int> dim = vector<int>{})
 	{
 		this->memory.push_back(DataT());
 		this->initialized.push_back(false);
@@ -168,7 +168,7 @@ public:
 	}
 
 	// Requires knowledge of the memory pool
-	virtual int alloc() = 0;
+	virtual int alloc(vector<int> dim = vector<int> { }) = 0;
 
 	/**
 	 * Construct a DAG of data dependencies
@@ -291,9 +291,9 @@ public:
 
 	virtual ~Engine() {};
 
-	virtual int alloc()
+	virtual int alloc(vector<int> dim = vector<int> { })
 	{
-		return memoryPool.alloc();
+		return memoryPool.alloc(dim);
 	}
 
 protected:
