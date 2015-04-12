@@ -62,10 +62,17 @@ public:
 		return memory.size();
 	}
 
+	void reset()
+	{
+		this->memory.clear();
+		this->initialized.clear();
+		this->dimensions.clear();
+	}
+
 	template<typename T>
 	friend ostream& operator<<(ostream& os, MemoryPool<T>& memoryPool);
 
-//private:
+private:
 	// All the following should have the same size
 	vector<DataT> memory;
 	// test if things are default initialized.
@@ -164,6 +171,8 @@ public:
 	virtual int alloc() = 0;
 
 	virtual void set_dim(int addr, vector<int> dim) = 0;
+
+	virtual void reset() = 0;
 
 	/**
 	 * Construct a DAG of data dependencies
@@ -295,6 +304,11 @@ public:
 		memoryPool.set_dim(addr, dim);
 	}
 
+	virtual void reset()
+	{
+		this->memoryPool.reset();
+	}
+
 	/*********** Register "assembly" implementation ***********/
 	// (readAddrs, writeAddr, is_initialized)
 	typedef std::function<void(vector<DataT*>, DataT*, bool)> OpcodeFuncType;
@@ -368,7 +382,7 @@ public:
 			assembly();
 	}
 
-//protected:
+protected:
 	MemoryPool<DataT> memoryPool;
 
 	/**
