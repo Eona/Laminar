@@ -6,7 +6,7 @@
 #include "connection.h"
 #include "full_connection.h"
 #include "gated_connection.h"
-#include "transfer_layer.h"
+#include "activation_layer.h"
 #include "loss_layer.h"
 #include "parameter.h"
 #include "lstm.h"

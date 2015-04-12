@@ -87,33 +87,6 @@ public:
 	}
 };
 
-
-class ConstantLayer : public Layer
-{
-public:
-	ConstantLayer():
-		Layer()
-	{}
-
-	virtual ~ConstantLayer() {};
-
-	void forward_impl(float& inValue, float& outValue)
-	{
-		outValue = inValue;
-	}
-
-	void backward_impl(float& outValue, float& outGradient, float& inValue, float& inGradient)
-	{
-		inGradient = outGradient;
-	}
-
-	virtual explicit operator string() const
-	{
-		return string("[ConstantLayer: \n")
-				+ Layer::operator string() + "]";
-	}
-};
-
 class ScalorLayer : public Layer
 {
 public:
