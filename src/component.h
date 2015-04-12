@@ -38,7 +38,7 @@ public:
 	}
 };
 
-TypedefPtr(Component);
+TYPEDEF_PTR(Component);
 
 template<typename T>
 typename enable_if<is_base_of<Component, T>::value, ostream>::type&

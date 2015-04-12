@@ -200,7 +200,7 @@ public:
 /**
  * Both Layer::Ptr and LayerPtr works
  */
-TypedefPtr(Layer);
+TYPEDEF_PTR(Layer);
 
 
 // Special layer that has inValue=outValue, inGradient=outGradient aliases

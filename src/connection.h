@@ -145,6 +145,6 @@ private:
 	int _inFrame = 0, _outFrame = 0;
 };
 
-TypedefPtr(Connection);
+TYPEDEF_PTR(Connection);
 
 #endif /* CONNECTION_H_ */

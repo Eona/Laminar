@@ -81,6 +81,6 @@ public:
 	float& gradient;
 };
 
-TypedefPtr(FullConnection);
+TYPEDEF_PTR(FullConnection);
 
 #endif /* FULL_CONNECTION_H_ */

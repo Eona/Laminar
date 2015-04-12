@@ -121,29 +121,29 @@ namespace lmn
 {
 
 // Macro generate single tensor element-wise math operation
-#define GenElementwiseTensorOp(fname) \
+#define GEN_MATH_OPS(fname) \
 	template<typename TensorT> \
 	typename std::enable_if<is_tensor_base<TensorT>::value, TensorT>::type \
 	fname(const TensorT& x) \
 	{ \
 		Tensor ans(x.engine); \
-		x.engine->upload(Instruction(Stringfy(fname), {x.addr}, ans.addr)); \
+		x.engine->upload(Instruction(STRINGFY(fname), {x.addr}, ans.addr)); \
 		return ans; \
 	}
 
-	GenElementwiseTensorOp(transpose);
+	GEN_MATH_OPS(transpose);
 
-	GenElementwiseTensorOp(sigmoid);
+	GEN_MATH_OPS(sigmoid);
 
-	GenElementwiseTensorOp(sigmoid_gradient);
+	GEN_MATH_OPS(sigmoid_gradient);
 
-	GenElementwiseTensorOp(tanh);
+	GEN_MATH_OPS(tanh);
 
-	GenElementwiseTensorOp(tanh_gradient);
+	GEN_MATH_OPS(tanh_gradient);
 
-	GenElementwiseTensorOp(sin);
+	GEN_MATH_OPS(sin);
 
-	GenElementwiseTensorOp(cos);
+	GEN_MATH_OPS(cos);
 
 	// TODO
 //	inline float softmax(float x) { return x; }

@@ -35,7 +35,7 @@ public:
 	float totalLoss;
 };
 
-TypedefPtr(LossLayer);
+TYPEDEF_PTR(LossLayer);
 
 class SquareLossLayer : public LossLayer
 {

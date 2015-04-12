@@ -125,6 +125,6 @@ private:
 /**
  * Type trait
  */
-GenDerivedTemplateTypeTrait(is_composite, Composite);
+GEN_IS_DERIVED_TEMPLATE_TRAIT(is_composite, Composite);
 
 #endif /* COMPOSITE_H_ */

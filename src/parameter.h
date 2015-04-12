@@ -90,6 +90,6 @@ private:
 	int lastChangedIdx; float oldValue; // DEBUG ONLY
 };
 
-TypedefPtr(ParamContainer);
+TYPEDEF_PTR(ParamContainer);
 
 #endif /* PARAMETER_H_ */

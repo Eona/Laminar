@@ -26,6 +26,7 @@ Warning: if you ever change any of the `CMakeLists.txt` or add/delete/rename sou
 ## Notes
 ### Naming convention
 
- - All functions use underscores
- - All variables start with lower case and use camel case
- - All types and classes start with upper case and use camel case
+ - Functions use underscores
+ - Macro functions use all-CAPS and underscores
+ - Variables start with lower case and use camel case
+ - Types and classes start with upper case and use camel case

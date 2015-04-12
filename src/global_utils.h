@@ -112,7 +112,7 @@ inline bool starts_with(string str, string prefix)
 ************ Misc **************
 **************************************/
 // Define shared_ptr<Xclass> as XclassPtr
-#define TypedefPtr(Xclass) \
+#define TYPEDEF_PTR(Xclass) \
 	typedef shared_ptr<Xclass> Xclass##Ptr
 
 // Emulate python style subscript
@@ -147,8 +147,8 @@ bool key_exists(std::unordered_map<KeyT, ValueT>& map, KeyT& key)
 }
 
 // enclose x as "x" in macro expansion
-#define _Stringfy(x) #x
-#define Stringfy(x) _Stringfy(x)
+#define _STRINGFY(x) #x
+#define STRINGFY(x) _STRINGFY(x)
 
 /**
  * Example: suppose we have template<typename T> MyClass;
@@ -159,7 +159,7 @@ bool key_exists(std::unordered_map<KeyT, ValueT>& map, KeyT& key)
  * std::declval() simulates creation of a new Derived* pointer
  * http://stackoverflow.com/questions/29531536/c-check-inheritance-at-compile-time/
  */
-#define GenDerivedTemplateTypeTrait(typeTraitFuncName, className) \
+#define GEN_IS_DERIVED_TEMPLATE_TRAIT(typeTraitFuncName, className) \
 template <typename T> \
 std::true_type typeTraitFuncName##_impl(const className<T>* impl); \
 std::false_type typeTraitFuncName_impl(...); \
@@ -173,13 +173,13 @@ using typeTraitFuncName = \
  * generates a type trait function is_myclass<X>() that
  * returns true if there exists a type T such that X == MyClass<T>
  */
-#define GenTemplateTypeTrait(typeTraitFuncName, className) \
+#define GEN_IS_TEMPLATE_TRAIT(typeTraitFuncName, className) \
 template <typename T> \
 struct typeTraitFuncName : std::false_type { }; \
 template <typename... Ts> \
 struct typeTraitFuncName<className<Ts...> > : std::true_type { };
 
-GenTemplateTypeTrait(is_vector, std::vector);
+GEN_IS_TEMPLATE_TRAIT(is_vector, std::vector);
 
 /**
  * select_type<bool, TypeTrue, TypeFalse>::type

@@ -283,7 +283,7 @@ protected:
 	vector<TensorNode::Ptr> createdNodes;
 };
 
-TypedefPtr(EngineBase);
+TYPEDEF_PTR(EngineBase);
 
 
 template<typename DataT>
