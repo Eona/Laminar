@@ -297,11 +297,11 @@ inline void assert(bool cond, string errmsg = "", string successmsg="")
 	#if TERMINATE_ASSERT
 		throw AssertFailure(errmsg);
 	#else
-		cout << "[Assert Error] " << errmsg << endl;
+		cout << "[Assert Error] " << errmsg << "\n";
 	#endif
 	}
 	else if (successmsg != "")
-		cout << successmsg << endl;
+		cout << successmsg << "\n";
 }
 
 template<typename T>
@@ -393,14 +393,14 @@ void print_title(string title = "", int leng = 10)
 
 // More debugging info
 #if DEBUG
-#define DEBUG_MSG_1(msg) cout << msg << endl
-#define DEBUG_MSG_2(name, msg) cout << "{" << name << "} " << msg << endl
+#define DEBUG_MSG_1(msg) cout << msg << "\n"
+#define DEBUG_MSG_2(name, msg) cout << "{" << name << "} " << msg << "\n"
 #define DEBUG_DO(command) command
-#define DEBUG_COND(cond, msg) if (cond) cout << msg << endl
-#define DEBUG_LOOP(forcond, msg) for (forcond) cout << msg << endl;
+#define DEBUG_COND(cond, msg) if (cond) cout << msg << "\n"
+#define DEBUG_LOOP(forcond, msg) for (forcond) cout << msg << "\n";
 // Write to debug file
 #define DEBUG_FILE_INIT(filename) ofstream fdbg(filename);
-#define DEBUG_FOUT(msg) fdbg << msg << endl
+#define DEBUG_FOUT(msg) fdbg << msg << "\n"
 #else
 #define DEBUG_MSG_1(msg)
 #define DEBUG_MSG_2(msg1, msg2)
