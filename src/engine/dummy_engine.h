@@ -55,6 +55,14 @@ void sub(vector<float*> reads, float* write, bool is_initialized)
 	*write = *reads[0] - *reads[1];
 }
 
+template<int TensorT>
+void negate(vector<float*> reads, float* write, bool is_initialized)
+{
+	string op = tensor_op<TensorT>::operand;
+	DEBUG_MSG((string("DummyImpl::") + "-" + op + " ->init=") << std::boolalpha << is_initialized);
+	*write = - (*reads[0]);
+}
+
 template<int TensorT1, int TensorT2>
 void mult(vector<float*> reads, float* write, bool is_initialized)
 {
@@ -72,10 +80,68 @@ void assign(vector<float*> reads, float* write, bool is_initialized)
 	*write = *reads[0];
 }
 
-void destroy(vector<float*> reads, float* write, bool is_initialized)
+inline void destroy(vector<float*> reads, float* write, bool is_initialized)
 {
 	DEBUG_MSG("DummyImpl::destroy ->init=" << std::boolalpha << is_initialized);
 }
+
+
+// standalone single-float non-linear functions
+inline void transpose(vector<float *> reads, float *write, bool is_initialized)
+{
+	DEBUG_MSG((string("DummyImpl::") + "transpose ->init=") << std::boolalpha << is_initialized);
+	float r = *reads[0];
+	*write = *reads[0];
+}
+
+inline void sigmoid(vector<float *> reads, float *write, bool is_initialized)
+{
+	DEBUG_MSG((string("DummyImpl::") + "sigmoid ->init=") << std::boolalpha << is_initialized);
+	float r = *reads[0];
+	*write = 1.f / (1.f + exp(-r));
+}
+
+inline void sigmoid_gradient(vector<float *> reads, float *write, bool is_initialized)
+{
+	DEBUG_MSG((string("DummyImpl::") + "sigmoid_gradient ->init=") << std::boolalpha << is_initialized);
+	float r = *reads[0];
+	*write = r * (1.f - r);
+}
+
+inline void sin(vector<float *> reads, float *write, bool is_initialized)
+{
+	DEBUG_MSG((string("DummyImpl::") + "sin ->init=") << std::boolalpha << is_initialized);
+	float r = *reads[0];
+	*write = std::sin(r);
+}
+
+inline void cos(vector<float *> reads, float *write, bool is_initialized)
+{
+	DEBUG_MSG((string("DummyImpl::") + "cos ->init=") << std::boolalpha << is_initialized);
+	float r = *reads[0];
+	*write = std::cos(r);
+}
+
+inline void tanh(vector<float *> reads, float *write, bool is_initialized)
+{
+	DEBUG_MSG((string("DummyImpl::") + "tanh ->init=") << std::boolalpha << is_initialized);
+	float r = *reads[0];
+	*write = std::tanh(r);
+}
+
+inline void tanh_gradient(vector<float *> reads, float *write, bool is_initialized)
+{
+	DEBUG_MSG((string("DummyImpl::") + "tanh_gradient ->init=") << std::boolalpha << is_initialized);
+	float r = *reads[0];
+	*write = 1.f - r * r;
+}
+
+inline void element_mult(vector<float *> reads, float *write, bool is_initialized)
+{
+	DEBUG_MSG((string("DummyImpl::") + "element_mult ->init=") << std::boolalpha << is_initialized);
+	*write = (*reads[0]) * (*reads[1]);
+}
+
 
 } // end of DummyImpl::
 } // end of lmn::
@@ -94,12 +160,24 @@ public:
 		register_opcode("s+s", Impl::add<S>);
 		register_opcode("t-t", Impl::sub<T>);
 		register_opcode("s-s", Impl::sub<S>);
+		register_opcode("-t", Impl::negate<T>);
+		register_opcode("-s", Impl::negate<S>);
 		register_opcode("t*t", Impl::mult<T, T>);
 		register_opcode("t*s", Impl::mult<T, S>);
 		register_opcode("s*t", Impl::mult<S, T>);
 		register_opcode("s*s", Impl::mult<S, S>);
 		register_opcode("t=t", Impl::assign<T>);
 		register_opcode("s=s", Impl::assign<S>);
+
+		register_opcode("sin", Impl::sin);
+		register_opcode("cos", Impl::cos);
+		register_opcode("tanh", Impl::tanh);
+		register_opcode("tanh_gradient", Impl::tanh_gradient);
+		register_opcode("sigmoid", Impl::sigmoid);
+		register_opcode("sigmoid_gradient", Impl::sigmoid_gradient);
+		register_opcode("transpose", Impl::transpose);
+		register_opcode("element_mult", Impl::element_mult);
+
 		register_opcode("destroy", Impl::destroy);
 	}
 };
