@@ -8,7 +8,7 @@
 
 #include "global_utils.h"
 
-// FIXME for prototype only
+// DUMMY for prototype only
 namespace lmn
 {
 	inline float transpose(float x) { return x; }

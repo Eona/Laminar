@@ -7,19 +7,19 @@
 #define LOSS_LAYER_H_
 
 #include "layer.h"
+#include "engine/tensor.h"
+#include "engine/tensor_ops.h"
 
 class LossLayer : public Layer
 {
 public:
-	LossLayer() :
-		Layer(),
-		targetValue(1, 0.f),
-		totalLoss(0.f)
+	LossLayer(vector<int> dim) :
+		Layer(dim)
 	{ }
 
 	virtual ~LossLayer() {};
 
-	virtual float total_loss()
+	virtual Scalor total_loss()
 	{
 		return totalLoss;
 	}
@@ -27,12 +27,31 @@ public:
 	virtual void reset()
 	{
 		Layer::reset();
-		totalLoss = 0;
+		// TODO clear totalLoss
 	}
 
-	vector<float> targetValue;
+	// FIXME no public!
+	vector<Tensor> targetValue;
 
-	float totalLoss;
+	Scalor totalLoss;
+
+protected:
+	/**
+	 * Extend Layer::initialize
+	 */
+	virtual void initialize_impl()
+	{
+		Layer::initialize_impl();
+
+		totalLoss.register_engine(this->engine);
+
+		for (int t = 0; t < historyLength; ++t)
+		{
+			targetValue.push_back(
+					this->create_tensor());
+		}
+	}
+
 };
 
 TYPEDEF_PTR(LossLayer);
@@ -40,21 +59,20 @@ TYPEDEF_PTR(LossLayer);
 class SquareLossLayer : public LossLayer
 {
 public:
-	SquareLossLayer() :
-		LossLayer()
+	SquareLossLayer(vector<int> dim) :
+		LossLayer(dim)
 	{}
 
-	~SquareLossLayer() {};
+	virtual ~SquareLossLayer() {};
 
-	virtual void forward_impl(float& inValue, float& outValue)
+	// TODO all LossLayer shouldn't have outValue Tensor
+	virtual void forward_impl(Tensor& inValue, Tensor& outValue)
 	{
 		// which is loss value if the network is feedforward
-		float tmp = inValue - targetValue[frame()];
-		outValue = 0.5f * tmp * tmp;
-		totalLoss += outValue;
+		totalLoss += lmn::square_loss(inValue, targetValue[frame()]);
 	}
 
-	virtual void backward_impl(float& outValue, float& outGradient, float& inValue, float& inGradient)
+	virtual void backward_impl(Tensor& outValue, Tensor& outGradient, Tensor& inValue, Tensor& inGradient)
 	{
 		inGradient = inValue - targetValue[frame()];
 	}

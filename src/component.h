@@ -6,6 +6,7 @@
 #define COMPONENT_H_
 
 #include "global_utils.h"
+#include "engine/engine.h"
 
 class Component
 {
@@ -14,11 +15,33 @@ public:
 
 	virtual ~Component() {};
 
+	void init_engine(EngineBase::Ptr engine)
+	{
+		assert_throw(!this->is_initialized,
+			ComponentException("init_engine() must be called before initialize()"));
+		this->engine = engine;
+	}
+
+	virtual void initialize()
+	{
+		assert_throw(!this->is_initialized,
+			ComponentException("already initialized, can't init again unless reset()"));
+
+		this->initialize_impl();
+
+		this->is_initialized = true;
+	}
+
+	virtual void reset()
+	{
+		this->reset_impl();
+		this->is_initialized = false;
+	}
+
 	virtual void forward(int inFrame = 0, int outFrame = 0) = 0;
 
 	virtual void backward(int outFrame = 0, int inFrame = 0) = 0;
 
-	virtual void reset() = 0;
 
 	virtual explicit operator string() const = 0;
 
@@ -35,6 +58,25 @@ public:
 	static shared_ptr<ComponentT> cast(Component::Ptr compon)
 	{
 		return std::dynamic_pointer_cast<ComponentT>(compon);
+	}
+
+protected:
+	EngineBase::Ptr engine;
+	bool is_initialized = false;
+
+	virtual void initialize_impl() = 0;
+
+	virtual void reset_impl() = 0;
+
+	/**
+	 * Utility: construct a Tensor, null created or with dim
+	 */
+	Tensor create_tensor(vector<int> dim = {})
+	{
+		if (dim.empty())
+			return Tensor(engine);
+		else
+			return Tensor(engine, dim);
 	}
 };
 

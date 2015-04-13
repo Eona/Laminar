@@ -14,39 +14,32 @@
 class Layer : public Component
 {
 public:
-	Layer() :
+	Layer(vector<int> dim) :
+		dim_(dim),
 		historyLength(1),
-		maxTemporalSkip(0),
-		inValues(historyLength, 0.0f),
-		inGradients(maxTemporalSkip + 1, 0.0f),
-		outValues(historyLength, 0.0f),
-		outGradients(maxTemporalSkip + 1, 0.0f)
+		maxTemporalSkip(0)
 	{ }
 
 	virtual ~Layer() {};
 
+	vector<int> dim()
+	{
+		return this->dim_;
+	}
+
 	/**
 	 * Maximum temporal skip, allows a hidden layer to link (skip) to its
 	 * future at +skip timestep. The most typical RNN has maxTemporalSkip = 1.
-	 * Default to 0 for feed-forward network.
+	 * Default = 0 for feed-forward network.
 	 * If the value is UNLIMITED_TEMPORAL_SKIP, we save the full gradient history
-	 * If you change maxTemporalSkip, the gradient vector will be extended or shrinked.
-	 * Need to manually reset the gradient to ensure consistency.
+	 * Must be called before initialize()
 	 */
-	void set_max_temporal_skip(int maxTemporalSkip)
+	void init_max_temporal_skip(int maxTemporalSkip)
 	{
-		this->maxTemporalSkip = maxTemporalSkip;
+		assert_throw(!this->is_initialized,
+			ComponentException("init_max_temporal_skip() must be called before initialize()"));
 
-		if (!is_full_gradient_history_saved())
-		{
-			inGradients.resize(maxTemporalSkip + 1);
-			outGradients.resize(maxTemporalSkip + 1);
-		}
-		else
-		{
-			inGradients.clear();
-			outGradients.clear();
-		}
+		this->maxTemporalSkip = maxTemporalSkip;
 	}
 
 	int get_max_temporal_skip()
@@ -60,51 +53,55 @@ public:
 	}
 
 	/**
-	 * Should be called by Network, NOT a user defined parameter.
-	 * Defaults to 1.
+	 * Input sequence length, default = 1
 	 */
-	void set_history_length(int historyLength)
+	void init_history_length(int historyLength)
 	{
-		this->historyLength = historyLength;
-		inValues.resize(historyLength);
-		outValues.resize(historyLength);
+		assert_throw(!this->is_initialized,
+			ComponentException("init_history_length() must be called before initialize()"));
 
-		if (is_full_gradient_history_saved())
-		{
-			inGradients.resize(historyLength);
-			outGradients.resize(historyLength);
-		}
+		this->historyLength = historyLength;
 	}
+
+	// FIXME do we need batch size? I think null Tensors can figure out the inflow dims
+/*	void init_batch_size(int batchSize)
+	{
+		assert_throw(!this->is_initialized,
+			ComponentException("init_batch_size() must be called before initialize()"));
+
+		this->batchSize = batchSize;
+	}*/
 
 	virtual void forward(int inFrame = 0, int outFrame = 0)
 	{
 		check_frame_consistency(inFrame, outFrame);
 
-		this->_frame = inFrame;
+		this->frame_ = inFrame;
 
-		forward_impl(inValues[_frame], outValues[_frame]);
+		forward_impl(inValues[frame_], outValues[frame_]);
 	}
 
 	virtual void backward(int outFrame = 0, int inFrame = 0)
 	{
 		check_frame_consistency(inFrame, outFrame);
 
-		this->_frame = inFrame;
+		this->frame_ = inFrame;
 
-		int relativeFrame = is_full_gradient_history_saved() ? _frame : 0;
-		backward_impl(outValues[_frame],
+		int relativeFrame = is_full_gradient_history_saved() ? frame_ : 0;
+		backward_impl(outValues[frame_],
 				outGradients[relativeFrame],
-				inValues[_frame],
+				inValues[frame_],
 				inGradients[relativeFrame]);
 	}
 
-	virtual void reset()
+	// TODO set all to zero matrices for more convenient gradient check
+/*	virtual void zero_clear()
 	{
 		std::fill(inValues.begin(), inValues.end(), 0);
 		std::fill(outValues.begin(), outValues.end(), 0);
 		std::fill(inGradients.begin(), inGradients.end(), 0);
 		std::fill(outGradients.begin(), outGradients.end(), 0);
-	}
+	}*/
 
 	/**
 	 * Call after network does a full back_prop through all the layers
@@ -112,22 +109,25 @@ public:
 	 * Do this when we are not saving the full gradient history.
 	 * [11, 22, 33] => [22, 33, 0] // lower index is more recent frame
 	 */
-	virtual void shiftBackGradientWindow()
+	virtual void shift_back_gradient_window()
 	{
 		if (!is_full_gradient_history_saved())
 		{
-			shiftBackVector(outGradients);
-			shiftBackVector(inGradients);
+			shift_back_vector(outGradients);
+			shift_back_vector(inGradients);
 		}
 	}
 
-	virtual void forward_impl(float& inValue, float& outValue) = 0;
-	virtual void backward_impl(float& inValue, float& inGradient, float& outValue, float& outGradient) = 0;
+	virtual void forward_impl(
+			Tensor& inValue, Tensor& outValue) = 0;
+	virtual void backward_impl(
+			Tensor& inValue, Tensor& inGradient,
+			Tensor& outValue, Tensor& outGradient) = 0;
 
 	// current time frame set by forward() and backward()
 	int frame()
 	{
-		return this->_frame;
+		return this->frame_;
 	}
 
 	virtual explicit operator string() const
@@ -161,37 +161,77 @@ public:
 	}
 
 protected:
+	/**
+	 * Implement Component::initialize
+	 */
+	virtual void initialize_impl()
+	{
+		for (int t = 0; t < historyLength; ++t)
+		{
+			inValues.push_back(
+					this->create_tensor());
+			outValues.push_back(
+					this->create_tensor());
+		}
+
+		int gradientHistoryLength =
+			is_full_gradient_history_saved() ? historyLength : maxTemporalSkip + 1;
+
+		for (int t = 0; t < gradientHistoryLength; ++t)
+		{
+			inGradients.push_back(
+					this->create_tensor());
+			outGradients.push_back(
+					this->create_tensor());
+		}
+	}
+
+	/**
+	 * Implement Component::reset
+	 */
+	virtual void reset_impl()
+	{
+		inValues.clear();
+		outValues.clear();
+		inGradients.clear();
+		outGradients.clear();
+	}
+
 	// Shift the gradient window
-	static void shiftBackVector(vector<float>& grad)
+	// FIXME memory is not being saved, still alloc a lot of memory
+	static void shift_back_vector(vector<Tensor>& grad)
 	{
 //		grad.insert(grad.begin(), 0);
 //		grad.erase(grad.end() - 1);
-		grad.push_back(0);
+		grad.push_back(this->create_tensor());
 		grad.erase(grad.begin());
 	}
 
-	void check_frame_consistency(float inFrame, float outFrame)
+	void check_frame_consistency(int inFrame, int outFrame)
 	{
 		assert_throw(inFrame == outFrame,
 			UnimplementedException(
-				"Layer in/out time cannot be different for now."));
+				"Layer in/out time cannot be different."));
 	}
+
+private:
+	vector<int> dim_;
 
 	int historyLength;
 
 	// Max temporal skip. negative to save full gradient history
 	int maxTemporalSkip;
 
-private:
 	// frame pointer
-	int _frame = 0;
+	int frame_ = 0;
+
+public: // FIXME no public!
+	vector<Tensor> inValues,
+				inGradients,
+				outValues,
+				outGradients;
 
 public:
-	vector<float> inValues,
-		inGradients,
-		outValues,
-		outGradients;
-
 	enum : int {
 		UNLIMITED_TEMPORAL_SKIP = -1
 	};
@@ -207,18 +247,19 @@ TYPEDEF_PTR(Layer);
 class ConstantLayer : public Layer
 {
 public:
-	ConstantLayer():
-		Layer()
+	ConstantLayer(vector<int> dim):
+		Layer(dim)
 	{}
 
 	virtual ~ConstantLayer() {};
 
-	void forward_impl(float& inValue, float& outValue)
+	void forward_impl(Tensor& inValue, Tensor& outValue)
 	{
 		outValue = inValue;
 	}
 
-	void backward_impl(float& outValue, float& outGradient, float& inValue, float& inGradient)
+	void backward_impl(Tensor& outValue, Tensor& outGradient,
+			Tensor& inValue, Tensor& inGradient)
 	{
 		inGradient = outGradient;
 	}

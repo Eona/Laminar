@@ -197,7 +197,7 @@ public:
 				"Input sequence must have the same length as the target sequence"));
 
 		for (Layer::Ptr layer : layers)
-			layer->set_max_temporal_skip(this->maxTemporalSkip);
+			layer->init_max_temporal_skip(this->maxTemporalSkip);
 
 		Network::assemble();
 	}
@@ -264,7 +264,7 @@ public:
 		}
 
 		for (Layer::Ptr layer : layers)
-			layer->shiftBackGradientWindow();
+			layer->shift_back_gradient_window();
 	}
 
 	virtual void add_recurrent_connection(Connection::Ptr conn, int temporalSkip = 1)

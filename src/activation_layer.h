@@ -6,26 +6,28 @@
 #ifndef TRANSFER_LAYER_H_
 #define TRANSFER_LAYER_H_
 
-#include "math_utils.h"
 #include "layer.h"
+#include "engine/tensor.h"
+#include "engine/tensor_ops.h"
 
 class SigmoidLayer : public Layer
 {
 public:
-	SigmoidLayer() :
-		Layer()
+	SigmoidLayer(vector<int> dim) :
+		Layer(dim)
 	{}
 
 	virtual ~SigmoidLayer() {};
 
-	void forward_impl(float& inValue, float& outValue)
+	void forward_impl(Tensor& inValue, Tensor& outValue)
 	{
 		outValue = lmn::sigmoid(inValue);
 	}
 
-	void backward_impl(float& outValue, float& outGradient, float& inValue, float& inGradient)
+	void backward_impl(Tensor& outValue, Tensor& outGradient, Tensor& inValue, Tensor& inGradient)
 	{
-		inGradient = lmn::sigmoidGradient(outValue) * outGradient;
+		inGradient = lmn::element_mult(
+				lmn::sigmoid_gradient(outValue), outGradient);
 	}
 
 	virtual explicit operator string() const
@@ -38,20 +40,21 @@ public:
 class CosineLayer : public Layer
 {
 public:
-	CosineLayer() :
-		Layer()
+	CosineLayer(vector<int> dim) :
+		Layer(dim)
 	{}
 
 	virtual ~CosineLayer() {};
 
-	void forward_impl(float& inValue, float& outValue)
+	void forward_impl(Tensor& inValue, Tensor& outValue)
 	{
 		outValue = lmn::cos(inValue);
 	}
 
-	void backward_impl(float& outValue, float& outGradient, float& inValue, float& inGradient)
+	void backward_impl(Tensor& outValue, Tensor& outGradient, Tensor& inValue, Tensor& inGradient)
 	{
-		inGradient = -lmn::sin(inValue) * outGradient;
+		inGradient = lmn::element_mult(
+				-lmn::sin(inValue), outGradient);
 	}
 
 	virtual explicit operator string() const
@@ -64,20 +67,21 @@ public:
 class TanhLayer : public Layer
 {
 public:
-	TanhLayer() :
-		Layer()
+	TanhLayer(vector<int> dim) :
+		Layer(dim)
 	{}
 
 	virtual ~TanhLayer() {};
 
-	void forward_impl(float& inValue, float& outValue)
+	void forward_impl(Tensor& inValue, Tensor& outValue)
 	{
 		outValue = lmn::tanh(inValue);
 	}
 
-	void backward_impl(float& outValue, float& outGradient, float& inValue, float& inGradient)
+	void backward_impl(Tensor& outValue, Tensor& outGradient, Tensor& inValue, Tensor& inGradient)
 	{
-		inGradient = lmn::tanhGradient(outValue) * outGradient;
+		inGradient = lmn::element_mult(
+				lmn::tanh_gradient(outValue), outGradient);
 	}
 
 	virtual explicit operator string() const
@@ -87,22 +91,23 @@ public:
 	}
 };
 
-class ScalorLayer : public Layer
+// FIXME ScalorType cannot be a constant, discard ScalorLayer
+/*class ScalorLayer : public Layer
 {
 public:
-	ScalorLayer(float _multiplier = 1.0f):
-		Layer(),
-		multiplier(_multiplier)
+	ScalorLayer(vector<int> dim, float multiplier_ = 1.0f):
+		Layer(dim),
+		multiplier(multiplier_)
 	{}
 
 	virtual ~ScalorLayer() {};
 
-	void forward_impl(float& inValue, float& outValue)
+	void forward_impl(Tensor& inValue, Tensor& outValue)
 	{
 		outValue = multiplier * inValue;
 	}
 
-	void backward_impl(float& outValue, float& outGradient, float& inValue, float& inGradient)
+	void backward_impl(Tensor& outValue, Tensor& outGradient, Tensor& inValue, Tensor& inGradient)
 	{
 		inGradient = multiplier * outGradient;
 	}
@@ -115,6 +120,6 @@ public:
 
 private:
 	float multiplier;
-};
+};*/
 
 #endif /* TRANSFER_LAYER_H_ */
