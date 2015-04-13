@@ -153,6 +153,15 @@ namespace lmn
 		return ans;
 	}
 
+	// 0.5f * sum( (x1 - x2)^2 )
+	Scalor square_loss(const Tensor& x1, const Tensor& x2)
+	{
+		Scalor ans(x1.engine);
+		x1.engine->upload(Instruction(
+				"square_loss", {x1.addr, x2.addr}, ans.addr));
+		return ans;
+	}
+
 	// TODO
 //	inline float softmax(float x) { return x; }
 } // end of lmn::

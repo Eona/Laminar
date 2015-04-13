@@ -147,6 +147,13 @@ inline void element_mult(vector<float *> reads, float *write, bool is_initialize
 	*write = (*reads[0]) * (*reads[1]);
 }
 
+inline void square_loss(vector<float *> reads, float *write, bool is_initialized)
+{
+	debug_msg("square_loss", is_initialized);
+	float diff = *reads[0] - *reads[1];
+	*write = 0.5f * diff * diff;
+}
+
 
 } // end of DummyImpl::
 } // end of lmn::
@@ -182,6 +189,7 @@ public:
 		register_opcode("sigmoid_gradient", Impl::sigmoid_gradient);
 		register_opcode("transpose", Impl::transpose);
 		register_opcode("element_mult", Impl::element_mult);
+		register_opcode("square_loss", Impl::square_loss);
 
 		register_opcode("destroy", Impl::destroy);
 	}
