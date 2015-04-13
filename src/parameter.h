@@ -18,7 +18,8 @@ public:
 
 	virtual ~ParamContainer() {};
 
-	void reset_values()
+	// TODO reset ParamContainer
+	/*void reset_values()
 	{
 		std::fill(paramValues.begin(), paramValues.end(), 0);
 	}
@@ -26,17 +27,11 @@ public:
 	void reset_gradients()
 	{
 		std::fill(paramGradients.begin(), paramGradients.end(), 0);
-	}
+	}*/
 
 	int size()
 	{
 		return paramValues.size();
-	}
-
-	void resize(int newSize)
-	{
-		paramValues.resize(newSize);
-		paramGradients.resize(newSize);
 	}
 
 	template<typename RandEngineT>
@@ -70,7 +65,8 @@ public:
 
 	/*********** DEBUG ONLY ***********/
 	// restore() calls must correspond one-by-one to perturb() calls
-	void gradient_check_perturb(int changeIdx, float eps)
+	// TODO gradient check
+/*	void gradient_check_perturb(int changeIdx, float eps)
 	{
 		lastChangedIdx = changeIdx;
 		oldValue = paramValues[changeIdx];
@@ -80,11 +76,11 @@ public:
 	void gradient_check_restore()
 	{
 		paramValues[lastChangedIdx] = oldValue;
-	}
+	}*/
 
 	/************************************/
-	vector<float> paramValues;
-	vector<float> paramGradients;
+	vector<Tensor::Ptr> paramValues;
+	vector<Tensor::Ptr> paramGradients;
 
 private:
 	int lastChangedIdx; float oldValue; // DEBUG ONLY

@@ -31,7 +31,7 @@ public:
 		this->_inFrame = inFrame;
 		this->_outFrame = outFrame;
 
-		forward_impl(inLayer->outValues[inFrame], outLayer->inValues[outFrame]);
+		forward_impl(*inLayer->outValues[inFrame], *outLayer->inValues[outFrame]);
 	}
 
 	/**
@@ -44,8 +44,8 @@ public:
 		this->_inFrame = inFrame;
 		this->_outFrame = outFrame;
 
-		forward_impl(vec_at(pcontainer->paramValues, inFrame),
-			outLayer->inValues[outFrame]);
+		forward_impl(*vec_at(pcontainer->paramValues, inFrame),
+			*outLayer->inValues[outFrame]);
 	}
 
 	virtual void backward(int outFrame = 0, int inFrame = 0)
@@ -56,10 +56,10 @@ public:
 
 		bool isHistorySaved = inLayer->is_full_gradient_history_saved();
 
-		backward_impl(outLayer->inGradients[
+		backward_impl(*outLayer->inGradients[
 					isHistorySaved ? outFrame : 0],
-				inLayer->outValues[inFrame],
-				inLayer->outGradients[
+				*inLayer->outValues[inFrame],
+				*inLayer->outGradients[
 					isHistorySaved ? inFrame : outFrame - inFrame]);
 	}
 
@@ -75,10 +75,10 @@ public:
 
 		bool isHistorySaved = inLayer->is_full_gradient_history_saved();
 
-		backward_impl(outLayer->inGradients[
+		backward_impl(*outLayer->inGradients[
 					isHistorySaved ? outFrame : 0],
-				vec_at(pcontainer->paramValues, inFrame),
-				vec_at(pcontainer->paramGradients, inFrame));
+				*vec_at(pcontainer->paramValues, inFrame),
+				*vec_at(pcontainer->paramGradients, inFrame));
 	}
 
 	virtual void forward_impl(
@@ -120,7 +120,12 @@ public:
 
 	Layer::Ptr inLayer;
 	Layer::Ptr outLayer;
+
 protected:
+	/**
+	 * Implements Component::initialize
+	 */
+	virtual void initialize_impl() { }
 
 	// Helper for backward/forward in/outLayer check
 	void check_frame_consistency(int inFrame, int outFrame)

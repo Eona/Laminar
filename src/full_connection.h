@@ -6,6 +6,8 @@
 #define FULL_CONNECTION_H_
 
 #include "connection.h"
+#include "engine/tensor.h"
+#include "engine/tensor_ops.h"
 
 class ConstantConnection : public Connection
 {
@@ -17,12 +19,12 @@ public:
 
 	virtual ~ConstantConnection() {};
 
-	virtual void forward_impl(float inlayerOutval, float& outlayerInval)
+	virtual void forward_impl(Tensor& inlayerOutval, Tensor& outlayerInval)
 	{
 		outlayerInval = inlayerOutval;
 	}
 
-	virtual void backward_impl(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
+	virtual void backward_impl(Tensor& outlayerIngrad, Tensor& inlayerOutval, Tensor& inlayerOutgrad)
 	{
 		inlayerOutgrad += outlayerIngrad;
 	}
@@ -42,21 +44,30 @@ public:
 		param(paramValues[0]),
 		gradient(paramGradients[0])
 	{
-		param = fakernd();
+//		param = fakernd();
+		assert_throw(inLayer->dim().size() == 1
+				&& outLayer->dim().size() == 1,
+			ComponentException("FullConnection requires the in/outLayers to be one-dimensional"));
+
+		auto dims = { outLayer->dim()[0], inLayer->dim()[0] };
+		param = Tensor::make(dims);
+		gradient = Tensor::make(dims);
+
+		lmn::fill_rand(*param);
 	}
 
 	virtual ~FullConnection() {};
 
-	virtual void forward_impl(float inlayerOutval, float& outlayerInval)
+	virtual void forward_impl(Tensor& inlayerOutval, Tensor& outlayerInval)
 	{
-		outlayerInval += param * inlayerOutval;
+		outlayerInval += *param * inlayerOutval;
 	}
 
-	virtual void backward_impl(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
+	virtual void backward_impl(Tensor& outlayerIngrad, Tensor& inlayerOutval, Tensor& inlayerOutgrad)
 	{
 		// should check if input module actually has gradient
-		inlayerOutgrad += lmn::transpose(param) * outlayerIngrad;
-		this->gradient += outlayerIngrad * lmn::transpose(inlayerOutval);
+		inlayerOutgrad += lmn::transpose(*param) * outlayerIngrad;
+		*gradient += outlayerIngrad * lmn::transpose(inlayerOutval);
 	}
 
 	virtual explicit operator string() const
@@ -71,14 +82,15 @@ public:
 
 	void reset()
 	{
-		ParamContainer::reset_gradients();
+		// TODO
+//		ParamContainer::reset_gradients();
 	}
 
 	// DUMMY
 	FakeRand& fakernd = FakeRand::instance_connection();
 
-	float& param; // aliases
-	float& gradient;
+	Tensor::Ptr& param; // aliases
+	Tensor::Ptr& gradient;
 };
 
 TYPEDEF_PTR(FullConnection);

@@ -162,6 +162,12 @@ namespace lmn
 		return ans;
 	}
 
+	void fill_rand(const Tensor& x)
+	{
+		x.engine->upload(Instruction(
+				"fill_rand", {}, x.addr));
+	}
+
 	// TODO
 //	inline float softmax(float x) { return x; }
 } // end of lmn::
