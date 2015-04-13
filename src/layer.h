@@ -78,7 +78,7 @@ public:
 
 		this->frame_ = inFrame;
 
-		forward_impl(inValues[frame_], outValues[frame_]);
+		forward_impl(*inValues[frame_], *outValues[frame_]);
 	}
 
 	virtual void backward(int outFrame = 0, int inFrame = 0)
@@ -88,10 +88,10 @@ public:
 		this->frame_ = inFrame;
 
 		int relativeFrame = is_full_gradient_history_saved() ? frame_ : 0;
-		backward_impl(outValues[frame_],
-				outGradients[relativeFrame],
-				inValues[frame_],
-				inGradients[relativeFrame]);
+		backward_impl(*outValues[frame_],
+				*outGradients[relativeFrame],
+				*inValues[frame_],
+				*inGradients[relativeFrame]);
 	}
 
 	// TODO set all to zero matrices for more convenient gradient check
@@ -168,8 +168,8 @@ protected:
 	{
 		for (int t = 0; t < historyLength; ++t)
 		{
-			inValues.push_back(Tensor(engine));
-			outValues.push_back(Tensor(engine));
+			inValues.push_back(Tensor::make(engine));
+			outValues.push_back(Tensor::make(engine));
 		}
 
 		int gradientHistoryLength =
@@ -177,8 +177,8 @@ protected:
 
 		for (int t = 0; t < gradientHistoryLength; ++t)
 		{
-			inGradients.push_back(Tensor(engine));
-			outGradients.push_back(Tensor(engine));
+			inGradients.push_back(Tensor::make(engine));
+			outGradients.push_back(Tensor::make(engine));
 		}
 	}
 
@@ -195,11 +195,11 @@ protected:
 
 	// Shift the gradient window
 	// FIXME memory is not being saved, still alloc a lot of memory
-	static void shift_back_vector(vector<Tensor>& grad)
+	static void shift_back_vector(vector<Tensor::Ptr>& grad)
 	{
 //		grad.insert(grad.begin(), 0);
 //		grad.erase(grad.end() - 1);
-		grad.push_back(Tensor(engine));
+		grad.push_back(Tensor::make(engine));
 		grad.erase(grad.begin());
 	}
 
@@ -222,7 +222,7 @@ private:
 	int frame_ = 0;
 
 public: // FIXME no public!
-	vector<Tensor> inValues,
+	vector<Tensor::Ptr> inValues,
 				inGradients,
 				outValues,
 				outGradients;

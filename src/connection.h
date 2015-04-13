@@ -7,10 +7,10 @@
 
 #include "global_utils.h"
 #include "rand_utils.h"
-#include "math_utils.h"
 #include "layer.h"
 #include "component.h"
 #include "parameter.h"
+#include "engine/tensor.h"
 
 /**
  * Contains the actual parameters
@@ -81,9 +81,11 @@ public:
 				vec_at(pcontainer->paramGradients, inFrame));
 	}
 
-	virtual void forward_impl(float inlayerOutval, float& outlayerInval) = 0;
+	virtual void forward_impl(
+			Tensor& inlayerOutval, Tensor& outlayerInval) = 0;
 
-	virtual void backward_impl(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad) = 0;
+	virtual void backward_impl(
+			Tensor& outlayerIngrad, Tensor& inlayerOutval, Tensor& inlayerOutgrad) = 0;
 
 	virtual void reset() {}
 

@@ -31,9 +31,9 @@ public:
 	}
 
 	// FIXME no public!
-	vector<Tensor> targetValue;
+	vector<Tensor::Ptr> targetValue;
 
-	Scalor totalLoss;
+	Scalor::Ptr totalLoss;
 
 protected:
 	/**
@@ -43,12 +43,11 @@ protected:
 	{
 		Layer::initialize_impl();
 
-		totalLoss.register_engine(this->engine);
+		totalLoss = Scalor::make(engine);
 
 		for (int t = 0; t < historyLength; ++t)
 		{
-			targetValue.push_back(
-					this->create_tensor());
+			targetValue.push_back(Tensor::make(engine));
 		}
 	}
 
