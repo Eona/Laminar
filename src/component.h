@@ -67,17 +67,6 @@ protected:
 	virtual void initialize_impl() = 0;
 
 	virtual void reset_impl() = 0;
-
-	/**
-	 * Utility: construct a Tensor, null created or with dim
-	 */
-	Tensor create_tensor(vector<int> dim = {})
-	{
-		if (dim.empty())
-			return Tensor(engine);
-		else
-			return Tensor(engine, dim);
-	}
 };
 
 TYPEDEF_PTR(Component);
