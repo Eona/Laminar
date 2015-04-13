@@ -145,6 +145,14 @@ namespace lmn
 
 	GEN_MATH_OPS(cos);
 
+	Tensor element_mult(const Tensor& x1, const Tensor& x2)
+	{
+		Tensor ans(x1.engine);
+		x1.engine->upload(Instruction(
+				"element_mult", {x1.addr, x2.addr}, ans.addr));
+		return ans;
+	}
+
 	// TODO
 //	inline float softmax(float x) { return x; }
 } // end of lmn::
