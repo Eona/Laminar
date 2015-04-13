@@ -39,11 +39,16 @@ void create(float* write, vector<int> dim)
 	*write = 0;
 }
 
+void debug_msg(string msg, bool is_initialized)
+{
+	DEBUG_MSG(("DummyImpl::" + msg + " ->init=") << std::boolalpha << is_initialized);
+}
+
 template<int TensorT>
 void add(vector<float*> reads, float* write, bool is_initialized)
 {
 	string op = tensor_op<TensorT>::operand;
-	DEBUG_MSG(("DummyImpl::" + op + "+" + op + " ->init=") << std::boolalpha << is_initialized);
+	debug_msg(op + "+" + op, is_initialized);
 	*write = *reads[0] + *reads[1];
 }
 
@@ -51,7 +56,7 @@ template<int TensorT>
 void sub(vector<float*> reads, float* write, bool is_initialized)
 {
 	string op = tensor_op<TensorT>::operand;
-	DEBUG_MSG(("DummyImpl::" + op + "-" + op + " ->init=") << std::boolalpha << is_initialized);
+	debug_msg(op + "-" + op, is_initialized);
 	*write = *reads[0] - *reads[1];
 }
 
@@ -59,7 +64,7 @@ template<int TensorT>
 void negate(vector<float*> reads, float* write, bool is_initialized)
 {
 	string op = tensor_op<TensorT>::operand;
-	DEBUG_MSG((string("DummyImpl::") + "-" + op + " ->init=") << std::boolalpha << is_initialized);
+	debug_msg("-" + op, is_initialized);
 	*write = - (*reads[0]);
 }
 
@@ -68,7 +73,7 @@ void mult(vector<float*> reads, float* write, bool is_initialized)
 {
 	string op1 = tensor_op<TensorT1>::operand;
 	string op2 = tensor_op<TensorT2>::operand;
-	DEBUG_MSG(("DummyImpl::" + op1 + "*" + op2 + " ->init=") << std::boolalpha << is_initialized);
+	debug_msg(op1 + "*" + op2, is_initialized);
 	*write = (*reads[0]) * (*reads[1]);
 }
 
@@ -76,69 +81,69 @@ template<int TensorT>
 void assign(vector<float*> reads, float* write, bool is_initialized)
 {
 	string op = tensor_op<TensorT>::operand;
-	DEBUG_MSG(("DummyImpl::" + op + "=" + op + " ->init=") << std::boolalpha << is_initialized);
+	debug_msg(op + "=" + op, is_initialized);
 	*write = *reads[0];
 }
 
 inline void destroy(vector<float*> reads, float* write, bool is_initialized)
 {
-	DEBUG_MSG("DummyImpl::destroy ->init=" << std::boolalpha << is_initialized);
+	debug_msg("destroy", is_initialized);
 }
 
 
 // standalone single-float non-linear functions
 inline void transpose(vector<float *> reads, float *write, bool is_initialized)
 {
-	DEBUG_MSG((string("DummyImpl::") + "transpose ->init=") << std::boolalpha << is_initialized);
+	debug_msg("transpose", is_initialized);
 	float r = *reads[0];
 	*write = *reads[0];
 }
 
 inline void sigmoid(vector<float *> reads, float *write, bool is_initialized)
 {
-	DEBUG_MSG((string("DummyImpl::") + "sigmoid ->init=") << std::boolalpha << is_initialized);
+	debug_msg("sigmoid", is_initialized);
 	float r = *reads[0];
 	*write = 1.f / (1.f + exp(-r));
 }
 
 inline void sigmoid_gradient(vector<float *> reads, float *write, bool is_initialized)
 {
-	DEBUG_MSG((string("DummyImpl::") + "sigmoid_gradient ->init=") << std::boolalpha << is_initialized);
+	debug_msg("sigmoid_gradient", is_initialized);
 	float r = *reads[0];
 	*write = r * (1.f - r);
 }
 
 inline void sin(vector<float *> reads, float *write, bool is_initialized)
 {
-	DEBUG_MSG((string("DummyImpl::") + "sin ->init=") << std::boolalpha << is_initialized);
+	debug_msg("sin", is_initialized);
 	float r = *reads[0];
 	*write = std::sin(r);
 }
 
 inline void cos(vector<float *> reads, float *write, bool is_initialized)
 {
-	DEBUG_MSG((string("DummyImpl::") + "cos ->init=") << std::boolalpha << is_initialized);
+	debug_msg("cos", is_initialized);
 	float r = *reads[0];
 	*write = std::cos(r);
 }
 
 inline void tanh(vector<float *> reads, float *write, bool is_initialized)
 {
-	DEBUG_MSG((string("DummyImpl::") + "tanh ->init=") << std::boolalpha << is_initialized);
+	debug_msg("tanh", is_initialized);
 	float r = *reads[0];
 	*write = std::tanh(r);
 }
 
 inline void tanh_gradient(vector<float *> reads, float *write, bool is_initialized)
 {
-	DEBUG_MSG((string("DummyImpl::") + "tanh_gradient ->init=") << std::boolalpha << is_initialized);
+	debug_msg("tanh_gradient", is_initialized);
 	float r = *reads[0];
 	*write = 1.f - r * r;
 }
 
 inline void element_mult(vector<float *> reads, float *write, bool is_initialized)
 {
-	DEBUG_MSG((string("DummyImpl::") + "element_mult ->init=") << std::boolalpha << is_initialized);
+	debug_msg("element_mult", is_initialized);
 	*write = (*reads[0]) * (*reads[1]);
 }
 
