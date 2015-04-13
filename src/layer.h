@@ -168,8 +168,10 @@ protected:
 	{
 		for (int t = 0; t < historyLength; ++t)
 		{
-			inValues.push_back(Tensor(engine));
-			outValues.push_back(Tensor(engine));
+			inValues.push_back(
+					this->create_tensor());
+			outValues.push_back(
+					this->create_tensor());
 		}
 
 		int gradientHistoryLength =
@@ -177,8 +179,10 @@ protected:
 
 		for (int t = 0; t < gradientHistoryLength; ++t)
 		{
-			inGradients.push_back(Tensor(engine));
-			outGradients.push_back(Tensor(engine));
+			inGradients.push_back(
+					this->create_tensor());
+			outGradients.push_back(
+					this->create_tensor());
 		}
 	}
 
@@ -199,7 +203,7 @@ protected:
 	{
 //		grad.insert(grad.begin(), 0);
 //		grad.erase(grad.end() - 1);
-		grad.push_back(Tensor(engine));
+		grad.push_back(this->create_tensor());
 		grad.erase(grad.begin());
 	}
 
