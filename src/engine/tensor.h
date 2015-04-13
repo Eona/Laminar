@@ -59,6 +59,11 @@ public:
 		return *this;
 	}*/
 
+	void register_engine(EngineBase::Ptr engine)
+	{
+		this->engine = engine;
+	}
+
 	EngineBase::Ptr engine;
 	// memory address in the engine, if negative -> destroyed
 	int addr;
@@ -67,6 +72,9 @@ public:
 class Scalor : public TensorBase
 {
 public:
+	// If default constructed, must call register_engine() later
+	Scalor() {}
+
 	Scalor(EngineBase::Ptr _engine) :
 		TensorBase(_engine)
 	{
