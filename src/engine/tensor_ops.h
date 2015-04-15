@@ -32,7 +32,7 @@ template<typename TensorT1, typename TensorT2>
 typename std::enable_if<
 	is_both_tensor_bases<TensorT1, TensorT2>::value,
 	TensorT1>::type
-operator+(const TensorT1& x1, const TensorT2& x2)
+operator+(TensorT1& x1, TensorT2& x2)
 {
 	if (!std::is_same<TensorT1, TensorT2>::value)
 		throw TensorException(string("operator+ type mismatch: ")
@@ -55,7 +55,7 @@ template<typename TensorT1, typename TensorT2>
 typename std::enable_if<
 	is_both_tensor_bases<TensorT1, TensorT2>::value,
 	TensorT1>::type
-operator-(const TensorT1& x1, const TensorT2& x2)
+operator-(TensorT1& x1, TensorT2& x2)
 {
 	if (!std::is_same<TensorT1, TensorT2>::value)
 		throw TensorException(string("operator- type mismatch: ")
@@ -78,7 +78,7 @@ template<typename TensorT>
 typename std::enable_if<
 	is_tensor_base<TensorT>::value,
 	TensorT>::type
-operator-(const TensorT& x)
+operator-(TensorT& x)
 {
 	TensorT ans(x.engine);
 	string operand = tensor_class_info<TensorT>::operand;
@@ -102,7 +102,7 @@ template<typename TensorT1, typename TensorT2>
 typename std::enable_if<
 	is_both_tensor_bases<TensorT1, TensorT2>::value,
 	typename select_multiply_return<TensorT1, TensorT2>::type>::type
-operator*(const TensorT1& x1, const TensorT2& x2)
+operator*(TensorT1& x1, TensorT2& x2)
 {
 	using AnsType = typename select_multiply_return<TensorT1, TensorT2>::type;
 	AnsType ans(x1.engine);
@@ -119,13 +119,13 @@ operator*(const TensorT1& x1, const TensorT2& x2)
  */
 namespace lmn
 {
-typedef std::function<Tensor(const Tensor&)> TransferFunction;
+typedef std::function<Tensor(Tensor&)> TransferFunction;
 
 // Macro generate single tensor element-wise math operation
 #define GEN_MATH_OPS(fname) \
 	template<typename TensorT> \
 	typename std::enable_if<is_tensor_base<TensorT>::value, TensorT>::type \
-	fname(const TensorT& x) \
+	fname(TensorT& x) \
 	{ \
 		Tensor ans(x.engine); \
 		x.engine->upload(Instruction(STRINGFY(fname), {x.addr}, ans.addr)); \
@@ -146,7 +146,7 @@ typedef std::function<Tensor(const Tensor&)> TransferFunction;
 
 	GEN_MATH_OPS(cos);
 
-	Tensor element_mult(const Tensor& x1, const Tensor& x2)
+	Tensor element_mult(Tensor& x1, Tensor& x2)
 	{
 		Tensor ans(x1.engine);
 		x1.engine->upload(Instruction(
@@ -155,7 +155,7 @@ typedef std::function<Tensor(const Tensor&)> TransferFunction;
 	}
 
 	// 0.5f * sum( (x1 - x2)^2 )
-	Scalor square_loss(const Tensor& x1, const Tensor& x2)
+	Scalor square_loss(Tensor& x1, Tensor& x2)
 	{
 		Scalor ans(x1.engine);
 		x1.engine->upload(Instruction(
@@ -163,7 +163,7 @@ typedef std::function<Tensor(const Tensor&)> TransferFunction;
 		return ans;
 	}
 
-	void fill_rand(const Tensor& x)
+	void fill_rand(Tensor& x)
 	{
 		x.engine->upload(Instruction(
 				"fill_rand", {}, x.addr));
