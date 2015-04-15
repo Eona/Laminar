@@ -350,6 +350,14 @@ public:
 		virtual CommandFuncType adapt_context(OpContextBase::Ptr context) = 0;
 
 		TYPEDEF_PTR(Command);
+
+		template<typename CommandT, typename ...ArgT>
+		static Command::Ptr make(ArgT&& ... args)
+		{
+			return static_cast<Command::Ptr>(
+					std::make_shared<CommandT>(
+							std::forward<ArgT>(args) ...));
+		}
 	};
 
 	/**
@@ -391,7 +399,8 @@ public:
 
 		CommandFuncType adapt_context(OpContextBase::Ptr context)
 		{
-			return adapt_context_helper(context, typename unpack_gens<sizeof...(ContextArgT)>::type());
+			return adapt_context_helper(context,
+					typename unpack_gens<sizeof...(ContextArgT)>::type());
 		}
 
 	private:
@@ -430,10 +439,21 @@ public:
 		this->assembly_create = createFunc;
 	}
 
-	// Call in Engine ctor
 	void register_opcode(Opcode op, CommandFuncType cmd)
 	{
-		this->command_map[op] = cmd;
+		this->command_map[op] = Command::make<NormalCommand>(cmd);
+	}
+
+	/**
+	 * Register opcode with context
+	 * @param op
+	 * @param cmd
+	 */
+	template<typename ... ContextArgT>
+	void register_opcode_context(Opcode op,
+			typename ContextCommand<ContextArgT...>::ContextFuncType cmd)
+	{
+		this->command_map[op] = Command::make<ContextCommand<ContextArgT...>>(cmd);
 	}
 
 	/**************************************
@@ -475,7 +495,7 @@ public:
 					throw EngineException(string("Engine compilation failure: ") +
 							"Opcode \"" + string(instr.opcode) + "\" not registered.");
 
-				CommandFuncType command = this->command_map[instr.opcode];
+				CommandFuncType command = this->command_map[instr.opcode]->adapt_context(instr.context);
 				// value capture by '=' includes 'this'
 				assembly.push_back([=]() {
 					command(reads, write, this->memoryPool.is_initialized(writeAddr));
@@ -493,13 +513,15 @@ public:
 			assembly();
 	}
 
+//	struct Command;
+//	TYPEDEF_PTR_EXTERNAL(Command);
 protected:
 	MemoryPool<DataT> memoryPool;
 
 	/**
 	 * Add your "assembly" function addresses for each Opcode
 	 */
-	std::unordered_map<Opcode, CommandFuncType> command_map;
+	std::unordered_map<Opcode, Command::Ptr> command_map;
 	CreateFuncType assembly_create;
 };
 
