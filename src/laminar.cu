@@ -30,7 +30,34 @@ int main(int argc, char **argv)
 {
 	auto dummyEng = EngineBase::make<DummyEngine>();
 
-	Tensor t1(dummyEng, { 2, 3 });
+	ForwardNetwork net(dummyEng);
+	auto inTensor = Tensor::make(dummyEng);
+	inTensor->engine->upload(Instruction("debug_fill", {}, inTensor->addr));
+
+	auto targetTensor = Tensor::make(dummyEng);
+	targetTensor->engine->upload(Instruction("debug_fill", {}, targetTensor->addr));
+
+	net.set_input(inTensor);
+	net.set_target(targetTensor);
+
+	auto l1 = Layer::make<ConstantLayer>(1);
+	auto l2 = Layer::make<SigmoidLayer>(5);
+	auto l3 = Layer::make<SquareLossLayer>(1);
+
+	net.add_layer(l1);
+	net.new_connection<FullConnection>(l1, l2);
+	net.add_layer(l2);
+	net.new_connection<FullConnection>(l2, l3);
+	net.add_layer(l3);
+
+	net.initialize();
+
+	net.forward_prop();
+
+	dummyEng->eliminate_temporary();
+	dummyEng->print_instructions();
+
+	/*Tensor t1(dummyEng, { 2, 3 });
 	Tensor t2(dummyEng, {5, 7});
 	Tensor t3 = t1 + t2;
 	Scalor s1(dummyEng);
@@ -59,7 +86,7 @@ int main(int argc, char **argv)
 		f();
 	DEBUG_TITLE("third exec");
 	for (auto f : instr)
-		f();
+		f();*/
 
 
 /*	dummyEng->print_instructions();

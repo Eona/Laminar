@@ -123,9 +123,15 @@ public:
 
 protected:
 	/**
+	 * TODO anything to init for connections?
 	 * Implements Component::initialize
 	 */
 	virtual void initialize_impl() { }
+
+	/**
+	 * FIXME reset
+	 */
+	virtual void reset_impl() { }
 
 	// Helper for backward/forward in/outLayer check
 	void check_frame_consistency(int inFrame, int outFrame)

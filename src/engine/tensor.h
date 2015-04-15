@@ -145,7 +145,7 @@ public:
 		TensorBase(_engine)
 	{
 		engine->set_dim(this->addr, dim);
-		engine->upload(Instruction( "create", {}, addr));
+		engine->upload(Instruction("create", {}, addr));
 	}
 
 	virtual ~Tensor() {}
@@ -208,7 +208,7 @@ public:
 	static Tensor::Ptr make(ArgT&& ... args)
 	{
 		return std::make_shared<Tensor>(
-						std::forward<ArgT>(args) ...);
+                    std::forward<ArgT>(args) ...);
 	}
 };
 

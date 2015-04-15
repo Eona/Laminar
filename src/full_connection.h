@@ -48,12 +48,6 @@ public:
 		assert_throw(inLayer->dim().size() == 1
 				&& outLayer->dim().size() == 1,
 			ComponentException("FullConnection requires the in/outLayers to be one-dimensional"));
-
-		auto dims = { outLayer->dim()[0], inLayer->dim()[0] };
-		param = Tensor::make(engine, dims);
-		gradient = Tensor::make(engine, dims);
-
-		lmn::fill_rand(*param);
 	}
 
 	virtual ~FullConnection() {};
@@ -91,6 +85,15 @@ public:
 
 	Tensor::Ptr& param; // aliases
 	Tensor::Ptr& gradient;
+
+protected:
+	virtual void initialize_impl()
+	{
+		auto dims = { outLayer->dim()[0], inLayer->dim()[0] };
+		param = Tensor::make(engine, dims);
+		gradient = Tensor::make(engine, dims);
+		lmn::fill_rand(*param);
+	}
 };
 
 TYPEDEF_PTR(FullConnection);

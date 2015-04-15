@@ -155,6 +155,15 @@ inline void square_loss(vector<float *> reads, float *write, bool is_initialized
 }
 
 
+/*********** DEBUG ONLY ***********/
+inline void debug_fill(vector<float *> reads, float *write, bool is_initialized)
+{
+	debug_msg("debug_fill", is_initialized);
+	*write = 0.66337;
+}
+
+
+
 } // end of DummyImpl::
 } // end of lmn::
 
@@ -192,6 +201,9 @@ public:
 		register_opcode("square_loss", Impl::square_loss);
 
 		register_opcode("destroy", Impl::destroy);
+
+		/*********** DEBUG ONLY ***********/
+		register_opcode("debug_fill", Impl::debug_fill);
 	}
 };
 
