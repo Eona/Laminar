@@ -21,6 +21,10 @@ public:
 		maxTemporalSkip(0)
 	{ }
 
+	Layer(int dim) :
+		Layer(vector<int>{ dim })
+	{ }
+
 	virtual ~Layer() {};
 
 	vector<int> dim()
@@ -248,6 +252,10 @@ public:
 	ConstantLayer(vector<int> dim):
 		Layer(dim)
 	{}
+
+	ConstantLayer(int dim) :
+		Layer(dim)
+	{ }
 
 	virtual ~ConstantLayer() {};
 

@@ -17,6 +17,10 @@ public:
 		Layer(dim)
 	{ }
 
+	LossLayer(int dim) :
+		Layer(dim)
+	{ }
+
 	virtual ~LossLayer() {};
 
 	virtual Scalor total_loss()
@@ -61,6 +65,10 @@ public:
 	SquareLossLayer(vector<int> dim) :
 		LossLayer(dim)
 	{}
+
+	SquareLossLayer(int dim) :
+		LossLayer(dim)
+	{ }
 
 	virtual ~SquareLossLayer() {};
 

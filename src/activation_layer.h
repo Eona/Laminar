@@ -17,6 +17,10 @@ public:
 		Layer(dim)
 	{}
 
+	SigmoidLayer(int dim) :
+		Layer(dim)
+	{ }
+
 	virtual ~SigmoidLayer() {};
 
 	void forward_impl(Tensor& inValue, Tensor& outValue)
@@ -44,6 +48,10 @@ public:
 		Layer(dim)
 	{}
 
+	CosineLayer(int dim) :
+		Layer(dim)
+	{ }
+
 	virtual ~CosineLayer() {};
 
 	void forward_impl(Tensor& inValue, Tensor& outValue)
@@ -70,6 +78,10 @@ public:
 	TanhLayer(vector<int> dim) :
 		Layer(dim)
 	{}
+
+	TanhLayer(int dim) :
+		Layer(dim)
+	{ }
 
 	virtual ~TanhLayer() {};
 
@@ -99,6 +111,10 @@ public:
 		Layer(dim),
 		multiplier(multiplier_)
 	{}
+
+	ScalorLayer(int dim) :
+		Layer(dim)
+	{ }
 
 	virtual ~ScalorLayer() {};
 
