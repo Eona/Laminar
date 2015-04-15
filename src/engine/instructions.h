@@ -61,7 +61,8 @@ struct OpContext;
 struct OpContextBase
 {
 	virtual ~OpContextBase() {}
-	typedef shared_ptr<OpContextBase> Ptr;
+
+	TYPEDEF_PTR(OpContextBase);
 
 	/**
 	 * Down cast to a specific context

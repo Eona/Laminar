@@ -146,7 +146,7 @@ public:
 	}
 
 	/************************************/
-	typedef shared_ptr<Layer> Ptr;
+	TYPEDEF_PTR(Layer);
 
 	template<typename LayerT, typename ...ArgT>
 	static Layer::Ptr make(ArgT&& ... args)
@@ -242,7 +242,7 @@ public:
 /**
  * Both Layer::Ptr and LayerPtr works
  */
-TYPEDEF_PTR(Layer);
+TYPEDEF_PTR_EXTERNAL(Layer);
 
 
 // Special layer that has inValue=outValue, inGradient=outGradient aliases

@@ -112,9 +112,19 @@ inline bool starts_with(string str, string prefix)
 /**************************************
 ************ Misc **************
 **************************************/
-// Define shared_ptr<Xclass> as XclassPtr
+/**
+ * Define shared_ptr<Xclass> as ::Ptr
+ * Use inside a class definition
+ */
 #define TYPEDEF_PTR(Xclass) \
-	typedef shared_ptr<Xclass> Xclass##Ptr
+	typedef std::shared_ptr<Xclass> Ptr
+
+/**
+ * Define shared_ptr<Xclass> as XclassPtr
+ * Use outside a class definition
+ */
+#define TYPEDEF_PTR_EXTERNAL(Xclass) \
+	typedef std::shared_ptr<Xclass> Xclass##Ptr
 
 // Emulate python style subscript
 template<typename T>

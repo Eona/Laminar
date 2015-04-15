@@ -283,7 +283,7 @@ protected:
 	vector<TensorNode::Ptr> createdNodes;
 };
 
-TYPEDEF_PTR(EngineBase);
+TYPEDEF_PTR_EXTERNAL(EngineBase);
 
 
 // Forward decl
@@ -340,7 +340,16 @@ public:
 	struct Command
 	{
 		virtual ~Command() {}
+
+		/**
+		 * Adapt the registered command into the context
+		 * i.e. unpack the context tuple as extra arguments to the command function.
+		 * @param context
+		 * @return
+		 */
 		virtual CommandFuncType adapt_context(OpContextBase::Ptr context) = 0;
+
+		TYPEDEF_PTR(Command);
 	};
 
 	/**

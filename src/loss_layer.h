@@ -57,7 +57,7 @@ protected:
 
 };
 
-TYPEDEF_PTR(LossLayer);
+TYPEDEF_PTR_EXTERNAL(LossLayer);
 
 class SquareLossLayer : public LossLayer
 {

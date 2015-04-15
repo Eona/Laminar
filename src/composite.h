@@ -49,7 +49,7 @@ public:
 	}
 
 	/************************************/
-	typedef shared_ptr<Composite<NetworkT> > Ptr;
+	TYPEDEF_PTR(Composite<NetworkT>);
 
 	/**
 	 * Initialize outLayer and other layers

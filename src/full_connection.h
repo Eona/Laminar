@@ -96,6 +96,6 @@ protected:
 	}
 };
 
-TYPEDEF_PTR(FullConnection);
+TYPEDEF_PTR_EXTERNAL(FullConnection);
 
 #endif /* FULL_CONNECTION_H_ */

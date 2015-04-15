@@ -59,7 +59,7 @@ public:
 		return *this;
 	}*/
 
-	typedef std::shared_ptr<TensorBase> Ptr;
+	TYPEDEF_PTR(TensorBase);
 
 	EngineBase::Ptr engine;
 	// memory address in the engine, if negative -> destroyed
@@ -124,7 +124,7 @@ public:
 	}
 
 	/************************************/
-	typedef shared_ptr<Scalor> Ptr;
+	TYPEDEF_PTR(Scalor);
 
 	template<typename ...ArgT>
 	static Scalor::Ptr make(ArgT&& ... args)
@@ -204,7 +204,7 @@ public:
 		return *this;
 	}
 
-	typedef shared_ptr<Tensor> Ptr;
+	TYPEDEF_PTR(Tensor);
 
 	template<typename ...ArgT>
 	static Tensor::Ptr make(ArgT&& ... args)

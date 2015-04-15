@@ -43,7 +43,7 @@ public:
 	}
 
 	/************************************/
-	typedef shared_ptr<ParamContainer> Ptr;
+	TYPEDEF_PTR(ParamContainer);
 
 	template<typename ParamContainerT>
 	static ParamContainer::Ptr upcast(shared_ptr<ParamContainerT> compon)
@@ -87,6 +87,6 @@ private:
 	int lastChangedIdx; float oldValue; // DEBUG ONLY
 };
 
-TYPEDEF_PTR(ParamContainer);
+TYPEDEF_PTR_EXTERNAL(ParamContainer);
 
 #endif /* PARAMETER_H_ */

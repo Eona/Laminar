@@ -96,7 +96,7 @@ public:
 	int out_frame() { return this->outFrame_; }
 
 	/************************************/
-	typedef shared_ptr<Connection> Ptr;
+	TYPEDEF_PTR(Connection);
 
 	/**
 	 * Make a polymorphic shared pointer
@@ -158,6 +158,6 @@ private:
 	int inFrame_ = 0, outFrame_ = 0;
 };
 
-TYPEDEF_PTR(Connection);
+TYPEDEF_PTR_EXTERNAL(Connection);
 
 #endif /* CONNECTION_H_ */

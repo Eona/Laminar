@@ -46,7 +46,7 @@ public:
 	virtual explicit operator string() const = 0;
 
 	/************************************/
-	typedef shared_ptr<Component> Ptr;
+	TYPEDEF_PTR(Component);
 
 	template<typename ComponentT>
 	static Component::Ptr upcast(shared_ptr<ComponentT> compon)
@@ -69,7 +69,7 @@ protected:
 	virtual void reset_impl() = 0;
 };
 
-TYPEDEF_PTR(Component);
+TYPEDEF_PTR_EXTERNAL(Component);
 
 template<typename T>
 typename enable_if<is_base_of<Component, T>::value, ostream>::type&
