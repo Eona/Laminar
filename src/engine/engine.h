@@ -326,11 +326,94 @@ public:
 	DataT& read_memory(TensorBasePtr tensorPtr);
 	DataT& read_memory(const TensorBase& tensorPtr);
 
-	/*********** Register "assembly" implementation ***********/
+	/**************************************
+	******* Register "assembly" commands ******
+	**************************************/
 	// (readAddrs, writeAddr, is_initialized)
-	typedef std::function<void(vector<DataT*>, DataT*, bool)> OpcodeFuncType;
+	typedef std::function<void(vector<DataT*>, DataT*, bool)> CommandFuncType;
 	// specifically for Opcode create_dim(writeAddr, dim)
 	typedef std::function<void(DataT*, vector<int>)> CreateFuncType;
+
+	/**
+	 * Base of NormalCommand and ContextCommand
+	 */
+	struct Command
+	{
+		virtual ~Command() {}
+		virtual CommandFuncType adapt_context(OpContextBase::Ptr context) = 0;
+	};
+
+	/**
+	 * Without any context, normal commands are functions with signature CommandFuncType
+	 */
+	struct NormalCommand : public Command
+	{
+		NormalCommand(CommandFuncType cmd_) : cmd(cmd_)
+		{ }
+
+		CommandFuncType adapt_context(OpContextBase::Ptr context)
+		{
+			assert_throw(!context,
+				EngineException("OpContext in Instruction is not null: \n"
+						"this command is not a NormalCommand, should be registered as ContextCommand instead."));
+			return cmd;
+		}
+
+	private:
+		CommandFuncType cmd; // Engine<DataT>::CommandFuncType
+	};
+
+	/**
+	 * Context commands are functors with signature
+	 * void(vector<DataT*>, DataT*, bool, ExtraContextArgT1, ExtraContextArgT2 ...)
+	 */
+	// Any type in <...ContextArgT> are extra "environmental context" parameters
+	template <typename... ContextArgT>
+	struct ContextCommand : public Command
+	{
+		static_assert(sizeof...(ContextArgT) > 0,
+				"\n\n\n\nLaminar static assert:\nContextCommand must have at least 1 template ArgType\n\n\n\n\n");
+
+		typedef std::function<void(vector<DataT*>, DataT*, bool, ContextArgT...)> ContextFuncType;
+
+		ContextCommand(ContextFuncType contextCmd_):
+			contextCmd(contextCmd_)
+		{}
+
+		CommandFuncType adapt_context(OpContextBase::Ptr context)
+		{
+			return adapt_context_helper(context, typename unpack_gens<sizeof...(ContextArgT)>::type());
+		}
+
+	private:
+		ContextFuncType contextCmd;
+
+		// helper: unroll std::tuple parameter pack
+		template<int ...S>
+		CommandFuncType adapt_context_helper(OpContextBase::Ptr contextBase, unpack_seq<S...>)
+		{
+			// This means we don't have any context extra variable, just return OpcodeFuncType
+			assert_throw(bool(contextBase.get()),
+					EngineException("This command is registered as a ContextCommand\n"
+							"the Adapter in Instruction must be specified (now it's nullptr)"));
+
+			auto context = OpContextBase::cast<ContextArgT...>(contextBase);
+
+			assert_throw(bool(context.get()),
+					EngineException("Adapter fails to supply "
+							"the correct number/types of environmental context extra parameters"));
+
+			auto contextArgPack = context->get_context_arg_pack();
+
+			// Do nothing, simply suppress g++ unused_warning message
+			std::get<0>(contextArgPack);
+
+			return [=](vector<DataT*> reads, DataT *write, bool is_initialized)
+			{
+				contextCmd(reads, write, is_initialized, std::get<S>(contextArgPack) ...);
+			};
+		}
+	};
 
 	// Call in Engine ctor
 	void register_create(CreateFuncType createFunc)
@@ -339,12 +422,14 @@ public:
 	}
 
 	// Call in Engine ctor
-	void register_opcode(Opcode op, OpcodeFuncType opFunc)
+	void register_opcode(Opcode op, CommandFuncType cmd)
 	{
-		this->assembly_map[op] = opFunc;
+		this->command_map[op] = cmd;
 	}
 
-	/*********** Compilation and execution ***********/
+	/**************************************
+	********** Compile & execute ***********
+	**************************************/
 	vector<std::function<void()>> compile()
 	{
 		vector<std::function<void()>> assembly;
@@ -377,14 +462,14 @@ public:
 			}
 			else
 			{
-				if (!key_exists(this->assembly_map, instr.opcode))
+				if (!key_exists(this->command_map, instr.opcode))
 					throw EngineException(string("Engine compilation failure: ") +
 							"Opcode \"" + string(instr.opcode) + "\" not registered.");
 
-				OpcodeFuncType assembly_op = this->assembly_map[instr.opcode];
+				CommandFuncType command = this->command_map[instr.opcode];
 				// value capture by '=' includes 'this'
 				assembly.push_back([=]() {
-					assembly_op(reads, write, this->memoryPool.is_initialized(writeAddr));
+					command(reads, write, this->memoryPool.is_initialized(writeAddr));
 					memoryPool.set_initialized(writeAddr);
 				});
 			}
@@ -405,7 +490,7 @@ protected:
 	/**
 	 * Add your "assembly" function addresses for each Opcode
 	 */
-	std::unordered_map<Opcode, OpcodeFuncType> assembly_map;
+	std::unordered_map<Opcode, CommandFuncType> command_map;
 	CreateFuncType assembly_create;
 };
 
