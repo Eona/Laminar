@@ -68,8 +68,11 @@ int main(int argc, char **argv)
 			std::tuple<int, double, string>(a,b,s) );
 
 	saved.set_func([](int i, double d, string s)->int { cout << "FK nothing" << endl; return 66*i*i; });
-	cout << saved();
+	DEBUG_MSG(saved());
 
+	auto shit = OpContext<int, double, string>::make(a, b, s);
+	auto shit2 = OpContextBase::cast<int, double, string>(shit);
+	cout << std::get<1>(shit2->get_context_arg_pack()) << "YAYYY" << endl;
 
 	/*Tensor t1(dummyEng, { 2, 3 });
 	Tensor t2(dummyEng, {5, 7});

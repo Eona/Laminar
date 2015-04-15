@@ -51,6 +51,53 @@ namespace std {
   };
 }
 
+// Forward declare for OpContextBase
+template<typename ...ContextArgT>
+struct OpContext;
+
+/**
+ * Operation context
+ */
+struct OpContextBase
+{
+	virtual ~OpContextBase() {}
+	typedef shared_ptr<OpContextBase> Ptr;
+
+	/**
+	 * Down cast to a specific context
+	 */
+	template<typename ...ContextArgT>
+	static shared_ptr<OpContext<ContextArgT...>> cast(Ptr contextBase)
+	{
+		return std::dynamic_pointer_cast<OpContext<ContextArgT...>>(contextBase);
+	}
+};
+
+template<typename ...ContextArgT>
+struct OpContext : OpContextBase
+{
+	OpContext(ContextArgT ... args) :
+		contextArgPack(std::make_tuple(args...))
+	{ }
+
+	std::tuple<ContextArgT...>& get_context_arg_pack()
+	{
+		return this->contextArgPack;
+	}
+
+	template<typename ...ArgT>
+	static OpContextBase::Ptr make(ArgT&& ... args)
+	{
+		return static_cast<OpContextBase::Ptr>(
+				std::make_shared<OpContext<ContextArgT...>>(
+						std::forward<ArgT>(args) ...));
+	}
+
+private:
+	std::tuple<ContextArgT...> contextArgPack;
+};
+
+
 struct Instruction
 {
 	Instruction(Opcode _code, vector<int>& _readAddrs, int _writeAddr) :
@@ -66,6 +113,7 @@ struct Instruction
 	Opcode opcode;
 	vector<int> readAddrs;
 	int writeAddr;
+	OpContextBase::Ptr context;
 
 	virtual operator string() const
 	{

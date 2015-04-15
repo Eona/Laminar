@@ -211,7 +211,7 @@ struct unpack_gens : unpack_gens<N-1, N-1, S...> {};
 template<int ...S>
 struct unpack_gens<0, S...>{ typedef unpack_seq<S...> type; };
 
-// example
+// deferred_func_call<FunctionReturnType, ArgTypes...>
 template <typename ReturnT, typename ...ArgT>
 struct deferred_func_call
 {
