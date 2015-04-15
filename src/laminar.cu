@@ -53,6 +53,7 @@ int main(int argc, char **argv)
 	net.initialize();
 
 	net.forward_prop();
+	net.backward_prop();
 
 //	dummyEng->eliminate_temporary();
 	dummyEng->print_instructions();

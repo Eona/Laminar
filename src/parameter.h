@@ -29,7 +29,7 @@ public:
 		std::fill(paramGradients.begin(), paramGradients.end(), 0);
 	}*/
 
-	int size()
+	int size() const
 	{
 		return paramValues.size();
 	}

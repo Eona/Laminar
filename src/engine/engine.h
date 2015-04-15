@@ -324,6 +324,7 @@ public:
 	 * @return
 	 */
 	DataT& read_memory(TensorBasePtr tensorPtr);
+	DataT& read_memory(const TensorBase& tensorPtr);
 
 	/*********** Register "assembly" implementation ***********/
 	// (readAddrs, writeAddr, is_initialized)

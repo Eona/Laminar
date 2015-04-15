@@ -8,6 +8,7 @@
 
 #include "engine.h"
 #include "tensor.h"
+#include "../rand_utils.h"
 
 namespace lmn {
 
@@ -154,10 +155,12 @@ inline void square_loss(vector<float *> reads, float *write, bool is_initialized
 	*write = 0.5f * diff * diff;
 }
 
+// FIXME add contextual rand engine
 inline void fill_rand(vector<float *> reads, float *write, bool is_initialized)
 {
 	debug_msg("fill_rand", is_initialized);
-	*write = 1.3;
+	*write = FakeRand::instance_connection()();
+	DEBUG_MSG("rand? " << *write);
 }
 
 
