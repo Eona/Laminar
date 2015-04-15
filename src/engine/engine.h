@@ -349,16 +349,11 @@ public:
 		 */
 		virtual CommandFuncType adapt_context(OpContextBase::Ptr context) = 0;
 
-		TYPEDEF_PTR(Command);
-
-//		template<typename CommandT, typename ...ArgT>
-//		static typename Command::Ptr make(ArgT&& ... args)
-//		{
-//			return static_cast<Command::Ptr>(
-//					std::make_shared<CommandT>(
-//							std::forward<ArgT>(args) ...));
-//		}
 	};
+	// WARNING if you TYPEDEF_PTR(Command) inside Command struct, for some reason
+	// you have to add typename to 'CommandPtr' everywhere you use Ptr
+	// Maybe a nested class problem, idk.
+	TYPEDEF_PTR_EXTERNAL(Command);
 
 	/**
 	 * Without any context, normal commands are functions with signature CommandFuncType
@@ -377,9 +372,9 @@ public:
 		}
 
 		template<typename ...ArgT>
-		static typename Command::Ptr make(ArgT&& ... args)
+		static CommandPtr make(ArgT&& ... args)
 		{
-			return static_cast<typename Command::Ptr>(
+			return static_cast<CommandPtr>(
 					std::make_shared<NormalCommand>(
 							std::forward<ArgT>(args) ...));
 		}
@@ -411,9 +406,9 @@ public:
 		}
 
 		template<typename ...ArgT>
-		static typename Command::Ptr make(ArgT&& ... args)
+		static CommandPtr make(ArgT&& ... args)
 		{
-			return static_cast<typename Command::Ptr>(
+			return static_cast<CommandPtr>(
 					std::make_shared<ContextCommand<ContextArgT...>>(
 							std::forward<ArgT>(args) ...));
 		}
@@ -535,7 +530,7 @@ protected:
 	/**
 	 * Add your "assembly" function addresses for each Opcode
 	 */
-	std::unordered_map<Opcode, typename Command::Ptr> command_map;
+	std::unordered_map<Opcode, CommandPtr> command_map;
 	CreateFuncType assembly_create;
 };
 
