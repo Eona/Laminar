@@ -100,12 +100,10 @@ private:
 
 struct Instruction
 {
-	Instruction(Opcode _code, vector<int>& _readAddrs, int _writeAddr) :
-		opcode(_code), readAddrs(_readAddrs), writeAddr(_writeAddr)
-	{ }
-
-	Instruction(Opcode _code, const std::initializer_list<int>& _readAddrs, int _writeAddr) :
-		opcode(_code), readAddrs(_readAddrs), writeAddr(_writeAddr)
+	Instruction(Opcode code_, vector<int> readAddrs_, int writeAddr_,
+			OpContextBase::Ptr context_ = nullptr) :
+		opcode(code_), readAddrs(readAddrs_), writeAddr(writeAddr_),
+		context(context_)
 	{ }
 
 	virtual ~Instruction() {}
