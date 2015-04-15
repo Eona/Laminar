@@ -56,11 +56,20 @@ int main(int argc, char **argv)
 	net.backward_prop();
 
 //	dummyEng->eliminate_temporary();
-	dummyEng->print_instructions();
+//	dummyEng->print_instructions();
+//	dummyEng->execute();
+//	cout << dummyEng->read_memory(net.lossLayer->totalLoss) << "\n";
 
-	dummyEng->execute();
+	int a = 3;
+	double b = 2.13;
+	string s = "shit";
+	deferred_func_call<int, int, double, string> saved(
+	[](int i, double d, string s) { cout << i << "saved dispatch!" << d << s<<endl; return i+66; },
+			std::tuple<int, double, string>(a,b,s) );
 
-	cout << dummyEng->read_memory(net.lossLayer->totalLoss) << "\n";
+	saved.set_func([](int i, double d, string s)->int { cout << "FK nothing" << endl; return 66*i*i; });
+	cout << saved();
+
 
 	/*Tensor t1(dummyEng, { 2, 3 });
 	Tensor t2(dummyEng, {5, 7});

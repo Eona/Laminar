@@ -27,6 +27,7 @@
 #include <cstdarg>
 #include <utility>
 #include <type_traits>
+#include <tuple>
 
 using std::vector;
 using std::string;
@@ -196,6 +197,60 @@ struct select_type<true, TypeTrue, TypeFalse>
 	using type = TypeTrue;
 };
 
+/**
+ * Template sorcery for unpacking tuples to be function args
+ * deferred_func_call is an example of how to unpack
+ * http://stackoverflow.com/questions/7858817/unpacking-a-tuple-to-call-a-matching-function-pointer
+ */
+template<int ...>
+struct unpack_seq {};
+
+template<int N, int ...S>
+struct unpack_gens : unpack_gens<N-1, N-1, S...> {};
+
+template<int ...S>
+struct unpack_gens<0, S...>{ typedef unpack_seq<S...> type; };
+
+// example
+template <typename ReturnT, typename ...ArgT>
+struct deferred_func_call
+{
+	typedef std::function<ReturnT(ArgT...)> FuncType;
+	typedef std::tuple<ArgT...> ArgPack;
+
+	deferred_func_call() {}
+
+	deferred_func_call(FuncType func_, ArgPack args_) :
+		func(func_), args(args_)
+	{ }
+
+	void set_func(FuncType func)
+	{
+		this->func = func;
+	}
+
+	void set_args(ArgPack args)
+	{
+		this->args = args;
+	}
+
+	ReturnT operator()()
+	{
+		if (!func)
+			throw std::runtime_error("No function saved in deferred_func_call");
+		return call_helper(typename unpack_gens<sizeof...(ArgT)>::type());
+	}
+
+private:
+	FuncType func;
+	ArgPack args;
+
+	template<int ...UnpackS>
+	ReturnT call_helper(unpack_seq<UnpackS...>)
+	{
+		return func(std::get<UnpackS>(args) ...);
+	}
+};
 
 /**************************************
 ************ Exceptions **************
