@@ -28,8 +28,8 @@ public:
 	virtual void forward(int inFrame = 0, int outFrame = 0)
 	{
 		check_frame_consistency(inFrame, outFrame);
-		this->_inFrame = inFrame;
-		this->_outFrame = outFrame;
+		this->inFrame_ = inFrame;
+		this->outFrame_ = outFrame;
 
 		forward_impl(*inLayer->outValues[inFrame], *outLayer->inValues[outFrame]);
 	}
@@ -41,8 +41,8 @@ public:
 	{
 		assert_throw(inFrame < 0,
 			NetworkException("inFrame should be < 0 for prehistory_forward"));
-		this->_inFrame = inFrame;
-		this->_outFrame = outFrame;
+		this->inFrame_ = inFrame;
+		this->outFrame_ = outFrame;
 
 		forward_impl(*vec_at(pcontainer->paramValues, inFrame),
 			*outLayer->inValues[outFrame]);
@@ -51,8 +51,8 @@ public:
 	virtual void backward(int outFrame = 0, int inFrame = 0)
 	{
 		check_frame_consistency(inFrame, outFrame);
-		this->_inFrame = inFrame;
-		this->_outFrame = outFrame;
+		this->inFrame_ = inFrame;
+		this->outFrame_ = outFrame;
 
 		bool isHistorySaved = inLayer->is_full_gradient_history_saved();
 
@@ -70,8 +70,8 @@ public:
 	{
 		assert_throw(inFrame < 0,
 			NetworkException("inFrame should be < 0 for prehistory_backward"));
-		this->_inFrame = inFrame;
-		this->_outFrame = outFrame;
+		this->inFrame_ = inFrame;
+		this->outFrame_ = outFrame;
 
 		bool isHistorySaved = inLayer->is_full_gradient_history_saved();
 
@@ -92,8 +92,8 @@ public:
 	/**
 	 * Read only. Forward/backward latest frame number
 	 */
-	int in_frame() { return this->_inFrame; }
-	int out_frame() { return this->_outFrame; }
+	int in_frame() { return this->inFrame_; }
+	int out_frame() { return this->outFrame_; }
 
 	/************************************/
 	typedef shared_ptr<Connection> Ptr;
@@ -149,7 +149,7 @@ protected:
 	}
 
 private:
-	int _inFrame = 0, _outFrame = 0;
+	int inFrame_ = 0, outFrame_ = 0;
 };
 
 TYPEDEF_PTR(Connection);

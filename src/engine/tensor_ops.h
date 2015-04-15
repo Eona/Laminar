@@ -119,6 +119,7 @@ operator*(const TensorT1& x1, const TensorT2& x2)
  */
 namespace lmn
 {
+typedef std::function<Tensor(const Tensor&)> TransferFunction;
 
 // Macro generate single tensor element-wise math operation
 #define GEN_MATH_OPS(fname) \

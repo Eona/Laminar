@@ -6,7 +6,8 @@
 #define GATED_CONNECTION_H_
 
 #include "connection.h"
-#include "math_utils.h"
+#include "engine/tensor.h"
+#include "engine/tensor_ops.h"
 
 class GatedConnection : public Connection
 {
@@ -24,14 +25,14 @@ public:
 
 	virtual ~GatedConnection() {};
 
-	virtual void forward_impl(float inlayerOutval, float& outlayerInval)
+	virtual void forward_impl(Tensor& inlayerOutval, Tensor& outlayerInval)
 	{
 		gated_forward_impl(inlayerOutval, gateLayer->outValues[out_frame()],
 				// output param:
 				outlayerInval);
 	}
 
-	virtual void backward_impl(float& outlayerIngrad, float& inlayerOutval, float& inlayerOutgrad)
+	virtual void backward_impl(Tensor& outlayerIngrad, Tensor& inlayerOutval, Tensor& inlayerOutgrad)
 	{
 		gated_backward_impl(outlayerIngrad, inlayerOutval, gateLayer->outValues[out_frame()],
 				// output params:
@@ -42,16 +43,16 @@ public:
 	}
 
 	/*********** Subclasses should override following ***********/
-	virtual void gated_forward_impl(float& inlayerOutval, float& gateOutval,
+	virtual void gated_forward_impl(Tensor& inlayerOutval, Tensor& gateOutval,
 			// output param:
-			float& outlayerInval)
+			Tensor& outlayerInval)
 	{
 		outlayerInval += gateOutval * inlayerOutval;
 	}
 
-	virtual void gated_backward_impl(float& outlayerIngrad, float& inlayerOutval, float& gateOutval,
+	virtual void gated_backward_impl(Tensor& outlayerIngrad, Tensor& inlayerOutval, Tensor& gateOutval,
 			// write to output params:
-			float& inlayerOutgrad, float& gateOutgrad)
+			Tensor& inlayerOutgrad, Tensor& gateOutgrad)
 	{
 		inlayerOutgrad += gateOutval * outlayerIngrad;
 		gateOutgrad += outlayerIngrad * inlayerOutval;
@@ -88,9 +89,9 @@ public:
 
 	virtual ~GatedCachedNonlinearConnection() {};
 
-	virtual void gated_forward_impl(float& inlayerOutval, float& gateOutval,
+	virtual void gated_forward_impl(Tensor& inlayerOutval, Tensor& gateOutval,
 		// output param:
-		float& outlayerInval)
+		Tensor& outlayerInval)
 	{
 		int t = out_frame();
 		vec_resize_on_demand(cachedOutvals, t);
@@ -100,9 +101,9 @@ public:
 		outlayerInval += gateOutval * cachedOutvals[t];
 	}
 
-	virtual void gated_backward_impl(float& outlayerIngrad, float& inlayerOutval, float& gateOutval,
+	virtual void gated_backward_impl(Tensor& outlayerIngrad, Tensor& inlayerOutval, Tensor& gateOutval,
 			// write to output params:
-			float& inlayerOutgrad, float& gateOutgrad)
+			Tensor& inlayerOutgrad, Tensor& gateOutgrad)
 	{
 		float cachedOutval = cachedOutvals[out_frame()];
 
@@ -117,7 +118,7 @@ public:
 
 private:
 	// performance acceleration ONLY
-	vector<float> cachedOutvals;
+	vector<Tensor::Ptr> cachedOutvals;
 };
 
 
