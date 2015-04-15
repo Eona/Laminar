@@ -59,6 +59,8 @@ public:
 		return *this;
 	}*/
 
+	typedef std::shared_ptr<TensorBase> Ptr;
+
 	EngineBase::Ptr engine;
 	// memory address in the engine, if negative -> destroyed
 	int addr;
@@ -211,6 +213,15 @@ public:
                     std::forward<ArgT>(args) ...);
 	}
 };
+
+/**
+ * Define Engine<DataT> member function to avoid mutual header inclusion
+ */
+template<typename DataT>
+inline DataT& Engine<DataT>::read_memory(TensorBase::Ptr tensorPtr)
+{
+	return this->memoryPool[tensorPtr->addr];
+}
 
 
 /*

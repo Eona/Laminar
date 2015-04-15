@@ -154,6 +154,12 @@ inline void square_loss(vector<float *> reads, float *write, bool is_initialized
 	*write = 0.5f * diff * diff;
 }
 
+inline void fill_rand(vector<float *> reads, float *write, bool is_initialized)
+{
+	debug_msg("fill_rand", is_initialized);
+	*write = 1.3;
+}
+
 
 /*********** DEBUG ONLY ***********/
 inline void debug_fill(vector<float *> reads, float *write, bool is_initialized)
@@ -201,6 +207,7 @@ public:
 		register_opcode("square_loss", Impl::square_loss);
 
 		register_opcode("destroy", Impl::destroy);
+		register_opcode("fill_rand", Impl::fill_rand);
 
 		/*********** DEBUG ONLY ***********/
 		register_opcode("debug_fill", Impl::debug_fill);

@@ -286,6 +286,10 @@ protected:
 TYPEDEF_PTR(EngineBase);
 
 
+// Forward decl
+class TensorBase;
+typedef std::shared_ptr<TensorBase> TensorBasePtr;
+
 template<typename DataT>
 class Engine : public EngineBase
 {
@@ -295,6 +299,8 @@ public:
 	{ }
 
 	virtual ~Engine() {};
+
+	typedef std::shared_ptr<Engine<DataT>> Ptr;
 
 	virtual int alloc()
 	{
@@ -310,6 +316,14 @@ public:
 	{
 		this->memoryPool.reset();
 	}
+
+	/**
+	 * Return ref to actual data
+	 * Will be defined in tensor.h to avoid mutual header inclusion
+	 * @param tensorPtr
+	 * @return
+	 */
+	DataT& read_memory(TensorBasePtr tensorPtr);
 
 	/*********** Register "assembly" implementation ***********/
 	// (readAddrs, writeAddr, is_initialized)
