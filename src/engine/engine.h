@@ -351,13 +351,13 @@ public:
 
 		TYPEDEF_PTR(Command);
 
-		template<typename CommandT, typename ...ArgT>
-		static Command::Ptr make(ArgT&& ... args)
-		{
-			return static_cast<Command::Ptr>(
-					std::make_shared<CommandT>(
-							std::forward<ArgT>(args) ...));
-		}
+//		template<typename CommandT, typename ...ArgT>
+//		static typename Command::Ptr make(ArgT&& ... args)
+//		{
+//			return static_cast<Command::Ptr>(
+//					std::make_shared<CommandT>(
+//							std::forward<ArgT>(args) ...));
+//		}
 	};
 
 	/**
@@ -376,6 +376,13 @@ public:
 			return cmd;
 		}
 
+		template<typename ...ArgT>
+		static typename Command::Ptr make(ArgT&& ... args)
+		{
+			return static_cast<typename Command::Ptr>(
+					std::make_shared<NormalCommand>(
+							std::forward<ArgT>(args) ...));
+		}
 	private:
 		CommandFuncType cmd; // Engine<DataT>::CommandFuncType
 	};
@@ -403,6 +410,13 @@ public:
 					typename unpack_gens<sizeof...(ContextArgT)>::type());
 		}
 
+		template<typename ...ArgT>
+		static typename Command::Ptr make(ArgT&& ... args)
+		{
+			return static_cast<typename Command::Ptr>(
+					std::make_shared<ContextCommand<ContextArgT...>>(
+							std::forward<ArgT>(args) ...));
+		}
 	private:
 		ContextFuncType contextCmd;
 
@@ -441,7 +455,7 @@ public:
 
 	void register_opcode(Opcode op, CommandFuncType cmd)
 	{
-		this->command_map[op] = Command::make<NormalCommand>(cmd);
+		this->command_map[op] = NormalCommand::make(cmd);
 	}
 
 	/**
@@ -453,7 +467,7 @@ public:
 	void register_opcode_context(Opcode op,
 			typename ContextCommand<ContextArgT...>::ContextFuncType cmd)
 	{
-		this->command_map[op] = Command::make<ContextCommand<ContextArgT...>>(cmd);
+		this->command_map[op] = ContextCommand<ContextArgT...>::make(cmd);
 	}
 
 	/**************************************
@@ -521,7 +535,7 @@ protected:
 	/**
 	 * Add your "assembly" function addresses for each Opcode
 	 */
-	std::unordered_map<Opcode, Command::Ptr> command_map;
+	std::unordered_map<Opcode, typename Command::Ptr> command_map;
 	CreateFuncType assembly_create;
 };
 
