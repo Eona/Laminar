@@ -50,8 +50,8 @@ public:
 			ComponentException("FullConnection requires the in/outLayers to be one-dimensional"));
 
 		auto dims = { outLayer->dim()[0], inLayer->dim()[0] };
-		param = Tensor::make(dims);
-		gradient = Tensor::make(dims);
+		param = Tensor::make(engine, dims);
+		gradient = Tensor::make(engine, dims);
 
 		lmn::fill_rand(*param);
 	}

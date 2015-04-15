@@ -9,9 +9,10 @@
 #include "activation_layer.h"
 #include "loss_layer.h"
 #include "parameter.h"
-#include "lstm.h"
+//#include "lstm.h"
 #include "network.h"
-#include "gradient_check.h"
+// FIXME gradient check
+//#include "gradient_check.h"
 #include "engine/engine.h"
 #include "engine/tensor.h"
 #include "engine/tensor_ops.h"

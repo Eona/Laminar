@@ -9,29 +9,24 @@
 #include "composite.h"
 #include "layer.h"
 #include "connection.h"
+#include "engine/engine.h"
+#include "engine/tensor.h"
 
 class Network
 {
 public:
-	Network()
+	Network(EngineBase::Ptr engine_)
+		: engine(engine_)
 	{ }
 
 	virtual ~Network() {};
 
-	virtual void set_input(vector<float>& input)
-	{
-		this->input = input;
-	}
-	virtual void set_input(vector<float>&& input)
+	virtual void set_input(vector<Tensor::Ptr> input)
 	{
 		this->input = input;
 	}
 
-	virtual void set_target(vector<float>& target)
-	{
-		this->target = target;
-	}
-	virtual void set_target(vector<float>&& target)
+	virtual void set_target(vector<Tensor::Ptr> target)
 	{
 		this->target = target;
 	}
@@ -86,7 +81,7 @@ public:
 
 	virtual void reset() = 0;
 
-	virtual void assemble()
+	virtual void initialize()
 	{
 		layers[0]->inValues = this->input;
 		this->lossLayer = Layer::cast<LossLayer>(layers[layers.size() - 1]);
@@ -95,8 +90,15 @@ public:
 		else
 			throw NetworkException("Last layer must be a LossLayer");
 
-		for (Layer::Ptr& l : layers)
-			l->set_history_length(this->input.size());
+		for (Layer::Ptr l : this->layers)
+			l->init_history_length(this->input.size());
+
+		for (Component::Ptr c : this->components)
+		{
+			c->init_engine(this->engine);
+			// call this at last after all other meta-params are set by init_XX()
+			c->initialize();
+		}
 	}
 
 	// TODO
@@ -113,9 +115,11 @@ public:
 
 	LossLayerPtr lossLayer;
 
-	vector<float> input, target;
+	vector<Tensor::Ptr> input, target;
 
 protected:
+	EngineBase::Ptr engine;
+
 	/**
 	 * Add to paramContainers only if 'component' is a subtype
 	 */
@@ -131,8 +135,8 @@ protected:
 class ForwardNetwork : public Network
 {
 public:
-	ForwardNetwork() :
-		Network()
+	ForwardNetwork(EngineBase::Ptr engine_) :
+		Network(engine_)
 	{ }
 
 	virtual ~ForwardNetwork() {};
@@ -141,19 +145,19 @@ public:
 	using Network::set_input;
 	using Network::set_target;
 
-	virtual void set_input(float input)
+	virtual void set_input(Tensor::Ptr input)
 	{
-		Network::set_input(vector<float> {input});
+		Network::set_input(vector<Tensor::Ptr> {input});
 	}
 
-	virtual void set_target(float target)
+	virtual void set_target(Tensor::Ptr target)
 	{
-		Network::set_target(vector<float> {target});
+		Network::set_target(vector<Tensor::Ptr> {target});
 	}
 
-	virtual void assemble()
+	virtual void initialize()
 	{
-		Network::assemble();
+		Network::initialize();
 	}
 
 	virtual void forward_prop()
@@ -172,7 +176,7 @@ public:
 	{
 		for (Component::Ptr compon : this->components)
 			compon->reset();
-		this->assemble();
+		this->initialize();
 	}
 };
 
@@ -180,8 +184,8 @@ public:
 class RecurrentNetwork : public Network
 {
 public:
-	RecurrentNetwork() :
-		Network()
+	RecurrentNetwork(EngineBase::Ptr engine_) :
+		Network(engine_)
 	{
 		// defaults to 1, the most typical RNN
 		set_max_temporal_skip(1);
@@ -190,7 +194,7 @@ public:
 	virtual ~RecurrentNetwork() {};
 
 	/*********** Network operations ***********/
-	virtual void assemble()
+	virtual void initialize()
 	{
 		assert_throw(input.size() == target.size(),
 			NetworkException(
@@ -199,7 +203,7 @@ public:
 		for (Layer::Ptr layer : layers)
 			layer->init_max_temporal_skip(this->maxTemporalSkip);
 
-		Network::assemble();
+		Network::initialize();
 	}
 
 	/**
@@ -287,14 +291,16 @@ public:
 		if (prehistoryEntry == prehistoryLayerMap.end())
 		{
 			auto h_0 = ParamContainer::make(temporalSkip);
-			h_0->fill_rand(dummyRand);
+			// FIXME
+//			h_0->fill_rand(dummyRand);
 			prehistoryLayerMap[conn->inLayer] = h_0;
 			paramContainers.push_back(h_0);
 		}
 		else if (prehistoryEntry->second->size() < temporalSkip)
 		{
-			prehistoryEntry->second->resize(temporalSkip);
-			prehistoryEntry->second->fill_rand(dummyRand);
+			// FIXME prehistory must be able to resize
+//			prehistoryEntry->second->resize(temporalSkip);
+//			prehistoryEntry->second->fill_rand(dummyRand);
 		}
 
 		recurConnectionMap[conn] = temporalSkip;
@@ -322,12 +328,13 @@ public:
 		for (Component::Ptr compon : this->components)
 			compon->reset();
 
-		for (auto& entry : prehistoryLayerMap)
-			entry.second->reset_gradients();
+		// FIXME reset not written
+//		for (auto& entry : prehistoryLayerMap)
+//			entry.second->reset_gradients();
 
 		frame = 0;
 
-		this->assemble();
+		this->initialize();
 	}
 
 	std::unordered_map<Layer::Ptr, ParamContainer::Ptr> prehistoryLayerMap;

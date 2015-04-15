@@ -7,9 +7,10 @@
 #define LAYER_H_
 
 #include "global_utils.h"
-#include "math_utils.h"
 #include "connection.h"
 #include "component.h"
+#include "engine/tensor.h"
+#include "engine/tensor_ops.h"
 
 class Layer : public Component
 {
@@ -195,7 +196,7 @@ protected:
 
 	// Shift the gradient window
 	// FIXME memory is not being saved, still alloc a lot of memory
-	static void shift_back_vector(vector<Tensor::Ptr>& grad)
+	void shift_back_vector(vector<Tensor::Ptr>& grad)
 	{
 //		grad.insert(grad.begin(), 0);
 //		grad.erase(grad.end() - 1);
@@ -213,13 +214,14 @@ protected:
 private:
 	vector<int> dim_;
 
+	// frame pointer
+	int frame_ = 0;
+
+protected:
 	int historyLength;
 
 	// Max temporal skip. negative to save full gradient history
 	int maxTemporalSkip;
-
-	// frame pointer
-	int frame_ = 0;
 
 public: // FIXME no public!
 	vector<Tensor::Ptr> inValues,

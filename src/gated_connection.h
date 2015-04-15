@@ -27,17 +27,17 @@ public:
 
 	virtual void forward_impl(Tensor& inlayerOutval, Tensor& outlayerInval)
 	{
-		gated_forward_impl(inlayerOutval, gateLayer->outValues[out_frame()],
+		gated_forward_impl(inlayerOutval, *gateLayer->outValues[out_frame()],
 				// output param:
 				outlayerInval);
 	}
 
 	virtual void backward_impl(Tensor& outlayerIngrad, Tensor& inlayerOutval, Tensor& inlayerOutgrad)
 	{
-		gated_backward_impl(outlayerIngrad, inlayerOutval, gateLayer->outValues[out_frame()],
+		gated_backward_impl(outlayerIngrad, inlayerOutval, *gateLayer->outValues[out_frame()],
 				// output params:
 				inlayerOutgrad,
-				gateLayer->outGradients[
+				*gateLayer->outGradients[
 						gateLayer->is_full_gradient_history_saved() ?
 								out_frame() : 0]);
 	}
@@ -96,16 +96,20 @@ public:
 		int t = out_frame();
 		vec_resize_on_demand(cachedOutvals, t);
 
-		cachedOutvals[t] = nonlinear(inlayerOutval);
+		Tensor::Ptr& cached = cachedOutvals[t];
+		if (!cached)
+			cached = Tensor::make(engine);
 
-		outlayerInval += gateOutval * cachedOutvals[t];
+		*cached = nonlinear(inlayerOutval);
+
+		outlayerInval += gateOutval * (*cached);
 	}
 
 	virtual void gated_backward_impl(Tensor& outlayerIngrad, Tensor& inlayerOutval, Tensor& gateOutval,
 			// write to output params:
 			Tensor& inlayerOutgrad, Tensor& gateOutgrad)
 	{
-		float cachedOutval = cachedOutvals[out_frame()];
+		Tensor& cachedOutval = *cachedOutvals[out_frame()];
 
 		inlayerOutgrad += gateOutval * nonlinearGradient(cachedOutval) * outlayerIngrad;
 		gateOutgrad += outlayerIngrad * cachedOutval;
@@ -128,7 +132,7 @@ private:
  * gateLayer and outLayer will both be in the current timeframe.
  * outLayer[t] = gateLayer[t] * tanh(inLayer[t - temporalSkip])
  */
-typedef GatedCachedNonlinearConnection<lmn::tanh, lmn::tanhGradient>
+typedef GatedCachedNonlinearConnection<lmn::tanh, lmn::tanh_gradient>
 	GatedTanhConnection;
 
 
@@ -138,7 +142,7 @@ typedef GatedCachedNonlinearConnection<lmn::tanh, lmn::tanhGradient>
  * gateLayer and outLayer will both be in the current timeframe.
  * outLayer[t] = gateLayer[t] * sigmoid(inLayer[t - temporalSkip])
  */
-typedef GatedCachedNonlinearConnection<lmn::sigmoid, lmn::sigmoidGradient>
+typedef GatedCachedNonlinearConnection<lmn::sigmoid, lmn::sigmoid_gradient>
 	GatedSigmoidConnection;
 
 #endif /* GATED_CONNECTION_H_ */

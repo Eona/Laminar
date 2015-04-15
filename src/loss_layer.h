@@ -21,7 +21,7 @@ public:
 
 	virtual Scalor total_loss()
 	{
-		return totalLoss;
+		return *totalLoss;
 	}
 
 	virtual void reset()
@@ -68,12 +68,12 @@ public:
 	virtual void forward_impl(Tensor& inValue, Tensor& outValue)
 	{
 		// which is loss value if the network is feedforward
-		totalLoss += lmn::square_loss(inValue, targetValue[frame()]);
+		*totalLoss += lmn::square_loss(inValue, *targetValue[frame()]);
 	}
 
 	virtual void backward_impl(Tensor& outValue, Tensor& outGradient, Tensor& inValue, Tensor& inGradient)
 	{
-		inGradient = inValue - targetValue[frame()];
+		inGradient = inValue - *targetValue[frame()];
 	}
 
 	virtual explicit operator string() const

@@ -87,7 +87,7 @@ protected:
 /**
  * DEBUG ONLY
  */
-class LstmDebugLayer : public Layer, public ParamContainer
+/*class LstmDebugLayer : public Layer, public ParamContainer
 {
 public:
 	LstmDebugLayer(vector<float> dummyWeights,
@@ -187,18 +187,18 @@ public:
 		cellInputActivator,
 		cellOutputActivator;
 
-	/**
+	*
 	 * Function like sigmoid's gradient can be more easily computed
 	 * given the output value.
 	 * We do not support gradient computation given input, because of
 	 * storage concern.
-	 */
+
 	function<float(float)>
 		gateActivatorGradient,
 		cellInputActivatorGradient,
 		cellOutputActivatorGradient;
 
-	/**
+	*
 	 * Parameter index positions
 	 * x: inValue[frame]
 	 * i: input gate
@@ -207,7 +207,7 @@ public:
 	 * c: state cell
 	 * o: output gate
 	 * b: bias
-	 */
+
 	enum {
 		_W_xi,
 		_W_hi,
@@ -247,6 +247,6 @@ public:
 		&b_o,
 		&h_0,
 		&cell_0;
-};
+};*/
 
 #endif /* LSTM_LAYER_H_ */

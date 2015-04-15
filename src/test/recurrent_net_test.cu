@@ -410,7 +410,7 @@ TEST(RecurrentNet, LSTM)
 	lstmDebugNet.new_connection<ConstantConnection>(lstmLayer, l1);
 	lstmDebugNet.add_layer(l1);
 
-	lstmDebugNet.assemble();
+	lstmDebugNet.initialize();
 	for (int i = 0; i < input.size(); ++i)
 		lstmDebugNet.forward_prop();
 
