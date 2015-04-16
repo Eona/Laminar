@@ -60,7 +60,7 @@ void add(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 
     int m = reads[0]->DIM_ROW;
     int n = reads[0]->DIM_COL;
-    if (is_initialized) {
+    if (!is_initialized) {
         *write = CudaFloatMat(m, n); //initialize LHS if not already
     }   
     const float alpha = 1.0f;
