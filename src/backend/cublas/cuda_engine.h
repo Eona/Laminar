@@ -6,12 +6,14 @@
 #ifndef CUDA_ENGINE_H_
 #define CUDA_ENGINE_H_
 
-//#include "../../engine/engine.h"
-//#include "../../engine/tensor.h"
-//#include "../../rand_utils.h"
+#include "../../engine/engine.h"
+#include "../../engine/tensor.h"
+#include "../../rand_utils.h"
 #include <cuda.h>
 #include "cublas_v2.h"
 #include "cudaFloatMat.h"
+
+using namespace std;
 
 namespace lmn {
 
@@ -39,10 +41,10 @@ struct tensor_op<SCALOR>
 	static constexpr const char *operand = "s";
 };
 
-void create(cudaFloatMat* write, vector<int> dim)
+void create(CudaFloatMat* write, vector<int> dim)
 {
 	DEBUG_MSG("CudaImpl::create dim=" << dim);
-	*write = cudaFloatMat(dim);
+	*write = CudaFloatMat(dim);
 }
 
 void debug_msg(string msg, bool is_initialized)
@@ -51,17 +53,17 @@ void debug_msg(string msg, bool is_initialized)
 }
 
 template<int TensorT>
-void add(vector<cudaFloatMat*> reads, cudaFloatMat* write, bool is_initialized)
+void add(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 {
 	string op = tensor_op<TensorT>::operand;
 	debug_msg(op + "+" + op, is_initialized);
 	if (is_initialized) {
-		*write = cudaFloatMat(reads[0].DIM_X, reads[1].DIM_Y); //initialize LHS if not already
+		*write = CudaFloatMat(reads[0]->DIM_X, reads[1]->DIM_Y); //initialize LHS if not already
 	}
 	const float alpha = 1.0f;
 	cublasHandle_t handle;
 	cublasCreate(&handle);
-	cublasSaxpy(handle, reads[0].LEN, &alpha, reads[0].device_data, 1, reads[1].device_data, 1);
+	cublasSaxpy(handle, reads[0]->LEN, &alpha, reads[0]->device_data, 1, reads[1]->device_data, 1);
 }
 
 template<int TensorT>
