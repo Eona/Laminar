@@ -443,12 +443,12 @@ public:
 	};
 
 	// Call in Engine ctor
-	void register_create(CreateFuncType createFunc)
+	void register_create_op(CreateFuncType createFunc)
 	{
 		this->assembly_create = createFunc;
 	}
 
-	void register_opcode(Opcode op, CommandFuncType cmd)
+	void register_normal_op(Opcode op, CommandFuncType cmd)
 	{
 		this->command_map[op] = NormalCommand::make(cmd);
 	}
@@ -459,7 +459,7 @@ public:
 	 * @param cmd
 	 */
 	template<typename ... ContextArgT>
-	void register_opcode_context(Opcode op,
+	void register_context_op(Opcode op,
 			typename ContextCommand<ContextArgT...>::ContextFuncType cmd)
 	{
 		this->command_map[op] = ContextCommand<ContextArgT...>::make(cmd);

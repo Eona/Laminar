@@ -160,9 +160,15 @@ inline void fill_rand(vector<float *> reads, float *write, bool is_initialized)
 {
 	debug_msg("fill_rand", is_initialized);
 	*write = FakeRand::instance_connection()();
-	DEBUG_MSG("rand? " << *write);
 }
 
+// For gradient checking
+inline void perturb(vector<float *> reads, float *write, bool is_initialized,
+		vector<int> idx, float eps)
+{
+	debug_msg("perturb", is_initialized);
+	*write = *reads[0] + eps;
+}
 
 /*********** DEBUG ONLY ***********/
 inline void debug_fill(vector<float *> reads, float *write, bool is_initialized)
@@ -185,35 +191,38 @@ public:
 		namespace Impl = lmn::DummyImpl;
 		const int T = Impl::TENSOR;
 		const int S = Impl::SCALOR;
-		register_create(Impl::create);
-		register_opcode("t+t", Impl::add<T>);
-		register_opcode("s+s", Impl::add<S>);
-		register_opcode("t-t", Impl::sub<T>);
-		register_opcode("s-s", Impl::sub<S>);
-		register_opcode("-t", Impl::negate<T>);
-		register_opcode("-s", Impl::negate<S>);
-		register_opcode("t*t", Impl::mult<T, T>);
-		register_opcode("t*s", Impl::mult<T, S>);
-		register_opcode("s*t", Impl::mult<S, T>);
-		register_opcode("s*s", Impl::mult<S, S>);
-		register_opcode("t=t", Impl::assign<T>);
-		register_opcode("s=s", Impl::assign<S>);
 
-		register_opcode("sin", Impl::sin);
-		register_opcode("cos", Impl::cos);
-		register_opcode("tanh", Impl::tanh);
-		register_opcode("tanh_gradient", Impl::tanh_gradient);
-		register_opcode("sigmoid", Impl::sigmoid);
-		register_opcode("sigmoid_gradient", Impl::sigmoid_gradient);
-		register_opcode("transpose", Impl::transpose);
-		register_opcode("element_mult", Impl::element_mult);
-		register_opcode("square_loss", Impl::square_loss);
+		register_create_op(Impl::create);
+		register_normal_op("t+t", Impl::add<T>);
+		register_normal_op("s+s", Impl::add<S>);
+		register_normal_op("t-t", Impl::sub<T>);
+		register_normal_op("s-s", Impl::sub<S>);
+		register_normal_op("-t", Impl::negate<T>);
+		register_normal_op("-s", Impl::negate<S>);
+		register_normal_op("t*t", Impl::mult<T, T>);
+		register_normal_op("t*s", Impl::mult<T, S>);
+		register_normal_op("s*t", Impl::mult<S, T>);
+		register_normal_op("s*s", Impl::mult<S, S>);
+		register_normal_op("t=t", Impl::assign<T>);
+		register_normal_op("s=s", Impl::assign<S>);
 
-		register_opcode("destroy", Impl::destroy);
-		register_opcode("fill_rand", Impl::fill_rand);
+		register_normal_op("sin", Impl::sin);
+		register_normal_op("cos", Impl::cos);
+		register_normal_op("tanh", Impl::tanh);
+		register_normal_op("tanh_gradient", Impl::tanh_gradient);
+		register_normal_op("sigmoid", Impl::sigmoid);
+		register_normal_op("sigmoid_gradient", Impl::sigmoid_gradient);
+		register_normal_op("transpose", Impl::transpose);
+		register_normal_op("element_mult", Impl::element_mult);
+		register_normal_op("square_loss", Impl::square_loss);
+
+		register_normal_op("destroy", Impl::destroy);
+		register_normal_op("fill_rand", Impl::fill_rand);
+
+		register_context_op<vector<int>, float>("perturb", Impl::perturb);
 
 		/*********** DEBUG ONLY ***********/
-		register_opcode("debug_fill", Impl::debug_fill);
+		register_normal_op("debug_fill", Impl::debug_fill);
 	}
 };
 

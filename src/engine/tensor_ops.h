@@ -167,8 +167,13 @@ typedef Tensor (*TransferFunction)(const Tensor&);
 
 	void fill_rand(const Tensor& x)
 	{
-		x.engine->upload(Instruction(
-				"fill_rand", {}, x.addr));
+		x.engine->upload(Instruction("fill_rand", {}, x.addr));
+	}
+
+	void perturb(const Tensor& x, vector<int> idx, float eps)
+	{
+		x.engine->upload(Instruction("perturb", {}, x.addr,
+				OpContext<vector<int>, float>::make(idx, eps)));
 	}
 
 	// TODO
