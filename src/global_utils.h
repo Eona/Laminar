@@ -126,6 +126,12 @@ inline bool starts_with(string str, string prefix)
 #define TYPEDEF_PTR_EXTERNAL(Xclass) \
 	typedef std::shared_ptr<Xclass> Xclass##Ptr
 
+/**
+ * Type alias for vector<int>
+ */
+typedef std::vector<int> Dimension;
+typedef std::vector<int> DimIndex;
+
 // Emulate python style subscript
 template<typename T>
 inline T& vec_at(vector<T>& vec, int idx)

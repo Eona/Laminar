@@ -13,7 +13,7 @@
 class LossLayer : public Layer
 {
 public:
-	LossLayer(vector<int> dim) :
+	LossLayer(Dimension dim) :
 		Layer(dim)
 	{ }
 
@@ -62,7 +62,7 @@ TYPEDEF_PTR_EXTERNAL(LossLayer);
 class SquareLossLayer : public LossLayer
 {
 public:
-	SquareLossLayer(vector<int> dim) :
+	SquareLossLayer(Dimension dim) :
 		LossLayer(dim)
 	{}
 

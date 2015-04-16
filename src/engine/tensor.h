@@ -143,11 +143,12 @@ public:
 		engine->upload(Instruction( "create_null_t", {}, addr));
 	}
 
-	Tensor(EngineBase::Ptr _engine, vector<int> dim) :
+	Tensor(EngineBase::Ptr _engine, Dimension dim) :
 		TensorBase(_engine)
 	{
 		engine->set_dim(this->addr, dim);
-		engine->upload(Instruction("create", {}, addr));
+		engine->upload(Instruction("create", {}, addr,
+				OpContext<Dimension>::make(dim)));
 	}
 
 	virtual ~Tensor() {}

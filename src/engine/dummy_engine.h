@@ -34,7 +34,7 @@ struct tensor_op<SCALOR>
 	static constexpr const char *operand = "s";
 };
 
-void create(float* write, vector<int> dim)
+void create(float* write, Dimension dim)
 {
 	DEBUG_MSG("DummyImpl::create dim=" << dim);
 	*write = 0;
@@ -164,7 +164,7 @@ inline void fill_rand(vector<float *> reads, float *write, bool is_initialized)
 
 // For gradient checking
 inline void perturb(vector<float *> reads, float *write, bool is_initialized,
-		vector<int> idx, float eps)
+		DimIndex idx, float eps)
 {
 	debug_msg("perturb", is_initialized);
 	*write = *reads[0] + eps;
@@ -219,7 +219,7 @@ public:
 		register_normal_op("destroy", Impl::destroy);
 		register_normal_op("fill_rand", Impl::fill_rand);
 
-		register_context_op<vector<int>, float>("perturb", Impl::perturb);
+		register_context_op<DimIndex, float>("perturb", Impl::perturb);
 
 		/*********** DEBUG ONLY ***********/
 		register_normal_op("debug_fill", Impl::debug_fill);

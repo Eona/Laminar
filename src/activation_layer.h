@@ -13,7 +13,7 @@
 class SigmoidLayer : public Layer
 {
 public:
-	SigmoidLayer(vector<int> dim) :
+	SigmoidLayer(Dimension dim) :
 		Layer(dim)
 	{}
 
@@ -44,7 +44,7 @@ public:
 class CosineLayer : public Layer
 {
 public:
-	CosineLayer(vector<int> dim) :
+	CosineLayer(Dimension dim) :
 		Layer(dim)
 	{}
 
@@ -75,7 +75,7 @@ public:
 class TanhLayer : public Layer
 {
 public:
-	TanhLayer(vector<int> dim) :
+	TanhLayer(Dimension dim) :
 		Layer(dim)
 	{}
 
@@ -107,7 +107,7 @@ public:
 /*class ScalorLayer : public Layer
 {
 public:
-	ScalorLayer(vector<int> dim, float multiplier_ = 1.0f):
+	ScalorLayer(Dimension dim, float multiplier_ = 1.0f):
 		Layer(dim),
 		multiplier(multiplier_)
 	{}

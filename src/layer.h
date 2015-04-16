@@ -15,19 +15,19 @@
 class Layer : public Component
 {
 public:
-	Layer(vector<int> dim) :
+	Layer(Dimension dim) :
 		dim_(dim),
 		historyLength(1),
 		maxTemporalSkip(0)
 	{ }
 
 	Layer(int dim) :
-		Layer(vector<int>{ dim })
+		Layer(Dimension{ dim })
 	{ }
 
 	virtual ~Layer() {};
 
-	vector<int> dim()
+	Dimension dim()
 	{
 		return this->dim_;
 	}
@@ -216,7 +216,7 @@ protected:
 	}
 
 private:
-	vector<int> dim_;
+	Dimension dim_;
 
 	// frame pointer
 	int frame_ = 0;
@@ -249,7 +249,7 @@ TYPEDEF_PTR_EXTERNAL(Layer);
 class ConstantLayer : public Layer
 {
 public:
-	ConstantLayer(vector<int> dim):
+	ConstantLayer(Dimension dim):
 		Layer(dim)
 	{}
 
