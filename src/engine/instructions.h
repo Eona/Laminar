@@ -140,18 +140,49 @@ ostream& operator<<(ostream& os, Instruction instr)
 }
 
 typedef std::function<void()> Executable;
+
 /**
  * Contains a sequence of Instructions and possibly the compiled 'executable'
  * Executables are stored as void() lambdas
  */
 struct Routine
 {
-	Routine(vector<Instruction> instrs_, vector<Executable> execs_):
-		instrs(instrs_), execs(execs_)
+	Routine(vector<Instruction> instructions_ = {},
+			vector<Executable> executables_ = {}):
+		instructions(instructions_), executables(executables_)
 	{ }
 
-	vector<Instruction> instrs;
-	vector<Executable> execs;
+	vector<Instruction> instructions;
+	vector<Executable> executables;
+
+	inline void operator()() const
+	{
+		this->execute();
+	}
+
+	void execute() const
+	{
+		assert_throw(this->is_compiled(),
+			EngineException("Routine has not been compiled yet. "));
+
+		for (Executable& exe : executables)
+			exe();
+	}
+
+	bool is_compiled() const
+	{
+		return !executables.empty();
+	}
+
+	/************************************/
+	TYPEDEF_PTR(Routine);
+
+	template<typename ...ArgT>
+	static Routine::Ptr make(ArgT&& ... args)
+	{
+		return std::make_shared<Routine>(
+						std::forward<ArgT>(args) ...);
+	}
 };
 
 #endif /* INSTRUCTIONS_H_ */

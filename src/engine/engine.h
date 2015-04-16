@@ -150,14 +150,15 @@ ostream& operator<<(ostream& os, TensorNode& node)
 class EngineBase
 {
 public:
-	EngineBase()
+	EngineBase() :
+		currentRoutine(Routine::make())
 	{ }
 
 	virtual ~EngineBase() {};
 
 	void upload(Instruction instr)
 	{
-		instructions.push_back(instr);
+		currentRoutine->instructions.push_back(instr);
 	}
 
 	virtual int alloc() = 0;
@@ -169,7 +170,8 @@ public:
 	 */
 	virtual void construct_graph()
 	{
-		for (Instruction& instr : this->instructions)
+		// TODO only deal with current routine?
+		for (Instruction& instr : currentRoutine->instructions)
 		{
 			vector<int>& reads = instr.readAddrs;
 			int write = instr.writeAddr;
@@ -203,6 +205,7 @@ public:
 
 	virtual void eliminate_temporary()
 	{
+		auto& instructions = currentRoutine->instructions;
 		auto i = instructions.begin() + 3; // at least from 3rd instr onwards
 		do {
 			auto instr = *i;
@@ -240,9 +243,34 @@ public:
 
 	virtual void print_instructions()
 	{
-		for (auto& instr : this->instructions)
-			cout << instr << "\n";
+		for (int i = 0; i < routines.size(); ++i)
+		{
+			cout << "$$$ Routine " << i << " $$$\n";
+			for (auto& instr : routines[i]->instructions)
+				cout << instr << "\n";
+		}
 	}
+
+	/**************************************
+	******* Routine management *********
+	**************************************/
+	/**
+	 * Flush the currentRoutine to vector of routines and start a new routine.
+	 * Later instructions will be pushed to a new routine
+	 */
+	virtual Routine::Ptr flush_routine()
+	{
+		Routine::Ptr flushedRoutine = currentRoutine;
+		routines.push_back(currentRoutine);
+		currentRoutine = Routine::make();
+		return flushedRoutine;
+	}
+
+	/**
+	 * Compile all Routine in this->routines.
+	 * Note that any unflushed instructions in the current routine is NOT compiled.
+	 */
+	virtual void compile() = 0;
 
 	/************************************/
 	typedef shared_ptr<EngineBase> Ptr;
@@ -266,7 +294,10 @@ public:
 	}
 
 protected:
-	vector<Instruction> instructions;
+	Routine::Ptr currentRoutine;
+
+	vector<Routine::Ptr> routines;
+
 	/**
 	 * Only contains TensorNodes created by "create" opcode.
 	 */
@@ -449,11 +480,13 @@ public:
 	/**************************************
 	********** Compile & execute ***********
 	**************************************/
-	vector<Executable> compile()
+	/**
+	 * Compile every routine flushed
+	 */
+	virtual void compile()
 	{
-		vector<Executable> assembly;
-
-		for (Instruction& instr : this->instructions)
+		for (Routine::Ptr routine : this->routines)
+		for (Instruction& instr : routine->instructions)
 		{
 			// TODO do we need this op?
 			if (starts_with(instr.opcode, "create_null"))
@@ -477,7 +510,7 @@ public:
 				std::tuple<Dimension> dim =
 					OpContextBase::cast<Dimension>(instr.context)->get_context_arg_pack();
 
-				assembly.push_back([=]() {
+				routine->executables.push_back([=]() {
 					if (!this->memoryPool.is_initialized(writeAddr))
 					{
 						this->command_create(write, std::get<0>(dim));
@@ -493,24 +526,14 @@ public:
 
 				CommandFuncType cmd = this->command_map[instr.opcode]->adapt_context(instr.context);
 				// value capture by '=' includes 'this'
-				assembly.push_back([=]() {
+				routine->executables.push_back([=]() {
 					cmd(reads, write, this->memoryPool.is_initialized(writeAddr));
 					memoryPool.set_initialized(writeAddr);
 				});
 			}
 		}
-
-		return assembly;
 	}
 
-	void execute()
-	{
-		for (auto assembly : this->compile())
-			assembly();
-	}
-
-//	struct Command;
-//	TYPEDEF_PTR_EXTERNAL(Command);
 protected:
 	MemoryPool<DataT> memoryPool;
 
