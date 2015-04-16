@@ -84,7 +84,10 @@ public:
 					std::forward<ArgT>(args)...));
 	}
 
-	template<typename EngineT>
+	/**
+	 * If template unspecified, return EngineBase::Ptr
+	 */
+	template<typename EngineT = EngineBase>
 	std::shared_ptr<EngineT> get_engine()
 	{
 		auto engine_ = std::dynamic_pointer_cast<EngineT>(this->engine);
