@@ -3,21 +3,26 @@
  */
 
 
-#ifndef DUMMY_ENGINE_H_
-#define DUMMY_ENGINE_H_
+#ifndef CUDA_ENGINE_H_
+#define CUDA_ENGINE_H_
 
 #include "../engine/engine.h"
 #include "../engine/tensor.h"
 #include "../rand_utils.h"
+#include <cuda.h>
+#include "cublas_v2.h"
+#include "cudaFloatMat.h"
 
-namespace lmn { //what is this?
+namespace lmn {
 
-namespace DummyImpl {
+namespace CudaImpl {
 
 enum TensorT {
 	TENSOR = 0,
 	SCALOR = 1
 };
+
+cublasHandle_t handle;
 
 template<int TensorT>
 struct tensor_op {};
@@ -34,23 +39,29 @@ struct tensor_op<SCALOR>
 	static constexpr const char *operand = "s";
 };
 
-void create(float* write, vector<int> dim)
+void create(cudaFloatMat* write, vector<int> dim)
 {
-	DEBUG_MSG("DummyImpl::create dim=" << dim);
-	*write = 0;
+	DEBUG_MSG("CudaImpl::create dim=" << dim);
+	*write = cudaFloatMat(dim);
 }
 
 void debug_msg(string msg, bool is_initialized)
 {
-	DEBUG_MSG(("DummyImpl::" + msg + " ->init=") << std::boolalpha << is_initialized);
+	DEBUG_MSG(("CudaImpl::" + msg + " ->init=") << std::boolalpha << is_initialized);
 }
 
 template<int TensorT>
-void add(vector<float*> reads, float* write, bool is_initialized)
+void add(vector<cudaFloatMat*> reads, cudaFloatMat* write, bool is_initialized)
 {
 	string op = tensor_op<TensorT>::operand;
 	debug_msg(op + "+" + op, is_initialized);
-	*write = *reads[0] + *reads[1];
+	if (is_initialized) {
+		*write = cudaFloatMat(reads[0].DIM_X, reads[1].DIM_Y); //initialize LHS if not already
+	}
+	const float alpha = 1.0f;
+	cublasHandle_t handle;
+	cublasCreate(&handle);
+	cublasSaxpy(handle, reads[0].LEN, &alpha, reads[0].device_data, 1, reads[1].device_data, 1);
 }
 
 template<int TensorT>
@@ -176,45 +187,47 @@ inline void debug_fill(vector<float *> reads, float *write, bool is_initialized)
 } // end of DummyImpl::
 } // end of lmn::
 
-class DummyEngine : public Engine<float>
+
+
+class CudaEngine : public Engine<float>
 {
 public:
-	DummyEngine() :
+	CudaEngine() :
 		Engine<float>()
 	{
-		namespace Impl = lmn::DummyImpl;
-		const int T = Impl::TENSOR;
-		const int S = Impl::SCALOR;
-		register_create(Impl::create);
-		register_opcode("t+t", Impl::add<T>);
-		register_opcode("s+s", Impl::add<S>);
-		register_opcode("t-t", Impl::sub<T>);
-		register_opcode("s-s", Impl::sub<S>);
-		register_opcode("-t", Impl::negate<T>);
-		register_opcode("-s", Impl::negate<S>);
-		register_opcode("t*t", Impl::mult<T, T>);
-		register_opcode("t*s", Impl::mult<T, S>);
-		register_opcode("s*t", Impl::mult<S, T>);
-		register_opcode("s*s", Impl::mult<S, S>);
-		register_opcode("t=t", Impl::assign<T>);
-		register_opcode("s=s", Impl::assign<S>);
-
-		register_opcode("sin", Impl::sin);
-		register_opcode("cos", Impl::cos);
-		register_opcode("tanh", Impl::tanh);
-		register_opcode("tanh_gradient", Impl::tanh_gradient);
-		register_opcode("sigmoid", Impl::sigmoid);
-		register_opcode("sigmoid_gradient", Impl::sigmoid_gradient);
-		register_opcode("transpose", Impl::transpose);
-		register_opcode("element_mult", Impl::element_mult);
-		register_opcode("square_loss", Impl::square_loss);
-
-		register_opcode("destroy", Impl::destroy);
-		register_opcode("fill_rand", Impl::fill_rand);
-
-		/*********** DEBUG ONLY ***********/
-		register_opcode("debug_fill", Impl::debug_fill);
+//		namespace Impl = lmn::CudaImpl;
+//		const int T = Impl::TENSOR;
+//		const int S = Impl::SCALOR;
+//		register_create(Impl::create);
+//		register_opcode("t+t", Impl::add<T>);
+//		register_opcode("s+s", Impl::add<S>);
+//		register_opcode("t-t", Impl::sub<T>);
+//		register_opcode("s-s", Impl::sub<S>);
+//		register_opcode("-t", Impl::negate<T>);
+//		register_opcode("-s", Impl::negate<S>);
+//		register_opcode("t*t", Impl::mult<T, T>);
+//		register_opcode("t*s", Impl::mult<T, S>);
+//		register_opcode("s*t", Impl::mult<S, T>);
+//		register_opcode("s*s", Impl::mult<S, S>);
+//		register_opcode("t=t", Impl::assign<T>);
+//		register_opcode("s=s", Impl::assign<S>);
+//
+//		register_opcode("sin", Impl::sin);
+//		register_opcode("cos", Impl::cos);
+//		register_opcode("tanh", Impl::tanh);
+//		register_opcode("tanh_gradient", Impl::tanh_gradient);
+//		register_opcode("sigmoid", Impl::sigmoid);
+//		register_opcode("sigmoid_gradient", Impl::sigmoid_gradient);
+//		register_opcode("transpose", Impl::transpose);
+//		register_opcode("element_mult", Impl::element_mult);
+//		register_opcode("square_loss", Impl::square_loss);
+//
+//		register_opcode("destroy", Impl::destroy);
+//		register_opcode("fill_rand", Impl::fill_rand);
+//
+//		/*********** DEBUG ONLY ***********/
+//		register_opcode("debug_fill", Impl::debug_fill);
 	}
 };
 
-#endif /* DUMMY_ENGINE_H_ */
+#endif /* CUDA_ENGINE_H_ */
