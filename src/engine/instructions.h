@@ -165,7 +165,7 @@ struct Routine
 		assert_throw(this->is_compiled(),
 			EngineException("Routine has not been compiled yet. "));
 
-		for (Executable& exe : executables)
+		for (Executable exe : executables)
 			exe();
 	}
 

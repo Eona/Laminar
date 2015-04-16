@@ -241,14 +241,22 @@ public:
 		while (++i < instructions.end());
 	}
 
-	virtual void print_instructions()
+	virtual void print_routines()
 	{
 		for (int i = 0; i < routines.size(); ++i)
 		{
-			cout << "$$$ Routine " << i << " $$$\n";
+			cout << "$------------ Routine " << i << " ------------$\n";
 			for (auto& instr : routines[i]->instructions)
 				cout << instr << "\n";
 		}
+		if (!currentRoutine->instructions.empty())
+		{
+			cout << "$------------ Routine (unflushed) ------------$\n";
+			for (auto& instr : currentRoutine->instructions)
+				cout << instr << "\n";
+		}
+		else
+			cout << "$------------ Routine (unflushed) empty\n";
 	}
 
 	/**************************************
@@ -462,7 +470,7 @@ public:
 
 	void register_normal_op(Opcode op, CommandFuncType cmd)
 	{
-		this->command_map[op] = NormalCommand::make(cmd);
+		this->commandMap[op] = NormalCommand::make(cmd);
 	}
 
 	/**
@@ -474,7 +482,7 @@ public:
 	void register_context_op(Opcode op,
 			typename ContextCommand<ContextArgT...>::ContextFuncType cmd)
 	{
-		this->command_map[op] = ContextCommand<ContextArgT...>::make(cmd);
+		this->commandMap[op] = ContextCommand<ContextArgT...>::make(cmd);
 	}
 
 	/**************************************
@@ -520,11 +528,11 @@ public:
 			}
 			else
 			{
-				assert_throw(key_exists(this->command_map, instr.opcode),
+				assert_throw(key_exists(this->commandMap, instr.opcode),
 					EngineException(string("Engine compilation failure: ") +
 							"Opcode \"" + string(instr.opcode) + "\" not registered."));
 
-				CommandFuncType cmd = this->command_map[instr.opcode]->adapt_context(instr.context);
+				CommandFuncType cmd = this->commandMap[instr.opcode]->adapt_context(instr.context);
 				// value capture by '=' includes 'this'
 				routine->executables.push_back([=]() {
 					cmd(reads, write, this->memoryPool.is_initialized(writeAddr));
@@ -540,7 +548,7 @@ protected:
 	/**
 	 * Add your "assembly" function addresses for each Opcode
 	 */
-	std::unordered_map<Opcode, CommandPtr> command_map;
+	std::unordered_map<Opcode, CommandPtr> commandMap;
 	CreateFuncType command_create;
 };
 

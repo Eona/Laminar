@@ -75,11 +75,73 @@ public:
 					std::forward<ArgT>(args)...));
 	}
 
-	virtual void forward_prop() = 0;
+	/**************************************
+	******* Upload & exec instructions *********
+	**************************************/
+	virtual void upload_initialize()
+	{
+		this->initialize();
+		this->routineMap["initialize"] = engine->flush_routine();
+	}
 
-	virtual void backward_prop() = 0;
+	virtual void upload_forward()
+	{
+		this->forward();
+		this->routineMap["forward"] = engine->flush_routine();
+	}
+
+	virtual void upload_backward()
+	{
+		this->backward();
+		this->routineMap["backward"] = engine->flush_routine();
+	}
+
+	virtual void compile()
+	{
+		engine->compile();
+	}
+
+	void exec_initialize()
+	{
+		this->routineMap["initialize"]->execute();
+	}
+
+	void exec_forward()
+	{
+		this->routineMap["forward"]->execute();
+	}
+
+	void exec_backward()
+	{
+		this->routineMap["backward"]->execute();
+	}
+
 
 	virtual void reset() = 0;
+
+	// TODO
+	virtual void topological_sort()
+	{
+		throw UnimplementedException("topological sort");
+	}
+
+
+	vector<Layer::Ptr> layers;
+	vector<Connection::Ptr> connections;
+	vector<Component::Ptr> components;
+	vector<ParamContainer::Ptr> paramContainers;
+
+	LossLayerPtr lossLayer;
+
+	vector<Tensor::Ptr> input, target;
+
+protected:
+	/**
+	 * Forward/backward/initialize logic
+	 */
+	virtual void forward() = 0;
+
+	virtual void backward() = 0;
 
 	virtual void initialize()
 	{
@@ -101,24 +163,16 @@ public:
 		}
 	}
 
-	// TODO
-	virtual void topological_sort()
-	{
-		throw UnimplementedException("topological sort");
-	}
-
-
-	vector<Layer::Ptr> layers;
-	vector<Connection::Ptr> connections;
-	vector<Component::Ptr> components;
-	vector<ParamContainer::Ptr> paramContainers;
-
-	LossLayerPtr lossLayer;
-
-	vector<Tensor::Ptr> input, target;
-
 protected:
 	EngineBase::Ptr engine;
+
+	/**
+	 * Contains all named routines.
+	 * - "initialize": initialization routine
+	 * - "forward": forward propagation routine
+	 * - "backward": backward propagation routine
+	 */
+	std::unordered_map<string, Routine::Ptr> routineMap;
 
 	/**
 	 * Add to paramContainers only if 'component' is a subtype
@@ -155,18 +209,19 @@ public:
 		Network::set_target(vector<Tensor::Ptr> {target});
 	}
 
+protected:
 	virtual void initialize()
 	{
 		Network::initialize();
 	}
 
-	virtual void forward_prop()
+	virtual void forward()
 	{
 		for (Component::Ptr compon : this->components)
 			compon->forward();
 	}
 
-	virtual void backward_prop()
+	virtual void backward()
 	{
 		for (int i = components.size() - 1; i >= 0; --i)
 			components[i]->backward();
@@ -218,7 +273,7 @@ public:
 	 * First feeds forward in current time frame,
 	 * then props to the next time frame
 	 */
-	virtual void forward_prop()
+	virtual void forward()
 	{
 		for (Component::Ptr compon : this->components)
 		{
@@ -245,7 +300,7 @@ public:
 	 * First back-props to the previous time point,
 	 * then pass the gradient backward in current time.
 	 */
-	virtual void backward_prop()
+	virtual void backward_prop_upload_impl()
 	{
 		-- frame;
 

@@ -50,16 +50,19 @@ int main(int argc, char **argv)
 	net.new_connection<FullConnection>(l2, l3);
 	net.add_layer(l3);
 
-	net.initialize();
+	net.upload_initialize();
+	net.upload_forward();
+	net.upload_backward();
 
-	net.forward_prop();
-	net.backward_prop();
+	net.compile();
 
-	dummyEng->eliminate_temporary();
-	dummyEng->print_instructions();
+	dummyEng->print_routines();
 
 	DEBUG_TITLE("EXECUTE");
-	dummyEng->execute();
+	net.exec_initialize();
+	net.exec_forward();
+	net.exec_backward();
+
 	cout << dummyEng->read_memory(net.lossLayer->totalLoss) << "\n";
 
 	/*Tensor t1(dummyEng, { 2, 3 });
@@ -83,15 +86,10 @@ int main(int argc, char **argv)
 	t3 = t1;
 	cout << "t3 " << t3.addr << endl;
 
-	auto instr = dummyEng->compile();
-	for (auto f : instr)
-		f();
-	DEBUG_TITLE("second exec");
-	for (auto f : instr)
-		f();
-	DEBUG_TITLE("third exec");
-	for (auto f : instr)
-		f();*/
+	dummyEng->print_routines();
+	auto& routine = *dummyEng->flush_routine();
+	dummyEng->compile();
+	routine();*/
 
 
 /*	dummyEng->print_instructions();

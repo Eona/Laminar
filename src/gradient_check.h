@@ -18,9 +18,9 @@ inline void gradient_check(Network& net,
 
 	net.reset();
 	for (int i = 0; i < timeLength; ++i)
-		net.forward_prop();
+		net.forward_prop_upload();
 	for (int i = 0; i < timeLength; ++i)
-		net.backward_prop();
+		net.backward_prop_upload();
 
 	vector<float> analyticGrads;
 	for (ParamContainer::Ptr param : net.paramContainers)
@@ -38,14 +38,14 @@ inline void gradient_check(Network& net,
 			net.reset(); // refresh network
 			param->gradient_check_perturb(p, -perturb);
 			for (int i = 0; i < timeLength; ++i)
-				net.forward_prop();
+				net.forward_prop_upload();
 			float lossMinus = net.lossLayer->totalLoss;
 			param->gradient_check_restore();
 
 			net.reset(); // refresh network
 			param->gradient_check_perturb(p, +perturb);
 			for (int i = 0; i < timeLength; ++i)
-				net.forward_prop();
+				net.forward_prop_upload();
 			float lossPlus = net.lossLayer->totalLoss;
 			param->gradient_check_restore();
 
