@@ -23,27 +23,37 @@ static void gpuCheckError( cudaError_t err,
 class CudaFloatMat
 {
 public:
-	int DIM_X;
-	int DIM_Y;
+	int DIM_ROW;
+	int DIM_COL;
 	int LEN;
 	int NUM_DIM;
+    int LDIM;
 	std::vector<int> DIM_ALL;
+    
 
 	float * device_data;
 	float * host_data;
 
 
-	CudaFloatMat(){	}
+	CudaFloatMat():
+		device_data(NULL),
+		host_data(NULL),
+        op(CUBLAS_OP_N)
+    {   }
 
 	CudaFloatMat(float *d, int m, int n):
-		device_data(NULL)
+		device_data(NULL),
+		host_data(NULL),
+        op(CUBLAS_OP_N)
 	{
 		init_dim(m, n); //initialize matrix dimensions
 		init_cuda_mem(d); //copy data to device
 	}
 
 	CudaFloatMat(int m, int n):
-		device_data(NULL)
+		device_data(NULL),
+		host_data(NULL),
+        op(CUBLAS_OP_N)
 	{
 		init_dim(m, n); //initialize matrix dimensions
 		init_cuda_mem();
@@ -51,7 +61,9 @@ public:
 
 
 	CudaFloatMat(std::vector<int> dim):
-		device_data(NULL)
+		device_data(NULL),
+		host_data(NULL),
+        op(CUBLAS_OP_N)
 	{
 		init_dim(dim); //initialize matrix dimensions
 		init_cuda_mem();
@@ -62,7 +74,7 @@ public:
 		cudaMalloc( (void**)&device_data, LEN * sizeof(float) )
 		);
 		GPU_CHECKERROR(
-		cudaMemset( (void**)&device_data, 0, LEN * sizeof(float) )
+		cudaMemset( device_data, 0, LEN * sizeof(float) )
 		);
 	}
 
@@ -77,10 +89,11 @@ public:
 	}
 
 	void init_dim(int m, int n) {
-		DIM_X = m;
-		DIM_Y = n;
-		LEN = DIM_X * DIM_Y;
+		DIM_ROW = m;
+		DIM_COL = n;
+		LEN = DIM_ROW * DIM_COL;
 		NUM_DIM = 2;
+        LDIM = DIM_ROW;
 	}
 
 	void init_dim(std::vector<int> dim){
@@ -90,9 +103,10 @@ public:
 		for (int i = 0; i < dim.size(); ++i) {
 			LEN *= dim[i];
 		}
-		if (dim.size() > 0) DIM_X = dim[0];
-		if (dim.size() > 1) DIM_Y = dim[1];
+		if (dim.size() > 0) DIM_ROW = dim[0];
+		if (dim.size() > 1) DIM_COL = dim[1];
 
+        LDIM = DIM_ROW;
 	}
 
 	/*
@@ -120,14 +134,32 @@ public:
 		);
 		return host_data;
 	}
+    
+
+    void print_matrix(std::string msg){
+        to_host();
+        std::cout << msg << "\n";
+        for (int i = 0; i < DIM_ROW; ++i) {
+            for (int j = 0; j < DIM_COL; ++j) {
+                std::cout << host_data[i*DIM_COL+j] << '\t';
+            }
+            std::cout<<"\n";
+        } 
+    }
+
+
+    cublasOperation_t getOp() {
+        return op;
+    }
+    
 
 	~CudaFloatMat(){
 		if (device_data) cudaFree(device_data);
-		if (host_data) free(host_data);
+		//if (host_data) free(host_data);
 	}
 
 private:
-
+    cublasOperation_t op;
 };
 
 #endif

@@ -55,15 +55,25 @@ void debug_msg(string msg, bool is_initialized)
 template<int TensorT>
 void add(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 {
-	string op = tensor_op<TensorT>::operand;
-	debug_msg(op + "+" + op, is_initialized);
-	if (is_initialized) {
-		*write = CudaFloatMat(reads[0]->DIM_X, reads[0]->DIM_Y); //initialize LHS if not already
-	}
-	const float alpha = 1.0f;
-	cublasHandle_t handle;
-	cublasCreate(&handle);
-	cublasSaxpy(handle, reads[0]->LEN, &alpha, reads[0]->device_data, 1, reads[1]->device_data, 1);
+    string op = tensor_op<TensorT>::operand;
+    debug_msg(op + "+" + op, is_initialized);
+
+    int m = reads[0]->DIM_ROW;
+    int n = reads[0]->DIM_COL;
+    if (is_initialized) {
+        *write = CudaFloatMat(m, n); //initialize LHS if not already
+    }   
+    const float alpha = 1.0f;
+
+    cublasHandle_t handle;
+    cublasCreate(&handle);
+
+    cublasSgeam(handle,
+                reads[0]->getOp(), reads[0]->getOp(), 
+                m, n,  
+                &alpha, reads[0]->device_data, reads[0]->LDIM, 
+                &alpha, reads[1]->device_data, reads[1]->LDIM, 
+                write->device_data, write->LDIM);
 }
 
 template<int TensorT>
