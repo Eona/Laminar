@@ -44,7 +44,6 @@ public:
 		param(paramValues[0]),
 		gradient(paramGradients[0])
 	{
-//		param = fakernd();
 		assert_throw(inLayer->dim().size() == 1
 				&& outLayer->dim().size() == 1,
 			ComponentException("FullConnection requires the in/outLayers to be one-dimensional"));
@@ -74,14 +73,10 @@ public:
 		return os.str();
 	}
 
-	void reset()
+	virtual void zero_clear()
 	{
-		// TODO
-//		ParamContainer::reset_gradients();
+		ParamContainer::clear_gradients();
 	}
-
-	// DUMMY
-	FakeRand& fakernd = FakeRand::instance_connection();
 
 	Tensor::Ptr& param; // aliases
 	Tensor::Ptr& gradient;

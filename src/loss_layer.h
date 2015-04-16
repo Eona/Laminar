@@ -23,23 +23,23 @@ public:
 
 	virtual ~LossLayer() {};
 
-	virtual Scalor total_loss()
+	virtual Scalor::Ptr total_loss()
 	{
-		return *totalLoss;
+		return this->totalLoss;
 	}
 
-	virtual void reset()
+	virtual void zero_clear()
 	{
-		Layer::reset();
-		// TODO clear totalLoss
+		Layer::zero_clear();
+		lmn::clear(*totalLoss);
 	}
 
 	// FIXME no public!
 	vector<Tensor::Ptr> targetValue;
 
+protected:
 	Scalor::Ptr totalLoss;
 
-protected:
 	/**
 	 * Extend Layer::initialize
 	 */

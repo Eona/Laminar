@@ -7,6 +7,7 @@
 #define PARAMETER_H_
 
 #include "global_utils.h"
+#include "engine/tensor_ops.h"
 
 class ParamContainer
 {
@@ -18,16 +19,17 @@ public:
 
 	virtual ~ParamContainer() {};
 
-	// TODO reset ParamContainer
-	/*void reset_values()
+	void clear_values()
 	{
-		std::fill(paramValues.begin(), paramValues.end(), 0);
+		for (auto ptr : paramValues)
+			lmn::clear(*ptr);
 	}
 
-	void reset_gradients()
+	void clear_gradients()
 	{
-		std::fill(paramGradients.begin(), paramGradients.end(), 0);
-	}*/
+		for (auto ptr : paramGradients)
+			lmn::clear(*ptr);
+	}
 
 	int size() const
 	{

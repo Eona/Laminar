@@ -155,6 +155,12 @@ inline void square_loss(vector<float *> reads, float *write, bool is_initialized
 	*write = 0.5f * diff * diff;
 }
 
+inline void clear(vector<float *> reads, float *write, bool is_initialized)
+{
+	debug_msg("clear", is_initialized);
+	*write = 0;
+}
+
 // FIXME add contextual rand engine
 inline void fill_rand(vector<float *> reads, float *write, bool is_initialized)
 {
@@ -223,6 +229,8 @@ public:
 
 		register_normal_op("destroy", Impl::destroy);
 		register_normal_op("fill_rand", Impl::fill_rand);
+		register_normal_op("clear_t", Impl::clear);
+		register_normal_op("clear_s", Impl::clear);
 
 		register_context_op<DimIndex, float>("perturb", Impl::perturb);
 

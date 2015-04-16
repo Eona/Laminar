@@ -37,6 +37,10 @@ inline void gradient_check(Network& net,
 	for (auto& tensor : analyticGrads)
 		DEBUG_MSG("gradient check: " << engine->read_memory(tensor));
 
+	net.zero_clear();
+	engine->flush_execute();
+	DEBUG_MSG("total loss: " << engine->read_memory(net.lossLayer->total_loss()));
+
 	/****** perturb parameters matrices stored in connections ******/
 	/*int agpt = 0; // point to analyticGrads
 	for (ParamContainer::Ptr param : net.paramContainers)

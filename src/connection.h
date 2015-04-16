@@ -87,7 +87,8 @@ public:
 	virtual void backward_impl(
 			Tensor& outlayerIngrad, Tensor& inlayerOutval, Tensor& inlayerOutgrad) = 0;
 
-	virtual void reset() {}
+	virtual void zero_clear()
+	{}
 
 	/**
 	 * Read only. Forward/backward latest frame number
@@ -127,11 +128,6 @@ protected:
 	 * Implements Component::initialize
 	 */
 	virtual void initialize_impl() { }
-
-	/**
-	 * FIXME reset
-	 */
-	virtual void reset_impl() { }
 
 	// Helper for backward/forward in/outLayer check
 	void check_frame_consistency(int inFrame, int outFrame)

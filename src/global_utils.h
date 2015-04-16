@@ -151,10 +151,9 @@ inline void vec_resize_on_demand(vector<T>& vec, int accessIdx)
 }
 
 template<typename T, typename Func>
-inline void vec_apply(vector<T>& vec, Func& f)
+inline void vec_for_each(vector<T>& vec, Func f)
 {
-	for (T& elem : vec)
-		elem = f();
+	std::for_each(vec.begin(), vec.end(), f);
 }
 
 template <typename KeyT, typename ValueT>

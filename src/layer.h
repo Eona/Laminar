@@ -91,22 +91,25 @@ public:
 		check_frame_consistency(inFrame, outFrame);
 
 		this->frame_ = inFrame;
-
 		int relativeFrame = is_full_gradient_history_saved() ? frame_ : 0;
+
 		backward_impl(*outValues[frame_],
 				*outGradients[relativeFrame],
 				*inValues[frame_],
 				*inGradients[relativeFrame]);
 	}
 
-	// TODO set all to zero matrices for more convenient gradient check
-/*	virtual void zero_clear()
+	// FIXME only clears gradients, not in/outValues
+	virtual void zero_clear()
 	{
-		std::fill(inValues.begin(), inValues.end(), 0);
-		std::fill(outValues.begin(), outValues.end(), 0);
-		std::fill(inGradients.begin(), inGradients.end(), 0);
-		std::fill(outGradients.begin(), outGradients.end(), 0);
-	}*/
+		for (int i = 0; i < this->historyLength; ++i)
+		{
+//			lmn::clear(*inValues[i]);
+			lmn::clear(*inGradients[i]);
+//			lmn::clear(*outValues[i]);
+			lmn::clear(*outGradients[i]);
+		}
+	}
 
 	/**
 	 * Call after network does a full back_prop through all the layers
@@ -185,17 +188,6 @@ protected:
 			inGradients.push_back(Tensor::make(engine));
 			outGradients.push_back(Tensor::make(engine));
 		}
-	}
-
-	/**
-	 * Implement Component::reset
-	 */
-	virtual void reset_impl()
-	{
-		inValues.clear();
-		outValues.clear();
-		inGradients.clear();
-		outGradients.clear();
 	}
 
 	// Shift the gradient window

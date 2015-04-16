@@ -128,7 +128,7 @@ public:
 		this->routineMap[methodName]->execute();
 	}
 
-	virtual void reset() = 0;
+	virtual void zero_clear() = 0;
 
 	// TODO
 	virtual void topological_sort()
@@ -244,11 +244,10 @@ protected:
 			components[i]->backward();
 	}
 
-	virtual void reset()
+	virtual void zero_clear()
 	{
 		for (Component::Ptr compon : this->components)
-			compon->reset();
-		this->initialize();
+			compon->zero_clear();
 	}
 };
 
@@ -395,18 +394,16 @@ public:
 			temporalSkip);
 	}
 
-	virtual void reset()
+	virtual void zero_clear()
 	{
 		for (Component::Ptr compon : this->components)
-			compon->reset();
+			compon->zero_clear();
 
 		// FIXME reset not written
 //		for (auto& entry : prehistoryLayerMap)
 //			entry.second->reset_gradients();
 
 		frame = 0;
-
-		this->initialize();
 	}
 
 	std::unordered_map<Layer::Ptr, ParamContainer::Ptr> prehistoryLayerMap;

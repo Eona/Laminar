@@ -32,16 +32,17 @@ public:
 		this->is_initialized = true;
 	}
 
-	virtual void reset()
-	{
-		this->reset_impl();
-		this->is_initialized = false;
-	}
+	/**
+	 * Clear all values, gradients and weight parameters to 0
+	 */
+	virtual void zero_clear() = 0;
+
+	// TODO
+//	virtual void reset() = 0;
 
 	virtual void forward(int inFrame = 0, int outFrame = 0) = 0;
 
 	virtual void backward(int outFrame = 0, int inFrame = 0) = 0;
-
 
 	virtual explicit operator string() const = 0;
 
@@ -65,8 +66,6 @@ protected:
 	bool is_initialized = false;
 
 	virtual void initialize_impl() = 0;
-
-	virtual void reset_impl() = 0;
 };
 
 TYPEDEF_PTR_EXTERNAL(Component);

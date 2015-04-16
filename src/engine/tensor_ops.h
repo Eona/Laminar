@@ -75,9 +75,7 @@ operator-(const TensorT1& x1, const TensorT2& x2)
  * Unary negate
  */
 template<typename TensorT>
-typename std::enable_if<
-	is_tensor_base<TensorT>::value,
-	TensorT>::type
+typename std::enable_if<is_tensor_base<TensorT>::value, TensorT>::type
 operator-(const TensorT& x)
 {
 	TensorT ans(x.engine);
@@ -165,6 +163,16 @@ typedef Tensor (*TransferFunction)(const Tensor&);
 		return ans;
 	}
 
+	template<typename TensorT>
+	typename std::enable_if<is_tensor_base<TensorT>::value, void>::type
+	clear(const TensorT& x)
+	{
+		string operand = tensor_class_info<TensorT>::operand;
+		x.engine->upload(
+			Instruction("clear_" + operand, {}, x.addr));
+	}
+
+	// TODO
 	void fill_rand(const Tensor& x)
 	{
 		x.engine->upload(Instruction("fill_rand", {}, x.addr));
@@ -176,8 +184,6 @@ typedef Tensor (*TransferFunction)(const Tensor&);
 				OpContext<DimIndex, float>::make(idx, eps)));
 	}
 
-	// TODO
-//	inline float softmax(float x) { return x; }
 } // end of lmn::
 
 #endif /* TENSOR_OPS_H_ */
