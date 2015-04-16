@@ -27,10 +27,10 @@ public:
 	int DIM_Y;
 	int LEN;
 	int NUM_DIM;
-	vector<int> DIM_ALL;
+	std::vector<int> DIM_ALL;
 
-	float *device_data;
-	float *host_data;
+	float * device_data;
+	float * host_data;
 
 
 	CudaFloatMat(){	}
@@ -50,7 +50,7 @@ public:
 	}
 
 
-	CudaFloatMat(vector<int> dim):
+	CudaFloatMat(std::vector<int> dim):
 		device_data(NULL)
 	{
 		init_dim(dim); //initialize matrix dimensions
@@ -83,15 +83,15 @@ public:
 		NUM_DIM = 2;
 	}
 
-	void init_dim(vector<int> dim){
+	void init_dim(std::vector<int> dim){
 		DIM_ALL = dim;
 		NUM_DIM = dim.size();
 		LEN = 1;
 		for (int i = 0; i < dim.size(); ++i) {
 			LEN *= dim[i];
 		}
-		if (dim.size > 1) DIM_X = dim[0];
-		if (dim.size > 2) DIM_Y = dim[1];
+		if (dim.size() > 0) DIM_X = dim[0];
+		if (dim.size() > 1) DIM_Y = dim[1];
 
 	}
 

@@ -6,9 +6,9 @@
 #ifndef CUDA_ENGINE_H_
 #define CUDA_ENGINE_H_
 
-#include "../../engine/engine.h"
-#include "../../engine/tensor.h"
-#include "../../rand_utils.h"
+//#include "../../engine/engine.h"
+//#include "../../engine/tensor.h"
+//#include "../../rand_utils.h"
 #include <cuda.h>
 #include "cublas_v2.h"
 #include "cudaFloatMat.h"
@@ -189,12 +189,12 @@ inline void debug_fill(vector<float *> reads, float *write, bool is_initialized)
 
 
 
-class CudaEngine : public Engine<float>
-{
-public:
-	CudaEngine() :
-		Engine<float>()
-	{
+//class CudaEngine : public Engine<float>
+//{
+//public:
+//	CudaEngine() :
+//		Engine<float>()
+//	{
 //		namespace Impl = lmn::CudaImpl;
 //		const int T = Impl::TENSOR;
 //		const int S = Impl::SCALOR;
@@ -227,7 +227,7 @@ public:
 //
 //		/*********** DEBUG ONLY ***********/
 //		register_opcode("debug_fill", Impl::debug_fill);
-	}
-};
+//	}
+//};
 
 #endif /* CUDA_ENGINE_H_ */
