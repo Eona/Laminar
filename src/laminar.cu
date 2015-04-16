@@ -37,7 +37,11 @@ int main(int argc, char **argv)
 	auto targetTensor = Tensor::make(dummyEng);
 	targetTensor->engine->upload(Instruction("debug_fill", {}, targetTensor->addr));
 
-	net.set_input(inTensor);
+	auto t2 = Tensor::make(dummyEng, Dimension {2, 3});
+
+	dummyEng->execute();
+
+/*	net.set_input(inTensor);
 	net.set_target(targetTensor);
 
 	auto l1 = Layer::make<ConstantLayer>(1);
@@ -58,7 +62,7 @@ int main(int argc, char **argv)
 	dummyEng->eliminate_temporary();
 	dummyEng->print_instructions();
 	dummyEng->execute();
-	cout << dummyEng->read_memory(net.lossLayer->totalLoss) << "\n";
+	cout << dummyEng->read_memory(net.lossLayer->totalLoss) << "\n";*/
 
 	/*Tensor t1(dummyEng, { 2, 3 });
 	Tensor t2(dummyEng, {5, 7});

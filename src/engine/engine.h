@@ -47,16 +47,6 @@ public:
 		this->initialized[i] = val;
 	}
 
-	void set_dim(int i, vector<int> dim)
-	{
-		this->dimensions[i] = dim;
-	}
-
-	vector<int>& dim(int i)
-	{
-		return this->dimensions[i];
-	}
-
 	int size()
 	{
 		return memory.size();
@@ -66,7 +56,6 @@ public:
 	{
 		this->memory.clear();
 		this->initialized.clear();
-		this->dimensions.clear();
 	}
 
 	template<typename T>
@@ -77,8 +66,6 @@ private:
 	vector<DataT> memory;
 	// test if things are default initialized.
 	vector<bool> initialized;
-	// dimension of initialized tensor at memory addr
-	std::unordered_map<int, vector<int> > dimensions;
 };
 
 template<typename T>
@@ -169,8 +156,6 @@ public:
 	}
 
 	virtual int alloc() = 0;
-
-	virtual void set_dim(int addr, vector<int> dim) = 0;
 
 	virtual void reset() = 0;
 
@@ -307,11 +292,6 @@ public:
 		return memoryPool.alloc();
 	}
 
-	virtual void set_dim(int addr, vector<int> dim)
-	{
-		memoryPool.set_dim(addr, dim);
-	}
-
 	virtual void reset()
 	{
 		this->memoryPool.reset();
@@ -331,8 +311,8 @@ public:
 	**************************************/
 	// (readAddrs, writeAddr, is_initialized)
 	typedef std::function<void(vector<DataT*>, DataT*, bool)> CommandFuncType;
-	// specifically for Opcode create_dim(writeAddr, dim)
-	typedef std::function<void(DataT*, vector<int>)> CreateFuncType;
+	// specifically for Opcode create(writeAddr, dim)
+	typedef std::function<void(DataT*, Dimension)> CreateFuncType;
 
 	/**
 	 * Base of NormalCommand and ContextCommand
@@ -488,13 +468,21 @@ public:
 
 			if (instr.opcode == "create")
 			{
-				vector<int> dim = memoryPool.dim(writeAddr);
-				CreateFuncType cmd = this->command_create;
+				// wrap cmdCreate to conform to ContextCommand interface
+				auto cmdContext = [=](vector<DataT*> reads, DataT *write, bool, Dimension dim) {
+					this->command_create(write, dim);
+				};
+
+				CommandFuncType cmd =
+					ContextCommand<Dimension>::make(cmdContext)->adapt_context(instr.context);
+
 				assembly.push_back([=]() {
 					if (!this->memoryPool.is_initialized(writeAddr))
 					{
-						cmd(write, dim);
+						DEBUG_MSG("goooood");
+						cmd({}, write, false);
 						memoryPool.set_initialized(writeAddr);
+						DEBUG_MSG("betttter");
 					}
 				});
 			}

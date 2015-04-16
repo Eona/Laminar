@@ -67,24 +67,24 @@ public:
 	/*********** DEBUG ONLY ***********/
 	// restore() calls must correspond one-by-one to perturb() calls
 	// TODO gradient check
-/*	void gradient_check_perturb(int changeIdx, float eps)
+	void gradient_check_perturb(int changeIdx, float eps)
 	{
 		lastChangedIdx = changeIdx;
-		oldValue = paramValues[changeIdx];
-		paramValues[changeIdx] += eps;
+		lastEps = eps;
+		lmn::perturb(*paramValues[changeIdx], {}, eps);
 	}
 
 	void gradient_check_restore()
 	{
-		paramValues[lastChangedIdx] = oldValue;
-	}*/
+		lmn::perturb(*paramValues[lastChangedIdx], {}, -lastEps);
+	}
 
 	/************************************/
 	vector<Tensor::Ptr> paramValues;
 	vector<Tensor::Ptr> paramGradients;
 
 private:
-	int lastChangedIdx; float oldValue; // DEBUG ONLY
+	int lastChangedIdx; float lastEps; // DEBUG ONLY
 };
 
 TYPEDEF_PTR_EXTERNAL(ParamContainer);
