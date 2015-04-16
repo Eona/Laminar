@@ -449,9 +449,9 @@ public:
 	/**************************************
 	********** Compile & execute ***********
 	**************************************/
-	vector<std::function<void()>> compile()
+	vector<Executable> compile()
 	{
-		vector<std::function<void()>> assembly;
+		vector<Executable> assembly;
 
 		for (Instruction& instr : this->instructions)
 		{

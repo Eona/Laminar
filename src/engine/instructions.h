@@ -139,4 +139,19 @@ ostream& operator<<(ostream& os, Instruction instr)
 	return os;
 }
 
+typedef std::function<void()> Executable;
+/**
+ * Contains a sequence of Instructions and possibly the compiled 'executable'
+ * Executables are stored as void() lambdas
+ */
+struct Routine
+{
+	Routine(vector<Instruction> instrs_, vector<Executable> execs_):
+		instrs(instrs_), execs(execs_)
+	{ }
+
+	vector<Instruction> instrs;
+	vector<Executable> execs;
+};
+
 #endif /* INSTRUCTIONS_H_ */

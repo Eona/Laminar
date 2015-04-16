@@ -36,13 +36,13 @@ struct tensor_op<SCALOR>
 
 void create(float* write, Dimension dim)
 {
-	DEBUG_MSG("DummyImpl::create dim=" << dim);
+	DEBUG_MSG("Dummy::create dim=" << dim);
 	*write = 0;
 }
 
 void debug_msg(string msg, bool is_initialized)
 {
-	DEBUG_MSG(("DummyImpl::" + msg + " ->init=") << std::boolalpha << is_initialized);
+	DEBUG_MSG(("Dummy::" + msg + " ->init=") << std::boolalpha << is_initialized);
 }
 
 template<int TensorT>
