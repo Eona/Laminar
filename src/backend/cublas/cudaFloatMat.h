@@ -151,8 +151,16 @@ public:
     cublasOperation_t getOp() {
         return op;
     }
-    
 
+    cublasOperation_t getOp(std::string opcode) {
+        if (opcode == "C") {
+        	return CUBLAS_OP_C;
+        } else if (opcode == "T") {
+        	return CUBLAS_OP_T;
+        } else {
+        	return CUBLAS_OP_N;
+        }
+    }
 	~CudaFloatMat(){
 		if (device_data) cudaFree(device_data);
 		//if (host_data) free(host_data);

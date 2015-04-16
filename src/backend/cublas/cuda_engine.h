@@ -15,6 +15,41 @@
 
 using namespace std;
 
+class CublasHandleInstance{
+public:
+//    static cublasHandle_t & Instance()
+//    {
+//        if (!init) {
+//            cublasCreate(&handle);
+//            init = true;
+//        }
+//        return handle;
+//    }
+//
+//    void destroy()
+//    {
+//        if (init) {
+//            cublasDestroy(handle);
+//        }
+//    }
+
+    CublasHandleInstance(){
+    	cublasCreate(&handle);
+    	printf("initialized!\n");
+    }
+    static cublasHandle_t handle;
+
+private:
+
+    static bool init;
+};
+
+cublasHandle_t & cublasHandleInstance() {
+    static cublasHandle_t handle;
+    cublasCreate(&handle);
+    return handle;
+}
+
 namespace lmn {
 
 namespace CudaImpl {
@@ -24,31 +59,7 @@ enum TensorT {
 	SCALOR = 1
 };
 
-class CublasHandleInstance{
-public:
-    static cublasHandle_t Instance() 
-    {
-        if (!init) {
-            cublasCreate(&handle); 
-            init = true;
-        }
-        return handle;
-    }    
-    
-    void destroy()
-    {
-        if (init) {
-            cublasDestroy(handle); 
-        }
-    }
 
-private:
-    CublasHandleInstance(){
-        init = false;
-    }
-    static bool init;
-    static cublasHandle_t handle;
-};
 
 
 template<int TensorT>
@@ -78,6 +89,9 @@ void debug_msg(string msg, bool is_initialized)
 }
 
 
+/*
+ * write = alpha * Op(reads[0]) + beta * Op(reads[1])
+ */
 void addMat(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized, float alpha, float beta) 
 {
 
@@ -87,15 +101,55 @@ void addMat(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialize
         *write = CudaFloatMat(m, n); //initialize LHS if not already
     }   
     
-    cublasHandle_t handle;
-    cublasCreate(&handle);
-    cublasSgeam(handle,
-                reads[0]->getOp(), reads[0]->getOp(), 
+    cublasSgeam(cublasHandleInstance(),
+                reads[0]->getOp(), reads[1]->getOp(),
                 m, n,  
                 &alpha, reads[0]->device_data, reads[0]->LDIM, 
-                &alpha, reads[1]->device_data, reads[1]->LDIM, 
+                &beta, reads[1]->device_data, reads[1]->LDIM,
                 write->device_data, write->LDIM);
 }
+
+
+/*
+ * write = alpha .* Op(reads[0]) * Op(reads[1]) + beta * write
+ */
+void multMat(vector<CudaFloatMat*> reads,
+			CudaFloatMat* write, bool is_initialized,
+			float alpha, float beta,
+			std::string opA, std::string opB)
+{
+    int m = reads[0]->DIM_ROW;
+    int n = reads[0]->DIM_COL;
+    int k = reads[1]->DIM_COL;
+    if (!is_initialized) {
+        *write = CudaFloatMat(m, k); //initialize LHS if not already
+    }
+
+    //C = a Op(A)* Op(B) + b C  -- A [mxn] B [nxk] C[mxk]
+    //handle, A_len, x, incx, y, incy
+    cublasSgemm(cublasHandleInstance(),
+                reads[0]->getOp(opA), reads[1]->getOp(opB),
+                m, n, k,
+                &alpha, reads[0]->device_data, reads[0]->LDIM,
+                reads[1]->device_data, reads[1]->LDIM, &beta,
+                write->device_data, write->LDIM);
+}
+
+/*
+ * assign reads[0] to write
+ */
+void assignMat(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+{
+    int m = reads[0]->DIM_ROW;
+    int n = reads[0]->DIM_COL;
+    if (!is_initialized) {
+        *write = CudaFloatMat(m, n); //initialize LHS if not already
+    }
+    //y = x
+    //handle, x_len, x, incx, y, incy
+    cublasScopy(cublasHandleInstance(), reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);
+}
+
 
 template<int TensorT>
 void add(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
@@ -120,6 +174,14 @@ void negate(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialize
 {
 	string op = tensor_op<TensorT>::operand;
 	debug_msg("-" + op, is_initialized);
+
+    //y = x
+    assignMat(reads, write, is_initialized);
+
+    //y = -y
+    const float alpha = -1.0f;
+    cublasSscal(cublasHandleInstance(), write->LEN, &alpha, write->device_data, 1);
+
 }
 
 template<int TensorT1, int TensorT2>
@@ -128,6 +190,9 @@ void mult(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 	string op1 = tensor_op<TensorT1>::operand;
 	string op2 = tensor_op<TensorT2>::operand;
 	debug_msg(op1 + "*" + op2, is_initialized);
+
+	float alpha = 1.0f;
+	multMat(reads, write, is_initialized, alpha, 0, "N", "N");
 }
 
 template<int TensorT>
@@ -136,16 +201,7 @@ void assign(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialize
 	string op = tensor_op<TensorT>::operand;
 	debug_msg(op + "=" + op, is_initialized);
 
-    int m = reads[0]->DIM_ROW;
-    int n = reads[0]->DIM_COL;
-    if (!is_initialized) {
-        *write = CudaFloatMat(m, n); //initialize LHS if not already
-    }
-
-    cublasHandle_t handle;
-    cublasCreate(&handle);
-    cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);
-
+    assignMat(reads, write, is_initialized);
 }
 
 inline void destroy(vector<float*> reads, float* write, bool is_initialized)

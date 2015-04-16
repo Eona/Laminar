@@ -18,5 +18,6 @@ int main(int argc, char **argv)
 	v.push_back(&m2);
 
 	lmn::CudaImpl::add<0>(v, &m3, false);
+	lmn::CudaImpl::sub<0>(v, &m3, true);
     m3.print_matrix("m3");
 }
