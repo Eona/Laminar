@@ -383,9 +383,9 @@ inline void assert(bool cond, string errmsg = "", string successmsg="")
 		cout << successmsg << "\n";
 }
 
-template<typename T>
-typename enable_if<is_base_of<std::exception, T>::value, void>::type
-assert_throw(bool cond, T&& throwable)
+template<typename ExceptionT>
+typename enable_if<is_base_of<std::exception, ExceptionT>::value, void>::type
+assert_throw(bool cond, ExceptionT&& throwable)
 {
 	if (!cond)
 		throw throwable;
@@ -393,13 +393,12 @@ assert_throw(bool cond, T&& throwable)
 
 /**
  * Throw exception if the shared pointer is null
- * @param sharedPtr
+ * @param shared pointer
  * @param throwable
- * @return
  */
-template<typename T, typename E>
-typename enable_if<is_base_of<std::exception, T>::value, void>::type
-assert_throw_nullptr(const std::shared_ptr<E>& ptr, T&& throwable)
+template<typename ExceptionT, typename T>
+typename enable_if<is_base_of<std::exception, ExceptionT>::value, void>::type
+assert_throw_nullptr(const std::shared_ptr<T>& ptr, ExceptionT&& throwable)
 {
 	if (ptr == nullptr)
 		throw throwable;
