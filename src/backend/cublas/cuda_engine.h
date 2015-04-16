@@ -63,7 +63,7 @@ void add(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 	const float alpha = 1.0f;
 	cublasHandle_t handle;
 	cublasCreate(&handle);
-	cublasSaxpy(handle, reads[0]->LEN, &alpha, reads[0]->device_data, 1, reads[1]->device_data, 1);
+	cublasSaxpy(handle, reads[0]->LEN, &alpha, (const float*)reads[0]->device_data, 1, (const float*)reads[1]->device_data, 1);
 }
 
 template<int TensorT>
