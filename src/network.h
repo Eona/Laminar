@@ -105,12 +105,16 @@ public:
 		// call the member method
 		// initialize, forward, backward, reset, etc.
 		(this->*method)();
-		this->routineMap[methodName] = engine->flush_routine();
+		this->routineMap[methodName] = engine->flush();
 	}
 
+	/**
+	 * Compile all uploaded routines
+	 */
 	virtual void compile()
 	{
-		engine->compile();
+		for (auto methodKey : this->routineMap)
+			this->engine->compile(methodKey.second);
 	}
 
 	void execute(string methodName)

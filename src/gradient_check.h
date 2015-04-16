@@ -6,6 +6,7 @@
 #define GRADIENT_CHECK_H_
 
 #include "network.h"
+#include "engine/dummy_engine.h"
 
 /**
  * % difference between analytic (backprop)
@@ -14,23 +15,30 @@
 inline void gradient_check(Network& net,
 		float perturb = 1e-2f, float percentTol = 1.0f)
 {
-	int timeLength = net.input.size();
+	auto engine = net.get_engine<DummyEngine>();
 
-	net.reset();
-	for (int i = 0; i < timeLength; ++i)
-		net.forward_prop_upload();
-	for (int i = 0; i < timeLength; ++i)
-		net.backward_prop_upload();
+	net.upload("initialize");
+	net.upload("forward");
+	net.upload("backward");
+	net.compile();
 
-	vector<float> analyticGrads;
+	net.execute("initialize");
+	net.execute("forward");
+	net.execute("backward");
+
+	vector<Tensor> analyticGrads;
 	for (ParamContainer::Ptr param : net.paramContainers)
 	{
-		auto grads = param->paramGradients;
-		analyticGrads.insert(analyticGrads.end(), grads.begin(), grads.end());
+		auto gradients = param->paramGradients;
+		for (auto gradPtr : gradients)
+			analyticGrads.push_back(*gradPtr);
 	}
+	engine->flush_execute();
+	for (auto& tensor : analyticGrads)
+		DEBUG_MSG("gradient check: " << engine->read_memory(tensor));
 
 	/****** perturb parameters matrices stored in connections ******/
-	int agpt = 0; // point to analyticGrads
+	/*int agpt = 0; // point to analyticGrads
 	for (ParamContainer::Ptr param : net.paramContainers)
 	{
 		for (int p = 0; p < param->size(); ++p)
@@ -54,7 +62,7 @@ inline void gradient_check(Network& net,
 			assert_float_percent_eq(analyticGrads[agpt++], numericGrad, percentTol,
 					"param analytic != numeric", "param gradcheck pass");
 		}
-	}
+	}*/
 
 	/****** perturb the input ******/
 	// TODO

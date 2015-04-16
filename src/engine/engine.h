@@ -266,7 +266,7 @@ public:
 	 * Flush the currentRoutine to vector of routines and start a new routine.
 	 * Later instructions will be pushed to a new routine
 	 */
-	virtual Routine::Ptr flush_routine()
+	Routine::Ptr flush()
 	{
 		Routine::Ptr flushedRoutine = currentRoutine;
 		routines.push_back(currentRoutine);
@@ -275,10 +275,23 @@ public:
 	}
 
 	/**
-	 * Compile all Routine in this->routines.
-	 * Note that any unflushed instructions in the current routine is NOT compiled.
+	 * Compile the routine.
+	 * Store the executable inside the Routine.
+	 * If the routine is already compiled, clear the executables and recompile.
 	 */
-	virtual void compile() = 0;
+	virtual void compile(Routine::Ptr) = 0;
+
+	/**
+	 * Shortcut: flush, compile and execute
+	 * @return flushed routine
+	 */
+	Routine::Ptr flush_execute()
+	{
+		auto routine = this->flush();
+		this->compile(routine);
+		routine->execute();
+		return routine;
+	}
 
 	/************************************/
 	typedef shared_ptr<EngineBase> Ptr;
@@ -489,11 +502,12 @@ public:
 	********** Compile & execute ***********
 	**************************************/
 	/**
-	 * Compile every routine flushed
+	 * If the routine has already been compiled,
+	 * clear the executable and recompile.
 	 */
-	virtual void compile()
+	virtual void compile(Routine::Ptr routine)
 	{
-		for (Routine::Ptr routine : this->routines)
+		routine->executables.clear();
 		for (Instruction& instr : routine->instructions)
 		{
 			// TODO do we need this op?

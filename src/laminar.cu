@@ -11,8 +11,7 @@
 #include "parameter.h"
 //#include "lstm.h"
 #include "network.h"
-// FIXME gradient check
-//#include "gradient_check.h"
+#include "gradient_check.h"
 #include "engine/engine.h"
 #include "engine/tensor.h"
 #include "engine/tensor_ops.h"
@@ -50,7 +49,9 @@ int main(int argc, char **argv)
 	net.new_connection<FullConnection>(l2, l3);
 	net.add_layer(l3);
 
-	net.upload("initialize");
+	gradient_check(net);
+
+/*	net.upload("initialize");
 	net.upload("forward");
 	net.upload("backward");
 
@@ -63,7 +64,7 @@ int main(int argc, char **argv)
 	net.execute("forward");
 	net.execute("backward");
 
-	cout << dummyEng->read_memory(net.lossLayer->totalLoss) << "\n";
+	cout << dummyEng->read_memory(net.lossLayer->totalLoss) << "\n";*/
 
 	/*Tensor t1(dummyEng, { 2, 3 });
 	Tensor t2(dummyEng, {5, 7});
