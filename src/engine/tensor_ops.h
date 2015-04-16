@@ -32,7 +32,7 @@ template<typename TensorT1, typename TensorT2>
 typename std::enable_if<
 	is_both_tensor_bases<TensorT1, TensorT2>::value,
 	TensorT1>::type
-operator+(const TensorT1 x1, const TensorT2 x2)
+operator+(const TensorT1& x1, const TensorT2& x2)
 {
 	if (!std::is_same<TensorT1, TensorT2>::value)
 		throw TensorException(string("operator+ type mismatch: ")
