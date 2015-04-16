@@ -37,13 +37,8 @@ int main(int argc, char **argv)
 	auto targetTensor = Tensor::make(dummyEng);
 	targetTensor->engine->upload(Instruction("debug_fill", {}, targetTensor->addr));
 
-	auto t2 = Tensor::make(dummyEng, Dimension {2, 3});
-
-	t2->engine->upload(Instruction("perturb", {}, 0,
-			OpContextBase::make<DimIndex, float>(DimIndex{1, 2}, 0.332)));
-
-	dummyEng->print_instructions();
-	dummyEng->execute();
+	targetTensor->engine->upload(Instruction("debug_context_tmp", {0, 0}, 0,
+			OpContextBase::make(string("shit"), 3.666f, std::make_pair('x', 9))));
 
 /*	net.set_input(inTensor);
 	net.set_target(targetTensor);
@@ -64,9 +59,11 @@ int main(int argc, char **argv)
 	net.backward_prop();
 
 	dummyEng->eliminate_temporary();
-	dummyEng->print_instructions();
+	dummyEng->print_instructions();*/
+
+	DEBUG_TITLE("EXECUTE");
 	dummyEng->execute();
-	cout << dummyEng->read_memory(net.lossLayer->totalLoss) << "\n";*/
+//	cout << dummyEng->read_memory(net.lossLayer->totalLoss) << "\n";
 
 	/*Tensor t1(dummyEng, { 2, 3 });
 	Tensor t2(dummyEng, {5, 7});

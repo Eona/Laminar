@@ -391,6 +391,20 @@ assert_throw(bool cond, T&& throwable)
 		throw throwable;
 }
 
+/**
+ * Throw exception if the shared pointer is null
+ * @param sharedPtr
+ * @param throwable
+ * @return
+ */
+template<typename T, typename E>
+typename enable_if<is_base_of<std::exception, T>::value, void>::type
+assert_throw_nullptr(const std::shared_ptr<E>& ptr, T&& throwable)
+{
+	if (ptr == nullptr)
+		throw throwable;
+}
+
 template<typename FloatT>
 void assert_float_eq(FloatT f1, FloatT f2, FloatT tol = 1e-4f,
 		string errmsg = "", string successmsg="")

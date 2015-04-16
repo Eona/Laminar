@@ -142,6 +142,11 @@ ostream& operator<<(ostream& os, TensorNode& node)
 	return os;
 }
 
+
+/**
+ * Responsible for storing the meta-instructions and
+ * optimize the instruction graph with compiler techniques.
+ */
 class EngineBase
 {
 public:
@@ -399,16 +404,15 @@ public:
 		template<int ...S>
 		CommandFuncType adapt_context_helper(OpContextBase::Ptr contextBase, unpack_seq<S...>)
 		{
-			// This means we don't have any context extra variable, just return OpcodeFuncType
-			assert_throw(bool(contextBase.get()),
+			assert_throw_nullptr(contextBase,
 				EngineException("This command is registered as a ContextCommand\n"
-						"the Adapter in Instruction must be specified (now it's nullptr)"));
+						"the OpContext in Instruction must be specified (now it's nullptr)"));
 
 			auto context = OpContextBase::cast<ContextArgT...>(contextBase);
 
-			assert_throw(bool(context.get()),
-				EngineException("Adapter fails to supply "
-						"the correct number/types of environmental context extra parameters"));
+			assert_throw_nullptr(context,
+				EngineException("OpContext fails to supply "
+						"the correct number/types of extra context parameters"));
 
 			auto contextArgPack = context->get_context_arg_pack();
 
@@ -465,6 +469,10 @@ public:
 
 			if (instr.opcode == "create")
 			{
+				assert_throw_nullptr(instr.context,
+					EngineException("context variable (Dimension) is not supplied as part of "
+							"the instruction for create command."));
+
 				// Get the context directly
 				std::tuple<Dimension> dim =
 					OpContextBase::cast<Dimension>(instr.context)->get_context_arg_pack();
@@ -479,9 +487,9 @@ public:
 			}
 			else
 			{
-				if (!key_exists(this->command_map, instr.opcode))
-					throw EngineException(string("Engine compilation failure: ") +
-							"Opcode \"" + string(instr.opcode) + "\" not registered.");
+				assert_throw(key_exists(this->command_map, instr.opcode),
+					EngineException(string("Engine compilation failure: ") +
+							"Opcode \"" + string(instr.opcode) + "\" not registered."));
 
 				CommandFuncType cmd = this->command_map[instr.opcode]->adapt_context(instr.context);
 				// value capture by '=' includes 'this'

@@ -128,6 +128,7 @@ struct Instruction
 		return "{" + string(opcode) + ": "
 				+ container2str(readAddrs) + " -> "
 				+ to_str(writeAddr)
+				+ (bool(context) ? " context" : "")
 				+ "}";
 	}
 };
