@@ -58,7 +58,7 @@ void add(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 	string op = tensor_op<TensorT>::operand;
 	debug_msg(op + "+" + op, is_initialized);
 	if (is_initialized) {
-		*write = CudaFloatMat(reads[0]->DIM_X, reads[1]->DIM_Y); //initialize LHS if not already
+		*write = CudaFloatMat(reads[0]->DIM_X, reads[0]->DIM_Y); //initialize LHS if not already
 	}
 	const float alpha = 1.0f;
 	cublasHandle_t handle;
