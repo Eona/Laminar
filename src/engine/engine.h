@@ -445,7 +445,7 @@ public:
 	// Call in Engine ctor
 	void register_create_op(CreateFuncType createFunc)
 	{
-		this->assembly_create = createFunc;
+		this->command_create = createFunc;
 	}
 
 	void register_normal_op(Opcode op, CommandFuncType cmd)
@@ -489,11 +489,11 @@ public:
 			if (instr.opcode == "create")
 			{
 				vector<int> dim = memoryPool.dim(writeAddr);
-				CreateFuncType assembly_create = this->assembly_create;
+				CreateFuncType cmd = this->command_create;
 				assembly.push_back([=]() {
 					if (!this->memoryPool.is_initialized(writeAddr))
 					{
-						assembly_create(write, dim);
+						cmd(write, dim);
 						memoryPool.set_initialized(writeAddr);
 					}
 				});
@@ -504,10 +504,10 @@ public:
 					throw EngineException(string("Engine compilation failure: ") +
 							"Opcode \"" + string(instr.opcode) + "\" not registered.");
 
-				CommandFuncType command = this->command_map[instr.opcode]->adapt_context(instr.context);
+				CommandFuncType cmd = this->command_map[instr.opcode]->adapt_context(instr.context);
 				// value capture by '=' includes 'this'
 				assembly.push_back([=]() {
-					command(reads, write, this->memoryPool.is_initialized(writeAddr));
+					cmd(reads, write, this->memoryPool.is_initialized(writeAddr));
 					memoryPool.set_initialized(writeAddr);
 				});
 			}
@@ -531,7 +531,7 @@ protected:
 	 * Add your "assembly" function addresses for each Opcode
 	 */
 	std::unordered_map<Opcode, CommandPtr> command_map;
-	CreateFuncType assembly_create;
+	CreateFuncType command_create;
 };
 
 #endif /* ENGINE_H_ */

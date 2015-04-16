@@ -55,24 +55,10 @@ int main(int argc, char **argv)
 	net.forward_prop();
 	net.backward_prop();
 
-//	dummyEng->eliminate_temporary();
-//	dummyEng->print_instructions();
-//	dummyEng->execute();
-//	cout << dummyEng->read_memory(net.lossLayer->totalLoss) << "\n";
-
-	int a = 3;
-	double b = 2.13;
-	string s = "shit";
-	deferred_func_call<int, int, double, string> saved(
-	[](int i, double d, string s) { cout << i << "saved dispatch!" << d << s<<endl; return i+66; },
-			std::tuple<int, double, string>(a,b,s) );
-
-	saved.set_func([](int i, double d, string s)->int { cout << "FK nothing" << endl; return 66*i*i; });
-	DEBUG_MSG(saved());
-
-	auto shit = OpContext<int, double, string>::make(a, b, s);
-	auto shit2 = OpContextBase::cast<int, double, string>(shit);
-	cout << std::get<1>(shit2->get_context_arg_pack()) << "YAYYY" << endl;
+	dummyEng->eliminate_temporary();
+	dummyEng->print_instructions();
+	dummyEng->execute();
+	cout << dummyEng->read_memory(net.lossLayer->totalLoss) << "\n";
 
 	/*Tensor t1(dummyEng, { 2, 3 });
 	Tensor t2(dummyEng, {5, 7});

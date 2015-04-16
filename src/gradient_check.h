@@ -57,8 +57,9 @@ inline void gradient_check(Network& net,
 	}
 
 	/****** perturb the input ******/
+	// TODO
 	// Save the full gradient history for debugging ONLY
-	try {
+	/*try {
 		RecurrentNetwork& _net = dynamic_cast<RecurrentNetwork&>(net);
 		_net.set_max_temporal_skip(Layer::UNLIMITED_TEMPORAL_SKIP);
 	}
@@ -101,7 +102,7 @@ inline void gradient_check(Network& net,
 
 		oldInput[inp] = restoreInputVal; // restore
 	}
-	net.set_input(oldInput);
+	net.set_input(oldInput);*/
 }
 
 #endif /* GRADIENT_CHECK_H_ */
