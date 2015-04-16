@@ -6,9 +6,9 @@
 #ifndef CUDA_ENGINE_H_
 #define CUDA_ENGINE_H_
 
-#include "../engine/engine.h"
-#include "../engine/tensor.h"
-#include "../rand_utils.h"
+#include "../../engine/engine.h"
+#include "../../engine/tensor.h"
+#include "../../rand_utils.h"
 #include <cuda.h>
 #include "cublas_v2.h"
 #include "cudaFloatMat.h"
