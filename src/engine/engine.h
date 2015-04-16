@@ -401,19 +401,16 @@ public:
 		{
 			// This means we don't have any context extra variable, just return OpcodeFuncType
 			assert_throw(bool(contextBase.get()),
-					EngineException("This command is registered as a ContextCommand\n"
-							"the Adapter in Instruction must be specified (now it's nullptr)"));
+				EngineException("This command is registered as a ContextCommand\n"
+						"the Adapter in Instruction must be specified (now it's nullptr)"));
 
 			auto context = OpContextBase::cast<ContextArgT...>(contextBase);
 
 			assert_throw(bool(context.get()),
-					EngineException("Adapter fails to supply "
-							"the correct number/types of environmental context extra parameters"));
+				EngineException("Adapter fails to supply "
+						"the correct number/types of environmental context extra parameters"));
 
 			auto contextArgPack = context->get_context_arg_pack();
-
-			// Do nothing, simply suppress g++ unused_warning message
-			std::get<0>(contextArgPack);
 
 			return [=](vector<DataT*> reads, DataT *write, bool is_initialized)
 			{
@@ -468,21 +465,15 @@ public:
 
 			if (instr.opcode == "create")
 			{
-				// wrap cmdCreate to conform to ContextCommand interface
-				auto cmdContext = [=](vector<DataT*> reads, DataT *write, bool, Dimension dim) {
-					this->command_create(write, dim);
-				};
-
-				CommandFuncType cmd =
-					ContextCommand<Dimension>::make(cmdContext)->adapt_context(instr.context);
+				// Get the context directly
+				std::tuple<Dimension> dim =
+					OpContextBase::cast<Dimension>(instr.context)->get_context_arg_pack();
 
 				assembly.push_back([=]() {
 					if (!this->memoryPool.is_initialized(writeAddr))
 					{
-						DEBUG_MSG("goooood");
-						cmd({}, write, false);
+						this->command_create(write, std::get<0>(dim));
 						memoryPool.set_initialized(writeAddr);
-						DEBUG_MSG("betttter");
 					}
 				});
 			}

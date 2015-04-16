@@ -72,6 +72,15 @@ struct OpContextBase
 	{
 		return std::dynamic_pointer_cast<OpContext<ContextArgT...>>(contextBase);
 	}
+
+	template<typename ...ContextArgT>
+	static OpContextBase::Ptr make(ContextArgT&& ... args)
+	{
+		return static_cast<OpContextBase::Ptr>(
+				std::make_shared<OpContext<ContextArgT...>>(
+						std::forward<ContextArgT>(args) ...));
+	}
+
 };
 
 template<typename ...ContextArgT>

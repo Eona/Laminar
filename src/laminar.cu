@@ -39,6 +39,10 @@ int main(int argc, char **argv)
 
 	auto t2 = Tensor::make(dummyEng, Dimension {2, 3});
 
+	t2->engine->upload(Instruction("perturb", {}, 0,
+			OpContextBase::make<DimIndex, float>(DimIndex{1, 2}, 0.332)));
+
+	dummyEng->print_instructions();
 	dummyEng->execute();
 
 /*	net.set_input(inTensor);
@@ -108,7 +112,7 @@ int main(int argc, char **argv)
 	dummyEng->construct_graph();
 	dummyEng->print_graph();*/
 
-	DEBUG_MSG("done");
+	DEBUG_TITLE("DONE");
 
 /*	vector<float> LSTM_CONNECTION_WEIGHTS {
 		-0.904, 0.312, -0.944, 1.34, -2.14, -1.69, -2.88, -0.889, -2.28, -0.414, -2.07

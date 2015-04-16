@@ -167,7 +167,7 @@ inline void perturb(vector<float *> reads, float *write, bool is_initialized,
 		DimIndex idx, float eps)
 {
 	debug_msg("perturb", is_initialized);
-	*write = *reads[0] + eps;
+	*write += eps;
 }
 
 /*********** DEBUG ONLY ***********/
