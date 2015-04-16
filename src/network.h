@@ -64,7 +64,7 @@ public:
 	{
 		static_assert(is_composite<CompositeT>(),
 				"Not a valid composite type");
-//		static_assert(std::is_same<Composite<std::remove_pointer<decltype(this)>::type>, CompositeT>::value, "err");
+
 		composite->manipulate(this);
 	}
 
@@ -84,11 +84,23 @@ public:
 					std::forward<ArgT>(args)...));
 	}
 
+	template<typename EngineT>
+	std::shared_ptr<EngineT> get_engine()
+	{
+		auto engine_ = std::dynamic_pointer_cast<EngineT>(this->engine);
+		assert_throw_nullptr(engine_,
+			NetworkException("get_engine()'s template type is incompatible"));
+		return engine_;
+	}
+
 	/**************************************
 	******* Upload & exec instructions *********
 	**************************************/
 	virtual void upload(string methodName)
 	{
+		assert_throw(key_exists(networkMethodMap, methodName),
+			NetworkException("no Network member method is associated with \"" + methodName + "\""));
+
 		auto method = networkMethodMap[methodName];
 		// call the member method
 		// initialize, forward, backward, reset, etc.
@@ -103,6 +115,9 @@ public:
 
 	void execute(string methodName)
 	{
+		assert_throw(key_exists(routineMap, methodName),
+			NetworkException("no Network Routine is associated with \"" + methodName + "\""));
+
 		this->routineMap[methodName]->execute();
 	}
 
