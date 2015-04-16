@@ -17,7 +17,16 @@ class Network
 public:
 	Network(EngineBase::Ptr engine_)
 		: engine(engine_)
-	{ }
+	{
+		/**
+		 * Tag the member methods with their names
+		 * These methods only deal with the logic, not computation
+		 * All they do is to upload instructions to engine
+		 */
+		networkMethodMap["initialize"] = &Network::initialize;
+		networkMethodMap["forward"] = &Network::forward;
+		networkMethodMap["backward"] = &Network::backward;
+	}
 
 	virtual ~Network() {};
 
@@ -78,22 +87,13 @@ public:
 	/**************************************
 	******* Upload & exec instructions *********
 	**************************************/
-	virtual void upload_initialize()
+	virtual void upload(string methodName)
 	{
-		this->initialize();
-		this->routineMap["initialize"] = engine->flush_routine();
-	}
-
-	virtual void upload_forward()
-	{
-		this->forward();
-		this->routineMap["forward"] = engine->flush_routine();
-	}
-
-	virtual void upload_backward()
-	{
-		this->backward();
-		this->routineMap["backward"] = engine->flush_routine();
+		auto method = networkMethodMap[methodName];
+		// call the member method
+		// initialize, forward, backward, reset, etc.
+		(this->*method)();
+		this->routineMap[methodName] = engine->flush_routine();
 	}
 
 	virtual void compile()
@@ -101,21 +101,10 @@ public:
 		engine->compile();
 	}
 
-	void exec_initialize()
+	void execute(string methodName)
 	{
-		this->routineMap["initialize"]->execute();
+		this->routineMap[methodName]->execute();
 	}
-
-	void exec_forward()
-	{
-		this->routineMap["forward"]->execute();
-	}
-
-	void exec_backward()
-	{
-		this->routineMap["backward"]->execute();
-	}
-
 
 	virtual void reset() = 0;
 
@@ -173,6 +162,12 @@ protected:
 	 * - "backward": backward propagation routine
 	 */
 	std::unordered_map<string, Routine::Ptr> routineMap;
+
+	/**
+	 * All named member methods
+	 */
+	std::unordered_map<string,
+		decltype(&Network::forward)> networkMethodMap;
 
 	/**
 	 * Add to paramContainers only if 'component' is a subtype

@@ -50,18 +50,18 @@ int main(int argc, char **argv)
 	net.new_connection<FullConnection>(l2, l3);
 	net.add_layer(l3);
 
-	net.upload_initialize();
-	net.upload_forward();
-	net.upload_backward();
+	net.upload("initialize");
+	net.upload("forward");
+	net.upload("backward");
 
 	net.compile();
 
 	dummyEng->print_routines();
 
 	DEBUG_TITLE("EXECUTE");
-	net.exec_initialize();
-	net.exec_forward();
-	net.exec_backward();
+	net.execute("initialize");
+	net.execute("forward");
+	net.execute("backward");
 
 	cout << dummyEng->read_memory(net.lossLayer->totalLoss) << "\n";
 
