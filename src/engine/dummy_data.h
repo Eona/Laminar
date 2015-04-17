@@ -31,6 +31,11 @@ public:
 		target_rand.reset_seq();
 	}
 
+	// FIXME
+	void start_new_sequence()
+	{
+	}
+
 private:
 	FakeRand& input_rand = FakeRand::instance_input();
 	FakeRand& target_rand = FakeRand::instance_target();

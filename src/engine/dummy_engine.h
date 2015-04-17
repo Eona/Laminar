@@ -78,6 +78,12 @@ void mult(vector<float*> reads, float* write, bool is_initialized)
 	*write = (*reads[0]) * (*reads[1]);
 }
 
+void scale(vector<float*> reads, float* write, bool is_initialized, float scalorContext)
+{
+	debug_msg("scale * " + to_str(scalorContext), is_initialized);
+	*write = scalorContext * (*reads[0]);
+}
+
 template<int TensorT>
 void assign(vector<float*> reads, float* write, bool is_initialized)
 {
@@ -228,6 +234,7 @@ public:
 		register_normal_op("clear_s", Impl::clear);
 
 		register_context_op<DimIndex, float>("perturb", Impl::perturb);
+		register_context_op<float>("scale", Impl::scale);
 
 		/*********** DEBUG ONLY ***********/
 		register_context_op<string, float, std::pair<char, int>>("debug_context_tmp", Impl::debug_context_tmp);

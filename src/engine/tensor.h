@@ -209,6 +209,13 @@ public:
 		return *this;
 	}
 
+	Tensor& operator*=(float scalor)
+	{
+		engine->upload(Instruction("scale", {this->addr}, this->addr,
+				OpContext<float>::make(scalor)));
+		return *this;
+	}
+
 	TYPEDEF_PTR(Tensor);
 
 	template<typename ...ArgT>

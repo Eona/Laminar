@@ -111,6 +111,29 @@ operator*(const TensorT1& x1, const TensorT2& x2)
 }
 
 /**
+ * Multiply by a scalor constant (float)
+ * @see opcode "s*t" and "t*s"
+ * @param x
+ * @param scalor
+ * @return
+ */
+Tensor operator*(const Tensor& x, float scalor)
+{
+	Tensor ans(x.engine);
+	ans.upload(Instruction("scale", {x.addr}, ans.addr,
+			OpContext<float>::make(scalor)));
+	return ans;
+}
+
+Tensor operator*(float scalor, const Tensor& x)
+{
+	Tensor ans(x.engine);
+	ans.upload(Instruction("scale", {x.addr}, ans.addr,
+			OpContext<float>::make(scalor)));
+	return ans;
+}
+
+/**
  * Other common deep learning operations
  */
 namespace lmn

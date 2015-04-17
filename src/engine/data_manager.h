@@ -41,9 +41,14 @@ public:
 	}
 
 	/**
-	 * Resets the input/target data stream
+	 * Network announces that we're starting a new epoch
 	 */
 	virtual void start_new_epoch() = 0;
+
+	/**
+	 * RNN announces that we're starting a new sequence
+	 */
+	virtual void start_new_sequence() = 0;
 
 	/**
 	 * If template unspecified, return EngineBase::Ptr
