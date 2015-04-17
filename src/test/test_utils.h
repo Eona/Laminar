@@ -16,9 +16,14 @@
 #include "../activation_layer.h"
 #include "../loss_layer.h"
 #include "../parameter.h"
-#include "../lstm.h"
+//#include "../lstm.h"
 #include "../network.h"
 #include "../gradient_check.h"
+
+#include "../engine/tensor.h"
+#include "../engine/tensor_ops.h"
+#include "../engine/dummy_data.h"
+#include "../engine/dummy_engine.h"
 
 using namespace std;
 
