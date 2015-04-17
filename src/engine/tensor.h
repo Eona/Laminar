@@ -36,13 +36,11 @@ public:
 		engine(other.engine),
 		addr(engine->alloc())
 	{
-		DEBUG_MSG("Copy Ctor");
 	}
 
 	// Copy assignment
 	TensorBase& operator=(const TensorBase& other)
 	{
-		DEBUG_MSG("Copy Assign");
 		return *this;
 	}
 
@@ -51,7 +49,6 @@ public:
 		engine(other.engine),
 		addr(other.addr)
 	{
-		DEBUG_MSG("Move Ctor");
 		other.addr = -1;
 	}
 

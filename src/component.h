@@ -17,8 +17,7 @@ public:
 
 	void init_engine(EngineBase::Ptr engine)
 	{
-		assert_throw(!this->is_initialized,
-			ComponentException("init_engine() must be called before initialize()"));
+		check_uninitialized("init_engine", "Component");
 		this->engine = engine;
 	}
 
@@ -68,6 +67,16 @@ protected:
 	bool is_initialized = false;
 
 	virtual void initialize_impl() = 0;
+
+	/**
+	 * Exception helper
+	 * The function should be called *before* initialization
+	 */
+	void check_uninitialized(string msg, string componentName)
+	{
+		assert_throw(!this->is_initialized, NetworkException(
+				msg + " should be called before " + componentName + " initialization."));
+	}
 };
 
 TYPEDEF_PTR_EXTERNAL(Component);

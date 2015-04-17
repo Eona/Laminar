@@ -41,8 +41,7 @@ public:
 	 */
 	void init_max_temporal_skip(int maxTemporalSkip)
 	{
-		assert_throw(!this->is_initialized,
-			ComponentException("init_max_temporal_skip() must be called before initialize()"));
+		Component::check_uninitialized("init_max_temporal_skip", "Layer");
 
 		this->maxTemporalSkip = maxTemporalSkip;
 	}
@@ -62,8 +61,7 @@ public:
 	 */
 	void init_history_length(int historyLength)
 	{
-		assert_throw(!this->is_initialized,
-			ComponentException("init_history_length() must be called before initialize()"));
+		Component::check_uninitialized("init_history_length", "Layer");
 
 		this->historyLength = historyLength;
 	}
