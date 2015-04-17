@@ -124,9 +124,14 @@ public:
         	return CUBLAS_OP_N;
         }
     }
+
+    void free_data(){
+    	if (device_data) cudaFree(device_data);
+		if (host_data) free(host_data);
+    }
+
 	~CudaFloatMat(){
-		if (device_data) cudaFree(device_data);
-		//if (host_data) free(host_data);
+		free_data();
 	}
 
 private:
@@ -170,12 +175,21 @@ private:
 			LEN *= dim[i];
 		}
 		DATA_LEN = LEN * sizeof(float);
+
+
 		if (dim.size() > 0) DIM_ROW = dim[0];
-		if (dim.size() > 1) DIM_COL = dim[1];
+		if (dim.size() > 1) {
+			DIM_COL = dim[1];
+		} else {
+			DIM_COL = 1;
+		}
 
         LDIM = DIM_ROW;
 	}
 
+
+
+	//not used
 	void to_column_major(float *target, float *source){
 		int c = 0;
 		for (int i = 0; i < DIM_COL; ++i) {
@@ -186,6 +200,7 @@ private:
 		}
 	}
 
+	//not used
 	void to_row_major(float *target, float *source){
 		int c = 0;
 		for (int i = 0; i < DIM_ROW; ++i) {

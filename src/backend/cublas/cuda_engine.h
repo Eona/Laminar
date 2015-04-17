@@ -12,7 +12,7 @@
 #include <cuda.h>
 #include "cublas_v2.h"
 #include "cudaFloatMat.h"
-
+#include "cuda_func.h"
 using namespace std;
 
 class CublasHandleInstance{
@@ -49,6 +49,8 @@ cublasHandle_t & cublasHandleInstance() {
     cublasCreate(&handle);
     return handle;
 }
+
+
 
 namespace lmn {
 
@@ -204,25 +206,30 @@ void assign(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialize
     assignMat(reads, write, is_initialized);
 }
 
-inline void destroy(vector<float*> reads, float* write, bool is_initialized)
+
+inline void destroy(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 {
 	debug_msg("destroy", is_initialized);
+	reads[0]->free_data();
 }
 
 
 // standalone single-float non-linear functions
-inline void transpose(vector<float *> reads, float *write, bool is_initialized)
+inline void transpose(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 {
 	debug_msg("transpose", is_initialized);
-	float r = *reads[0];
-	*write = *reads[0];
+	//TODO
 }
 
-inline void sigmoid(vector<float *> reads, float *write, bool is_initialized)
+
+
+inline void sigmoid(vector<CudaFloatMat*> reads, CudaFloatMat *write, bool is_initialized)
 {
 	debug_msg("sigmoid", is_initialized);
-	float r = *reads[0];
-	*write = 1.f / (1.f + exp(-r));
+	op_func_t h_neg_func;
+	cudaMemcpyFromSymbol( &h_neg_func, p_neg_func, sizeof( op_func_t ) );
+	op_func_t d_myfunc = h_neg_func;
+	dummy_kernel<<<1,1>>>( h_neg_func );
 }
 
 inline void sigmoid_gradient(vector<float *> reads, float *write, bool is_initialized)
