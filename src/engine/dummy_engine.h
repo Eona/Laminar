@@ -177,11 +177,6 @@ inline void perturb(vector<float *> reads, float *write, bool is_initialized,
 }
 
 /*********** DEBUG ONLY ***********/
-inline void debug_fill(vector<float *> reads, float *write, bool is_initialized)
-{
-	debug_msg("debug_fill", is_initialized);
-	*write = 0.66337;
-}
 
 inline void debug_context_tmp(vector<float *> reads, float *write, bool is_initialized, string x, float y, std::pair<char, int> z)
 {
@@ -235,7 +230,6 @@ public:
 		register_context_op<DimIndex, float>("perturb", Impl::perturb);
 
 		/*********** DEBUG ONLY ***********/
-		register_normal_op("debug_fill", Impl::debug_fill);
 		register_context_op<string, float, std::pair<char, int>>("debug_context_tmp", Impl::debug_context_tmp);
 	}
 };
