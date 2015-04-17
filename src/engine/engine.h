@@ -380,6 +380,13 @@ public:
 	 */
 	struct Command
 	{
+		/**
+		 * Provided with Opcode name so that we can generate a better error message
+		 */
+		Command(Opcode op) :
+			opName(string(op))
+		{ }
+
 		virtual ~Command() {}
 
 		/**
@@ -390,6 +397,8 @@ public:
 		 */
 		virtual CommandFuncType adapt_context(OpContextBase::Ptr context) = 0;
 
+	protected:
+		string opName;
 	};
 	// WARNING if you TYPEDEF_PTR(Command) inside Command struct, for some reason
 	// you have to add typename to 'CommandPtr' everywhere you use Ptr
@@ -401,14 +410,19 @@ public:
 	 */
 	struct NormalCommand : public Command
 	{
-		NormalCommand(CommandFuncType cmd_) : cmd(cmd_)
+		/**
+		 * Provided with Opcode name so that we can generate a better error message
+		 */
+		NormalCommand(Opcode op, CommandFuncType cmd_) :
+			Command(op), cmd(cmd_)
 		{ }
 
 		CommandFuncType adapt_context(OpContextBase::Ptr context)
 		{
 			assert_throw(!context,
-				EngineException("OpContext in Instruction is not null: \n"
-						"this command is not a NormalCommand, should be registered as ContextCommand instead."));
+				EngineException("OpContext in Instruction is not null: \n\""
+					+ Command::opName +"\" "
+					"is not a NormalCommand, should be registered as ContextCommand instead."));
 			return cmd;
 		}
 
@@ -436,8 +450,11 @@ public:
 
 		typedef std::function<void(vector<DataT*>, DataT*, bool, ContextArgT...)> ContextFuncType;
 
-		ContextCommand(ContextFuncType contextCmd_):
-			contextCmd(contextCmd_)
+		/**
+		 * Provided with Opcode name so that we can generate a better error message
+		 */
+		ContextCommand(Opcode op, ContextFuncType contextCmd_):
+			Command(op), contextCmd(contextCmd_)
 		{}
 
 		CommandFuncType adapt_context(OpContextBase::Ptr context)
@@ -461,7 +478,7 @@ public:
 		CommandFuncType adapt_context_helper(OpContextBase::Ptr contextBase, unpack_seq<S...>)
 		{
 			assert_throw_nullptr(contextBase,
-				EngineException("This command is registered as a ContextCommand\n"
+				EngineException("\""+ Command::opName + "\" is registered as a ContextCommand\n"
 						"the OpContext in Instruction must be specified (now it's nullptr)"));
 
 			auto context = OpContextBase::cast<ContextArgT...>(contextBase);
@@ -487,7 +504,7 @@ public:
 
 	void register_normal_op(Opcode op, CommandFuncType cmd)
 	{
-		this->commandMap[op] = NormalCommand::make(cmd);
+		this->commandMap[op] = NormalCommand::make(op, cmd);
 	}
 
 	/**
@@ -499,7 +516,7 @@ public:
 	void register_context_op(Opcode op,
 			typename ContextCommand<ContextArgT...>::ContextFuncType cmd)
 	{
-		this->commandMap[op] = ContextCommand<ContextArgT...>::make(cmd);
+		this->commandMap[op] = ContextCommand<ContextArgT...>::make(op, cmd);
 	}
 
 	/**************************************
