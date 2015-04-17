@@ -162,6 +162,9 @@ struct Routine
 
 	void execute() const
 	{
+		assert_throw(!this->instructions.empty(),
+			EngineException("Routine contains no instructions, cannot be executed."));
+
 		assert_throw(this->is_compiled(),
 			EngineException("Routine has not been compiled yet. "));
 

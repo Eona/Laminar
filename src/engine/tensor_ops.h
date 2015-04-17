@@ -43,8 +43,8 @@ operator+(const TensorT1& x1, const TensorT2& x2)
 	using TensorT = TensorT1;
 	TensorT ans(x1.engine);
 	string operand = tensor_class_info<TensorT>::operand;
-	x1.engine->upload(
-		Instruction(operand + "+" + operand, {x1.addr, x2.addr}, ans.addr));
+	x1.upload(Instruction(
+			operand + "+" + operand, {x1.addr, x2.addr}, ans.addr));
 	return ans;
 }
 
@@ -66,8 +66,8 @@ operator-(const TensorT1& x1, const TensorT2& x2)
 	using TensorT = TensorT1;
 	TensorT ans(x1.engine);
 	string operand = tensor_class_info<TensorT>::operand;
-	x1.engine->upload(
-		Instruction(operand + "-" + operand, {x1.addr, x2.addr}, ans.addr));
+	x1.upload(Instruction(
+			operand + "-" + operand, {x1.addr, x2.addr}, ans.addr));
 	return ans;
 }
 
@@ -80,8 +80,7 @@ operator-(const TensorT& x)
 {
 	TensorT ans(x.engine);
 	string operand = tensor_class_info<TensorT>::operand;
-	x.engine->upload(
-		Instruction("-" + operand, {x.addr}, ans.addr));
+	x.upload(Instruction("-" + operand, {x.addr}, ans.addr));
 	return ans;
 }
 
@@ -106,9 +105,8 @@ operator*(const TensorT1& x1, const TensorT2& x2)
 	AnsType ans(x1.engine);
 	string oper1 = tensor_class_info<TensorT1>::operand;
 	string oper2 = tensor_class_info<TensorT2>::operand;
-	x1.engine->upload(Instruction(
-			oper1 + "*" + oper2,
-			{x1.addr, x2.addr}, ans.addr));
+	x1.upload(Instruction(
+			oper1 + "*" + oper2, {x1.addr, x2.addr}, ans.addr));
 	return ans;
 }
 
@@ -126,7 +124,7 @@ typedef Tensor (*TransferFunction)(const Tensor&);
 	fname(const TensorT& x) \
 	{ \
 		Tensor ans(x.engine); \
-		x.engine->upload(Instruction(STRINGFY(fname), {x.addr}, ans.addr)); \
+		x.upload(Instruction(STRINGFY(fname), {x.addr}, ans.addr)); \
 		return ans; \
 	} \
 //	template Tensor fname(Tensor& x); \
@@ -149,7 +147,7 @@ typedef Tensor (*TransferFunction)(const Tensor&);
 	Tensor element_mult(const Tensor& x1, const Tensor& x2)
 	{
 		Tensor ans(x1.engine);
-		x1.engine->upload(Instruction(
+		x1.upload(Instruction(
 				"element_mult", {x1.addr, x2.addr}, ans.addr));
 		return ans;
 	}
@@ -158,7 +156,7 @@ typedef Tensor (*TransferFunction)(const Tensor&);
 	Scalor square_loss(const Tensor& x1, const Tensor& x2)
 	{
 		Scalor ans(x1.engine);
-		x1.engine->upload(Instruction(
+		x1.upload(Instruction(
 				"square_loss", {x1.addr, x2.addr}, ans.addr));
 		return ans;
 	}
@@ -168,19 +166,18 @@ typedef Tensor (*TransferFunction)(const Tensor&);
 	clear(const TensorT& x)
 	{
 		string operand = tensor_class_info<TensorT>::operand;
-		x.engine->upload(
-			Instruction("clear_" + operand, {}, x.addr));
+		x.upload(Instruction("clear_" + operand, {}, x.addr));
 	}
 
 	// TODO
 	void fill_rand(const Tensor& x)
 	{
-		x.engine->upload(Instruction("fill_rand", {}, x.addr));
+		x.upload(Instruction("fill_rand", {}, x.addr));
 	}
 
 	void perturb(const Tensor& x, DimIndex idx, float eps)
 	{
-		x.engine->upload(Instruction("perturb", {}, x.addr,
+		x.upload(Instruction("perturb", {}, x.addr,
 				OpContext<DimIndex, float>::make(idx, eps)));
 	}
 

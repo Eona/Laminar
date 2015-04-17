@@ -26,6 +26,11 @@ public:
 		}
 	}
 
+	inline void upload(Instruction instr) const
+	{
+		this->engine->upload(instr);
+	}
+
 	// Copy ctor
 	TensorBase(const TensorBase& other) :
 		engine(other.engine),
