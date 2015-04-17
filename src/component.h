@@ -25,7 +25,7 @@ public:
 	virtual void initialize()
 	{
 		assert_throw(!this->is_initialized,
-			ComponentException("already initialized, can't init again unless reset()"));
+			ComponentException("Component already initialized, can't init again unless reset()"));
 
 		this->initialize_impl();
 

@@ -154,7 +154,17 @@ protected:
 
 	virtual void backward() = 0;
 
-	virtual void initialize()
+	void initialize()
+	{
+		assert_throw(!this->is_initialized,
+			ComponentException("Network already initialized, can't init again unless reset()"));
+
+		this->initialize_impl();
+
+		this->is_initialized = true;
+	}
+
+	virtual void initialize_impl()
 	{
 		layers[0]->inValues = this->input;
 		this->lossLayer = Layer::cast<LossLayer>(layers[layers.size() - 1]);
@@ -176,10 +186,11 @@ protected:
 
 protected:
 	EngineBase::Ptr engine;
+	bool is_initialized = false;
 
 	/**
 	 * Contains all named routines.
-	 * - "initialize": initialization routine
+	 * - "initialize_impl": initialization routine
 	 * - "forward": forward propagation routine
 	 * - "backward": backward propagation routine
 	 */
@@ -227,9 +238,9 @@ public:
 	}
 
 protected:
-	virtual void initialize()
+	virtual void initialize_impl()
 	{
-		Network::initialize();
+		Network::initialize_impl();
 	}
 
 	virtual void forward()
@@ -265,7 +276,7 @@ public:
 	virtual ~RecurrentNetwork() {};
 
 	/*********** Network operations ***********/
-	virtual void initialize()
+	virtual void initialize_impl()
 	{
 		assert_throw(input.size() == target.size(),
 			NetworkException(
@@ -274,11 +285,12 @@ public:
 		for (Layer::Ptr layer : layers)
 			layer->init_max_temporal_skip(this->maxTemporalSkip);
 
-		Network::initialize();
+		Network::initialize_impl();
 	}
 
 	/**
 	 * Call assemble() again to refresh maxTemporalSkip
+	 * FIXME init_XX...
 	 */
 	virtual void set_max_temporal_skip(int maxTemporalSkip)
 	{
