@@ -7,6 +7,7 @@
 #include "full_connection.h"
 #include "gated_connection.h"
 #include "activation_layer.h"
+#include "engine/dummy_data.h"
 #include "loss_layer.h"
 #include "parameter.h"
 //#include "lstm.h"
@@ -29,15 +30,9 @@ int main(int argc, char **argv)
 {
 	auto dummyEng = EngineBase::make<DummyEngine>();
 
-	ForwardNetwork net(dummyEng);
-	auto inTensor = Tensor::make(dummyEng);
-	inTensor->engine->upload(Instruction("debug_fill", {}, inTensor->addr));
+	auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
 
-	auto targetTensor = Tensor::make(dummyEng);
-	targetTensor->engine->upload(Instruction("debug_fill", {}, targetTensor->addr));
-
-	net.set_input(inTensor);
-	net.set_target(targetTensor);
+	ForwardNetwork net(dummyEng, dummyData);
 
 	auto l1 = Layer::make<ConstantLayer>(1);
 	auto l2 = Layer::make<SigmoidLayer>(5);
@@ -64,7 +59,7 @@ int main(int argc, char **argv)
 	net.execute("forward");
 	net.execute("backward");
 
-	cout << dummyEng->read_memory(net.lossLayer->totalLoss) << "\n";*/
+	cout << dummyEng->read_memory(net.lossLayer->total_loss()) << "\n";*/
 
 	/*Tensor t1(dummyEng, { 2, 3 });
 	Tensor t2(dummyEng, {5, 7});

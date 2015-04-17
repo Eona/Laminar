@@ -16,6 +16,7 @@ inline void gradient_check(Network& net,
 		float perturb = 1e-2f, float percentTol = 1.0f)
 {
 	auto engine = net.get_engine<DummyEngine>();
+	auto dataman = net.get_data_manager<DummyDataManager>();
 
 	net.upload("initialize");
 	net.upload("forward");
@@ -44,8 +45,10 @@ inline void gradient_check(Network& net,
 		for (int p = 0; p < param->size(); ++p)
 		{
 			net.zero_clear(); // refresh network
-			net.input[0]->upload(Instruction("debug_fill", {}, net.input[0]->addr));
-			net.target[0]->upload(Instruction("debug_fill", {}, net.target[0]->addr));
+			dataman->start_new_epoch();
+			// forward loads input, backward loads target, but backward isn't called here
+			net.load_target();
+
 			param->gradient_check_perturb(p, -perturb);
 			engine->flush_execute();
 
@@ -56,8 +59,8 @@ inline void gradient_check(Network& net,
 			param->gradient_check_restore();
 
 			net.zero_clear(); // refresh network
-			net.input[0]->upload(Instruction("debug_fill", {}, net.input[0]->addr));
-			net.target[0]->upload(Instruction("debug_fill", {}, net.target[0]->addr));
+			dataman->start_new_epoch();
+			net.load_target();
 
 			param->gradient_check_perturb(p, +perturb);
 			engine->flush_execute();

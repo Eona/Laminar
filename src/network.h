@@ -11,13 +11,17 @@
 #include "connection.h"
 #include "engine/engine.h"
 #include "engine/tensor.h"
+#include "engine/data_manager.h"
 
 class Network
 {
 public:
-	Network(EngineBase::Ptr engine_)
-		: engine(engine_)
+	Network(EngineBase::Ptr engine_, DataManagerBase::Ptr dataManager_)
+		: engine(engine_), dataManager(dataManager_)
 	{
+		assert_throw(engine == dataManager->get_engine(),
+				NetworkException("DataManager has a different engine"));
+
 		/**
 		 * Tag the member methods with their names
 		 * These methods only deal with the logic, not computation
@@ -29,16 +33,6 @@ public:
 	}
 
 	virtual ~Network() {};
-
-	virtual void set_input(vector<Tensor::Ptr> input)
-	{
-		this->input = input;
-	}
-
-	virtual void set_target(vector<Tensor::Ptr> target)
-	{
-		this->target = target;
-	}
 
 	virtual void add_layer(Layer::Ptr layer)
 	{
@@ -96,6 +90,32 @@ public:
 		return engine_;
 	}
 
+	/**
+	 * If template unspecified, return DataManagerBase::Ptr
+	 */
+	template<typename DataManagerT = DataManagerBase>
+	std::shared_ptr<DataManagerT> get_data_manager()
+	{
+		auto dataManager_ = std::dynamic_pointer_cast<DataManagerT>(this->dataManager);
+		assert_throw_nullptr(dataManager_,
+			NetworkException("get_data_manager()'s template type is incompatible"));
+		return dataManager_;
+	}
+
+	/**************************************
+	******* Training data management *********
+	**************************************/
+	virtual void load_input()
+	{
+		// FIXME for RNN this should be a sequence
+		dataManager->upload_input(layers[0]->inValues[0]);
+	}
+
+	virtual void load_target()
+	{
+		dataManager->upload_target(lossLayer->targetValue[0]);
+	}
+
 	/**************************************
 	******* Upload & exec instructions *********
 	**************************************/
@@ -137,6 +157,7 @@ public:
 	}
 
 
+	// FIXME shouldn't be public
 	vector<Layer::Ptr> layers;
 	vector<Connection::Ptr> connections;
 	vector<Component::Ptr> components;
@@ -144,15 +165,30 @@ public:
 
 	LossLayerPtr lossLayer;
 
-	vector<Tensor::Ptr> input, target;
-
 protected:
 	/**
-	 * Forward/backward/initialize logic
+	 * Request DataManager to fill in input
 	 */
-	virtual void forward() = 0;
+	void forward()
+	{
+		check_initialized("forward");
+		load_input();
+		forward_impl();
+	}
 
-	virtual void backward() = 0;
+	virtual void forward_impl() = 0;
+
+	/**
+	 * Request DataManager to fill in target
+	 */
+	void backward()
+	{
+		check_initialized("backward");
+		load_target();
+		backward_impl();
+	}
+
+	virtual void backward_impl() = 0;
 
 	void initialize()
 	{
@@ -164,17 +200,15 @@ protected:
 		this->is_initialized = true;
 	}
 
+	/**
+	 * Subclasses should override this
+	 */
 	virtual void initialize_impl()
 	{
-		layers[0]->inValues = this->input;
 		this->lossLayer = Layer::cast<LossLayer>(layers[layers.size() - 1]);
-		if (lossLayer)
-			lossLayer->targetValue = this->target;
-		else
-			throw NetworkException("Last layer must be a LossLayer");
 
-		for (Layer::Ptr l : this->layers)
-			l->init_history_length(this->input.size());
+		assert_throw_nullptr(this->lossLayer,
+			NetworkException("Last layer must be a LossLayer"));
 
 		for (Component::Ptr c : this->components)
 		{
@@ -186,6 +220,12 @@ protected:
 
 protected:
 	EngineBase::Ptr engine;
+
+	DataManagerBase::Ptr dataManager;
+
+	/**
+	 * Initialization guard: should init only once except after reset()
+	 */
 	bool is_initialized = false;
 
 	/**
@@ -212,30 +252,32 @@ protected:
 		if (param)
 			paramContainers.push_back(param);
 	}
+
+	/**
+	 * Exception helper
+	 */
+	void check_initialized(string msg)
+	{
+		assert_throw(this->is_initialized,
+				NetworkException(msg + ": Network has not been initialized yet."));
+	}
 };
 
+/**************************************
+******* Feed-forward network *********
+**************************************/
 class ForwardNetwork : public Network
 {
 public:
-	ForwardNetwork(EngineBase::Ptr engine_) :
-		Network(engine_)
+	ForwardNetwork(EngineBase::Ptr engine_, DataManagerBase::Ptr dataManager_) :
+		Network(engine_, dataManager_)
 	{ }
 
 	virtual ~ForwardNetwork() {};
 
-	// Unhide base class function with the same name but different signature
-	using Network::set_input;
-	using Network::set_target;
-
-	virtual void set_input(Tensor::Ptr input)
-	{
-		Network::set_input(vector<Tensor::Ptr> {input});
-	}
-
-	virtual void set_target(Tensor::Ptr target)
-	{
-		Network::set_target(vector<Tensor::Ptr> {target});
-	}
+// Unhide base class function with the same name but different signature
+//	using Network::set_input;
+//	using Network::set_target;
 
 protected:
 	virtual void initialize_impl()
@@ -243,13 +285,13 @@ protected:
 		Network::initialize_impl();
 	}
 
-	virtual void forward()
+	virtual void forward_impl()
 	{
 		for (Component::Ptr compon : this->components)
 			compon->forward();
 	}
 
-	virtual void backward()
+	virtual void backward_impl()
 	{
 		for (int i = components.size() - 1; i >= 0; --i)
 			components[i]->backward();
@@ -262,12 +304,14 @@ protected:
 	}
 };
 
-
+/**************************************
+******* Recurrent Network *********
+**************************************/
 class RecurrentNetwork : public Network
 {
 public:
-	RecurrentNetwork(EngineBase::Ptr engine_) :
-		Network(engine_)
+	RecurrentNetwork(EngineBase::Ptr engine_, DataManagerBase::Ptr dataManager_) :
+		Network(engine_, dataManager_)
 	{
 		// defaults to 1, the most typical RNN
 		set_max_temporal_skip(1);
@@ -276,11 +320,15 @@ public:
 	virtual ~RecurrentNetwork() {};
 
 	/*********** Network operations ***********/
+	// FIXME
 	virtual void initialize_impl()
 	{
-		assert_throw(input.size() == target.size(),
+/*		assert_throw(input.size() == target.size(),
 			NetworkException(
 				"Input sequence must have the same length as the target sequence"));
+
+		for (Layer::Ptr l : this->layers)
+			l->init_history_length(this->input.size());*/
 
 		for (Layer::Ptr layer : layers)
 			layer->init_max_temporal_skip(this->maxTemporalSkip);
@@ -300,8 +348,9 @@ public:
 	/**
 	 * First feeds forward in current time frame,
 	 * then props to the next time frame
+	 * FIXME need to for-loop over all frames in RNN forward
 	 */
-	virtual void forward()
+	virtual void forward_impl()
 	{
 		for (Component::Ptr compon : this->components)
 		{
@@ -328,7 +377,7 @@ public:
 	 * First back-props to the previous time point,
 	 * then pass the gradient backward in current time.
 	 */
-	virtual void backward_prop_upload_impl()
+	virtual void backward_impl()
 	{
 		-- frame;
 

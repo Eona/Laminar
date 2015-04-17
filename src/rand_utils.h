@@ -25,30 +25,30 @@ public:
 	{}
 
 	UniformRand(float low, float high)
-	: UniformRand(low, high, generateSeed()) {}
+	: UniformRand(low, high, generate_seed()) {}
 
 	FloatT operator() ()
 	{
 		return distribution(generator);
 	}
 
-	static ulong generateSeed()
+	static ulong generate_seed()
 	{
 		return std::chrono::system_clock::now().time_since_epoch().count();
 	}
 
-	void setSeed(ulong seed)
+	void set_seed(ulong seed)
 	{
 		this->seed = seed;
 		generator.seed(seed);
 	}
 
-	void setSeed()
+	void set_seed()
 	{
-		setSeed(generateSeed());
+		set_seed(generate_seed());
 	}
 
-	ulong getSeed() { return seed; }
+	ulong get_seed() { return seed; }
 
 private:
 	ulong seed;
@@ -131,14 +131,13 @@ public:
 	void use_uniform_rand(float low, float high)
 	{
 		i = -1;
-		generator = default_random_engine(UniformRand<float>::generateSeed());
+		generator = default_random_engine(UniformRand<float>::generate_seed());
 		distribution = uniform_real_distribution<float>{low, high};
 	}
 
-	void use_fake_seq()
-	{
-		i = 0;
-	}
+	void use_fake_seq() { i = 0; }
+
+	void reset_seq() { i = 0; }
 
 	void set_rand_display(bool isDisplay, bool printName = false)
 	{
