@@ -222,6 +222,7 @@ inline void transpose(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_
 	//TODO
 }
 
+
 #define MATOP(device_func) {\
 		if (!is_initialized) {\
 			*write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
@@ -303,16 +304,17 @@ inline void square_loss(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool i
 inline void fill_rand(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 {
 	debug_msg("fill_rand", is_initialized);
-	//*write = FakeRand::instance_connection()();
 	//DEBUG_MSG("rand? " << *write);
+	if (!is_initialized) *write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);
+	write->fill_rand(1);
 }
 
 
 /*********** DEBUG ONLY ***********/
 inline void debug_fill(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 {
-	debug_msg("debug_fill", is_initialized);
-	//*write = 0.66337;
+	if (!is_initialized) *write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);
+	write->fill(0.66337);
 }
 
 

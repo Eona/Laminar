@@ -43,14 +43,15 @@ public:
 	CudaFloatMat():
 		device_data(NULL),
 		host_data(NULL),
-        op(CUBLAS_OP_N)
-    {   }
+        op(CUBLAS_OP_N) {
+
+	}
 
 	CudaFloatMat(float *d, int m, int n):
 		device_data(NULL),
 		host_data(NULL),
-        op(CUBLAS_OP_N)
-	{
+        op(CUBLAS_OP_N) {
+
 		init_dim(m, n); //initialize matrix dimensions
 		init_cuda_mem(d); //copy data to device
 	}
@@ -58,8 +59,8 @@ public:
 	CudaFloatMat(int m, int n):
 		device_data(NULL),
 		host_data(NULL),
-        op(CUBLAS_OP_N)
-	{
+        op(CUBLAS_OP_N) {
+
 		init_dim(m, n); //initialize matrix dimensions
 		init_cuda_mem();
 	}
@@ -68,18 +69,17 @@ public:
 	CudaFloatMat(std::vector<int> dim):
 		device_data(NULL),
 		host_data(NULL),
-        op(CUBLAS_OP_N)
-	{
+        op(CUBLAS_OP_N) {
+
 		init_dim(dim); //initialize matrix dimensions
 		init_cuda_mem();
 	}
 
 
-
 	/*
 	 * Copy data to CUDA device
 	 */
-	float* to_device(float *d){
+	float* to_device(float *d) {
 		GPU_CHECKERROR(
 		cudaMemcpy( device_data, d, DATA_LEN, cudaMemcpyHostToDevice )
 		);
@@ -90,7 +90,7 @@ public:
 	 * Copy device data to host
 	 */
 
-	float* to_host(){
+	float* to_host() {
 
 		host_data = (float *)malloc(DATA_LEN);
 
@@ -103,7 +103,26 @@ public:
 	}
     
 
-    void print_matrix(std::string msg){
+	void fill_rand(int seed) {
+		float r[DATA_LEN];
+		srand (seed);
+		for (int i = 0; i < LEN; ++i) {
+			r[i] = (double) rand() / (RAND_MAX);
+		}
+		to_device(r);
+	}
+
+	void fill(float num) {
+		float r[DATA_LEN];
+		for (int i = 0; i < LEN; ++i) {
+			r[i] = num;
+		}
+		to_device(r);
+	}
+
+
+
+    void print_matrix(std::string msg) {
         to_host();
         std::cout << "\n" << msg << "\n";
         for (int i = 0; i < DIM_ROW; ++i) {
