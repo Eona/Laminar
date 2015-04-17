@@ -51,10 +51,19 @@ protected:
 	virtual void initialize_impl()
 	{
 		Layer::initialize_impl();
-		totalLoss = Scalor::make(engine);
+		this->totalLoss = Scalor::make(engine);
 	}
 
-	// FIXME template check
+	/**
+	 * Used by subclasses to initialize targetValue
+	 */
+	template<typename TensorT>
+	void init_target_value_helper()
+	{
+		for (int t = 0; t < historyLength; ++t)
+			this->targetValue.push_back(TensorT::make(engine));
+	}
+
 	/**
 	 * Get current frame target value
 	 */
@@ -103,10 +112,7 @@ protected:
 	virtual void initialize_impl()
 	{
 		LossLayer::initialize_impl();
-		for (int t = 0; t < historyLength; ++t)
-		{
-			targetValue.push_back(Tensor::make(engine));
-		}
+		LossLayer::init_target_value_helper<Tensor>();
 	}
 };
 
