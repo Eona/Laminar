@@ -26,6 +26,7 @@ public:
 	int DIM_ROW;
 	int DIM_COL;
 	int LEN;
+	int DATA_LEN;
 	int NUM_DIM;
     int LDIM;
 	std::vector<int> DIM_ALL;
@@ -69,52 +70,14 @@ public:
 		init_cuda_mem();
 	}
 
-	void init_cuda_mem() {
-		GPU_CHECKERROR(
-		cudaMalloc( (void**)&device_data, LEN * sizeof(float) )
-		);
-		GPU_CHECKERROR(
-		cudaMemset( device_data, 0, LEN * sizeof(float) )
-		);
-	}
 
-
-	void init_cuda_mem(float *d) {
-		GPU_CHECKERROR(
-		cudaMalloc( (void**)&device_data, LEN * sizeof(float) )
-		);
-		GPU_CHECKERROR(
-		cudaMemcpy( device_data, d, LEN * sizeof(float), cudaMemcpyHostToDevice )
-		);
-	}
-
-	void init_dim(int m, int n) {
-		DIM_ROW = m;
-		DIM_COL = n;
-		LEN = DIM_ROW * DIM_COL;
-		NUM_DIM = 2;
-        LDIM = DIM_ROW;
-	}
-
-	void init_dim(std::vector<int> dim){
-		DIM_ALL = dim;
-		NUM_DIM = dim.size();
-		LEN = 1;
-		for (int i = 0; i < dim.size(); ++i) {
-			LEN *= dim[i];
-		}
-		if (dim.size() > 0) DIM_ROW = dim[0];
-		if (dim.size() > 1) DIM_COL = dim[1];
-
-        LDIM = DIM_ROW;
-	}
 
 	/*
 	 * Copy data to CUDA device
 	 */
 	float* to_device(float *d){
 		GPU_CHECKERROR(
-		cudaMemcpy( device_data, d, LEN * sizeof(float), cudaMemcpyHostToDevice )
+		cudaMemcpy( device_data, d, DATA_LEN, cudaMemcpyHostToDevice )
 		);
 		return device_data;
 	}
@@ -124,14 +87,14 @@ public:
 	 */
 
 	float* to_host(){
+
+		host_data = (float *)malloc(DATA_LEN);
+
 		GPU_CHECKERROR(
-		cudaHostAlloc( (void**)&host_data,
-					 	 LEN * sizeof(float),
-					 	 cudaHostAllocDefault )//allocate host data
+		cudaMemcpy( host_data, device_data, DATA_LEN, cudaMemcpyDeviceToHost )
 		);
-		GPU_CHECKERROR(
-		cudaMemcpy( host_data, device_data, LEN * sizeof(float), cudaMemcpyDeviceToHost )
-		);
+
+
 		return host_data;
 	}
     
@@ -168,6 +131,70 @@ public:
 
 private:
     cublasOperation_t op;
+
+	void init_cuda_mem() {
+		GPU_CHECKERROR(
+		cudaMalloc( (void**)&device_data, DATA_LEN )
+		);
+		GPU_CHECKERROR(
+		cudaMemset( device_data, 0, DATA_LEN )
+		);
+	}
+
+
+	void init_cuda_mem(float *d) {
+		GPU_CHECKERROR(
+		cudaMalloc( (void**)&device_data, DATA_LEN )
+		);
+
+		GPU_CHECKERROR(
+		cudaMemcpy( device_data, d, DATA_LEN, cudaMemcpyHostToDevice )
+		);
+	}
+
+
+	void init_dim(int m, int n) {
+		DIM_ROW = m;
+		DIM_COL = n;
+		LEN = DIM_ROW * DIM_COL;
+		DATA_LEN = LEN * sizeof(float);
+		NUM_DIM = 2;
+        LDIM = DIM_ROW;
+	}
+
+	void init_dim(std::vector<int> dim){
+		DIM_ALL = dim;
+		NUM_DIM = dim.size();
+		LEN = 1;
+		for (int i = 0; i < dim.size(); ++i) {
+			LEN *= dim[i];
+		}
+		DATA_LEN = LEN * sizeof(float);
+		if (dim.size() > 0) DIM_ROW = dim[0];
+		if (dim.size() > 1) DIM_COL = dim[1];
+
+        LDIM = DIM_ROW;
+	}
+
+	void to_column_major(float *target, float *source){
+		int c = 0;
+		for (int i = 0; i < DIM_COL; ++i) {
+			for (int j = 0; j < DIM_ROW; ++j) {
+				target[c] = source[j*DIM_COL+i];
+				c++;
+			}
+		}
+	}
+
+	void to_row_major(float *target, float *source){
+		int c = 0;
+		for (int i = 0; i < DIM_ROW; ++i) {
+			for (int j = 0; j < DIM_COL; ++j) {
+				target[c] = source[j*DIM_ROW+i];
+				c++;
+			}
+		}
+	}
 };
 
 #endif
