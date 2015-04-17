@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 
 	auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
 
-	ForwardNetwork net(dummyEng, dummyData);
+/*	ForwardNetwork net(dummyEng, dummyData);
 
 	auto l1 = Layer::make<ConstantLayer>(1);
 	auto l2 = Layer::make<SigmoidLayer>(5);
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 	net.new_connection<FullConnection>(l2, l3);
 	net.add_layer(l3);
 
-	gradient_check(net);
+	gradient_check(net);*/
 
 /*	net.upload("initialize");
 	net.upload("forward");
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 
 	cout << dummyEng->read_memory(net.lossLayer->total_loss()) << "\n";*/
 
-	/*Tensor t1(dummyEng, { 2, 3 });
+	Tensor t1(dummyEng, { 2, 3 });
 	Tensor t2(dummyEng, {5, 7});
 	Tensor t3 = t1 + t2;
 	Scalor s1(dummyEng);
@@ -78,14 +78,13 @@ int main(int argc, char **argv)
 	cout << "t3 " << t3.addr << endl;
 	t3 = t3 + t3 - t1;
 	cout << "t3 " << t3.addr << endl;
-	t1 = t3 + t1 + t3;
-	t3 = t1;
+	t1 = t3 + 6.6f*t1 + t3;
+	t3 = t1 * 3.5f;
+	t1 *= 100.88f;
 	cout << "t3 " << t3.addr << endl;
 
 	dummyEng->print_routines();
-	auto& routine = *dummyEng->flush_routine();
-	dummyEng->compile();
-	routine();*/
+	dummyEng->flush_execute();
 
 
 /*	dummyEng->print_instructions();

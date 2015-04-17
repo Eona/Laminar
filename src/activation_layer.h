@@ -28,7 +28,8 @@ public:
 		outValue = lmn::sigmoid(inValue);
 	}
 
-	void backward_impl(Tensor& outValue, Tensor& outGradient, Tensor& inValue, Tensor& inGradient)
+	void backward_impl(Tensor& outValue, Tensor& outGradient,
+						Tensor& inValue, Tensor& inGradient)
 	{
 		inGradient = lmn::element_mult(
 				lmn::sigmoid_gradient(outValue), outGradient);
@@ -59,7 +60,8 @@ public:
 		outValue = lmn::cos(inValue);
 	}
 
-	void backward_impl(Tensor& outValue, Tensor& outGradient, Tensor& inValue, Tensor& inGradient)
+	void backward_impl(Tensor& outValue, Tensor& outGradient,
+						Tensor& inValue, Tensor& inGradient)
 	{
 		inGradient = lmn::element_mult(
 				-lmn::sin(inValue), outGradient);
@@ -90,7 +92,8 @@ public:
 		outValue = lmn::tanh(inValue);
 	}
 
-	void backward_impl(Tensor& outValue, Tensor& outGradient, Tensor& inValue, Tensor& inGradient)
+	void backward_impl(Tensor& outValue, Tensor& outGradient,
+						Tensor& inValue, Tensor& inGradient)
 	{
 		inGradient = lmn::element_mult(
 				lmn::tanh_gradient(outValue), outGradient);
@@ -103,8 +106,7 @@ public:
 	}
 };
 
-// FIXME ScalorType cannot be a constant, discard ScalorLayer
-/*class ScalorLayer : public Layer
+class ScalorLayer : public Layer
 {
 public:
 	ScalorLayer(Dimension dim, float multiplier_ = 1.0f):
@@ -123,7 +125,8 @@ public:
 		outValue = multiplier * inValue;
 	}
 
-	void backward_impl(Tensor& outValue, Tensor& outGradient, Tensor& inValue, Tensor& inGradient)
+	void backward_impl(Tensor& outValue, Tensor& outGradient,
+						Tensor& inValue, Tensor& inGradient)
 	{
 		inGradient = multiplier * outGradient;
 	}
@@ -136,6 +139,6 @@ public:
 
 private:
 	float multiplier;
-};*/
+};
 
 #endif /* TRANSFER_LAYER_H_ */
