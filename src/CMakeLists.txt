@@ -12,8 +12,8 @@ include(eona_cuda)
 # CMAKE_BINARY_DIR: top level of your build tree
 #add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../src ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
-#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test 
-#    ${CMAKE_CURRENT_BINARY_DIR}/test)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test 
+    ${CMAKE_CURRENT_BINARY_DIR}/test)
 
 # ==========================================
 message("Folder src/")

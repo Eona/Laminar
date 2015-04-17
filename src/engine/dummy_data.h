@@ -36,9 +36,31 @@ public:
 	{
 	}
 
+	/**
+	 * Debug only, for gradient check
+	 * Perturbs the internal 'random sequence', doesn't upload any instruction
+	 */
+	void perturb_input(int idx, float eps)
+	{
+		this->lastPerturbedIdx = idx;
+		this->lastEps = eps;
+		input_rand[idx] += eps;
+	}
+	/**
+	 * Debug only, for gradient check
+	 */
+	void restore_last_input()
+	{
+		input_rand[lastPerturbedIdx] -= lastEps;
+	}
+
 private:
 	FakeRand& input_rand = FakeRand::instance_input();
 	FakeRand& target_rand = FakeRand::instance_target();
+
+	// for restoring perturbed input
+	int lastPerturbedIdx;
+	float lastEps;
 };
 
 #endif /* ENGINE_DUMMY_DATA_H_ */

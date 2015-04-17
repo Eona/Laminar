@@ -76,9 +76,6 @@ private:
 	vector<float> randSeq;
 	int i = 0;
 
-	default_random_engine generator;
-	uniform_real_distribution<float> distribution;
-
 	bool isDisplay = false;
 	bool printName = false;
 	string name;
@@ -100,12 +97,7 @@ public:
 	/**
 	 * Manually set the internal 'random sequence'
 	 */
-	void set_rand_seq(vector<float>& _randSeq)
-	{
-		i = 0;
-		randSeq = _randSeq;
-	}
-	void set_rand_seq(vector<float>&& _randSeq)
+	void set_rand_seq(vector<float> _randSeq)
 	{
 		i = 0;
 		randSeq = _randSeq;
@@ -113,31 +105,37 @@ public:
 
 	float operator() ()
 	{
-		if (i < 0)
-		{
-			float r = distribution(generator);
-			if (isDisplay)
-				cout << std::setprecision(3)
-					<< (printName ? name.substr(0, 3) + " " : "")
-					<< r << ", "; // sample a good unit test
-			return r;
-		}
-
 		if (i >= randSeq.size())
 			i = 0;
 		return randSeq[i++];
 	}
 
-	void use_uniform_rand(float low, float high)
+	/**
+	 * Change internal randSeq value
+	 */
+	float& operator[](int i)
 	{
-		i = -1;
-		generator = default_random_engine(UniformRand<float>::generate_seed());
-		distribution = uniform_real_distribution<float>{low, high};
+		return this->randSeq[i];
 	}
 
-	void use_fake_seq() { i = 0; }
+	void gen_uniform_rand(int seqLength, float low, float high)
+	{
+		i = 0;
+		default_random_engine generator(UniformRand<float>::generate_seed());
+		uniform_real_distribution<float> distribution{low, high};
+
+		this->randSeq.clear();
+		for (int s = 0; s < seqLength; ++s)
+			this->randSeq.push_back(distribution(generator));
+	}
 
 	void reset_seq() { i = 0; }
+
+	void print_rand_seq()
+	{
+		cout << "Seq(" << name << ") = "
+				<< container2str(this->randSeq)  << endl;
+	}
 
 	void set_rand_display(bool isDisplay, bool printName = false)
 	{

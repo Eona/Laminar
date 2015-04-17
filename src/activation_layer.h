@@ -110,12 +110,11 @@ class ScalorLayer : public Layer
 {
 public:
 	ScalorLayer(Dimension dim, float multiplier_ = 1.0f):
-		Layer(dim),
-		multiplier(multiplier_)
+		Layer(dim), multiplier(multiplier_)
 	{}
 
-	ScalorLayer(int dim) :
-		Layer(dim)
+	ScalorLayer(int dim, float multiplier_ = 1.0f) :
+		Layer(dim), multiplier(multiplier_)
 	{ }
 
 	virtual ~ScalorLayer() {};

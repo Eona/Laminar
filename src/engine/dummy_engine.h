@@ -10,6 +10,8 @@
 #include "tensor.h"
 #include "../rand_utils.h"
 
+#define DUMMY_DEBUG false
+
 namespace lmn {
 
 namespace DummyImpl {
@@ -36,13 +38,17 @@ struct tensor_op<SCALOR>
 
 void create(float* write, Dimension dim)
 {
+#if DUMMY_DEBUG
 	DEBUG_MSG("Dummy::create dim=" << dim);
+#endif
 	*write = 0;
 }
 
 void debug_msg(string msg, bool is_initialized)
 {
+#if DUMMY_DEBUG
 	DEBUG_MSG(("Dummy::" + msg + " ->init=") << std::boolalpha << is_initialized);
+#endif
 }
 
 template<int TensorT>
