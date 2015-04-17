@@ -41,10 +41,13 @@ public:
 	{
 		assert_throw(inFrame < 0,
 			NetworkException("inFrame should be < 0 for prehistory_forward"));
+
 		this->inFrame_ = inFrame;
 		this->outFrame_ = outFrame;
 
-		forward_impl(*vec_at(pcontainer->paramValues, inFrame),
+		// inFrame < 0, python-style indexing from the right end
+		inFrame += pcontainer->size();
+		forward_impl(*pcontainer->get_param_value(inFrame),
 			*outLayer->inValues[outFrame]);
 	}
 
@@ -75,10 +78,12 @@ public:
 
 		bool isHistorySaved = inLayer->is_full_gradient_history_saved();
 
+		// inFrame < 0, python-style indexing from the right end
+		inFrame += pcontainer->size();
 		backward_impl(*outLayer->inGradients[
 					isHistorySaved ? outFrame : 0],
-				*vec_at(pcontainer->paramValues, inFrame),
-				*vec_at(pcontainer->paramGradients, inFrame));
+				*pcontainer->get_param_value(inFrame),
+				*pcontainer->get_param_gradient(inFrame));
 	}
 
 	virtual void forward_impl(

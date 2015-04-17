@@ -31,17 +31,40 @@ public:
 			lmn::clear(*ptr);
 	}
 
+	/**
+	 * Holders of ParamContainer are responsible for initializing the tensors
+	 * Assign to the returned ref to initialize the Tensor::Ptr
+	 * @return ref to Tensor::Ptr
+	 */
+	Tensor::Ptr& get_param_value(int idx)
+	{
+		return this->paramValues[idx];
+	}
+
+	Tensor::Ptr& get_param_gradient(int idx)
+	{
+		return this->paramGradients[idx];
+	}
+
+	vector<Tensor::Ptr>& param_values()
+	{
+		return this->paramValues;
+	}
+
+	vector<Tensor::Ptr>& param_gradients()
+	{
+		return this->paramGradients;
+	}
+
 	int size() const
 	{
 		return paramValues.size();
 	}
 
-	// FIXME rand gen
-	template<typename RandEngineT>
-	void fill_rand(RandEngineT& randEngine)
+	void resize(int newSize)
 	{
-		for (int i = 0; i < size(); ++i)
-			paramValues[i] = randEngine();
+		paramValues.resize(newSize);
+		paramGradients.resize(newSize);
 	}
 
 	/************************************/
@@ -68,7 +91,7 @@ public:
 
 	/*********** DEBUG ONLY ***********/
 	// restore() calls must correspond one-by-one to perturb() calls
-	// TODO gradient check
+	// TODO add 2D index
 	void gradient_check_perturb(int changeIdx, float eps)
 	{
 		lastChangedIdx = changeIdx;
@@ -82,10 +105,10 @@ public:
 	}
 
 	/************************************/
+private:
 	vector<Tensor::Ptr> paramValues;
 	vector<Tensor::Ptr> paramGradients;
 
-private:
 	int lastChangedIdx; float lastEps; // DEBUG ONLY
 };
 

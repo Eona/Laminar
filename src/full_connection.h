@@ -41,8 +41,8 @@ public:
 	FullConnection(Layer::Ptr _inLayer, Layer::Ptr _outLayer):
 		Connection(_inLayer, _outLayer),
 		ParamContainer(1),
-		param(paramValues[0]),
-		gradient(paramGradients[0])
+		param(ParamContainer::get_param_value(0)),
+		gradient(ParamContainer::get_param_gradient(0))
 	{
 		assert_throw(inLayer->dim().size() == 1
 				&& outLayer->dim().size() == 1,
