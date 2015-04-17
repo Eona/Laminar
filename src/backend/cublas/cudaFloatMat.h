@@ -6,6 +6,7 @@
 #include <curand.h>
 #include <vector>
 
+#define NUM_THREAD_PER_BLOCK 256;
 
 #define GPU_CHECKERROR( err ) (gpuCheckError( err, __FILE__, __LINE__ ))
 static void gpuCheckError( cudaError_t err,
@@ -30,6 +31,9 @@ public:
 	int NUM_DIM;
     int LDIM;
 	std::vector<int> DIM_ALL;
+
+	dim3 BLOCK_DIM; //block dim
+	dim3 GRID_DIM; //grid dim
     
 
 	float * device_data;
@@ -159,32 +163,44 @@ private:
 
 
 	void init_dim(int m, int n) {
+		NUM_DIM = 2;
 		DIM_ROW = m;
 		DIM_COL = n;
 		LEN = DIM_ROW * DIM_COL;
+
 		DATA_LEN = LEN * sizeof(float);
-		NUM_DIM = 2;
         LDIM = DIM_ROW;
+
+        BLOCK_DIM.x = NUM_THREAD_PER_BLOCK;
+        GRID_DIM.x = ceil(float(LEN)/float(BLOCK_DIM.x));
 	}
 
 	void init_dim(std::vector<int> dim){
 		DIM_ALL = dim;
 		NUM_DIM = dim.size();
 		LEN = 1;
+
 		for (int i = 0; i < dim.size(); ++i) {
 			LEN *= dim[i];
 		}
-		DATA_LEN = LEN * sizeof(float);
 
+		if (dim.size() > 0) {
+			DIM_ROW = dim[0];
+		} else {
+			printf("Error: The matrix has no dimension information");
+		}
 
-		if (dim.size() > 0) DIM_ROW = dim[0];
 		if (dim.size() > 1) {
 			DIM_COL = dim[1];
 		} else {
 			DIM_COL = 1;
 		}
 
+		DATA_LEN = LEN * sizeof(float);
         LDIM = DIM_ROW;
+
+        BLOCK_DIM.x = NUM_THREAD_PER_BLOCK; //number of thread per block
+        GRID_DIM.x = ceil(float(LEN)/float(BLOCK_DIM.x)); //number of block
 	}
 
 
