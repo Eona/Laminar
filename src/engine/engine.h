@@ -300,7 +300,8 @@ public:
 	static shared_ptr<EngineT> make(ArgT&& ... args)
 	{
 		static_assert(std::is_base_of<EngineBase, EngineT>::value,
-				"Engine type parameter must be a subclass of EngineBase");
+				"make() failed: Engine type parameter must be a subclass of EngineBase");
+
 		return std::make_shared<EngineT>(
 						std::forward<ArgT>(args) ...);
 	}
@@ -308,10 +309,13 @@ public:
 	/**
 	 * Downcast
 	 */
-	template<typename EngineBaseT>
-	static shared_ptr<EngineBaseT> cast(EngineBase::Ptr engine)
+	template<typename EngineT>
+	static shared_ptr<EngineT> cast(EngineBase::Ptr engine)
 	{
-		return std::dynamic_pointer_cast<EngineBaseT>(engine);
+		static_assert(std::is_base_of<EngineBase, EngineT>::value,
+				"cast() failed: Engine type parameter must be a subclass of EngineBase");
+
+		return std::dynamic_pointer_cast<EngineT>(engine);
 	}
 
 protected:

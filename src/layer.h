@@ -154,6 +154,9 @@ public:
 	template<typename LayerT, typename ...ArgT>
 	static Layer::Ptr make(ArgT&& ... args)
 	{
+		static_assert(std::is_base_of<Layer, LayerT>::value,
+				"make() failed: type parameter must be a subclass of Layer");
+
 		return static_cast<Layer::Ptr>(
 				std::make_shared<LayerT>(
 						std::forward<ArgT>(args) ...));
@@ -165,6 +168,9 @@ public:
 	template<typename LayerT>
 	static shared_ptr<LayerT> cast(Layer::Ptr layer)
 	{
+		static_assert(std::is_base_of<Layer, LayerT>::value,
+				"cast() failed: type parameter must be a subclass of Layer");
+
 		return std::dynamic_pointer_cast<LayerT>(layer);
 	}
 

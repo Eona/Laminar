@@ -105,6 +105,9 @@ public:
 	template<typename ConnectionT, typename ...ArgT>
 	static Connection::Ptr make(ArgT&& ... args)
 	{
+		static_assert(std::is_base_of<Connection, ConnectionT>::value,
+				"make() failed: type parameter must be a subclass of Connection");
+
 		return static_cast<Connection::Ptr>(
 				std::make_shared<ConnectionT>(
 						std::forward<ArgT>(args) ...));
@@ -116,6 +119,9 @@ public:
 	template<typename ConnectionT>
 	static shared_ptr<ConnectionT> cast(Connection::Ptr conn)
 	{
+		static_assert(std::is_base_of<Connection, ConnectionT>::value,
+				"cast() failed: type parameter must be a subclass of Connection");
+
 		return std::dynamic_pointer_cast<ConnectionT>(conn);
 	}
 
