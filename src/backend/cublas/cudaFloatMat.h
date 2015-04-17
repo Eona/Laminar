@@ -104,7 +104,7 @@ public:
         std::cout << msg << "\n";
         for (int i = 0; i < DIM_ROW; ++i) {
             for (int j = 0; j < DIM_COL; ++j) {
-                std::cout << host_data[i*DIM_COL+j] << '\t';
+                std::cout << host_data[j*DIM_COL+i] << '\t';
             }
             std::cout<<"\n";
         } 
