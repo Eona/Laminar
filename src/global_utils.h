@@ -156,6 +156,14 @@ inline void vec_for_each(vector<T>& vec, Func f)
 	std::for_each(vec.begin(), vec.end(), f);
 }
 
+template<typename T>
+inline vector<T> vec_augment(const vector<T>& vec, const T& extra)
+{
+	vector<T> ans = vec;
+	ans.push_back(extra);
+	return ans;
+}
+
 template <typename KeyT, typename ValueT>
 bool key_exists(std::unordered_map<KeyT, ValueT>& map, KeyT& key)
 {

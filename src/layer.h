@@ -97,14 +97,20 @@ public:
 				*inGradients[relativeFrame]);
 	}
 
-	// FIXME only clears gradients, not in/outValues
 	virtual void zero_clear()
 	{
 		for (int i = 0; i < this->historyLength; ++i)
 		{
 			lmn::clear(*inValues[i]);
-			lmn::clear(*inGradients[i]);
 			lmn::clear(*outValues[i]);
+		}
+
+		int gradientHistoryLength =
+			is_full_gradient_history_saved() ? historyLength : maxTemporalSkip + 1;
+
+		for (int i = 0; i < gradientHistoryLength; ++i)
+		{
+			lmn::clear(*inGradients[i]);
 			lmn::clear(*outGradients[i]);
 		}
 	}
