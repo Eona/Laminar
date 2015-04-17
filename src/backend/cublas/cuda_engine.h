@@ -223,24 +223,30 @@ inline void transpose(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_
 }
 
 #define MATOP(device_func) {\
-		if (!is_initialized) *write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
-		cublasScopy(cublasHandleInstance(), reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);\
+		if (!is_initialized) {\
+			*write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
+		    cublasScopy(cublasHandleInstance(), reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);\
+		}\
 		op_func_t h_func;\
 		cudaMemcpyFromSymbol( &h_func, device_func, sizeof( op_func_t ) );\
 		mat_op_kernel<<<write->GRID_DIM, write->BLOCK_DIM>>>( write->device_data, \
 															  reads[0]->device_data, \
+															  write->LEN, \
 															  h_func ); \
 }
 
 
 #define MATOP_DUAL(device_func) {\
-		if (!is_initialized) *write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
-		cublasScopy(cublasHandleInstance(), reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);\
+		if (!is_initialized) {\
+			*write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
+		    cublasScopy(cublasHandleInstance(), reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);\
+		}\
 		op_func_dual_t h_func;\
 		cudaMemcpyFromSymbol( &h_func, device_func, sizeof( op_func_t ) );\
 		mat_op_kernel<<<write->GRID_DIM, write->BLOCK_DIM>>>( write->device_data, \
 															  reads[0]->device_data, \
 															  reads[1]->device_data, \
+															  write->LEN, \
 															  h_func ); \
 }
 

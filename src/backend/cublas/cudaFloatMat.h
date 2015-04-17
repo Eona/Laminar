@@ -146,7 +146,7 @@ private:
 		cudaMalloc( (void**)&device_data, DATA_LEN )
 		);
 		GPU_CHECKERROR(
-		cudaMemset( device_data, 0, DATA_LEN )
+		cudaMemset( (void *)device_data, 0, DATA_LEN )
 		);
 	}
 

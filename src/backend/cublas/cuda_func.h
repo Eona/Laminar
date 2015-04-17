@@ -64,21 +64,27 @@ __device__ op_func_dual_t cu_square_loss_func = square_loss_func;
 __device__ op_func_dual_t cu_element_mult_func = element_mult_func;
 
 
-__global__ void mat_op_kernel(float *d, op_func_t op)
+//d <- op(d)
+__global__ void mat_op_kernel(float *d, int N, op_func_t op)
 {
 	int tid = blockDim.x * blockIdx.x + threadIdx.x;
+	if (tid >= N) return;
 	d[tid] = (*op)(d[tid]);
 }
 
-__global__ void mat_op_kernel(float *t, float *s, op_func_t op)
+// t <- op(s)
+__global__ void mat_op_kernel(float *t, float *s, int N, op_func_t op)
 {
 	int tid = blockDim.x * blockIdx.x + threadIdx.x;
+	if (tid >= N) return;
 	t[tid] = (*op)(s[tid]);
 }
 
-__global__ void mat_op_kernel(float *c, float *a, float *b, op_func_dual_t op)
+// c <- op(a, b)
+__global__ void mat_op_kernel(float *c, float *a, float *b, int N, op_func_dual_t op)
 {
 	int tid = blockDim.x * blockIdx.x + threadIdx.x;
+	if (tid >= N) return;
 	c[tid] = (*op)(a[tid], b[tid]);
 }
 
