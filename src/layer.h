@@ -157,7 +157,7 @@ public:
 		static_assert(std::is_base_of<Layer, LayerT>::value,
 				"make() failed: type parameter must be a subclass of Layer");
 
-		return static_cast<Layer::Ptr>(
+		return std::static_pointer_cast<Layer>(
 				std::make_shared<LayerT>(
 						std::forward<ArgT>(args) ...));
 	}

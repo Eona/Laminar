@@ -76,7 +76,7 @@ struct OpContextBase
 	template<typename ...ContextArgT>
 	static OpContextBase::Ptr make(ContextArgT&& ... args)
 	{
-		return static_cast<OpContextBase::Ptr>(
+		return std::static_pointer_cast<OpContextBase>(
 				std::make_shared<OpContext<ContextArgT...>>(
 						std::forward<ContextArgT>(args) ...));
 	}
@@ -98,7 +98,7 @@ struct OpContext : OpContextBase
 	template<typename ...ArgT>
 	static OpContextBase::Ptr make(ArgT&& ... args)
 	{
-		return static_cast<OpContextBase::Ptr>(
+		return std::static_pointer_cast<OpContextBase>(
 				std::make_shared<OpContext<ContextArgT...>>(
 						std::forward<ArgT>(args) ...));
 	}

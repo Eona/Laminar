@@ -108,7 +108,7 @@ public:
 		static_assert(std::is_base_of<Connection, ConnectionT>::value,
 				"make() failed: type parameter must be a subclass of Connection");
 
-		return static_cast<Connection::Ptr>(
+		return std::static_pointer_cast<Connection>(
 				std::make_shared<ConnectionT>(
 						std::forward<ArgT>(args) ...));
 	}

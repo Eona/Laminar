@@ -52,7 +52,7 @@ public:
 	template<typename ComponentT>
 	static Component::Ptr upcast(shared_ptr<ComponentT> compon)
 	{
-		return static_cast<Component::Ptr>(compon);
+		return std::static_pointer_cast<Component>(compon);
 	}
 
 	template<typename ComponentT>

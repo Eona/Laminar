@@ -415,7 +415,7 @@ public:
 		template<typename ...ArgT>
 		static CommandPtr make(ArgT&& ... args)
 		{
-			return static_cast<CommandPtr>(
+			return std::static_pointer_cast<Command>(
 					std::make_shared<NormalCommand>(
 							std::forward<ArgT>(args) ...));
 		}
@@ -449,7 +449,7 @@ public:
 		template<typename ...ArgT>
 		static CommandPtr make(ArgT&& ... args)
 		{
-			return static_cast<CommandPtr>(
+			return std::static_pointer_cast<Command>(
 					std::make_shared<ContextCommand<ContextArgT...>>(
 							std::forward<ArgT>(args) ...));
 		}

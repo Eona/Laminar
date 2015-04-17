@@ -58,7 +58,7 @@ public:
 	template<typename CompositeT, typename ...ArgT>
 	static Composite<NetworkT>::Ptr make(ArgT&& ... args)
 	{
-		auto compositePtr = static_cast<Composite<NetworkT>::Ptr>(
+		auto compositePtr = std::static_pointer_cast<Composite<NetworkT>>(
 				std::make_shared<CompositeT>(
 						std::forward<ArgT>(args) ...));
 

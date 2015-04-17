@@ -363,7 +363,7 @@ public:
 				else
 					conn->prehistory_forward(
 						// Ugly workaround for eclipse syntax highlighter
-						static_cast<ParamContainer::Ptr>(prehistoryLayerMap[conn->inLayer]),
+						std::static_pointer_cast<ParamContainer>(prehistoryLayerMap[conn->inLayer]),
 						frame - skip, frame);
 			}
 			else
@@ -392,8 +392,8 @@ public:
 					conn->backward(frame, frame - skip);
 				else
 					conn->prehistory_backward(
-						static_cast<ParamContainer::Ptr>(prehistoryLayerMap[conn->inLayer]),
-							frame, frame - skip);
+						std::static_pointer_cast<ParamContainer>(prehistoryLayerMap[conn->inLayer]),
+						frame, frame - skip);
 			}
 			else
 				compon->backward(frame, frame);
