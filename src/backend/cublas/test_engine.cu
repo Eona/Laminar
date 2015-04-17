@@ -91,23 +91,23 @@ int main(int argc, char **argv)
 	v1.push_back(&m3);
 	v1.push_back(&m1);
 
-//	lmn::CudaImpl::add<0>(v, &out, false);
-//	out.print_matrix("m1 + m2");
-//
-//	lmn::CudaImpl::sub<0>(v, &out, true);
-//	out.print_matrix("m1 - m2");
-//
-//	lmn::CudaImpl::negate<0>(v, &out, true);
-//	out.print_matrix("-m1");
-//
-//	lmn::CudaImpl::mult<0, 0>(v, &out, true);
-//	out.print_matrix("m1 * m2");
-//
-//	lmn::CudaImpl::mult<0, 0>(v1, &out, false);
-//	out.print_matrix("m3 * m1");
-//
-//	lmn::CudaImpl::assign<0>(v1, &out, true);
-//	out.print_matrix("m3 -> out");
+	lmn::CudaImpl::add<0>(v, &out, false);
+	out.print_matrix("m1 + m2");
+
+	lmn::CudaImpl::sub<0>(v, &out, true);
+	out.print_matrix("m1 - m2");
+
+	lmn::CudaImpl::negate<0>(v, &out, true);
+	out.print_matrix("-m1");
+
+	lmn::CudaImpl::mult<0, 0>(v, &out, true);
+	out.print_matrix("m1 * m2");
+
+	lmn::CudaImpl::mult<0, 0>(v1, &out, false);
+	out.print_matrix("m3 * m1");
+
+	lmn::CudaImpl::assign<0>(v1, &out, true);
+	out.print_matrix("m3 -> out");
 
 	lmn::CudaImpl::sigmoid(v, &out, false);
 	out.print_matrix("sigmod(m1)");
@@ -126,4 +126,10 @@ int main(int argc, char **argv)
 
 	lmn::CudaImpl::tanh_gradient(v, &out, false);
 	out.print_matrix("tanh_gradient(m1)");
+
+	lmn::CudaImpl::element_mult(v, &out, false);
+	out.print_matrix("m1 .* m2");
+
+	lmn::CudaImpl::square_loss(v, &out, false);
+	out.print_matrix("sqloss(m1,m2)");
 }
