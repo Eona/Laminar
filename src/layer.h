@@ -104,9 +104,9 @@ public:
 	{
 		for (int i = 0; i < this->historyLength; ++i)
 		{
-//			lmn::clear(*inValues[i]);
+			lmn::clear(*inValues[i]);
 			lmn::clear(*inGradients[i]);
-//			lmn::clear(*outValues[i]);
+			lmn::clear(*outValues[i]);
 			lmn::clear(*outGradients[i]);
 		}
 	}

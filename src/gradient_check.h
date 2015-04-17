@@ -37,36 +37,46 @@ inline void gradient_check(Network& net,
 	for (auto& tensor : analyticGrads)
 		DEBUG_MSG("gradient check: " << engine->read_memory(tensor));
 
-	net.zero_clear();
-	engine->flush_execute();
-	DEBUG_MSG("total loss: " << engine->read_memory(net.lossLayer->total_loss()));
-
 	/****** perturb parameters matrices stored in connections ******/
-	/*int agpt = 0; // point to analyticGrads
+	int agpt = 0; // point to analyticGrads
 	for (ParamContainer::Ptr param : net.paramContainers)
 	{
 		for (int p = 0; p < param->size(); ++p)
 		{
-			net.reset(); // refresh network
+			net.zero_clear(); // refresh network
+			net.input[0]->upload(Instruction("debug_fill", {}, net.input[0]->addr));
+			net.target[0]->upload(Instruction("debug_fill", {}, net.target[0]->addr));
 			param->gradient_check_perturb(p, -perturb);
-			for (int i = 0; i < timeLength; ++i)
-				net.forward_prop_upload();
-			float lossMinus = net.lossLayer->totalLoss;
+			engine->flush_execute();
+
+			net.execute("forward");
+
+			float lossMinus = engine->read_memory(net.lossLayer->total_loss());
+
 			param->gradient_check_restore();
 
-			net.reset(); // refresh network
+			net.zero_clear(); // refresh network
+			net.input[0]->upload(Instruction("debug_fill", {}, net.input[0]->addr));
+			net.target[0]->upload(Instruction("debug_fill", {}, net.target[0]->addr));
+
 			param->gradient_check_perturb(p, +perturb);
-			for (int i = 0; i < timeLength; ++i)
-				net.forward_prop_upload();
-			float lossPlus = net.lossLayer->totalLoss;
+			engine->flush_execute();
+
+			net.execute("forward");
+
+			float lossPlus = engine->read_memory(net.lossLayer->total_loss());
+
 			param->gradient_check_restore();
+			engine->flush_execute();
 
 			float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 
-			assert_float_percent_eq(analyticGrads[agpt++], numericGrad, percentTol,
+			float analyticGrad = engine->read_memory(analyticGrads[agpt++]);
+
+			assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
 					"param analytic != numeric", "param gradcheck pass");
 		}
-	}*/
+	}
 
 	/****** perturb the input ******/
 	// TODO

@@ -403,6 +403,17 @@ assert_throw_nullptr(const std::shared_ptr<T>& ptr, ExceptionT&& throwable)
 		throw throwable;
 }
 
+/**
+ * Debug only
+ * 'Press enter to continue...'
+ */
+void input_halt()
+{
+	cout << "Press Enter to continue ...";
+	while (std::cin.get() != '\n')
+		cout << "Press Enter to continue ...";
+}
+
 template<typename FloatT>
 void assert_float_eq(FloatT f1, FloatT f2, FloatT tol = 1e-4f,
 		string errmsg = "", string successmsg="")
