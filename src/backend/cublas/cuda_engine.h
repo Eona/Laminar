@@ -15,6 +15,7 @@
 #include "cuda_func.h"
 using namespace std;
 
+
 class CublasHandleInstance{
 public:
 //    static cublasHandle_t & Instance()
@@ -221,91 +222,75 @@ inline void transpose(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_
 	//TODO
 }
 
+#define MATOP(device_func) {\
+		if (!is_initialized) *write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
+		cublasScopy(cublasHandleInstance(), reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);\
+		op_func_t h_func;\
+		cudaMemcpyFromSymbol( &h_func, device_func, sizeof( op_func_t ) );\
+		mat_op_kernel<<<write->GRID_DIM, write->BLOCK_DIM>>>( write->device_data, \
+															  reads[0]->device_data, \
+															  h_func ); \
+}
+
+
+#define MATOP_DUAL(device_func) {\
+		if (!is_initialized) *write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
+		cublasScopy(cublasHandleInstance(), reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);\
+		op_func_dual_t h_func;\
+		cudaMemcpyFromSymbol( &h_func, device_func, sizeof( op_func_t ) );\
+		mat_op_kernel<<<write->GRID_DIM, write->BLOCK_DIM>>>( write->device_data, \
+															  reads[0]->device_data, \
+															  reads[1]->device_data, \
+															  h_func ); \
+}
 
 
 inline void sigmoid(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 {
 	debug_msg("sigmoid", is_initialized);
-	//copy input to output
-	assignMat(reads, write, is_initialized);
-
-	//Element-wise sigmoid
-	op_func_t h_sigmoid_func;
-	cudaMemcpyFromSymbol( &h_sigmoid_func, cu_sigmoid_func, sizeof( op_func_t ) );
-	matOp<<<write->GRID_DIM, write->BLOCK_DIM>>>(write->device_data, h_sigmoid_func );
+	MATOP(cu_sigmoid_func);
 }
 
 inline void sigmoid_gradient(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 {
 	debug_msg("sigmoid_gradient", is_initialized);
-	//copy input to output
-	assignMat(reads, write, is_initialized);
-
-	//Element-wise sigmoid_gradient
-	op_func_t h_sigmoid_gradient_func;
-	cudaMemcpyFromSymbol( &h_sigmoid_gradient_func, cu_sigmoid_gradient_func, sizeof( op_func_t ) );
-	matOp<<<write->GRID_DIM, write->BLOCK_DIM>>>(write->device_data, h_sigmoid_gradient_func );
+	MATOP(cu_sigmoid_gradient_func);
 }
 
 inline void sin(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 {
 	debug_msg("sin", is_initialized);
-	//copy input to output
-	assignMat(reads, write, is_initialized);
-
-	//Element-wise sin
-	op_func_t h_sin_func;
-	cudaMemcpyFromSymbol( &h_sin_func, cu_sin_func, sizeof( op_func_t ) );
-	matOp<<<write->GRID_DIM, write->BLOCK_DIM>>>(write->device_data, h_sin_func );
+	MATOP(cu_sin_func);
 }
 
 inline void cos(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 {
 	debug_msg("cos", is_initialized);
-	//copy input to output
-	assignMat(reads, write, is_initialized);
-
-	//Element-wise cos
-	op_func_t h_cos_func;
-	cudaMemcpyFromSymbol( &h_cos_func, cu_cos_func, sizeof( op_func_t ) );
-	matOp<<<write->GRID_DIM, write->BLOCK_DIM>>>(write->device_data, h_cos_func );
+	MATOP(cu_cos_func);
 }
 
 inline void tanh(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 {
 	debug_msg("tanh", is_initialized);
-	//copy input to output
-	assignMat(reads, write, is_initialized);
-
-	//Element-wise tanh
-	op_func_t h_tanh_func;
-	cudaMemcpyFromSymbol( &h_tanh_func, cu_tanh_func, sizeof( op_func_t ) );
-	matOp<<<write->GRID_DIM, write->BLOCK_DIM>>>(write->device_data, h_tanh_func );
+	MATOP(cu_tanh_func);
 }
 
 inline void tanh_gradient(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 {
 	debug_msg("tanh_gradient", is_initialized);
-	//copy input to output
-	assignMat(reads, write, is_initialized);
-
-	//Element-wise tanh_gradient
-	op_func_t h_tanh_gradient_func;
-	cudaMemcpyFromSymbol( &h_tanh_gradient_func, cu_tanh_gradient_func, sizeof( op_func_t ) );
-	matOp<<<write->GRID_DIM, write->BLOCK_DIM>>>(write->device_data, h_tanh_gradient_func );
+	MATOP(cu_tanh_gradient_func);
 }
 
 inline void element_mult(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 {
 	debug_msg("element_mult", is_initialized);
-	//*write = (*reads[0]) * (*reads[1]);
+    MATOP_DUAL(cu_element_mult_func);
 }
 
 inline void square_loss(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 {
 	debug_msg("square_loss", is_initialized);
-	//float diff = *reads[0] - *reads[1];
-	//*write = 0.5f * diff * diff;
+    MATOP_DUAL(cu_square_loss_func);
 }
 
 // FIXME add contextual rand engine

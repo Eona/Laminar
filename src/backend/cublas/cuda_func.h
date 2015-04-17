@@ -7,6 +7,7 @@
 #define CUDA_FUNC_H_
 
 typedef float (*op_func_t) (float); // device pointer function
+typedef float (*op_func_dual_t) (float, float); // device pointer function (two arguments)
 
 __device__ float sigmoid_func (float x)
 {
@@ -38,8 +39,19 @@ __device__ float tanh_gradient_func (float x)
 	return 1.f / (1.f + exp(-x));
 }
 
+__device__ float element_mult_func (float x, float y)
+{
+	return x * y;
+}
 
-//Static device function
+__device__ float square_loss_func (float x, float y)
+{
+	float diff = x - y;
+	return 0.5f * diff * diff;
+}
+
+
+//Static device function (single variable)
 __device__ op_func_t cu_sigmoid_func = sigmoid_func;
 __device__ op_func_t cu_sigmoid_gradient_func = sigmoid_gradient_func;
 __device__ op_func_t cu_sin_func = sin_func;
@@ -47,13 +59,28 @@ __device__ op_func_t cu_cos_func = cos_func;
 __device__ op_func_t cu_tanh_func = tanh_func;
 __device__ op_func_t cu_tanh_gradient_func = tanh_gradient_func;
 
+//Static device function (dual variable)
+__device__ op_func_dual_t cu_square_loss_func = square_loss_func;
+__device__ op_func_dual_t cu_element_mult_func = element_mult_func;
 
-__global__ void matOp(float *d, op_func_t op)
+
+__global__ void mat_op_kernel(float *d, op_func_t op)
 {
 	int tid = blockDim.x * blockIdx.x + threadIdx.x;
 	d[tid] = (*op)(d[tid]);
 }
 
+__global__ void mat_op_kernel(float *t, float *s, op_func_t op)
+{
+	int tid = blockDim.x * blockIdx.x + threadIdx.x;
+	t[tid] = (*op)(s[tid]);
+}
+
+__global__ void mat_op_kernel(float *c, float *a, float *b, op_func_dual_t op)
+{
+	int tid = blockDim.x * blockIdx.x + threadIdx.x;
+	c[tid] = (*op)(a[tid], b[tid]);
+}
 
 
 #endif
