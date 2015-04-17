@@ -19,6 +19,15 @@ inline void gradient_check(Network& net,
 	auto engine = net.get_engine<DummyEngine>();
 	auto dataman = net.get_data_manager<DummyDataManager>();
 
+	int historyLength = 1;
+//	 Save the full gradient history for debugging ONLY
+	try {
+		RecurrentNetwork& net_ = dynamic_cast<RecurrentNetwork&>(net);
+		net_.init_max_temporal_skip(Layer::UNLIMITED_TEMPORAL_SKIP);
+		historyLength = net_.get_history_length();
+	}
+	catch (std::bad_cast& err) { }
+
 	net.upload("initialize");
 	net.upload("forward");
 	net.upload("backward");
@@ -39,10 +48,9 @@ inline void gradient_check(Network& net,
 	};
 
 	vector<Tensor> analyticGrads;
-	for (ParamContainer::Ptr param : net.paramContainers)
+	for (ParamContainer::Ptr container : net.paramContainers)
 	{
-		auto gradients = param->paramGradients;
-		for (auto gradPtr : gradients)
+		for (auto gradPtr : container->param_gradients())
 			analyticGrads.push_back(*gradPtr);
 	}
 	engine->flush_execute();
@@ -86,12 +94,6 @@ inline void gradient_check(Network& net,
 	}
 
 	/****** perturb the input ******/
-	// Save the full gradient history for debugging ONLY
-//	try {
-//		RecurrentNetwork& _net = dynamic_cast<RecurrentNetwork&>(net);
-//		_net.set_max_temporal_skip(Layer::UNLIMITED_TEMPORAL_SKIP);
-//	}
-//	catch (std::bad_cast& err) { }
 
 	reset_net();
 	engine->flush_execute();
@@ -105,7 +107,7 @@ inline void gradient_check(Network& net,
 
 	// perturb each input in sequence
 	// FIXME sequence
-	for (int inp = 0; inp < 1; ++inp)
+	for (int inp = 0; inp < historyLength; ++inp)
 	{
 		reset_net();
 		dataman->perturb_input(inp, -perturb);

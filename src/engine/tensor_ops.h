@@ -198,6 +198,12 @@ typedef Tensor (*TransferFunction)(const Tensor&);
 		x.upload(Instruction("fill_rand", {}, x.addr));
 	}
 
+	// TODO
+	void fill_rand_prehistory(const Tensor& x)
+	{
+		x.upload(Instruction("fill_rand_prehistory", {}, x.addr));
+	}
+
 	void perturb(const Tensor& x, DimIndex idx, float eps)
 	{
 		x.upload(Instruction("perturb", {}, x.addr,

@@ -105,16 +105,15 @@ public:
 	/**************************************
 	******* Training data management *********
 	**************************************/
-	virtual void load_input()
-	{
-		// FIXME for RNN this should be a sequence
-		dataManager->upload_input(layers[0]->inValues[0]);
-	}
+	/**
+	 * forward() loads input every time
+	 */
+	virtual void load_input() = 0;
 
-	virtual void load_target()
-	{
-		dataManager->upload_target(lossLayer->targetValue[0]);
-	}
+	/**
+	 * backward() loads target every time
+	 */
+	virtual void load_target() = 0;
 
 	/**************************************
 	******* Upload & exec instructions *********
@@ -150,7 +149,7 @@ public:
 
 	virtual void zero_clear() = 0;
 
-	// TODO
+	// WISHLIST
 	virtual void topological_sort()
 	{
 		throw UnimplementedException("topological sort");
@@ -255,11 +254,22 @@ protected:
 
 	/**
 	 * Exception helper
+	 * The function should be called *after* initialization
 	 */
 	void check_initialized(string msg)
 	{
 		assert_throw(this->is_initialized,
-				NetworkException(msg + ": Network has not been initialized yet."));
+			NetworkException(msg + ": Network has not been initialized yet."));
+	}
+
+	/**
+	 * Exception helper
+	 * The function should be called *before* initialization
+	 */
+	void check_uninitialized(string msg)
+	{
+		assert_throw(!this->is_initialized,
+			NetworkException(msg + " should be called before Network initialization."));
 	}
 };
 
@@ -278,6 +288,16 @@ public:
 // Unhide base class function with the same name but different signature
 //	using Network::set_input;
 //	using Network::set_target;
+
+	virtual void load_input()
+	{
+		dataManager->upload_input(layers[0]->inValues[0]);
+	}
+
+	virtual void load_target()
+	{
+		dataManager->upload_target(lossLayer->targetValue[0]);
+	}
 
 protected:
 	virtual void initialize_impl()
@@ -310,97 +330,38 @@ protected:
 class RecurrentNetwork : public Network
 {
 public:
-	RecurrentNetwork(EngineBase::Ptr engine_, DataManagerBase::Ptr dataManager_) :
-		Network(engine_, dataManager_)
+	RecurrentNetwork(EngineBase::Ptr engine_, DataManagerBase::Ptr dataManager_,
+			int historyLength_, int maxTemporalSkip_ = 1) :
+		Network(engine_, dataManager_),
+		historyLength(historyLength_),
+		maxTemporalSkip(maxTemporalSkip_)
 	{
 		// defaults to 1, the most typical RNN
-		set_max_temporal_skip(1);
+		init_max_temporal_skip(1);
 	}
 
 	virtual ~RecurrentNetwork() {};
 
-	/*********** Network operations ***********/
-	// FIXME
-	virtual void initialize_impl()
+	virtual void init_max_temporal_skip(int maxTemporalSkip)
 	{
-/*		assert_throw(input.size() == target.size(),
-			NetworkException(
-				"Input sequence must have the same length as the target sequence"));
-
-		for (Layer::Ptr l : this->layers)
-			l->init_history_length(this->input.size());*/
-
-		for (Layer::Ptr layer : layers)
-			layer->init_max_temporal_skip(this->maxTemporalSkip);
-
-		Network::initialize_impl();
-	}
-
-	/**
-	 * Call assemble() again to refresh maxTemporalSkip
-	 * FIXME init_XX...
-	 */
-	virtual void set_max_temporal_skip(int maxTemporalSkip)
-	{
+		Network::check_uninitialized("init_max_temporal_skip");
 		this->maxTemporalSkip = maxTemporalSkip;
 	}
 
-	/**
-	 * First feeds forward in current time frame,
-	 * then props to the next time frame
-	 * FIXME need to for-loop over all frames in RNN forward
-	 */
-	virtual void forward_impl()
+	int get_max_temporal_skip()
 	{
-		for (Component::Ptr compon : this->components)
-		{
-			Connection::Ptr conn = Component::cast<Connection>(compon);
-			if (conn && key_exists(recurConnectionMap, conn))
-			{
-				int skip = recurConnectionMap[conn];
-				if (frame >= skip)
-					conn->forward(frame - skip, frame);
-				else
-					conn->prehistory_forward(
-						// Ugly workaround for eclipse syntax highlighter
-						std::static_pointer_cast<ParamContainer>(prehistoryLayerMap[conn->inLayer]),
-						frame - skip, frame);
-			}
-			else
-				compon->forward(frame, frame);
-		}
-
-		++ frame;
+		return this->maxTemporalSkip;
 	}
 
-	/**
-	 * First back-props to the previous time point,
-	 * then pass the gradient backward in current time.
-	 */
-	virtual void backward_impl()
+	virtual void init_history_length(int historyLength)
 	{
-		-- frame;
+		Network::check_uninitialized("init_history_length");
+		this->historyLength = historyLength;
+	}
 
-		for (int i = components.size() - 1; i >= 0; --i)
-		{
-			Component::Ptr compon = components[i];
-			Connection::Ptr conn = Component::cast<Connection>(compon);
-			if (key_exists(recurConnectionMap, conn))
-			{
-				int skip = recurConnectionMap[conn];
-				if (frame >= skip)
-					conn->backward(frame, frame - skip);
-				else
-					conn->prehistory_backward(
-						std::static_pointer_cast<ParamContainer>(prehistoryLayerMap[conn->inLayer]),
-						frame, frame - skip);
-			}
-			else
-				compon->backward(frame, frame);
-		}
-
-		for (Layer::Ptr layer : layers)
-			layer->shift_back_gradient_window();
+	int get_history_length()
+	{
+		return this->historyLength;
 	}
 
 	virtual void add_recurrent_connection(Connection::Ptr conn, int temporalSkip = 1)
@@ -409,8 +370,7 @@ public:
 			maxTemporalSkip == Layer::UNLIMITED_TEMPORAL_SKIP
 				|| temporalSkip <= maxTemporalSkip,
 			NetworkException("temporalSkip should be <= maxTemporalSkip.\n"
-					"Use set_max_temporal_skip() to change the upper limit.\n"
-					"Then call assemble() again on the network"));
+					"Use init_max_temporal_skip() to change the upper limit."));
 
 		components.push_back(Component::upcast(conn));
 		connections.push_back(conn);
@@ -418,21 +378,55 @@ public:
 
 		// Add the largest temporal skip for the layer
 		auto prehistoryEntry = prehistoryLayerMap.find(conn->inLayer);
-		auto& dummyRand = FakeRand::instance_prehistory();
 
 		if (prehistoryEntry == prehistoryLayerMap.end())
 		{
 			auto h_0 = ParamContainer::make(temporalSkip);
-			// FIXME
-//			h_0->fill_rand(dummyRand);
+
+			Dimension layerDim = conn->inLayer->dim();
+
+			for (int paramIdx = 0; paramIdx < h_0->size(); ++paramIdx)
+			{
+				// Construct actual tensors for ParamContainer
+				auto& valuePtr = h_0->get_param_value(paramIdx);
+				auto& gradPtr = h_0->get_param_gradient(paramIdx);
+
+			// FIXME FIXME: dim of prehistory should be { layerDim * batchSize }
+				valuePtr = Tensor::make(engine, vec_augment(layerDim, 1));
+				gradPtr = Tensor::make(engine, vec_augment(layerDim, 1));
+
+				// Randomly initialize prehistory
+			// FIXME add TensorBase::cast
+				lmn::fill_rand_prehistory(*valuePtr);
+				lmn::clear(*gradPtr);
+			}
+
 			prehistoryLayerMap[conn->inLayer] = h_0;
 			paramContainers.push_back(h_0);
 		}
 		else if (prehistoryEntry->second->size() < temporalSkip)
 		{
-			// FIXME prehistory must be able to resize
-//			prehistoryEntry->second->resize(temporalSkip);
-//			prehistoryEntry->second->fill_rand(dummyRand);
+			// FIXME resize interface ugly
+			auto h_0 = prehistoryEntry->second;
+			Dimension layerDim = conn->inLayer->dim();
+			h_0->resize(temporalSkip);
+
+			// FIXME repetitive code
+			for (int paramIdx = 0; paramIdx < h_0->size(); ++paramIdx)
+			{
+				// Construct actual tensors for ParamContainer
+				auto& valuePtr = h_0->get_param_value(paramIdx);
+				auto& gradPtr = h_0->get_param_gradient(paramIdx);
+
+			// FIXME FIXME: dim of prehistory should be { layerDim * batchSize }
+				valuePtr = Tensor::make(engine, vec_augment(layerDim, 1));
+				gradPtr = Tensor::make(engine, vec_augment(layerDim, 1));
+
+				// Randomly initialize prehistory
+			// FIXME add TensorBase::cast
+				lmn::fill_rand_prehistory(*valuePtr);
+				lmn::clear(*gradPtr);
+			}
 		}
 
 		recurConnectionMap[conn] = temporalSkip;
@@ -455,23 +449,118 @@ public:
 			temporalSkip);
 	}
 
+	/**************************************
+	******* Training data management *********
+	**************************************/
+	/**
+	 * Loads a sequence of input
+	 */
+	virtual void load_input()
+	{
+		dataManager->start_new_sequence();
+		for (int frame = 0; frame < this->historyLength; ++frame)
+			dataManager->upload_input(layers[0]->inValues[frame]);
+	}
+
+	/**
+	 * Loads a sequence of target
+	 */
+	virtual void load_target()
+	{
+		dataManager->start_new_sequence();
+		for (int frame = 0; frame < this->historyLength; ++frame)
+			dataManager->upload_target(lossLayer->targetValue[frame]);
+	}
+
 	virtual void zero_clear()
 	{
 		for (Component::Ptr compon : this->components)
 			compon->zero_clear();
 
-		// FIXME reset not written
-//		for (auto& entry : prehistoryLayerMap)
-//			entry.second->reset_gradients();
+		for (auto& entry : prehistoryLayerMap)
+			entry.second->clear_gradients();
 
-		frame = 0;
+//		frame = 0;
 	}
 
 	std::unordered_map<Layer::Ptr, ParamContainer::Ptr> prehistoryLayerMap;
 	std::unordered_map<Connection::Ptr, int> recurConnectionMap;
 
 protected:
-	int frame = 0;
+	/*********** Network operations ***********/
+	virtual void initialize_impl()
+	{
+		for (Layer::Ptr l : this->layers)
+			l->init_history_length(this->historyLength);
+
+		for (Layer::Ptr layer : layers)
+			layer->init_max_temporal_skip(this->maxTemporalSkip);
+
+		Network::initialize_impl();
+	}
+
+	/**
+	 * First feeds forward in current time frame,
+	 * then props to the next time frame
+	 */
+	virtual void forward_impl()
+	{
+		for (int frame = 0; frame < this->historyLength; ++ frame)
+		{
+			for (Component::Ptr compon : this->components)
+			{
+				Connection::Ptr conn = Component::cast<Connection>(compon);
+				if (conn && key_exists(recurConnectionMap, conn))
+				{
+					int skip = recurConnectionMap[conn];
+					if (frame >= skip)
+						conn->forward(frame - skip, frame);
+					else
+						conn->prehistory_forward(
+							// Ugly workaround for eclipse syntax highlighter
+							std::static_pointer_cast<ParamContainer>(prehistoryLayerMap[conn->inLayer]),
+							frame - skip, frame);
+				}
+				else
+					compon->forward(frame, frame);
+			}
+		}
+	}
+
+	/**
+	 * First back-props to the previous time point,
+	 * then pass the gradient backward in current time.
+	 */
+	virtual void backward_impl()
+	{
+		for (int frame = this->historyLength - 1; frame >= 0; --frame)
+		{
+			for (int i = components.size() - 1; i >= 0; --i)
+			{
+				Component::Ptr compon = components[i];
+				Connection::Ptr conn = Component::cast<Connection>(compon);
+				if (key_exists(recurConnectionMap, conn))
+				{
+					int skip = recurConnectionMap[conn];
+					if (frame >= skip)
+						conn->backward(frame, frame - skip);
+					else
+						conn->prehistory_backward(
+							std::static_pointer_cast<ParamContainer>(prehistoryLayerMap[conn->inLayer]),
+							frame, frame - skip);
+				}
+				else
+					compon->backward(frame, frame);
+			}
+
+			for (Layer::Ptr layer : layers)
+				layer->shift_back_gradient_window();
+		}
+	}
+
+protected:
+//	int frame = 0;
+	int historyLength;
 	int maxTemporalSkip = 1;
 };
 

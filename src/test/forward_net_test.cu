@@ -22,8 +22,6 @@ TEST(ForwardNet, Interconnected)
 	auto dummyEng = EngineBase::make<DummyEngine>();
 	auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
 
-	int DUMMY_DIM = 666;
-
 	auto l1 = Layer::make<ConstantLayer>(DUMMY_DIM);
 	auto l2_1 = Layer::make<ScalorLayer>(DUMMY_DIM, 1.7f);
 	auto l2_2 = Layer::make<CosineLayer>(DUMMY_DIM);

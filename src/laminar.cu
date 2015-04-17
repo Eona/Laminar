@@ -28,7 +28,63 @@ FakeRand& rand_target = FakeRand::instance_target();
 
 int main(int argc, char **argv)
 {
+	rand_conn.set_rand_seq(vector<float> {
+		0.543, 0.44, 1.47, 1.64, 1.31, -0.616
+	});
+	rand_prehis.set_rand_seq(vector<float> {
+		.7
+	});
+//	rand_conn.use_uniform_rand(-1, 2);
+//	rand_conn.set_rand_display(true);
+
+	vector<float> inputSeq { 1.2, -0.9, 0.57, -1.47, -3.08 };
+	vector<float> targetSeq { 1.39, 0.75, -0.45, -0.11, 1.55 };
+
+	rand_input.set_rand_seq(inputSeq);
+	rand_target.set_rand_seq(targetSeq);
+
+	int DUMMY_DIM = 666;
+
+	auto l1 = Layer::make<ConstantLayer>(DUMMY_DIM);
+	auto l2 = Layer::make<SigmoidLayer>(DUMMY_DIM);
+	auto l3 = Layer::make<SigmoidLayer>(DUMMY_DIM);
+	auto l4 = Layer::make<SquareLossLayer>(DUMMY_DIM);
+
+	// Naming: c<in><out>_<skip>
+	auto c12 = Connection::make<FullConnection>(l1, l2);
+	auto c23 = Connection::make<FullConnection>(l2, l3);
+	auto c34 = Connection::make<FullConnection>(l3, l4);
+
+	auto c22_1 = Connection::make<FullConnection>(l2, l2);
+	auto c23_1 = Connection::make<FullConnection>(l2, l3);
+	auto c33_1 = Connection::make<FullConnection>(l3, l3);
+
 	auto dummyEng = EngineBase::make<DummyEngine>();
+	auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
+
+	RecurrentNetwork net(dummyEng, dummyData, inputSeq.size());
+
+	net.add_layer(l1);
+	net.add_recurrent_connection(c22_1);
+	net.add_connection(c12);
+
+	net.add_layer(l2);
+
+	net.add_recurrent_connection(c23_1);
+	net.add_recurrent_connection(c33_1);
+	net.add_connection(c23);
+
+	net.add_layer(l3);
+	net.add_connection(c34);
+	net.add_layer(l4);
+	gradient_check(net, 1e-2, 1);
+
+
+
+
+
+
+	/*auto dummyEng = EngineBase::make<DummyEngine>();
 
 	auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
 
@@ -44,7 +100,7 @@ int main(int argc, char **argv)
 	net.new_connection<FullConnection>(l2, l3);
 	net.add_layer(l3);
 
-	gradient_check(net);
+	gradient_check(net);*/
 
 /*	net.upload("initialize");
 	net.upload("forward");

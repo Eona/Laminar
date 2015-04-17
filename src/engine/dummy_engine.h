@@ -176,8 +176,18 @@ inline void clear(vector<float *> reads, float *write, bool is_initialized)
 // FIXME add contextual rand engine
 inline void fill_rand(vector<float *> reads, float *write, bool is_initialized)
 {
+	assert_throw(is_initialized,
+		EngineException("DummyEngine: fill_rand must have been initialized"));
 	debug_msg("fill_rand", is_initialized);
 	*write = FakeRand::instance_connection()();
+}
+
+inline void fill_rand_prehistory(vector<float *> reads, float *write, bool is_initialized)
+{
+	assert_throw(is_initialized,
+		EngineException("DummyEngine: fill_rand_prehistory must have been initialized"));
+	debug_msg("fill_rand_prehistory", is_initialized);
+	*write = FakeRand::instance_prehistory()();
 }
 
 // For gradient checking
@@ -235,10 +245,11 @@ public:
 		register_normal_op("square_loss", Impl::square_loss);
 
 		register_normal_op("destroy", Impl::destroy);
-		register_normal_op("fill_rand", Impl::fill_rand);
 		register_normal_op("clear_t", Impl::clear);
 		register_normal_op("clear_s", Impl::clear);
 
+		register_normal_op("fill_rand", Impl::fill_rand);
+		register_normal_op("fill_rand_prehistory", Impl::fill_rand_prehistory);
 		register_context_op<DimIndex, float>("perturb", Impl::perturb);
 		register_context_op<float>("scale", Impl::scale);
 
