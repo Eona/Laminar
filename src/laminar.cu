@@ -23,65 +23,54 @@ FakeRand& rand_prehis = FakeRand::instance_prehistory();
 FakeRand& rand_input = FakeRand::instance_input();
 FakeRand& rand_target = FakeRand::instance_target();
 
-#define make_full Connection::make<FullConnection>
-#define make_gated Connection::make<GatedConnection>
+#define conn_full Connection::make<FullConnection>
+#define conn_const Connection::make<ConstantConnection>
+#define conn_gated Connection::make<GatedConnection>
+
+static constexpr const int DUMMY_DIM = 666;
 
 int main(int argc, char **argv)
 {
 	rand_conn.set_rand_seq(vector<float> {
-		0.543, 0.44, 1.47, 1.64, 1.31, -0.616
-	});
-	rand_prehis.set_rand_seq(vector<float> {
-		.7
-	});
-//	rand_conn.use_uniform_rand(-1, 2);
-//	rand_conn.set_rand_display(true);
+				.798, 0.617
+		});
 
-	vector<float> inputSeq { 1.2, -0.9, 0.57, -1.47, -3.08 };
-	vector<float> targetSeq { 1.39, 0.75, -0.45, -0.11, 1.55 };
+		rand_prehis.set_rand_seq(vector<float> {
+			.3
+		});
 
-	rand_input.set_rand_seq(inputSeq);
-	rand_target.set_rand_seq(targetSeq);
+		vector<float> inputSeq { 1.2, -0.9, 0.57, -1.47, -3.08 };
+		vector<float> targetSeq { 1.39, 0.75, -0.45, -0.11, 1.55 };
 
-	int DUMMY_DIM = 666;
+		rand_input.set_rand_seq(inputSeq);
+		rand_target.set_rand_seq(targetSeq);
 
-	auto l1 = Layer::make<ConstantLayer>(DUMMY_DIM);
-	auto l2 = Layer::make<SigmoidLayer>(DUMMY_DIM);
-	auto l3 = Layer::make<SigmoidLayer>(DUMMY_DIM);
-	auto l4 = Layer::make<SquareLossLayer>(DUMMY_DIM);
+		auto l1 = Layer::make<ConstantLayer>(DUMMY_DIM);
+		auto l2 = Layer::make<ScalorLayer>(DUMMY_DIM, 1.3f);
+		auto l3 = Layer::make<CosineLayer>(DUMMY_DIM); // gate
+		auto l4 = Layer::make<SquareLossLayer>(DUMMY_DIM);
 
-	// Naming: c<in><out>_<skip>
-	auto c12 = Connection::make<FullConnection>(l1, l2);
-	auto c23 = Connection::make<FullConnection>(l2, l3);
-	auto c34 = Connection::make<FullConnection>(l3, l4);
+		auto c12 = conn_full(l1, l2);
+		auto c13 = conn_full(l1, l3);
 
-	auto c22_1 = Connection::make<FullConnection>(l2, l2);
-	auto c23_1 = Connection::make<FullConnection>(l2, l3);
-	auto c33_1 = Connection::make<FullConnection>(l3, l3);
+		auto g234_1 = Connection::make<GatedTanhConnection>(l2, l3, l4);
+		auto g234_2 = Connection::make<GatedTanhConnection>(l2, l3, l4);
 
-	auto dummyEng = EngineBase::make<DummyEngine>();
-	auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
+		auto dummyEng = EngineBase::make<DummyEngine>();
+		auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
 
-	RecurrentNetwork net(dummyEng, dummyData, inputSeq.size());
+		RecurrentNetwork net(dummyEng, dummyData, inputSeq.size(), 2);
 
-	net.add_layer(l1);
-	net.add_recurrent_connection(c22_1);
-	net.add_connection(c12);
+		net.add_layer(l1);
+		net.add_connection(c13);
+		net.add_layer(l3);
+		net.add_connection(c12);
+		net.add_layer(l2);
+		net.add_recurrent_connection(g234_1);
+		net.add_recurrent_connection(g234_2, 2);
+		net.add_layer(l4);
 
-	net.add_layer(l2);
-
-	net.add_recurrent_connection(c23_1);
-	net.add_recurrent_connection(c33_1);
-	net.add_connection(c23);
-
-	net.add_layer(l3);
-	net.add_connection(c34);
-	net.add_layer(l4);
-	gradient_check(net, 1e-2, 1);
-
-
-
-
+		gradient_check(net, 1e-2, 1);
 
 
 	/*auto dummyEng = EngineBase::make<DummyEngine>();

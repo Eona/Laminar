@@ -63,41 +63,39 @@ TEST(RecurrentNet, Simple)
 	net.set_input(input);
 	net.set_target(target);
 	net.add_layer(l1);
-	net.new_connection<LinearConnection>(l1, l2);
-	net.new_recurrent_connection<LinearConnection>(l2, l2);
+	net.new_connection<FullConnection>(l1, l2);
+	net.new_recurrent_connection<FullConnection>(l2, l2);
 	net.add_layer(l2);
-	net.new_recurrent_connection<LinearConnection>(l2, l3);
-	net.new_connection<LinearConnection>(l2, l3);
-	net.new_recurrent_connection<LinearConnection>(l3, l3);
+	net.new_recurrent_connection<FullConnection>(l2, l3);
+	net.new_connection<FullConnection>(l2, l3);
+	net.new_recurrent_connection<FullConnection>(l3, l3);
 	net.add_layer(l3);
-	net.new_connection<LinearConnection>(l3, l4);
+	net.new_connection<FullConnection>(l3, l4);
 	net.add_layer(l4);
 */
 	gradient_check(net, 1e-2, 1);
 }
 
-/*
 TEST(RecurrentNet, TemporalSkip)
 {
 	rand_conn.set_rand_seq(vector<float> {
 		0.163, 1.96, 1.09, 0.516, -0.585, 0.776, 1, -0.301, -0.167, 0.732
 	});
 
-//	rand_conn.use_uniform_rand(-1, 2);
-//	rand_conn.set_rand_display(true);
-	rand_conn.use_fake_seq();
-
 	rand_prehis.set_rand_seq(vector<float> {
 		.3
 	});
 
-	vector<float> input { 1.2, -0.9, 0.57, -1.47, -3.08, 1.2, .31, -2.33, -0.89 };
-	vector<float> target { 1.39, 0.75, -0.45, -0.11, 1.55, -.44, 2.39, 1.72, -3.06 };
+	vector<float> inputSeq { 1.2, -0.9, 0.57, -1.47, -3.08, 1.2, .31, -2.33, -0.89 };
+	vector<float> targetSeq { 1.39, 0.75, -0.45, -0.11, 1.55, -.44, 2.39, 1.72, -3.06 };
 
-	auto l1 = Layer::make<ConstantLayer>();
-	auto l2 = Layer::make<SigmoidLayer>();
-	auto l3 = Layer::make<CosineLayer>();
-	auto l4 = Layer::make<SquareLossLayer>();
+	rand_input.set_rand_seq(inputSeq);
+	rand_target.set_rand_seq(targetSeq);
+
+	auto l1 = Layer::make<ConstantLayer>(DUMMY_DIM);
+	auto l2 = Layer::make<SigmoidLayer>(DUMMY_DIM);
+	auto l3 = Layer::make<CosineLayer>(DUMMY_DIM);
+	auto l4 = Layer::make<SquareLossLayer>(DUMMY_DIM);
 
 	// NOTE IMPORTANT RULE
 	// For recurrent linear connection conn[layer(alpha) => layer(beta)]
@@ -116,10 +114,11 @@ TEST(RecurrentNet, TemporalSkip)
 	auto c33_1 = conn_full(l3, l3);
 	auto c33_2 = conn_full(l3, l3);
 
-	RecurrentNetwork net;
-	net.set_input(input);
-	net.set_target(target);
-	net.set_max_temporal_skip(3); // or Layer::UNLIMITED_TEMPORAL_SKIP
+	auto dummyEng = EngineBase::make<DummyEngine>();
+	auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
+
+	RecurrentNetwork net(dummyEng, dummyData, inputSeq.size());
+	net.init_max_temporal_skip(3); // or Layer::UNLIMITED_TEMPORAL_SKIP
 
 	net.add_layer(l1);
 
@@ -140,43 +139,40 @@ TEST(RecurrentNet, TemporalSkip)
 	net.add_connection(c34);
 	net.add_layer(l4);
 
+/*	net.add_layer(l1);
 
-	net.add_layer(l1);
-
-	net.new_recurrent_connection<LinearConnection>(l2, l2);
-	net.new_recurrent_skip_connection<LinearConnection>(3, l2, l2);
-	net.new_recurrent_skip_connection<LinearConnection>(3, l3, l2);
-	net.new_connection<LinearConnection>(l1, l2);
+	net.new_recurrent_connection<FullConnection>(l2, l2);
+	net.new_recurrent_skip_connection<FullConnection>(3, l2, l2);
+	net.new_recurrent_skip_connection<FullConnection>(3, l3, l2);
+	net.new_connection<FullConnection>(l1, l2);
 
 	net.add_layer(l2);
 
-	net.new_connection<LinearConnection>(l2, l3);
-	net.new_recurrent_skip_connection<LinearConnection>(2, l2, l3);
-	net.new_recurrent_connection<LinearConnection>(l2, l3);
-	net.new_recurrent_connection<LinearConnection>(l3, l3);
-	net.new_recurrent_skip_connection<LinearConnection>(2, l3, l3);
+	net.new_connection<FullConnection>(l2, l3);
+	net.new_recurrent_skip_connection<FullConnection>(2, l2, l3);
+	net.new_recurrent_connection<FullConnection>(l2, l3);
+	net.new_recurrent_connection<FullConnection>(l3, l3);
+	net.new_recurrent_skip_connection<FullConnection>(2, l3, l3);
 
 	net.add_layer(l3);
-	net.new_connection<LinearConnection>(l3, l4);
-	net.add_layer(l4);
-
+	net.new_connection<FullConnection>(l3, l4);
+	net.add_layer(l4);*/
 
 	gradient_check(net, 1e-2, 1);
 
-	net.reset();
+/*	net.reset();
 	for (int i = 0; i < net.input.size(); ++i)
 		net.forward_prop();
 	for (int i = 0; i < net.input.size(); ++i)
 		net.backward_prop();
 
 	for (ConnectionPtr c : { c12, c23, c34, c22_1, c22_3, c23_1, c23_2, c32_3, c33_1, c33_2 })
-		cout << std::setprecision(4) << Connection::cast<LinearConnection>(c)->gradient << "  ";
+		cout << std::setprecision(4) << Connection::cast<FullConnection>(c)->gradient << "  ";
 	cout << endl;
 	for (LayerPtr l : { l2, l3 })
 		cout << std::setprecision(4) << static_cast<ParamContainerPtr>(net.prehistoryLayerMap[l])->paramGradients << "  ";
-	cout << endl;
+	cout << endl;*/
 }
-
 
 TEST(RecurrentNet, GatedConnection)
 {
@@ -184,19 +180,20 @@ TEST(RecurrentNet, GatedConnection)
 			0.163, 1.96, 1.09, 0.516, -0.585, 0.776, 1, -0.301, -0.167, 0.732
 	});
 
-	rand_conn.use_fake_seq();
-
 	rand_prehis.set_rand_seq(vector<float> {
 		.3
 	});
 
-	vector<float> input { 1.2, -0.9, 0.57, -1.47, -3.08, 1.2, .31, -2.33, -0.89 };
-	vector<float> target { 1.39, 0.75, -0.45, -0.11, 1.55, -.44, 2.39, 1.72, -3.06 };
+	vector<float> inputSeq { 1.2, -0.9, 0.57, -1.47, -3.08, 1.2, .31, -2.33, -0.89 };
+	vector<float> targetSeq { 1.39, 0.75, -0.45, -0.11, 1.55, -.44, 2.39, 1.72, -3.06 };
 
-	auto l1 = Layer::make<ConstantLayer>();
-	auto l2 = Layer::make<SigmoidLayer>();
-	auto l3 = Layer::make<CosineLayer>(); // gate
-	auto l4 = Layer::make<SquareLossLayer>();
+	rand_input.set_rand_seq(inputSeq);
+	rand_target.set_rand_seq(targetSeq);
+
+	auto l1 = Layer::make<ConstantLayer>(DUMMY_DIM);
+	auto l2 = Layer::make<SigmoidLayer>(DUMMY_DIM);
+	auto l3 = Layer::make<CosineLayer>(DUMMY_DIM); // gate
+	auto l4 = Layer::make<SquareLossLayer>(DUMMY_DIM);
 
 	// NOTE IMPORTANT RULE
 	// For recurrent gated connection conn[layer(alpha), layer(gate) => layer(beta)]
@@ -213,10 +210,10 @@ TEST(RecurrentNet, GatedConnection)
 	auto g234_1 = Connection::make<GatedConnection>(l2, l3, l4);
 	auto g234_2 = Connection::make<GatedConnection>(l2, l3, l4);
 
-	RecurrentNetwork net;
-	net.set_input(input);
-	net.set_target(target);
-	net.set_max_temporal_skip(2);
+	auto dummyEng = EngineBase::make<DummyEngine>();
+	auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
+
+	RecurrentNetwork net(dummyEng, dummyData, inputSeq.size(), 2);
 
 	net.add_layer(l1);
 
@@ -240,19 +237,21 @@ TEST(RecurrentNet, GatedTanhConnection)
 	rand_conn.set_rand_seq(vector<float> {
 			.798, 0.617
 	});
-	rand_conn.use_fake_seq();
 
 	rand_prehis.set_rand_seq(vector<float> {
 		.3
 	});
 
-	vector<float> input { 1.2, -0.9, 0.57, -1.47, -3.08 };
-	vector<float> target { 1.39, 0.75, -0.45, -0.11, 1.55 };
+	vector<float> inputSeq { 1.2, -0.9, 0.57, -1.47, -3.08 };
+	vector<float> targetSeq { 1.39, 0.75, -0.45, -0.11, 1.55 };
 
-	auto l1 = Layer::make<ConstantLayer>();
-	auto l2 = Layer::make<ScalorLayer>(1.3f);
-	auto l3 = Layer::make<CosineLayer>(); // gate
-	auto l4 = Layer::make<SquareLossLayer>();
+	rand_input.set_rand_seq(inputSeq);
+	rand_target.set_rand_seq(targetSeq);
+
+	auto l1 = Layer::make<ConstantLayer>(DUMMY_DIM);
+	auto l2 = Layer::make<ScalorLayer>(DUMMY_DIM, 1.3f);
+	auto l3 = Layer::make<CosineLayer>(DUMMY_DIM); // gate
+	auto l4 = Layer::make<SquareLossLayer>(DUMMY_DIM);
 
 	auto c12 = conn_full(l1, l2);
 	auto c13 = conn_full(l1, l3);
@@ -260,10 +259,10 @@ TEST(RecurrentNet, GatedTanhConnection)
 	auto g234_1 = Connection::make<GatedTanhConnection>(l2, l3, l4);
 	auto g234_2 = Connection::make<GatedTanhConnection>(l2, l3, l4);
 
-	RecurrentNetwork net;
-	net.set_input(input);
-	net.set_target(target);
-	net.set_max_temporal_skip(2);
+	auto dummyEng = EngineBase::make<DummyEngine>();
+	auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
+
+	RecurrentNetwork net(dummyEng, dummyData, inputSeq.size(), 2);
 
 	net.add_layer(l1);
 	net.add_connection(c13);
@@ -280,7 +279,7 @@ TEST(RecurrentNet, GatedTanhConnection)
 
 TEST(RecurrentNet, LSTM)
 {
-	********** FAKE_RAND **********
+	/********** FAKE_RAND **********/
 	vector<float> LSTM_CONNECTION_WEIGHTS {
 		-0.904, 0.312, -0.944, 1.34, -2.14, -1.69, -2.88, -0.889, -2.28, -0.414, -2.07
 	};
@@ -289,35 +288,32 @@ TEST(RecurrentNet, LSTM)
 	};
 
 	rand_conn.set_rand_seq(LSTM_CONNECTION_WEIGHTS);
-//	rand_conn.use_uniform_rand(-3, 2); rand_conn.set_rand_display(true);
-	rand_conn.use_fake_seq();
 
 	rand_prehis.set_rand_seq(LSTM_PREHISTORY);
 
-	vector<float> input {
+	vector<float> inputSeq {
 		1.2, -0.9, 0.57, -1.47, -3.08, 1.2, .31, -2.33, -0.89
 	};
-	vector<float> target {
+	vector<float> targetSeq {
 		1.39, 0.75, -0.45, -0.11, 1.55, -.44, 2.39, 1.72, -3.06
 	};
 
-//	rand_input.use_uniform_rand(-2, 2); rand_target.use_uniform_rand(-2, 2);
-//	rand_input.set_rand_display(true); rand_target.set_rand_display(true);
-//	vec_apply(input, rand_input); cout << endl; vec_apply(target, rand_target);
+	rand_input.set_rand_seq(inputSeq);
+	rand_target.set_rand_seq(targetSeq);
 
-	********** LSTM layers **********
-	auto inLayer = Layer::make<ConstantLayer>();
+	/********** LSTM layers **********/
+	auto inLayer = Layer::make<ConstantLayer>(DUMMY_DIM);
 
-	auto forgetGate = Layer::make<SigmoidLayer>();
-	auto inputGate = Layer::make<SigmoidLayer>();
-	auto cellHatLayer = Layer::make<TanhLayer>();
-	auto cellLayer = Layer::make<ConstantLayer>();
-	auto outputGate = Layer::make<SigmoidLayer>();
-	auto outLayer = Layer::make<ConstantLayer>();
+	auto forgetGate = Layer::make<SigmoidLayer>(DUMMY_DIM);
+	auto inputGate = Layer::make<SigmoidLayer>(DUMMY_DIM);
+	auto cellHatLayer = Layer::make<TanhLayer>(DUMMY_DIM);
+	auto cellLayer = Layer::make<ConstantLayer>(DUMMY_DIM);
+	auto outputGate = Layer::make<SigmoidLayer>(DUMMY_DIM);
+	auto outLayer = Layer::make<ConstantLayer>(DUMMY_DIM);
 
-	auto lossLayer = Layer::make<SquareLossLayer>();
+	auto lossLayer = Layer::make<SquareLossLayer>(DUMMY_DIM);
 
-	********** LSTM connections **********
+	/********** LSTM connections **********/
 	// Naming: c<in><out>_<skip>, or gated: g<in><gate><out>_<skip>
 	auto c_in_inputGate = conn_full(inLayer, inputGate);
 	auto c_outLast_inputGate_1 = conn_full(outLayer, inputGate);
@@ -355,12 +351,12 @@ TEST(RecurrentNet, LSTM)
 		c_cell_outputGate
 	};
 
-	********** Construct the network **********
+	/********** Construct the network **********/
 	// order of topology see "NOTE" sections in simple RecurrentNet gtests.
-	RecurrentNetwork net;
-	net.set_input(input);
-	net.set_target(target);
-	net.set_max_temporal_skip(1);
+	auto dummyEng = EngineBase::make<DummyEngine>();
+	auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
+
+	RecurrentNetwork net(dummyEng, dummyData, inputSeq.size(), 1);
 
 	net.add_layer(inLayer);
 
@@ -396,11 +392,12 @@ TEST(RecurrentNet, LSTM)
 	net.add_connection(c_out_loss);
 	net.add_layer(lossLayer);
 
-	********** Gradient check **********
+	/********** Gradient check **********/
 	gradient_check(net, 1e-2, 1);
 
-	********** Use hard-coded LSTM **********
-	RecurrentNetwork lstmDebugNet;
+	// TODO
+	/********** Use hard-coded LSTM **********/
+/*	RecurrentNetwork lstmDebugNet;
 	lstmDebugNet.set_input(input);
 	lstmDebugNet.set_target(target);
 
@@ -418,7 +415,7 @@ TEST(RecurrentNet, LSTM)
 	for (int i = 0; i < input.size(); ++i)
 		lstmDebugNet.forward_prop();
 
-	********** Output check against lstmDebugNet **********
+	********* Output check against lstmDebugNet *********
 	net.reset();
 	for (int i = 0; i < input.size(); ++i)
 		net.forward_prop();
@@ -455,10 +452,10 @@ TEST(RecurrentNet, LSTM)
 		if (key_exists(net.prehistoryLayerMap, l))
 		cout << std::setprecision(4) << static_cast<ParamContainerPtr>(net.prehistoryLayerMap[l])->paramGradients << "  ";
 	}
-	cout << endl;
+	cout << endl;*/
 
 }
-
+/*
 TEST(Composite, LSTM)
 {
 	// same fake params as RecurrentNet.LSTM test
