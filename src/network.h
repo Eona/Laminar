@@ -376,60 +376,16 @@ public:
 		connections.push_back(conn);
 		this->check_add_param_container(conn);
 
-		// Add the largest temporal skip for the layer
-		auto prehistoryEntry = prehistoryLayerMap.find(conn->inLayer);
+		auto connLayer = conn->inLayer;
 
-		if (prehistoryEntry == prehistoryLayerMap.end())
-		{
-			auto h_0 = ParamContainer::make(temporalSkip);
+		// Always store the largest temporalSkip seen so far associated with the layer
+		// prehistoryMapHelper will be used to initialize prehistoryMap, which contains
+		// ParamContainer for learnable prehistory params.
+		if (!key_exists(prehistoryMapHelper, connLayer)
+			|| prehistoryMapHelper[connLayer] < temporalSkip)
+			prehistoryMapHelper[connLayer] = temporalSkip;
 
-			Dimension layerDim = conn->inLayer->dim();
-
-			for (int paramIdx = 0; paramIdx < h_0->size(); ++paramIdx)
-			{
-				// Construct actual tensors for ParamContainer
-				auto& valuePtr = h_0->get_param_value(paramIdx);
-				auto& gradPtr = h_0->get_param_gradient(paramIdx);
-
-			// FIXME FIXME: dim of prehistory should be { layerDim * batchSize }
-				valuePtr = Tensor::make(engine, vec_augment(layerDim, 1));
-				gradPtr = Tensor::make(engine, vec_augment(layerDim, 1));
-
-				// Randomly initialize prehistory
-			// FIXME add TensorBase::cast
-				lmn::fill_rand_prehistory(*valuePtr);
-				lmn::clear(*gradPtr);
-			}
-
-			prehistoryLayerMap[conn->inLayer] = h_0;
-			paramContainers.push_back(h_0);
-		}
-		else if (prehistoryEntry->second->size() < temporalSkip)
-		{
-			// FIXME resize interface ugly
-			auto h_0 = prehistoryEntry->second;
-			Dimension layerDim = conn->inLayer->dim();
-			h_0->resize(temporalSkip);
-
-			// FIXME repetitive code
-			for (int paramIdx = 0; paramIdx < h_0->size(); ++paramIdx)
-			{
-				// Construct actual tensors for ParamContainer
-				auto& valuePtr = h_0->get_param_value(paramIdx);
-				auto& gradPtr = h_0->get_param_gradient(paramIdx);
-
-			// FIXME FIXME: dim of prehistory should be { layerDim * batchSize }
-				valuePtr = Tensor::make(engine, vec_augment(layerDim, 1));
-				gradPtr = Tensor::make(engine, vec_augment(layerDim, 1));
-
-				// Randomly initialize prehistory
-			// FIXME add TensorBase::cast
-				lmn::fill_rand_prehistory(*valuePtr);
-				lmn::clear(*gradPtr);
-			}
-		}
-
-		recurConnectionMap[conn] = temporalSkip;
+		recurConnTemporalSkipMap[conn] = temporalSkip;
 	}
 
 	template<typename ConnectionT, typename ...ArgT>
@@ -477,19 +433,19 @@ public:
 		for (Component::Ptr compon : this->components)
 			compon->zero_clear();
 
-		for (auto& entry : prehistoryLayerMap)
+		for (auto& entry : prehistoryMap)
 			entry.second->clear_gradients();
 
 //		frame = 0;
 	}
 
-	std::unordered_map<Layer::Ptr, ParamContainer::Ptr> prehistoryLayerMap;
-	std::unordered_map<Connection::Ptr, int> recurConnectionMap;
-
 protected:
 	/*********** Network operations ***********/
 	virtual void initialize_impl()
 	{
+		// initialize prehistory ParamContainers
+		this->init_prehistory_params();
+
 		for (Layer::Ptr l : this->layers)
 			l->init_history_length(this->historyLength);
 
@@ -510,15 +466,15 @@ protected:
 			for (Component::Ptr compon : this->components)
 			{
 				Connection::Ptr conn = Component::cast<Connection>(compon);
-				if (conn && key_exists(recurConnectionMap, conn))
+				if (conn && key_exists(recurConnTemporalSkipMap, conn))
 				{
-					int skip = recurConnectionMap[conn];
+					int skip = recurConnTemporalSkipMap[conn];
 					if (frame >= skip)
 						conn->forward(frame - skip, frame);
 					else
 						conn->prehistory_forward(
 							// Ugly workaround for eclipse syntax highlighter
-							std::static_pointer_cast<ParamContainer>(prehistoryLayerMap[conn->inLayer]),
+							std::static_pointer_cast<ParamContainer>(prehistoryMap[conn->inLayer]),
 							frame - skip, frame);
 				}
 				else
@@ -539,14 +495,14 @@ protected:
 			{
 				Component::Ptr compon = components[i];
 				Connection::Ptr conn = Component::cast<Connection>(compon);
-				if (key_exists(recurConnectionMap, conn))
+				if (key_exists(recurConnTemporalSkipMap, conn))
 				{
-					int skip = recurConnectionMap[conn];
+					int skip = recurConnTemporalSkipMap[conn];
 					if (frame >= skip)
 						conn->backward(frame, frame - skip);
 					else
 						conn->prehistory_backward(
-							std::static_pointer_cast<ParamContainer>(prehistoryLayerMap[conn->inLayer]),
+							std::static_pointer_cast<ParamContainer>(prehistoryMap[conn->inLayer]),
 							frame, frame - skip);
 				}
 				else
@@ -558,10 +514,58 @@ protected:
 		}
 	}
 
+	/**
+	 * Initialize prehistory ParamContainers and fill with random init values
+	 * Use prehistoryMapHelper to initialize prehistoryMap
+	 */
+	void init_prehistory_params()
+	{
+		for (auto helperEntry : this->prehistoryMapHelper)
+		{
+			auto layer = helperEntry.first;
+			int temporalSkip = helperEntry.second;
+
+			auto h_0 = ParamContainer::make(temporalSkip);
+
+			for (int paramIdx = 0; paramIdx < h_0->size(); ++paramIdx)
+			{
+				// Construct actual tensors for ParamContainer
+				auto& valuePtr = h_0->get_param_value(paramIdx);
+				auto& gradPtr = h_0->get_param_gradient(paramIdx);
+
+			// FIXME FIXME: dim of prehistory should be { layerDim * batchSize }
+				valuePtr = Tensor::make(engine, vec_augment(layer->dim(), 1));
+				gradPtr = Tensor::make(engine, vec_augment(layer->dim(), 1));
+
+				// Randomly initialize prehistory
+				lmn::fill_rand_prehistory(*valuePtr);
+			}
+
+			this->prehistoryMap[layer] = h_0;
+			this->paramContainers.push_back(h_0);
+		}
+	}
+
 protected:
 //	int frame = 0;
 	int historyLength;
 	int maxTemporalSkip = 1;
+
+	/**
+	 * Map layer to its prehistory parameters
+	 */
+	std::unordered_map<Layer::Ptr, ParamContainer::Ptr> prehistoryMap;
+
+	/**
+	 * Map layer to its largest temporal skip value.
+	 * Helps initialize prehistoryMap
+	 */
+	std::unordered_map<Layer::Ptr, int> prehistoryMapHelper;
+
+	/**
+	 * Map recurrent connection to its temporal skip value
+	 */
+	std::unordered_map<Connection::Ptr, int> recurConnTemporalSkipMap;
 };
 
 template<typename T>

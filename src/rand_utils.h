@@ -76,8 +76,6 @@ private:
 	vector<float> randSeq;
 	int i = 0;
 
-	bool isDisplay = false;
-	bool printName = false;
 	string name;
 
 public:
@@ -135,12 +133,6 @@ public:
 	{
 		cout << "Seq(" << name << ") = "
 				<< container2str(this->randSeq)  << endl;
-	}
-
-	void set_rand_display(bool isDisplay, bool printName = false)
-	{
-		this->isDisplay = isDisplay;
-		this->printName = printName;
 	}
 };
 

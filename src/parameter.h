@@ -61,12 +61,6 @@ public:
 		return paramValues.size();
 	}
 
-	void resize(int newSize)
-	{
-		paramValues.resize(newSize);
-		paramGradients.resize(newSize);
-	}
-
 	/************************************/
 	TYPEDEF_PTR(ParamContainer);
 
