@@ -74,25 +74,51 @@ public:
 		return this->historyLength;
 	}
 
+	/**
+	 * @return if full gradient history is saved, return historyLength,
+	 * otherwise return maxTemporalSkip + 1
+	 */
+	int gradient_history_length() const
+	{
+		return is_full_gradient_history_saved() ?
+				historyLength : maxTemporalSkip + 1;
+	}
+
 	/*********** Getter for in/out value/gradient ***********/
 	virtual Tensor& in_value(int t) const
 	{
 		return *this->inValues[t];
+	}
+	virtual Tensor::Ptr in_value_ptr(int t) const
+	{
+		return this->inValues[t];
 	}
 
 	virtual Tensor& in_gradient(int t) const
 	{
 		return *this->inGradients[t];
 	}
+	virtual Tensor::Ptr in_gradient_ptr(int t) const
+	{
+		return this->inGradients[t];
+	}
 
 	virtual Tensor& out_value(int t) const
 	{
 		return *this->outValues[t];
 	}
+	virtual Tensor::Ptr out_value_ptr(int t) const
+	{
+		return this->outValues[t];
+	}
 
 	virtual Tensor& out_gradient(int t) const
 	{
 		return *this->outGradients[t];
+	}
+	virtual Tensor::Ptr out_gradient_ptr(int t) const
+	{
+		return this->outGradients[t];
 	}
 
 	// FIXME do we need batch size? I think null Tensors can figure out the inflow dims
@@ -128,19 +154,16 @@ public:
 
 	virtual void zero_clear()
 	{
-		for (int i = 0; i < this->historyLength; ++i)
+		for (int t = 0; t < this->historyLength; ++t)
 		{
-			lmn::clear(in_value(i));
-			lmn::clear(out_value(i));
+			lmn::clear(in_value(t));
+			lmn::clear(out_value(t));
 		}
 
-		int gradientHistoryLength =
-			is_full_gradient_history_saved() ? historyLength : maxTemporalSkip + 1;
-
-		for (int i = 0; i < gradientHistoryLength; ++i)
+		for (int t = 0; t < gradient_history_length(); ++t)
 		{
-			lmn::clear(in_gradient(i));
-			lmn::clear(out_gradient(i));
+			lmn::clear(in_gradient(t));
+			lmn::clear(out_gradient(t));
 		}
 	}
 
@@ -213,30 +236,45 @@ protected:
 	 */
 	virtual void initialize_impl()
 	{
+		this->initialize_impl_in_values();
+		this->initialize_impl_out_values();
+		this->initialize_impl_in_gradients();
+		this->initialize_impl_out_gradients();
+	}
+
+	// Helper
+	virtual void initialize_impl_in_values()
+	{
 		for (int t = 0; t < historyLength; ++t)
-		{
 			inValues.push_back(Tensor::make(engine));
+	}
+	virtual void initialize_impl_out_values()
+	{
+		for (int t = 0; t < historyLength; ++t)
 			outValues.push_back(Tensor::make(engine));
-		}
+	}
 
-		int gradientHistoryLength =
-			is_full_gradient_history_saved() ? historyLength : maxTemporalSkip + 1;
-
-		for (int t = 0; t < gradientHistoryLength; ++t)
-		{
+	// Helper
+	virtual void initialize_impl_in_gradients()
+	{
+		for (int t = 0; t < gradient_history_length(); ++t)
 			inGradients.push_back(Tensor::make(engine));
+	}
+	virtual void initialize_impl_out_gradients()
+	{
+		for (int t = 0; t < gradient_history_length(); ++t)
 			outGradients.push_back(Tensor::make(engine));
-		}
 	}
 
 	// Shift the gradient window
 	// FIXME memory is not being saved, still alloc a lot of memory
 	void shift_back_vector(vector<Tensor::Ptr>& grad)
 	{
-//		grad.insert(grad.begin(), 0);
-//		grad.erase(grad.end() - 1);
-		grad.push_back(Tensor::make(engine));
-		grad.erase(grad.begin());
+		if (!grad.empty())
+		{
+			grad.push_back(Tensor::make(engine));
+			grad.erase(grad.begin());
+		}
 	}
 
 	void check_frame_consistency(int inFrame, int outFrame)
@@ -261,6 +299,13 @@ private:
 				inGradients,
 				outValues,
 				outGradients;
+
+	/**
+	 * Normally [in/out][Values/Gradients] fields should not be visible to
+	 * subclasses, but ConstantLayer is special because it needs to create an
+	 * alias of outValues=>inValues and outGradients=>inGradients
+	 */
+	friend class ConstantLayer;
 };
 
 /**
@@ -269,7 +314,10 @@ private:
 TYPEDEF_PTR_EXTERNAL(Layer);
 
 
-// Special layer that has inValue=outValue, inGradient=outGradient aliases
+/**
+ * Special layer that has inValue=>outValue, inGradient=>outGradient aliases
+ * They point to the same physical memory
+ */
 class ConstantLayer : public Layer
 {
 public:
@@ -283,22 +331,55 @@ public:
 
 	virtual ~ConstantLayer() {};
 
-	void forward_impl(Tensor& inValue, Tensor& outValue)
+	// NOTE override accessor methods [in/out]_[value/gradient]
+	// so that out_value() actually points to in_value()
+	virtual Tensor& out_value(int t) const
 	{
-		// FIXME WARNING must multiply by 1.f, otherwise free pointer error!!!
-		outValue = 1.f*inValue;
+		return *this->inValues[t];
+	}
+	virtual Tensor::Ptr out_value_ptr(int t) const
+	{
+		return this->inValues[t];
 	}
 
-	void backward_impl(Tensor& outValue, Tensor& outGradient,
-			Tensor& inValue, Tensor& inGradient)
+	virtual Tensor& out_gradient(int t) const
 	{
-		inGradient = 1.f*outGradient;
+		return *this->inGradients[t];
 	}
+	virtual Tensor::Ptr out_gradient_ptr(int t) const
+	{
+		return this->inGradients[t];
+	}
+
+	virtual void zero_clear()
+	{
+		for (int t = 0; t < history_length(); ++t)
+			lmn::clear(in_value(t));
+
+		for (int t = 0; t < gradient_history_length(); ++t)
+			lmn::clear(in_gradient(t));
+	}
+
+	void forward_impl(Tensor& inValue, Tensor& outValue) {}
+
+	void backward_impl(Tensor& outValue, Tensor& outGradient,
+			Tensor& inValue, Tensor& inGradient) {}
 
 	virtual explicit operator string() const
 	{
 		return string("[ConstantLayer: \n")
 				+ Layer::operator string() + "]";
+	}
+
+protected:
+	/**
+	 * inValues == outValues, inGradients == outGradients
+	 * We only initialize one alias
+	 */
+	virtual void initialize_impl()
+	{
+		Layer::initialize_impl_in_values();
+		Layer::initialize_impl_in_gradients();
 	}
 };
 
