@@ -21,7 +21,7 @@ else
 fi
 
 cd $BUILD_DIR
-cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_CXX_COMPILER_ARG1=-std=c++11 -DCMAKE_BUILD_TYPE=Release ../src/ $EXTRA_FLAG 
+cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_CXX_COMPILER_ARG1=-std=c++11 -DCMAKE_BUILD_TYPE=Debug ../src/ $EXTRA_FLAG 
 cd ..
 
 echo
