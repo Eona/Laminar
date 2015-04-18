@@ -72,4 +72,10 @@ int main(int argc, char **argv)
 
 	lmn::CudaImpl::square_loss(v, &out, true);
 	out.print_matrix("sqloss(m1,m2)");
+
+	lmn::CudaImpl::fill_rand(v, &out, true);
+	out.print_matrix("rand");
+
+	lmn::CudaImpl::debug_fill(v, &out, true);
+	out.print_matrix("0.66337");
 }

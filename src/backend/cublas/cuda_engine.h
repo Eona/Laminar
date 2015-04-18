@@ -304,7 +304,6 @@ inline void square_loss(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool i
 inline void fill_rand(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 {
 	debug_msg("fill_rand", is_initialized);
-	//DEBUG_MSG("rand? " << *write);
 	if (!is_initialized) *write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);
 	write->fill_rand(1);
 }
@@ -324,45 +323,45 @@ inline void debug_fill(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is
 
 
 
-//class CudaEngine : public Engine<float>
-//{
-//public:
-//	CudaEngine() :
-//		Engine<float>()
-//	{
-//		namespace Impl = lmn::CudaImpl;
-//		const int T = Impl::TENSOR;
-//		const int S = Impl::SCALOR;
-//		register_create(Impl::create);
-//		register_opcode("t+t", Impl::add<T>);
-//		register_opcode("s+s", Impl::add<S>);
-//		register_opcode("t-t", Impl::sub<T>);
-//		register_opcode("s-s", Impl::sub<S>);
-//		register_opcode("-t", Impl::negate<T>);
-//		register_opcode("-s", Impl::negate<S>);
-//		register_opcode("t*t", Impl::mult<T, T>);
-//		register_opcode("t*s", Impl::mult<T, S>);
-//		register_opcode("s*t", Impl::mult<S, T>);
-//		register_opcode("s*s", Impl::mult<S, S>);
-//		register_opcode("t=t", Impl::assign<T>);
-//		register_opcode("s=s", Impl::assign<S>);
-//
-//		register_opcode("sin", Impl::sin);
-//		register_opcode("cos", Impl::cos);
-//		register_opcode("tanh", Impl::tanh);
-//		register_opcode("tanh_gradient", Impl::tanh_gradient);
-//		register_opcode("sigmoid", Impl::sigmoid);
-//		register_opcode("sigmoid_gradient", Impl::sigmoid_gradient);
-//		register_opcode("transpose", Impl::transpose);
-//		register_opcode("element_mult", Impl::element_mult);
-//		register_opcode("square_loss", Impl::square_loss);
-//
-//		register_opcode("destroy", Impl::destroy);
-//		register_opcode("fill_rand", Impl::fill_rand);
-//
-//		/*********** DEBUG ONLY ***********/
-//		register_opcode("debug_fill", Impl::debug_fill);
-//	}
-//};
+class CudaEngine : public Engine<float>
+{
+public:
+	CudaEngine() :
+		Engine<float>()
+	{
+		namespace Impl = lmn::CudaImpl;
+		const int T = Impl::TENSOR;
+		const int S = Impl::SCALOR;
+		register_create(Impl::create);
+		register_opcode("t+t", Impl::add<T>);
+		register_opcode("s+s", Impl::add<S>);
+		register_opcode("t-t", Impl::sub<T>);
+		register_opcode("s-s", Impl::sub<S>);
+		register_opcode("-t", Impl::negate<T>);
+		register_opcode("-s", Impl::negate<S>);
+		register_opcode("t*t", Impl::mult<T, T>);
+		register_opcode("t*s", Impl::mult<T, S>);
+		register_opcode("s*t", Impl::mult<S, T>);
+		register_opcode("s*s", Impl::mult<S, S>);
+		register_opcode("t=t", Impl::assign<T>);
+		register_opcode("s=s", Impl::assign<S>);
+
+		register_opcode("sin", Impl::sin);
+		register_opcode("cos", Impl::cos);
+		register_opcode("tanh", Impl::tanh);
+		register_opcode("tanh_gradient", Impl::tanh_gradient);
+		register_opcode("sigmoid", Impl::sigmoid);
+		register_opcode("sigmoid_gradient", Impl::sigmoid_gradient);
+		register_opcode("transpose", Impl::transpose);
+		register_opcode("element_mult", Impl::element_mult);
+		register_opcode("square_loss", Impl::square_loss);
+
+		register_opcode("destroy", Impl::destroy);
+		register_opcode("fill_rand", Impl::fill_rand);
+
+		/*********** DEBUG ONLY ***********/
+		register_opcode("debug_fill", Impl::debug_fill);
+	}
+};
 
 #endif /* CUDA_ENGINE_H_ */

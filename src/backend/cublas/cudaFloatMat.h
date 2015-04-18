@@ -121,7 +121,6 @@ public:
 	}
 
 
-
     void print_matrix(std::string msg) {
         to_host();
         std::cout << "\n" << msg << "\n";
