@@ -138,6 +138,7 @@ Tensor operator*(float scalor, const Tensor& x)
  */
 namespace lmn
 {
+//typedef std::function<Tensor(const Tensor&)> TransferFunction;
 typedef Tensor (*TransferFunction)(const Tensor&);
 
 // Macro generate single tensor element-wise math operation
@@ -149,9 +150,7 @@ typedef Tensor (*TransferFunction)(const Tensor&);
 		Tensor ans(x.engine); \
 		x.upload(Instruction(STRINGFY(fname), {x.addr}, ans.addr)); \
 		return ans; \
-	} \
-//	template Tensor fname(Tensor& x); \
-//	template Scalor fname(Scalor& x);
+	}
 
 	GEN_MATH_OPS(transpose);
 
