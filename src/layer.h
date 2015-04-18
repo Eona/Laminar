@@ -46,7 +46,7 @@ public:
 		this->maxTemporalSkip = maxTemporalSkip;
 	}
 
-	int get_max_temporal_skip()
+	int max_temporal_skip()
 	{
 		return this->maxTemporalSkip;
 	}
@@ -64,6 +64,11 @@ public:
 		Component::check_uninitialized("init_history_length", "Layer");
 
 		this->historyLength = historyLength;
+	}
+
+	int history_length()
+	{
+		return this->historyLength;
 	}
 
 	// FIXME do we need batch size? I think null Tensors can figure out the inflow dims
@@ -263,13 +268,14 @@ public:
 
 	void forward_impl(Tensor& inValue, Tensor& outValue)
 	{
-		outValue = inValue;
+		// FIXME WARNING must multiply by 1.f, otherwise free pointer error!!!
+		outValue = 1.f*inValue;
 	}
 
 	void backward_impl(Tensor& outValue, Tensor& outGradient,
 			Tensor& inValue, Tensor& inGradient)
 	{
-		inGradient = outGradient;
+		inGradient = 1.f*outGradient;
 	}
 
 	virtual explicit operator string() const
