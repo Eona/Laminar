@@ -47,11 +47,12 @@ inline void gradient_check(Network& net,
 		net.load_target();
 	};
 
-	vector<Tensor> analyticGrads;
+	vector<Tensor::Ptr> analyticGrads;
 	for (ParamContainer::Ptr container : net.paramContainers)
 	{
 		for (int pidx = 0; pidx < container->size(); ++pidx)
-			analyticGrads.push_back(*container->param_gradient_ptr(pidx));
+			analyticGrads.push_back(
+					Tensor::make(*container->param_gradient_ptr(pidx)));
 	}
 	engine->flush_execute();
 //	for (auto& tensor : analyticGrads)
@@ -94,7 +95,6 @@ inline void gradient_check(Network& net,
 	}
 
 	/****** perturb the input ******/
-
 	reset_net();
 	engine->flush_execute();
 	net.execute("forward");
@@ -102,7 +102,8 @@ inline void gradient_check(Network& net,
 
 	analyticGrads.clear();
 	for (int t = 0; t < historyLength; ++t)
-		analyticGrads.push_back(net.layers[0]->in_gradient(t));
+		analyticGrads.push_back(
+				Tensor::make(net.layers[0]->in_gradient(t)));
 
 	engine->flush_execute();
 
@@ -139,6 +140,7 @@ inline void gradient_check(Network& net,
 
 	}
 	reset_net();
+	engine->flush_execute();
 }
 
 #endif /* GRADIENT_CHECK_H_ */

@@ -224,7 +224,8 @@ public:
 };
 
 /**
- * Define Engine<DataT> member function here to avoid mutual header inclusion
+ * WARNING: Define Engine<DataT> member function here to
+ * avoid mutual header inclusion with tensor.h
  */
 template<typename DataT>
 inline Engine<DataT>::DataPtr Engine<DataT>::read_memory(TensorBase::Ptr tensorPtr)
