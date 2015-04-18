@@ -21,16 +21,16 @@ public:
 
 	virtual ~MemoryPool() {};
 
-	using DataType = DataT;
+	typedef std::shared_ptr<DataT> DataPtr;
 
 	int alloc()
 	{
-		this->memory.push_back(DataT());
+		this->memory.push_back(DataPtr(new DataT()));
 		this->initialized.push_back(false);
 		return size() - 1;
 	}
 
-	DataT& operator[](int i)
+	DataPtr operator[](int i)
 	{
 		assert_throw(i < size(),
 			EngineException("memory read out of bound."));
@@ -63,7 +63,7 @@ public:
 
 private:
 	// All the following should have the same size
-	vector<DataT> memory;
+	vector<DataPtr> memory;
 	// test if things are default initialized.
 	vector<bool> initialized;
 };
@@ -347,6 +347,7 @@ public:
 	virtual ~Engine() {};
 
 	typedef std::shared_ptr<Engine<DataT>> Ptr;
+	typedef std::shared_ptr<DataT> DataPtr;
 
 	virtual int alloc()
 	{
@@ -364,16 +365,16 @@ public:
 	 * @param tensorPtr
 	 * @return
 	 */
-	DataT& read_memory(TensorBasePtr tensorPtr);
-	DataT& read_memory(const TensorBase& tensorPtr);
+	DataPtr read_memory(TensorBasePtr tensorPtr);
+	DataPtr read_memory(const TensorBase& tensorPtr);
 
 	/**************************************
 	******* Register "assembly" commands ******
 	**************************************/
 	// (readAddrs, writeAddr, is_initialized)
-	typedef std::function<void(vector<DataT*>, DataT*, bool)> CommandFuncType;
+	typedef std::function<void(vector<DataPtr>, DataPtr, bool)> CommandFuncType;
 	// specifically for Opcode create(writeAddr, dim)
-	typedef std::function<void(DataT*, Dimension)> CreateFuncType;
+	typedef std::function<void(DataPtr, Dimension)> CreateFuncType;
 
 	/**
 	 * Base of NormalCommand and ContextCommand
@@ -439,7 +440,7 @@ public:
 
 	/**
 	 * Context commands are functors with signature
-	 * void(vector<DataT*>, DataT*, bool, ExtraContextArgT1, ExtraContextArgT2 ...)
+	 * void(vector<DataPtr>, DataPtr, bool, ExtraContextArgT1, ExtraContextArgT2 ...)
 	 */
 	// Any type in <...ContextArgT> are extra "environmental context" parameters
 	template <typename... ContextArgT>
@@ -448,7 +449,7 @@ public:
 		static_assert(sizeof...(ContextArgT) > 0,
 				"\n\n\n\nLaminar static assert:\nContextCommand must have at least 1 template ArgType\n\n\n\n\n");
 
-		typedef std::function<void(vector<DataT*>, DataT*, bool, ContextArgT...)> ContextFuncType;
+		typedef std::function<void(vector<DataPtr>, DataPtr, bool, ContextArgT...)> ContextFuncType;
 
 		/**
 		 * Provided with Opcode name so that we can generate a better error message
@@ -489,7 +490,7 @@ public:
 
 			auto contextArgPack = context->get_context_arg_pack();
 
-			return [=](vector<DataT*> reads, DataT *write, bool is_initialized)
+			return [=](vector<DataPtr> reads, DataPtr write, bool is_initialized)
 			{
 				contextCmd(reads, write, is_initialized, std::get<S>(contextArgPack) ...);
 			};
@@ -531,17 +532,17 @@ public:
 		routine->executables.clear();
 		for (Instruction& instr : routine->instructions)
 		{
-			// TODO do we need this op?
+			// FIXME do we need this op?
 			if (starts_with(instr.opcode, "create_null"))
 				continue;
 
-			vector<DataT*> reads;
+			vector<DataPtr> reads;
 			for (int addr : instr.readAddrs)
-				reads.push_back(&memoryPool[addr]);
+				reads.push_back(memoryPool[addr]);
 
 			int writeAddr = instr.writeAddr;
 
-			DataT *write = &memoryPool[writeAddr];
+			DataPtr write = memoryPool[writeAddr];
 
 			if (instr.opcode == "create")
 			{

@@ -227,13 +227,13 @@ public:
  * Define Engine<DataT> member function here to avoid mutual header inclusion
  */
 template<typename DataT>
-inline DataT& Engine<DataT>::read_memory(TensorBase::Ptr tensorPtr)
+inline Engine<DataT>::DataPtr Engine<DataT>::read_memory(TensorBase::Ptr tensorPtr)
 {
 	return this->memoryPool[tensorPtr->addr];
 }
 
 template<typename DataT>
-inline DataT& Engine<DataT>::read_memory(const TensorBase& tensorPtr)
+inline Engine<DataT>::DataPtr Engine<DataT>::read_memory(const TensorBase& tensorPtr)
 {
 	return this->memoryPool[tensorPtr.addr];
 }

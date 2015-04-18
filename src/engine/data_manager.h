@@ -95,27 +95,29 @@ template<typename DataT>
 class DataManager : public DataManagerBase
 {
 public:
+	typedef std::shared_ptr<DataT> DataPtr;
+
 	DataManager(EngineBase::Ptr engine) :
 		DataManagerBase(engine)
 	{
 		auto specificEngine = EngineBase::cast<Engine<DataT>>(this->engine);
 
 		specificEngine->register_normal_op(DataManagerBase::OP_LOAD_INPUT,
-			[=](vector<DataT*>, DataT *write, bool is_initialized) {
+			[=](vector<DataPtr>, DataPtr write, bool is_initialized) {
 				this->load_input(write, is_initialized);
 			}
 		);
 
 		specificEngine->register_normal_op(DataManagerBase::OP_LOAD_TARGET,
-			[=](vector<DataT*>, DataT *write, bool is_initialized) {
+			[=](vector<DataPtr>, DataPtr write, bool is_initialized) {
 				this->load_target(write, is_initialized);
 			}
 		);
 	}
 
-	virtual void load_input(DataT *write, bool is_initialized) = 0;
+	virtual void load_input(DataPtr write, bool is_initialized) = 0;
 
-	virtual void load_target(DataT *write, bool is_initialized) = 0;
+	virtual void load_target(DataPtr write, bool is_initialized) = 0;
 };
 
 #endif /* DATA_MANAGER_H_ */

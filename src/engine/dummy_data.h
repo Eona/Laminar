@@ -11,16 +11,18 @@
 class DummyDataManager : public DataManager<float>
 {
 public:
+	typedef std::shared_ptr<float> DataPtr;
+
 	DummyDataManager(EngineBase::Ptr engine) :
 		DataManager<float>(engine)
 	{}
 
-	void load_input(float *write, bool is_initialized)
+	void load_input(DataPtr write, bool is_initialized)
 	{
 		*write = input_rand();
 	}
 
-	void load_target(float *write, bool is_initialized)
+	void load_target(DataPtr write, bool is_initialized)
 	{
 		*write = target_rand();
 	}

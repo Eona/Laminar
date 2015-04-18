@@ -69,7 +69,7 @@ inline void gradient_check(Network& net,
 
 			net.execute("forward");
 
-			float lossMinus = engine->read_memory(net.lossLayer->total_loss());
+			float lossMinus = *engine->read_memory(net.lossLayer->total_loss());
 
 			param->gradient_check_restore();
 			reset_net();
@@ -79,14 +79,14 @@ inline void gradient_check(Network& net,
 
 			net.execute("forward");
 
-			float lossPlus = engine->read_memory(net.lossLayer->total_loss());
+			float lossPlus = *engine->read_memory(net.lossLayer->total_loss());
 
 			param->gradient_check_restore();
 			engine->flush_execute();
 
 			float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 
-			float analyticGrad = engine->read_memory(analyticGrads[agpt++]);
+			float analyticGrad = *engine->read_memory(analyticGrads[agpt++]);
 
 			assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
 					"param analytic != numeric", "param gradcheck pass");
@@ -116,7 +116,7 @@ inline void gradient_check(Network& net,
 
 		net.execute("forward");
 
-		float lossMinus = engine->read_memory(net.lossLayer->total_loss());
+		float lossMinus = *engine->read_memory(net.lossLayer->total_loss());
 
 		dataman->restore_last_input();
 		reset_net();
@@ -126,13 +126,13 @@ inline void gradient_check(Network& net,
 
 		net.execute("forward");
 
-		float lossPlus = engine->read_memory(net.lossLayer->total_loss());
+		float lossPlus = *engine->read_memory(net.lossLayer->total_loss());
 
 		dataman->restore_last_input();
 
 		float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 
-		float analyticGrad = engine->read_memory(analyticGrads[inp]);
+		float analyticGrad = *engine->read_memory(analyticGrads[inp]);
 
 		assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
 				"input analytic != numeric", "input gradcheck pass");

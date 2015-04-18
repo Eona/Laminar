@@ -16,6 +16,8 @@ namespace lmn {
 
 namespace DummyImpl {
 
+typedef std::shared_ptr<float> FloatPtr;
+
 enum TensorT {
 	TENSOR = 0,
 	SCALOR = 1
@@ -36,7 +38,7 @@ struct tensor_op<SCALOR>
 	static constexpr const char *operand = "s";
 };
 
-void create(float* write, Dimension dim)
+void create(FloatPtr write, Dimension dim)
 {
 #if DUMMY_DEBUG
 	DEBUG_MSG("Dummy::create dim=" << dim);
@@ -52,7 +54,7 @@ void debug_msg(string msg, bool is_initialized)
 }
 
 template<int TensorT>
-void add(vector<float*> reads, float* write, bool is_initialized)
+void add(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	string op = tensor_op<TensorT>::operand;
 	debug_msg(op + "+" + op, is_initialized);
@@ -60,7 +62,7 @@ void add(vector<float*> reads, float* write, bool is_initialized)
 }
 
 template<int TensorT>
-void sub(vector<float*> reads, float* write, bool is_initialized)
+void sub(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	string op = tensor_op<TensorT>::operand;
 	debug_msg(op + "-" + op, is_initialized);
@@ -68,7 +70,7 @@ void sub(vector<float*> reads, float* write, bool is_initialized)
 }
 
 template<int TensorT>
-void negate(vector<float*> reads, float* write, bool is_initialized)
+void negate(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	string op = tensor_op<TensorT>::operand;
 	debug_msg("-" + op, is_initialized);
@@ -76,7 +78,7 @@ void negate(vector<float*> reads, float* write, bool is_initialized)
 }
 
 template<int TensorT1, int TensorT2>
-void mult(vector<float*> reads, float* write, bool is_initialized)
+void mult(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	string op1 = tensor_op<TensorT1>::operand;
 	string op2 = tensor_op<TensorT2>::operand;
@@ -84,97 +86,97 @@ void mult(vector<float*> reads, float* write, bool is_initialized)
 	*write = (*reads[0]) * (*reads[1]);
 }
 
-void scale(vector<float*> reads, float* write, bool is_initialized, float scalorContext)
+void scale(vector<FloatPtr> reads, FloatPtr write, bool is_initialized, float scalorContext)
 {
 	debug_msg("scale * " + to_str(scalorContext), is_initialized);
 	*write = scalorContext * (*reads[0]);
 }
 
 template<int TensorT>
-void assign(vector<float*> reads, float* write, bool is_initialized)
+void assign(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	string op = tensor_op<TensorT>::operand;
 	debug_msg(op + "=" + op, is_initialized);
 	*write = *reads[0];
 }
 
-inline void destroy(vector<float*> reads, float* write, bool is_initialized)
+inline void destroy(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	debug_msg("destroy", is_initialized);
 }
 
 
 // standalone single-float non-linear functions
-inline void transpose(vector<float *> reads, float *write, bool is_initialized)
+inline void transpose(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	debug_msg("transpose", is_initialized);
 	float r = *reads[0];
 	*write = *reads[0];
 }
 
-inline void sigmoid(vector<float *> reads, float *write, bool is_initialized)
+inline void sigmoid(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	debug_msg("sigmoid", is_initialized);
 	float r = *reads[0];
 	*write = 1.f / (1.f + exp(-r));
 }
 
-inline void sigmoid_gradient(vector<float *> reads, float *write, bool is_initialized)
+inline void sigmoid_gradient(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	debug_msg("sigmoid_gradient", is_initialized);
 	float r = *reads[0];
 	*write = r * (1.f - r);
 }
 
-inline void sin(vector<float *> reads, float *write, bool is_initialized)
+inline void sin(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	debug_msg("sin", is_initialized);
 	float r = *reads[0];
 	*write = std::sin(r);
 }
 
-inline void cos(vector<float *> reads, float *write, bool is_initialized)
+inline void cos(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	debug_msg("cos", is_initialized);
 	float r = *reads[0];
 	*write = std::cos(r);
 }
 
-inline void tanh(vector<float *> reads, float *write, bool is_initialized)
+inline void tanh(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	debug_msg("tanh", is_initialized);
 	float r = *reads[0];
 	*write = std::tanh(r);
 }
 
-inline void tanh_gradient(vector<float *> reads, float *write, bool is_initialized)
+inline void tanh_gradient(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	debug_msg("tanh_gradient", is_initialized);
 	float r = *reads[0];
 	*write = 1.f - r * r;
 }
 
-inline void element_mult(vector<float *> reads, float *write, bool is_initialized)
+inline void element_mult(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	debug_msg("element_mult", is_initialized);
 	*write = (*reads[0]) * (*reads[1]);
 }
 
-inline void square_loss(vector<float *> reads, float *write, bool is_initialized)
+inline void square_loss(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	debug_msg("square_loss", is_initialized);
 	float diff = *reads[0] - *reads[1];
 	*write = 0.5f * diff * diff;
 }
 
-inline void clear(vector<float *> reads, float *write, bool is_initialized)
+inline void clear(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	debug_msg("clear", is_initialized);
 	*write = 0;
 }
 
 // FIXME add contextual rand engine
-inline void fill_rand(vector<float *> reads, float *write, bool is_initialized)
+inline void fill_rand(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	assert_throw(is_initialized,
 		EngineException("DummyEngine: fill_rand must have been initialized"));
@@ -182,16 +184,18 @@ inline void fill_rand(vector<float *> reads, float *write, bool is_initialized)
 	*write = FakeRand::instance_connection()();
 }
 
-inline void fill_rand_prehistory(vector<float *> reads, float *write, bool is_initialized)
+inline void fill_rand_prehistory(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	assert_throw(is_initialized,
 		EngineException("DummyEngine: fill_rand_prehistory must have been initialized"));
 	debug_msg("fill_rand_prehistory", is_initialized);
+	if (write == nullptr)
+		cout << "BAD bAD bAD" << endl;
 	*write = FakeRand::instance_prehistory()();
 }
 
 // For gradient checking
-inline void perturb(vector<float *> reads, float *write, bool is_initialized,
+inline void perturb(vector<FloatPtr> reads, FloatPtr write, bool is_initialized,
 		DimIndex idx, float eps)
 {
 	debug_msg("perturb", is_initialized);
@@ -200,7 +204,7 @@ inline void perturb(vector<float *> reads, float *write, bool is_initialized,
 
 /*********** DEBUG ONLY ***********/
 
-inline void debug_context_tmp(vector<float *> reads, float *write, bool is_initialized, string x, float y, std::pair<char, int> z)
+inline void debug_context_tmp(vector<FloatPtr> reads, FloatPtr write, bool is_initialized, string x, float y, std::pair<char, int> z)
 {
 	DEBUG_MSG("DEBUG_CONTEXT executed: "
 		<< "string=" << x << " float=" << y
@@ -221,6 +225,7 @@ public:
 		const int S = Impl::SCALOR;
 
 		register_create_op(Impl::create);
+
 		register_normal_op("t+t", Impl::add<T>);
 		register_normal_op("s+s", Impl::add<S>);
 		register_normal_op("t-t", Impl::sub<T>);
