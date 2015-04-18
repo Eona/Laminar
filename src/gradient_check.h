@@ -24,7 +24,7 @@ inline void gradient_check(Network& net,
 	try {
 		RecurrentNetwork& net_ = dynamic_cast<RecurrentNetwork&>(net);
 		net_.init_max_temporal_skip(Layer::UNLIMITED_TEMPORAL_SKIP);
-		historyLength = net_.get_history_length();
+		historyLength = net_.history_length();
 	}
 	catch (std::bad_cast& err) { }
 

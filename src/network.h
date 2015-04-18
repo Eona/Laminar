@@ -345,7 +345,7 @@ public:
 		this->maxTemporalSkip = maxTemporalSkip;
 	}
 
-	int get_max_temporal_skip()
+	int max_temporal_skip()
 	{
 		return this->maxTemporalSkip;
 	}
@@ -356,7 +356,7 @@ public:
 		this->historyLength = historyLength;
 	}
 
-	int get_history_length()
+	int history_length()
 	{
 		return this->historyLength;
 	}
