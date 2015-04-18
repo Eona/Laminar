@@ -27,19 +27,19 @@ public:
 
 	virtual void forward_impl(Tensor& inlayerOutval, Tensor& outlayerInval)
 	{
-		gated_forward_impl(inlayerOutval, *gateLayer->outValues[out_frame()],
+		gated_forward_impl(inlayerOutval, gateLayer->out_value(out_frame()),
 				// output param:
 				outlayerInval);
 	}
 
 	virtual void backward_impl(Tensor& outlayerIngrad, Tensor& inlayerOutval, Tensor& inlayerOutgrad)
 	{
-		gated_backward_impl(outlayerIngrad, inlayerOutval, *gateLayer->outValues[out_frame()],
+		gated_backward_impl(outlayerIngrad, inlayerOutval, gateLayer->out_value(out_frame()),
 				// output params:
 				inlayerOutgrad,
-				*gateLayer->outGradients[
+				gateLayer->out_gradient(
 						gateLayer->is_full_gradient_history_saved() ?
-								out_frame() : 0]);
+								out_frame() : 0));
 	}
 
 	/*********** Subclasses should override following ***********/

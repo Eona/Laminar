@@ -27,11 +27,14 @@ public:
 
 	virtual ~Layer() {};
 
-	Dimension dim()
+	Dimension dim() const
 	{
 		return this->dim_;
 	}
 
+	enum : int {
+		UNLIMITED_TEMPORAL_SKIP = -1
+	};
 	/**
 	 * Maximum temporal skip, allows a hidden layer to link (skip) to its
 	 * future at +skip timestep. The most typical RNN has maxTemporalSkip = 1.
@@ -46,12 +49,12 @@ public:
 		this->maxTemporalSkip = maxTemporalSkip;
 	}
 
-	int max_temporal_skip()
+	int max_temporal_skip() const
 	{
 		return this->maxTemporalSkip;
 	}
 
-	bool is_full_gradient_history_saved()
+	bool is_full_gradient_history_saved() const
 	{
 		return this->maxTemporalSkip == UNLIMITED_TEMPORAL_SKIP;
 	}
@@ -66,9 +69,30 @@ public:
 		this->historyLength = historyLength;
 	}
 
-	int history_length()
+	int history_length() const
 	{
 		return this->historyLength;
+	}
+
+	/*********** Getter for in/out value/gradient ***********/
+	virtual Tensor& in_value(int t) const
+	{
+		return *this->inValues[t];
+	}
+
+	virtual Tensor& in_gradient(int t) const
+	{
+		return *this->inGradients[t];
+	}
+
+	virtual Tensor& out_value(int t) const
+	{
+		return *this->outValues[t];
+	}
+
+	virtual Tensor& out_gradient(int t) const
+	{
+		return *this->outGradients[t];
 	}
 
 	// FIXME do we need batch size? I think null Tensors can figure out the inflow dims
@@ -86,7 +110,7 @@ public:
 
 		this->frame_ = inFrame;
 
-		forward_impl(*inValues[frame_], *outValues[frame_]);
+		forward_impl(in_value(frame_), out_value(frame_));
 	}
 
 	virtual void backward(int outFrame = 0, int inFrame = 0)
@@ -96,18 +120,18 @@ public:
 		this->frame_ = inFrame;
 		int relativeFrame = is_full_gradient_history_saved() ? frame_ : 0;
 
-		backward_impl(*outValues[frame_],
-				*outGradients[relativeFrame],
-				*inValues[frame_],
-				*inGradients[relativeFrame]);
+		backward_impl(out_value(frame_),
+				out_gradient(relativeFrame),
+				in_value(frame_),
+				in_gradient(relativeFrame));
 	}
 
 	virtual void zero_clear()
 	{
 		for (int i = 0; i < this->historyLength; ++i)
 		{
-			lmn::clear(*inValues[i]);
-			lmn::clear(*outValues[i]);
+			lmn::clear(in_value(i));
+			lmn::clear(out_value(i));
 		}
 
 		int gradientHistoryLength =
@@ -115,8 +139,8 @@ public:
 
 		for (int i = 0; i < gradientHistoryLength; ++i)
 		{
-			lmn::clear(*inGradients[i]);
-			lmn::clear(*outGradients[i]);
+			lmn::clear(in_gradient(i));
+			lmn::clear(out_gradient(i));
 		}
 	}
 
@@ -228,22 +252,15 @@ private:
 	// frame pointer
 	int frame_ = 0;
 
-protected:
 	int historyLength;
 
 	// Max temporal skip. negative to save full gradient history
 	int maxTemporalSkip;
 
-public: // FIXME no public!
 	vector<Tensor::Ptr> inValues,
 				inGradients,
 				outValues,
 				outGradients;
-
-public:
-	enum : int {
-		UNLIMITED_TEMPORAL_SKIP = -1
-	};
 };
 
 /**

@@ -27,17 +27,17 @@ public:
 	/**
 	 * Network calls the request to fill in input Tensor
 	 */
-	void upload_input(TensorBase::Ptr tensor)
+	void upload_input(const TensorBase& tensor)
 	{
-		engine->upload(Instruction(OP_LOAD_INPUT, {}, tensor->addr));
+		engine->upload(Instruction(OP_LOAD_INPUT, {}, tensor.addr));
 	}
 
 	/**
 	 * Network calls the request to fill in target Tensor
 	 */
-	void upload_target(TensorBase::Ptr tensor)
+	void upload_target(const TensorBase& tensor)
 	{
-		engine->upload(Instruction(OP_LOAD_TARGET, {}, tensor->addr));
+		engine->upload(Instruction(OP_LOAD_TARGET, {}, tensor.addr));
 	}
 
 	/**

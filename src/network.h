@@ -291,12 +291,12 @@ public:
 
 	virtual void load_input()
 	{
-		dataManager->upload_input(layers[0]->inValues[0]);
+		dataManager->upload_input(layers[0]->in_value(0));
 	}
 
 	virtual void load_target()
 	{
-		dataManager->upload_target(lossLayer->targetValue[0]);
+		dataManager->upload_target(lossLayer->target_value(0));
 	}
 
 protected:
@@ -412,7 +412,7 @@ public:
 	{
 		dataManager->start_new_sequence();
 		for (int frame = 0; frame < this->historyLength; ++frame)
-			dataManager->upload_input(layers[0]->inValues[frame]);
+			dataManager->upload_input(layers[0]->in_value(frame));
 	}
 
 	/**
@@ -422,7 +422,7 @@ public:
 	{
 		dataManager->start_new_sequence();
 		for (int frame = 0; frame < this->historyLength; ++frame)
-			dataManager->upload_target(lossLayer->targetValue[frame]);
+			dataManager->upload_target(lossLayer->target_value(frame));
 	}
 
 	virtual void zero_clear()

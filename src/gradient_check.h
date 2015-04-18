@@ -101,8 +101,9 @@ inline void gradient_check(Network& net,
 	net.execute("backward");
 
 	analyticGrads.clear();
-	for (auto grad : net.layers[0]->inGradients)
-		analyticGrads.push_back(*grad);
+	for (int t = 0; t < historyLength; ++t)
+		analyticGrads.push_back(net.layers[0]->in_gradient(t));
+
 	engine->flush_execute();
 
 	// perturb each input in sequence

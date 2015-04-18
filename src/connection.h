@@ -31,7 +31,7 @@ public:
 		this->inFrame_ = inFrame;
 		this->outFrame_ = outFrame;
 
-		forward_impl(*inLayer->outValues[inFrame], *outLayer->inValues[outFrame]);
+		forward_impl(inLayer->out_value(inFrame), outLayer->in_value(outFrame));
 	}
 
 	/**
@@ -48,7 +48,7 @@ public:
 		// inFrame < 0, python-style indexing from the right end
 		inFrame += pcontainer->size();
 		forward_impl(*pcontainer->get_param_value(inFrame),
-			*outLayer->inValues[outFrame]);
+			outLayer->in_value(outFrame));
 	}
 
 	virtual void backward(int outFrame = 0, int inFrame = 0)
@@ -59,11 +59,11 @@ public:
 
 		bool isHistorySaved = inLayer->is_full_gradient_history_saved();
 
-		backward_impl(*outLayer->inGradients[
-					isHistorySaved ? outFrame : 0],
-				*inLayer->outValues[inFrame],
-				*inLayer->outGradients[
-					isHistorySaved ? inFrame : outFrame - inFrame]);
+		backward_impl(outLayer->in_gradient(
+					isHistorySaved ? outFrame : 0),
+				inLayer->out_value(inFrame),
+				inLayer->out_gradient(
+					isHistorySaved ? inFrame : outFrame - inFrame));
 	}
 
 	/**
@@ -80,8 +80,8 @@ public:
 
 		// inFrame < 0, python-style indexing from the right end
 		inFrame += pcontainer->size();
-		backward_impl(*outLayer->inGradients[
-					isHistorySaved ? outFrame : 0],
+		backward_impl(outLayer->in_gradient(
+					isHistorySaved ? outFrame : 0),
 				*pcontainer->get_param_value(inFrame),
 				*pcontainer->get_param_gradient(inFrame));
 	}

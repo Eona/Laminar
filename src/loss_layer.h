@@ -34,19 +34,22 @@ public:
 		lmn::clear(*totalLoss);
 	}
 
-	// FIXME no public!
+	TensorBase& target_value(int t)
+	{
+		return *this->targetValues[t];
+	}
+
+protected:
+	Scalor::Ptr totalLoss;
 	/**
 	 * Here TensorBase::Ptr, not Tensor::Ptr because the targetValue might be Scalor:
 	 * for one-hot encoding, we encapsulate 'int' class label in a Scalor (hackish)
 	 */
-	vector<TensorBase::Ptr> targetValue;
-
-protected:
-	Scalor::Ptr totalLoss;
+	vector<TensorBase::Ptr> targetValues;
 
 	/**
 	 * Extend Layer::initialize.
-	 * Subclasses need to extend this and initialize targetValue
+	 * Subclasses need to extend this and initialize targetValues
 	 */
 	virtual void initialize_impl()
 	{
@@ -55,13 +58,13 @@ protected:
 	}
 
 	/**
-	 * Used by subclasses to initialize targetValue
+	 * Used by subclasses to initialize targetValues
 	 */
 	template<typename TensorT>
 	void init_target_value_helper()
 	{
-		for (int t = 0; t < historyLength; ++t)
-			this->targetValue.push_back(TensorT::make(engine));
+		for (int t = 0; t < history_length(); ++t)
+			this->targetValues.push_back(TensorT::make(engine));
 	}
 
 	/**
@@ -71,7 +74,7 @@ protected:
 	std::shared_ptr<TensorT> get_cur_frame_target()
 	{
 		return std::dynamic_pointer_cast<TensorT>(
-				this->targetValue[this->frame()]);
+				this->targetValues[this->frame()]);
 	}
 };
 
