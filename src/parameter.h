@@ -36,24 +36,14 @@ public:
 	 * Assign to the returned ref to initialize the Tensor::Ptr
 	 * @return ref to Tensor::Ptr
 	 */
-	Tensor::Ptr& get_param_value(int idx)
+	Tensor::Ptr& param_value_ptr(int idx)
 	{
 		return this->paramValues[idx];
 	}
 
-	Tensor::Ptr& get_param_gradient(int idx)
+	Tensor::Ptr& param_gradient_ptr(int idx)
 	{
 		return this->paramGradients[idx];
-	}
-
-	vector<Tensor::Ptr>& param_values()
-	{
-		return this->paramValues;
-	}
-
-	vector<Tensor::Ptr>& param_gradients()
-	{
-		return this->paramGradients;
 	}
 
 	int size() const

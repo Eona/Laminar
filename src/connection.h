@@ -47,7 +47,7 @@ public:
 
 		// inFrame < 0, python-style indexing from the right end
 		inFrame += pcontainer->size();
-		forward_impl(*pcontainer->get_param_value(inFrame),
+		forward_impl(*pcontainer->param_value_ptr(inFrame),
 			outLayer->in_value(outFrame));
 	}
 
@@ -82,8 +82,8 @@ public:
 		inFrame += pcontainer->size();
 		backward_impl(outLayer->in_gradient(
 					isHistorySaved ? outFrame : 0),
-				*pcontainer->get_param_value(inFrame),
-				*pcontainer->get_param_gradient(inFrame));
+				*pcontainer->param_value_ptr(inFrame),
+				*pcontainer->param_gradient_ptr(inFrame));
 	}
 
 	virtual void forward_impl(

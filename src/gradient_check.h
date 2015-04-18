@@ -50,8 +50,8 @@ inline void gradient_check(Network& net,
 	vector<Tensor> analyticGrads;
 	for (ParamContainer::Ptr container : net.paramContainers)
 	{
-		for (auto gradPtr : container->param_gradients())
-			analyticGrads.push_back(*gradPtr);
+		for (int pidx = 0; pidx < container->size(); ++pidx)
+			analyticGrads.push_back(*container->param_gradient_ptr(pidx));
 	}
 	engine->flush_execute();
 //	for (auto& tensor : analyticGrads)

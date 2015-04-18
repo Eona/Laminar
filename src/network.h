@@ -527,8 +527,8 @@ protected:
 			for (int paramIdx = 0; paramIdx < h_0->size(); ++paramIdx)
 			{
 				// Construct actual tensors for ParamContainer
-				auto& valuePtr = h_0->get_param_value(paramIdx);
-				auto& gradPtr = h_0->get_param_gradient(paramIdx);
+				auto& valuePtr = h_0->param_value_ptr(paramIdx);
+				auto& gradPtr = h_0->param_gradient_ptr(paramIdx);
 
 			// FIXME FIXME: dim of prehistory should be { layerDim * batchSize }
 				valuePtr = Tensor::make(engine, vec_augment(layer->dim(), 1));
