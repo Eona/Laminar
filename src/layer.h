@@ -236,34 +236,17 @@ protected:
 	 */
 	virtual void initialize_impl()
 	{
-		this->initialize_impl_in_values();
-		this->initialize_impl_out_values();
-		this->initialize_impl_in_gradients();
-		this->initialize_impl_out_gradients();
-	}
-
-	// Helper
-	virtual void initialize_impl_in_values()
-	{
 		for (int t = 0; t < historyLength; ++t)
+		{
 			inValues.push_back(Tensor::make(engine));
-	}
-	virtual void initialize_impl_out_values()
-	{
-		for (int t = 0; t < historyLength; ++t)
 			outValues.push_back(Tensor::make(engine));
-	}
+		}
 
-	// Helper
-	virtual void initialize_impl_in_gradients()
-	{
 		for (int t = 0; t < gradient_history_length(); ++t)
+		{
 			inGradients.push_back(Tensor::make(engine));
-	}
-	virtual void initialize_impl_out_gradients()
-	{
-		for (int t = 0; t < gradient_history_length(); ++t)
 			outGradients.push_back(Tensor::make(engine));
+		}
 	}
 
 	// Shift the gradient window
@@ -333,6 +316,7 @@ public:
 
 	// NOTE override accessor methods [in/out]_[value/gradient]
 	// so that out_value() actually points to in_value()
+	// trick the callers so that they are agnostic of the alias
 	virtual Tensor& out_value(int t) const
 	{
 		return *this->inValues[t];
@@ -378,8 +362,11 @@ protected:
 	 */
 	virtual void initialize_impl()
 	{
-		Layer::initialize_impl_in_values();
-		Layer::initialize_impl_in_gradients();
+		for (int t = 0; t < historyLength; ++t)
+			inValues.push_back(Tensor::make(engine));
+
+		for (int t = 0; t < gradient_history_length(); ++t)
+			inGradients.push_back(Tensor::make(engine));
 	}
 };
 
