@@ -74,7 +74,7 @@ protected:
 	 */
 	void check_uninitialized(string msg, string componentName)
 	{
-		assert_throw(!this->is_initialized, NetworkException(
+		assert_throw(!this->is_initialized, ComponentException(
 				msg + " should be called before " + componentName + " initialization."));
 	}
 };

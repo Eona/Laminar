@@ -335,10 +335,7 @@ public:
 		Network(engine_, dataManager_),
 		historyLength(historyLength_),
 		maxTemporalSkip(maxTemporalSkip_)
-	{
-		// defaults to 1, the most typical RNN
-		init_max_temporal_skip(1);
-	}
+	{ }
 
 	virtual ~RecurrentNetwork() {};
 
