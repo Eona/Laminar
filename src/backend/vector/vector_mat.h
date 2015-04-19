@@ -33,12 +33,15 @@ public:
 			mat[r].resize(col);
 	}
 
-	// Copy ctor
-	VectorMat(const VectorMat& other)
+	VectorMat(std::initializer_list<std::initializer_list<FloatT>> initer)
 	{
-		check_dim(other, "copy ctor");
-		this->mat = other.mat;
+		mat.insert(mat.end(), initer.begin(), initer.end());
 	}
+
+	// Copy ctor
+	VectorMat(const VectorMat& other) :
+		mat(other.mat)
+	{ }
 
 	// Copy assignment
 	VectorMat& operator=(const VectorMat& other)
@@ -49,11 +52,9 @@ public:
 	}
 
 	// Move ctor
-	VectorMat(VectorMat&& other)
-	{
-		check_dim(other, "move ctor");
-		this->mat = std::move(other.mat);
-	}
+	VectorMat(VectorMat&& other) :
+		mat(std::move(other.mat))
+	{ }
 
 	// Move assignment
 	VectorMat& operator=(VectorMat&& other)
@@ -66,6 +67,16 @@ public:
 	vector<FloatT>& operator[](int row)
 	{
 		return mat[row];
+	}
+
+	FloatT& operator()(int row, int col)
+	{
+		return mat[row][col];
+	}
+
+	FloatT operator()(int row, int col) const
+	{
+		return mat[row][col];
 	}
 
 	int row() const
@@ -90,7 +101,7 @@ public:
 		VectorMat ans(row(), col());
 		for (int r = 0; r < row(); ++r)
 			for (int c = 0; c < col(); ++c)
-				ans[r][c] = this->mat[r][c] + rhs[r][c];
+				ans[r][c] = this->mat[r][c] + rhs(r, c);
 
 		return ans;
 	}
@@ -102,7 +113,7 @@ public:
 		VectorMat ans(row(), col());
 		for (int r = 0; r < row(); ++r)
 			for (int c = 0; c < col(); ++c)
-				ans[r][c] = this->mat[r][c] - rhs[r][c];
+				ans[r][c] = this->mat[r][c] - rhs(r, c);
 
 		return ans;
 	}
@@ -133,7 +144,7 @@ public:
 		for(int i = 0; i < this->row(); ++i)
 		  for(int j = 0; j < rhs.col(); ++j)
 			 for(int k = 0; k < this->col(); ++k)
-				ans[i][j] += this->mat[i][k] * rhs[k][j];
+				ans[i][j] += this->mat[i][k] * rhs(k, j);
 
 		return ans;
 	}
@@ -158,6 +169,19 @@ private:
 			VectorMatException(msg + " dimension mismatch"));
 	}
 };
+
+template<typename FloatT>
+ostream& operator<<(ostream& os, VectorMat<FloatT> mat)
+{
+	os << "[";
+	for (int r = 0; r < mat.row(); ++r)
+	{
+		os << mat[r];
+		if (r != mat.row() - 1)
+			os << ",\n";
+	}
+	return os << "]";
+}
 
 namespace lmn {
 
