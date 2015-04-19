@@ -20,7 +20,6 @@ static void gpuCheckError( cudaError_t err,
 }
 
 
-
 class CudaFloatMat
 {
 public:

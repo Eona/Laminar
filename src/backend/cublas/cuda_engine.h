@@ -11,29 +11,13 @@
 #include "../../rand_utils.h"
 #include <cuda.h>
 #include "cublas_v2.h"
-#include "cudaFloatMat.h"
+#include "cuda_float_mat.h"
 #include "cuda_func.h"
 using namespace std;
 
 
 class CublasHandleInstance{
 public:
-//    static cublasHandle_t & Instance()
-//    {
-//        if (!init) {
-//            cublasCreate(&handle);
-//            init = true;
-//        }
-//        return handle;
-//    }
-//
-//    void destroy()
-//    {
-//        if (init) {
-//            cublasDestroy(handle);
-//        }
-//    }
-
     CublasHandleInstance(){
     	cublasCreate(&handle);
     	printf("initialized!\n");
@@ -62,7 +46,7 @@ enum TensorT {
 	SCALOR = 1
 };
 
-
+typedef std::shared_ptr<CudaFloatMat> CudaFloatMatPtr;
 
 
 template<int TensorT>
@@ -80,7 +64,7 @@ struct tensor_op<SCALOR>
 	static constexpr const char *operand = "s";
 };
 
-void create(CudaFloatMat* write, vector<int> dim)
+void create(CudaFloatMatPtr write, vector<int> dim)
 {
 	DEBUG_MSG("CudaImpl::create dim=" << dim);
 	*write = CudaFloatMat(dim);
@@ -95,19 +79,19 @@ void debug_msg(string msg, bool is_initialized)
 /*
  * write = alpha * Op(reads[0]) + beta * Op(reads[1])
  */
-void addMat(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized, float alpha, float beta) 
+void addMat(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized, float alpha, float beta)
 {
 
     int m = reads[0]->DIM_ROW;
     int n = reads[0]->DIM_COL;
     if (!is_initialized) {
         *write = CudaFloatMat(m, n); //initialize LHS if not already
-    }   
-    
+    }
+
     cublasSgeam(cublasHandleInstance(),
                 reads[0]->getOp(), reads[1]->getOp(),
-                m, n,  
-                &alpha, reads[0]->device_data, reads[0]->LDIM, 
+                m, n,
+                &alpha, reads[0]->device_data, reads[0]->LDIM,
                 &beta, reads[1]->device_data, reads[1]->LDIM,
                 write->device_data, write->LDIM);
 }
@@ -116,8 +100,8 @@ void addMat(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialize
 /*
  * write = alpha .* Op(reads[0]) * Op(reads[1]) + beta * write
  */
-void multMat(vector<CudaFloatMat*> reads,
-			CudaFloatMat* write, bool is_initialized,
+void multMat(vector<CudaFloatMatPtr> reads,
+			CudaFloatMatPtr write, bool is_initialized,
 			float alpha, float beta,
 			std::string opA, std::string opB)
 {
@@ -141,7 +125,7 @@ void multMat(vector<CudaFloatMat*> reads,
 /*
  * assign reads[0] to write
  */
-void assignMat(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+void assignMat(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
     int m = reads[0]->DIM_ROW;
     int n = reads[0]->DIM_COL;
@@ -155,7 +139,7 @@ void assignMat(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initial
 
 
 template<int TensorT>
-void add(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+void add(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
     string op = tensor_op<TensorT>::operand;
     debug_msg(op + "+" + op, is_initialized);
@@ -164,7 +148,7 @@ void add(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 }
 
 template<int TensorT>
-void sub(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+void sub(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
 	string op = tensor_op<TensorT>::operand;
 	debug_msg(op + "-" + op, is_initialized);
@@ -173,7 +157,7 @@ void sub(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 }
 
 template<int TensorT>
-void negate(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+void negate(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
 	string op = tensor_op<TensorT>::operand;
 	debug_msg("-" + op, is_initialized);
@@ -188,7 +172,7 @@ void negate(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialize
 }
 
 template<int TensorT1, int TensorT2>
-void mult(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+void mult(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
 	string op1 = tensor_op<TensorT1>::operand;
 	string op2 = tensor_op<TensorT2>::operand;
@@ -199,7 +183,7 @@ void mult(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
 }
 
 template<int TensorT>
-void assign(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+void assign(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
 	string op = tensor_op<TensorT>::operand;
 	debug_msg(op + "=" + op, is_initialized);
@@ -208,7 +192,7 @@ void assign(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialize
 }
 
 
-inline void destroy(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+inline void destroy(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
 	debug_msg("destroy", is_initialized);
 	reads[0]->free_data();
@@ -216,7 +200,7 @@ inline void destroy(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_in
 
 
 // standalone single-float non-linear functions
-inline void transpose(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+inline void transpose(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
 	debug_msg("transpose", is_initialized);
 	//TODO
@@ -252,56 +236,56 @@ inline void transpose(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_
 }
 
 
-inline void sigmoid(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+inline void sigmoid(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
 	debug_msg("sigmoid", is_initialized);
 	MATOP(cu_sigmoid_func);
 }
 
-inline void sigmoid_gradient(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+inline void sigmoid_gradient(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
 	debug_msg("sigmoid_gradient", is_initialized);
 	MATOP(cu_sigmoid_gradient_func);
 }
 
-inline void sin(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+inline void sin(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
 	debug_msg("sin", is_initialized);
 	MATOP(cu_sin_func);
 }
 
-inline void cos(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+inline void cos(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
 	debug_msg("cos", is_initialized);
 	MATOP(cu_cos_func);
 }
 
-inline void tanh(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+inline void tanh(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
 	debug_msg("tanh", is_initialized);
 	MATOP(cu_tanh_func);
 }
 
-inline void tanh_gradient(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+inline void tanh_gradient(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
 	debug_msg("tanh_gradient", is_initialized);
 	MATOP(cu_tanh_gradient_func);
 }
 
-inline void element_mult(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+inline void element_mult(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
 	debug_msg("element_mult", is_initialized);
     MATOP_DUAL(cu_element_mult_func);
 }
 
-inline void square_loss(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+inline void square_loss(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
 	debug_msg("square_loss", is_initialized);
     MATOP_DUAL(cu_square_loss_func);
 }
 
 // FIXME add contextual rand engine
-inline void fill_rand(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+inline void fill_rand(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
 	debug_msg("fill_rand", is_initialized);
 	if (!is_initialized) *write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);
@@ -310,7 +294,7 @@ inline void fill_rand(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_
 
 
 /*********** DEBUG ONLY ***********/
-inline void debug_fill(vector<CudaFloatMat*> reads, CudaFloatMat* write, bool is_initialized)
+inline void debug_fill(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
 	if (!is_initialized) *write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);
 	write->fill(0.66337);
@@ -329,38 +313,38 @@ public:
 	CudaEngine() :
 		Engine<float>()
 	{
-		namespace Impl = lmn::CudaImpl;
-		const int T = Impl::TENSOR;
-		const int S = Impl::SCALOR;
-		register_create(Impl::create);
-		register_opcode("t+t", Impl::add<T>);
-		register_opcode("s+s", Impl::add<S>);
-		register_opcode("t-t", Impl::sub<T>);
-		register_opcode("s-s", Impl::sub<S>);
-		register_opcode("-t", Impl::negate<T>);
-		register_opcode("-s", Impl::negate<S>);
-		register_opcode("t*t", Impl::mult<T, T>);
-		register_opcode("t*s", Impl::mult<T, S>);
-		register_opcode("s*t", Impl::mult<S, T>);
-		register_opcode("s*s", Impl::mult<S, S>);
-		register_opcode("t=t", Impl::assign<T>);
-		register_opcode("s=s", Impl::assign<S>);
-
-		register_opcode("sin", Impl::sin);
-		register_opcode("cos", Impl::cos);
-		register_opcode("tanh", Impl::tanh);
-		register_opcode("tanh_gradient", Impl::tanh_gradient);
-		register_opcode("sigmoid", Impl::sigmoid);
-		register_opcode("sigmoid_gradient", Impl::sigmoid_gradient);
-		register_opcode("transpose", Impl::transpose);
-		register_opcode("element_mult", Impl::element_mult);
-		register_opcode("square_loss", Impl::square_loss);
-
-		register_opcode("destroy", Impl::destroy);
-		register_opcode("fill_rand", Impl::fill_rand);
-
-		/*********** DEBUG ONLY ***********/
-		register_opcode("debug_fill", Impl::debug_fill);
+//		namespace Impl = lmn::CudaImpl;
+//		const int T = Impl::TENSOR;
+//		const int S = Impl::SCALOR;
+//		register_create(Impl::create);
+//		register_opcode("t+t", Impl::add<T>);
+//		register_opcode("s+s", Impl::add<S>);
+//		register_opcode("t-t", Impl::sub<T>);
+//		register_opcode("s-s", Impl::sub<S>);
+//		register_opcode("-t", Impl::negate<T>);
+//		register_opcode("-s", Impl::negate<S>);
+//		register_opcode("t*t", Impl::mult<T, T>);
+//		register_opcode("t*s", Impl::mult<T, S>);
+//		register_opcode("s*t", Impl::mult<S, T>);
+//		register_opcode("s*s", Impl::mult<S, S>);
+//		register_opcode("t=t", Impl::assign<T>);
+//		register_opcode("s=s", Impl::assign<S>);
+//
+//		register_opcode("sin", Impl::sin);
+//		register_opcode("cos", Impl::cos);
+//		register_opcode("tanh", Impl::tanh);
+//		register_opcode("tanh_gradient", Impl::tanh_gradient);
+//		register_opcode("sigmoid", Impl::sigmoid);
+//		register_opcode("sigmoid_gradient", Impl::sigmoid_gradient);
+//		register_opcode("transpose", Impl::transpose);
+//		register_opcode("element_mult", Impl::element_mult);
+//		register_opcode("square_loss", Impl::square_loss);
+//
+//		register_opcode("destroy", Impl::destroy);
+//		register_opcode("fill_rand", Impl::fill_rand);
+//
+//		/*********** DEBUG ONLY ***********/
+//		register_opcode("debug_fill", Impl::debug_fill);
 	}
 };
 
