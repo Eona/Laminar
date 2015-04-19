@@ -52,7 +52,7 @@ TEST(ForwardNet, Interconnected)
 	net.new_connection<FullConnection>(l3_2, l4);
 	net.add_layer(l4);
 
-	gradient_check(net, 1e-2, 0.3);
+	gradient_check<DummyEngine, DummyDataManager>(net, 1e-2, 0.3);
 }
 
 

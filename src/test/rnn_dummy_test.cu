@@ -71,7 +71,7 @@ TEST(RecurrentNet, Simple)
 	net.new_connection<FullConnection>(l3, l4);
 	net.add_layer(l4);
 */
-	gradient_check(net, 1e-2, 1);
+	gradient_check<DummyEngine, DummyDataManager>(net, 1e-2, 1);
 }
 
 TEST(RecurrentNet, TemporalSkip)
@@ -159,7 +159,7 @@ TEST(RecurrentNet, TemporalSkip)
 	net.new_connection<FullConnection>(l3, l4);
 	net.add_layer(l4);*/
 
-	gradient_check(net, 1e-2, 1);
+	gradient_check<DummyEngine, DummyDataManager>(net, 1e-2, 1);
 }
 
 TEST(RecurrentNet, GatedConnection)
@@ -216,7 +216,7 @@ TEST(RecurrentNet, GatedConnection)
 
 	net.add_layer(l4);
 
-	gradient_check(net, 1e-2, 1);
+	gradient_check<DummyEngine, DummyDataManager>(net, 1e-2, 1);
 }
 
 
@@ -261,7 +261,7 @@ TEST(RecurrentNet, GatedTanhConnection)
 	net.add_recurrent_connection(g234_2, 2);
 	net.add_layer(l4);
 
-	gradient_check(net, 1e-2, 1);
+	gradient_check<DummyEngine, DummyDataManager>(net, 1e-2, 1);
 }
 
 
@@ -381,7 +381,7 @@ TEST(RecurrentNet, LSTM)
 	net.add_layer(lossLayer);
 
 	/********** Gradient check **********/
-	gradient_check(net, 1e-2, 1);
+	gradient_check<DummyEngine, DummyDataManager>(net, 1e-2, 1);
 
 	/********** Use hard-coded LSTM **********/
 	auto dummyEng2 = EngineBase::make<DummyEngine>();
@@ -466,5 +466,5 @@ TEST(Composite, LSTM)
 
 	net.add_layer(lossLayer);
 
-	gradient_check(net, 1e-2, 1);
+	gradient_check<DummyEngine, DummyDataManager>(net, 1e-2, 1);
 }

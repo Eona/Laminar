@@ -5,19 +5,18 @@
 #ifndef GRADIENT_CHECK_H_
 #define GRADIENT_CHECK_H_
 
-#include "backend/dummy/dummy_dataman.h"
 #include "network.h"
-#include "backend/dummy/dummy_engine.h"
 
 /**
  * % difference between analytic (backprop)
  * and numeric (finite-difference) gradients
  */
+template<typename EngineT, typename DataManagerT>
 inline void gradient_check(Network& net,
 		float perturb = 1e-2f, float percentTol = 1.0f)
 {
-	auto engine = net.get_engine<DummyEngine>();
-	auto dataman = net.get_data_manager<DummyDataManager>();
+	auto engine = net.get_engine<EngineT>();
+	auto dataman = net.get_data_manager<DataManagerT>();
 
 	int historyLength = 1;
 //	 Save the full gradient history for debugging ONLY
