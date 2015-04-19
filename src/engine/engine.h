@@ -7,6 +7,7 @@
 #define ENGINE_H_
 
 #include "../global_utils.h"
+#include "../laminar_utils.h"
 #include "instructions.h"
 
 template<typename DataT>

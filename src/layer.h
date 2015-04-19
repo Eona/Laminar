@@ -6,7 +6,6 @@
 #ifndef LAYER_H_
 #define LAYER_H_
 
-#include "global_utils.h"
 #include "connection.h"
 #include "component.h"
 #include "engine/tensor.h"

@@ -18,7 +18,6 @@
 #include <queue>
 #include <deque>
 #include <unordered_map>
-#include <iostream>
 #include <sstream>
 #include <algorithm>
 #include <functional>
@@ -36,7 +35,6 @@ using std::cerr;
 using std::endl;
 using std::ostream;
 using std::ostringstream;
-using std::move;
 using std::shared_ptr;
 using std::function;
 using std::enable_if;
@@ -112,26 +110,6 @@ inline bool starts_with(string str, string prefix)
 /**************************************
 ************ Misc **************
 **************************************/
-/**
- * Define shared_ptr<Xclass> as ::Ptr
- * Use inside a class definition
- */
-#define TYPEDEF_PTR(Xclass) \
-	typedef std::shared_ptr<Xclass> Ptr
-
-/**
- * Define shared_ptr<Xclass> as XclassPtr
- * Use outside a class definition
- */
-#define TYPEDEF_PTR_EXTERNAL(Xclass) \
-	typedef std::shared_ptr<Xclass> Xclass##Ptr
-
-/**
- * Type alias for vector<int>
- */
-typedef std::vector<int> Dimension;
-typedef std::vector<int> DimIndex;
-
 // Emulate python style subscript
 template<typename T>
 inline T& vec_at(vector<T>& vec, int idx)
@@ -276,8 +254,12 @@ private:
 };
 
 /**************************************
-************ Exceptions **************
+************ Debugging **************
 **************************************/
+#undef assert
+#define TERMINATE_ASSERT false
+#define DEBUG true
+
 class AssertFailure: public std::exception {
 protected:
     std::string msg;
@@ -289,92 +271,6 @@ public:
         return (string("\n[Assert Error] ") + msg).c_str();
     }
 };
-
-class LaminarException: public std::exception {
-protected:
-    std::string msg;
-public:
-    LaminarException(const string& _msg):
-    	msg(_msg) {}
-
-    // all sub-exceptions need to override this
-    virtual string error_header() const
-    {
-    	return "General error";
-    }
-
-    virtual const char* what() const throw()
-	{
-        return (string("[") + error_header() + "] " + msg).c_str();
-    }
-};
-
-class NetworkException: public LaminarException {
-public:
-    NetworkException(const string& msg):
-    	LaminarException(msg)
-	{}
-
-    virtual string error_header() const
-    {
-    	return "Network error";
-    }
-};
-
-class ComponentException: public LaminarException {
-public:
-    ComponentException(const string& msg):
-    	LaminarException(msg)
-	{}
-
-    virtual string error_header() const
-    {
-    	return "Network component error";
-    }
-};
-
-class UnimplementedException: public LaminarException {
-public:
-    UnimplementedException(const string& msg):
-    	LaminarException(msg)
-	{}
-
-    virtual string error_header() const
-    {
-    	return "Feature unimplemented";
-    }
-};
-
-class EngineException: public LaminarException {
-public:
-    EngineException(const string& msg):
-    	LaminarException(msg)
-	{}
-
-    virtual string error_header() const
-    {
-    	return "Engine error";
-    }
-};
-
-class TensorException: public LaminarException {
-public:
-    TensorException(const string& msg):
-    	LaminarException(msg)
-	{}
-
-    virtual string error_header() const
-    {
-    	return "Tensor error";
-    }
-};
-
-/**************************************
-************ Debugging **************
-**************************************/
-#undef assert
-#define TERMINATE_ASSERT false
-#define DEBUG true
 
 inline void assert(bool cond, string errmsg = "", string successmsg="")
 {

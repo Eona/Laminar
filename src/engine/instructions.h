@@ -7,6 +7,7 @@
 #define INSTRUCTIONS_H_
 
 #include "../global_utils.h"
+#include "../laminar_utils.h"
 
 struct Opcode
 {

@@ -9,6 +9,11 @@
 #include "laminar_utils.h"
 
 /**
+ * Check if a given class is a subclass of GradientCheckable<FloatT> for any FloatT
+ */
+GEN_IS_DERIVED_TEMPLATE_TRAIT(is_gradient_checkable, GradientCheckable);
+
+/**
  * Main gradient checker function
  * % difference between analytic (backprop)
  * and numeric (finite-difference) gradients
