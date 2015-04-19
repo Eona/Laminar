@@ -7,6 +7,7 @@
 
 #include "global_utils.h"
 #include "laminar_utils.h"
+#include "debug_utils.h"
 #include "engine/engine.h"
 
 class Component
@@ -50,13 +51,13 @@ public:
 	TYPEDEF_PTR(Component);
 
 	template<typename ComponentT>
-	static Component::Ptr upcast(shared_ptr<ComponentT> compon)
+	static Component::Ptr upcast(std::shared_ptr<ComponentT> compon)
 	{
 		return std::static_pointer_cast<Component>(compon);
 	}
 
 	template<typename ComponentT>
-	static shared_ptr<ComponentT> cast(Component::Ptr compon)
+	static std::shared_ptr<ComponentT> cast(Component::Ptr compon)
 	{
 		static_assert(std::is_base_of<Component, ComponentT>::value,
 				"cast() failed: type parameter must be a subclass of Component");
@@ -83,16 +84,16 @@ protected:
 TYPEDEF_PTR_EXTERNAL(Component);
 
 template<typename T>
-typename enable_if<is_base_of<Component, T>::value, ostream>::type&
-operator<<(ostream& os, T& compon)
+typename std::enable_if<std::is_base_of<Component, T>::value, std::ostream>::type&
+operator<<(std::ostream& os, T& compon)
 {
 	os << compon.str();
 	return os;
 }
 
 template<typename T>
-typename enable_if<is_base_of<Component, T>::value, ostream>::type&
-operator<<(ostream& os, T&& compon)
+typename std::enable_if<std::is_base_of<Component, T>::value, std::ostream>::type&
+operator<<(std::ostream& os, T&& compon)
 {
 	os << compon.str();
 	return os;

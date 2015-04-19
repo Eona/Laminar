@@ -591,8 +591,8 @@ protected:
 };
 
 template<typename T>
-typename enable_if<is_base_of<ForwardNetwork, T>::value, ostream>::type&
-operator<<(ostream& os, T& net)
+typename std::enable_if<std::is_base_of<ForwardNetwork, T>::value, std::ostream>::type&
+operator<<(std::ostream& os, T& net)
 {
 	os << "[ForwardNet\n";
 	for (auto compon : net.components)
@@ -602,8 +602,8 @@ operator<<(ostream& os, T& net)
 }
 
 template<typename T>
-typename enable_if<is_base_of<RecurrentNetwork, T>::value, ostream>::type&
-operator<<(ostream& os, T& net)
+typename std::enable_if<std::is_base_of<RecurrentNetwork, T>::value, std::ostream>::type&
+operator<<(std::ostream& os, T& net)
 {
 	os << "[RecurrentNet\n";
 	for (auto compon : net.components)

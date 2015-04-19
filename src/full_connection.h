@@ -65,7 +65,7 @@ public:
 
 	virtual explicit operator string() const
 	{
-		ostringstream os;
+		std::ostringstream os;
 		os << "[FullConnection: "
 			<< "\n\tparam=" << this->param
 			<< "\tgrad=" << this->gradient

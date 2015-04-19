@@ -56,13 +56,13 @@ public:
 	TYPEDEF_PTR(ParamContainer);
 
 	template<typename ParamContainerT>
-	static ParamContainer::Ptr upcast(shared_ptr<ParamContainerT> compon)
+	static ParamContainer::Ptr upcast(std::shared_ptr<ParamContainerT> compon)
 	{
 		return std::dynamic_pointer_cast<ParamContainer>(compon);
 	}
 
 	template<typename ParamContainerT>
-	static shared_ptr<ParamContainerT> cast(ParamContainer::Ptr param)
+	static std::shared_ptr<ParamContainerT> cast(ParamContainer::Ptr param)
 	{
 		return std::dynamic_pointer_cast<ParamContainerT>(param);
 	}

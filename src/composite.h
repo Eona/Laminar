@@ -88,7 +88,7 @@ public:
 	}
 
 	template<typename CompositeT>
-	static shared_ptr<CompositeT> cast(Composite<NetworkT>::Ptr layer)
+	static std::shared_ptr<CompositeT> cast(Composite<NetworkT>::Ptr layer)
 	{
 		return std::dynamic_pointer_cast<CompositeT>(layer);
 	}

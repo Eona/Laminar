@@ -8,6 +8,7 @@
 
 #include "../global_utils.h"
 #include "../laminar_utils.h"
+#include "../debug_utils.h"
 
 struct Opcode
 {
@@ -69,7 +70,7 @@ struct OpContextBase
 	 * Down cast to a specific context
 	 */
 	template<typename ...ContextArgT>
-	static shared_ptr<OpContext<ContextArgT...>> cast(Ptr contextBase)
+	static std::shared_ptr<OpContext<ContextArgT...>> cast(Ptr contextBase)
 	{
 		return std::dynamic_pointer_cast<OpContext<ContextArgT...>>(contextBase);
 	}
@@ -134,7 +135,7 @@ struct Instruction
 	}
 };
 
-ostream& operator<<(ostream& os, Instruction instr)
+std::ostream& operator<<(std::ostream& os, Instruction instr)
 {
 	os << string(instr);
 	return os;

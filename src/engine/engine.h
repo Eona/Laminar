@@ -6,8 +6,6 @@
 #ifndef ENGINE_H_
 #define ENGINE_H_
 
-#include "../global_utils.h"
-#include "../laminar_utils.h"
 #include "instructions.h"
 
 template<typename DataT>
@@ -58,7 +56,7 @@ public:
 	}
 
 	template<typename T>
-	friend ostream& operator<<(ostream& os, MemoryPool<T>& memoryPool);
+	friend std::ostream& operator<<(std::ostream& os, MemoryPool<T>& memoryPool);
 
 private:
 	// All the following should have the same size
@@ -68,7 +66,7 @@ private:
 };
 
 template<typename T>
-ostream& operator<<(ostream& os, MemoryPool<T>& memoryPool)
+std::ostream& operator<<(std::ostream& os, MemoryPool<T>& memoryPool)
 {
 	os << "MemoryPool" << memoryPool.memory;
 	return os;
@@ -99,7 +97,7 @@ struct TensorNode
 		return !this->parents.empty();
 	}
 
-	typedef shared_ptr<TensorNode> Ptr;
+	typedef std::shared_ptr<TensorNode> Ptr;
 
 	static TensorNode::Ptr make(int addr)
 	{
@@ -135,7 +133,7 @@ private:
 	}
 };
 
-ostream& operator<<(ostream& os, TensorNode& node)
+std::ostream& operator<<(std::ostream& os, TensorNode& node)
 {
 	os << string(node);
 	return os;
@@ -293,10 +291,10 @@ public:
 	}
 
 	/************************************/
-	typedef shared_ptr<EngineBase> Ptr;
+	typedef std::shared_ptr<EngineBase> Ptr;
 
 	template<typename EngineT, typename ...ArgT>
-	static shared_ptr<EngineT> make(ArgT&& ... args)
+	static std::shared_ptr<EngineT> make(ArgT&& ... args)
 	{
 		static_assert(std::is_base_of<EngineBase, EngineT>::value,
 				"make() failed: Engine type parameter must be a subclass of EngineBase");
@@ -309,7 +307,7 @@ public:
 	 * Downcast
 	 */
 	template<typename EngineT>
-	static shared_ptr<EngineT> cast(EngineBase::Ptr engine)
+	static std::shared_ptr<EngineT> cast(EngineBase::Ptr engine)
 	{
 		static_assert(std::is_base_of<EngineBase, EngineT>::value,
 				"cast() failed: Engine type parameter must be a subclass of EngineBase");

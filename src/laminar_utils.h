@@ -5,10 +5,11 @@
 #ifndef LAMINAR_UTILS_H_
 #define LAMINAR_UTILS_H_
 
+#include <iostream>
+#include <string>
 #include <vector>
 #include <memory>
 #include <stdexcept>
-#include <iostream>
 
 /*********** A few typedefs ***********/
 /**

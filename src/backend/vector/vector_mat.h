@@ -245,7 +245,7 @@ private:
 };
 
 template<typename FloatT>
-ostream& operator<<(ostream& os, VectorMat<FloatT> mat)
+std::ostream& operator<<(std::ostream& os, VectorMat<FloatT> mat)
 {
 	os << "[";
 	for (int r = 0; r < mat.row(); ++r)

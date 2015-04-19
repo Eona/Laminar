@@ -195,7 +195,7 @@ public:
 
 	virtual explicit operator string() const
 	{
-		ostringstream os;
+		std::ostringstream os;
 		os << "\tinVal=" << this->inValues
 			<< "\tinGrad=" << this->inGradients
 			<< "\n\toutVal=" << this->outValues
@@ -221,7 +221,7 @@ public:
 	 * Down cast LayerPtr to a specific layer type
 	 */
 	template<typename LayerT>
-	static shared_ptr<LayerT> cast(Layer::Ptr layer)
+	static std::shared_ptr<LayerT> cast(Layer::Ptr layer)
 	{
 		static_assert(std::is_base_of<Layer, LayerT>::value,
 				"cast() failed: type parameter must be a subclass of Layer");

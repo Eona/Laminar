@@ -66,7 +66,7 @@ public:
 	TYPEDEF_PTR(DataManagerBase);
 
 	template<typename ManagerT, typename ...ArgT>
-	static shared_ptr<ManagerT> make(ArgT&& ... args)
+	static std::shared_ptr<ManagerT> make(ArgT&& ... args)
 	{
 		static_assert(std::is_base_of<DataManagerBase, ManagerT>::value,
 				"make() failed: DataManager type parameter must be a subclass of DataManagerBase");
@@ -79,7 +79,7 @@ public:
 	 * Downcast
 	 */
 	template<typename ManagerT>
-	static shared_ptr<ManagerT> cast(DataManagerBase::Ptr manager)
+	static std::shared_ptr<ManagerT> cast(DataManagerBase::Ptr manager)
 	{
 		static_assert(std::is_base_of<DataManagerBase, ManagerT>::value,
 				"cast() failed: DataManager type parameter must be a subclass of DataManagerBase");

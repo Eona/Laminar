@@ -122,7 +122,7 @@ public:
 	 * Down cast ConnectionPtr to a specific connection type
 	 */
 	template<typename ConnectionT>
-	static shared_ptr<ConnectionT> cast(Connection::Ptr conn)
+	static std::shared_ptr<ConnectionT> cast(Connection::Ptr conn)
 	{
 		static_assert(std::is_base_of<Connection, ConnectionT>::value,
 				"cast() failed: type parameter must be a subclass of Connection");
