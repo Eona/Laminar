@@ -19,8 +19,10 @@
 #include "engine/tensor_ops.h"
 
 #include "backend/dummy/dummy_engine.h"
+#include "backend/dummy/dummy_dataman.h"
+
 #include "backend/vector/vector_engine.h"
-#include "backend/vector/vector_mat.h"
+#include "backend/vector/vector_dataman.h"
 
 FakeRand& rand_conn = FakeRand::instance_connection();
 FakeRand& rand_prehis = FakeRand::instance_prehistory();
@@ -69,9 +71,15 @@ int main(int argc, char **argv)
 
 	auto exec = [eng] () { return eng->flush_execute(); };
 
+	rand_input.gen_uniform_rand(100, -1, 6);
+
 	Tensor t1(eng, {3, 4});
 	Tensor t2(eng, {4, 2});
-	lmn::fill_rand(t1);
+	Tensor tinput(eng);
+	auto vecData = DataManagerBase::make<VectorDataManager>(eng, 8, 5);
+	vecData->upload_input(tinput);
+	vecData->upload_target(tinput);
+
 	lmn::fill_rand(t2);
 
 	t1 = lmn::sigmoid(t1);
@@ -80,7 +88,9 @@ int main(int argc, char **argv)
 
 	eng->eliminate_temporary();
 	auto routine = exec();
-	DEBUG_MSG(get(t3));
+	DEBUG_MSG(get(tinput));
+
+
 
 	/*auto dummyEng = EngineBase::make<DummyEngine>();
 
