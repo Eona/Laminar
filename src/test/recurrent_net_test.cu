@@ -17,8 +17,6 @@ TEST(RecurrentNet, Simple)
 	rand_prehis.set_rand_seq(vector<float> {
 		.7
 	});
-//	rand_conn.use_uniform_rand(-1, 2);
-//	rand_conn.set_rand_display(true);
 
 	vector<float> inputSeq { 1.2, -0.9, 0.57, -1.47, -3.08 };
 	vector<float> targetSeq { 1.39, 0.75, -0.45, -0.11, 1.55 };
@@ -79,12 +77,15 @@ TEST(RecurrentNet, Simple)
 TEST(RecurrentNet, TemporalSkip)
 {
 	rand_conn.set_rand_seq(vector<float> {
-		0.163, 1.96, 1.09, 0.516, -0.585, 0.776, 1, -0.301, -0.167, 0.732
+		0.91, 1.329, -0.525, 1.724, 1.613, -0.864, 0.543, 0.59, -0.819, -0.938
 	});
 
 	rand_prehis.set_rand_seq(vector<float> {
 		.3
 	});
+
+//	rand_conn.gen_uniform_rand(10, -1, 2);
+//	rand_conn.print_rand_seq();
 
 	vector<float> inputSeq { 1.2, -0.9, 0.57, -1.47, -3.08, 1.2, .31, -2.33, -0.89 };
 	vector<float> targetSeq { 1.39, 0.75, -0.45, -0.11, 1.55, -.44, 2.39, 1.72, -3.06 };
@@ -159,19 +160,6 @@ TEST(RecurrentNet, TemporalSkip)
 	net.add_layer(l4);*/
 
 	gradient_check(net, 1e-2, 1);
-
-/*	net.reset();
-	for (int i = 0; i < net.input.size(); ++i)
-		net.forward_prop();
-	for (int i = 0; i < net.input.size(); ++i)
-		net.backward_prop();
-
-	for (ConnectionPtr c : { c12, c23, c34, c22_1, c22_3, c23_1, c23_2, c32_3, c33_1, c33_2 })
-		cout << std::setprecision(4) << Connection::cast<FullConnection>(c)->gradient << "  ";
-	cout << endl;
-	for (LayerPtr l : { l2, l3 })
-		cout << std::setprecision(4) << static_cast<ParamContainerPtr>(net.prehistoryLayerMap[l])->paramGradients << "  ";
-	cout << endl;*/
 }
 
 TEST(RecurrentNet, GatedConnection)
@@ -436,38 +424,8 @@ TEST(RecurrentNet, LSTM)
 	cout << "LSTM debug output: " << lstmDebugOutput << endl;
 
 	for (int t = 0; t < net.history_length(); ++t)
-		EXPECT_NEAR(netOutput[t], lstmDebugOutput[t], 1e-6) << "LSTM output doesn't agree with LstmDebugLayer";
-
-/*
-	for (ConnectionPtr c : fullConns)
-		cout << std::setprecision(4) << Connection::cast<FullConnection>(c)->param << "  \n";
-	cout << endl;
-
-	net.reset();
-	for (int i = 0; i < net.input.size(); ++i)
-	{
-		net.forward_prop();
-//		DEBUG_MSG(net);
-	}
-	DEBUG_MSG("BACKWARD");
-	for (int i = 0; i < net.input.size(); ++i)
-	{
-		net.backward_prop();
-//		DEBUG_MSG(net);
-	}
-
-	for (ConnectionPtr c : fullConns)
-		cout << std::setprecision(4) << Connection::cast<FullConnection>(c)->gradient << "  \n";
-	cout << endl;
-
-	for (LayerPtr l : { forgetGate, inputGate, cellHatLayer, cellLayer, outputGate, outLayer })
-	{
-		if (key_exists(net.prehistoryLayerMap, l))
-		cout << std::setprecision(4) << static_cast<ParamContainerPtr>(net.prehistoryLayerMap[l])->paramGradients << "  ";
-	}
-	cout << endl;
-*/
-
+		EXPECT_NEAR(netOutput[t], lstmDebugOutput[t], 1e-6)
+			<< "LSTM output doesn't agree with LstmDebugLayer";
 }
 
 
@@ -514,5 +472,4 @@ TEST(Composite, LSTM)
 	net.add_layer(lossLayer);
 
 	gradient_check(net, 1e-2, 1);
-
 }

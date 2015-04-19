@@ -32,8 +32,6 @@ public:
 
 	DataPtr operator[](int i)
 	{
-//		assert_throw(is_initialized(i),
-//			EngineException("MemoryPool[] address not initialized."));
 		return memory[i];
 	}
 

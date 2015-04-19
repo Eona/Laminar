@@ -230,12 +230,18 @@ public:
 template<typename DataT>
 inline Engine<DataT>::DataPtr Engine<DataT>::read_memory(TensorBase::Ptr tensorPtr)
 {
-	return this->memoryPool[tensorPtr->addr];
+	int addr = tensorPtr->addr;
+	assert_throw(this->memoryPool.is_initialized(addr),
+		EngineException("MemoryPool[] address not initialized."));
+	return this->memoryPool[addr];
 }
 
 template<typename DataT>
 inline Engine<DataT>::DataPtr Engine<DataT>::read_memory(const TensorBase& tensorPtr)
 {
+	int addr = tensorPtr.addr;
+	assert_throw(this->memoryPool.is_initialized(addr),
+		EngineException("MemoryPool[] address not initialized."));
 	return this->memoryPool[tensorPtr.addr];
 }
 

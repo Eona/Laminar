@@ -108,6 +108,11 @@ public:
 		return randSeq[i++];
 	}
 
+	int size() const
+	{
+		return randSeq.size();
+	}
+
 	/**
 	 * Change internal randSeq value
 	 */
@@ -131,8 +136,13 @@ public:
 
 	void print_rand_seq()
 	{
-		cout << "Seq(" << name << ") = "
-				<< container2str(this->randSeq)  << endl;
+		cout << std::setprecision(3) << "Seq(" << name << ") = ";
+		for (int j = 0; j < size(); ++j)
+		{
+			cout << randSeq[j];
+			if (j != size() - 1)
+				cout << ", ";
+		}
 	}
 };
 
