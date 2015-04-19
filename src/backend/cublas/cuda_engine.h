@@ -191,6 +191,14 @@ void assign(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initia
     assignMat(reads, write, is_initialized);
 }
 
+inline void scale(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized, float* scaler)
+{
+	debug_msg("scale", is_initialized);
+    //y = x
+    assignMat(reads, write, is_initialized);
+    //y = ay
+    cublasSscal(cublasHandleInstance(), write->LEN, scaler, write->device_data, 1);
+}
 
 inline void destroy(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 {
@@ -205,6 +213,7 @@ inline void transpose(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool
 	debug_msg("transpose", is_initialized);
 	//TODO
 }
+
 
 
 #define MATOP(device_func) {\
@@ -234,6 +243,7 @@ inline void transpose(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool
 															  write->LEN, \
 															  h_func ); \
 }
+
 
 
 inline void sigmoid(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
@@ -329,7 +339,8 @@ public:
 //		register_opcode("s*s", Impl::mult<S, S>);
 //		register_opcode("t=t", Impl::assign<T>);
 //		register_opcode("s=s", Impl::assign<S>);
-//
+
+//		register_opcode("scale", Impl::scale);
 //		register_opcode("sin", Impl::sin);
 //		register_opcode("cos", Impl::cos);
 //		register_opcode("tanh", Impl::tanh);
