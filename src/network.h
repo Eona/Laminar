@@ -136,16 +136,24 @@ public:
 		// if the instructions haven't been generated
 		if (!key_exists(routineMap, methodName))
 		{
-			auto method = networkMethodMap[methodName];
-			// call the member method
-			// initialize, forward, backward, reset, etc.
-			(this->*method)();
-			auto routine = engine->flush();
-			engine->compile(routine);
-			this->routineMap[methodName] = routine;
+			this->compile_helper(methodName);
 		}
 
 		this->routineMap[methodName]->execute();
+	}
+
+	/**
+	 * Recompile an executed method
+	 */
+	void recompile(string methodName)
+	{
+		assert_throw(key_exists(networkMethodMap, methodName),
+			NetworkException("no Network member method is associated with \"" + methodName + "\""));
+
+		assert_throw(key_exists(routineMap, methodName),
+			NetworkException(methodName + " has never been compiled."));
+
+		this->compile_helper(methodName);
 	}
 
 	virtual void zero_clear() = 0;
@@ -166,6 +174,22 @@ public:
 	LossLayerPtr lossLayer;
 
 protected:
+	/**
+	 * Compile the method and store it to routineMap
+	 * Doesn't do any status check
+	 * @param methodName
+	 */
+	void compile_helper(string methodName)
+	{
+		auto method = networkMethodMap[methodName];
+		// call the member method
+		// initialize, forward, backward, reset, etc.
+		(this->*method)();
+		auto routine = engine->flush();
+		engine->compile(routine);
+		this->routineMap[methodName] = routine;
+	}
+
 	/**
 	 * Request DataManager to fill in input
 	 */

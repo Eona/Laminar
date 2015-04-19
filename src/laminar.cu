@@ -70,7 +70,11 @@ int main(int argc, char **argv)
 		net.add_recurrent_connection(g234_2, 2);
 		net.add_layer(l4);
 
-		gradient_check(net, 1e-2, 1);
+		net.execute("initialize");
+		net.execute("forward");
+		net.execute("backward");
+
+		net.recompile("forward");
 
 
 	/*auto dummyEng = EngineBase::make<DummyEngine>();
