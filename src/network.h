@@ -30,6 +30,9 @@ public:
 		networkMethodMap["initialize"] = &Network::initialize;
 		networkMethodMap["forward"] = &Network::forward;
 		networkMethodMap["backward"] = &Network::backward;
+		networkMethodMap["zero_clear"] = &Network::zero_clear;
+		networkMethodMap["load_input"] = &Network::load_input;
+		networkMethodMap["load_target"] = &Network::load_target;
 	}
 
 	virtual ~Network() {};
@@ -118,31 +121,29 @@ public:
 	/**************************************
 	******* Upload & exec instructions *********
 	**************************************/
-	virtual void upload(string methodName)
+	/**
+	 * The method must have been registered to networkMethodMap in ctor
+	 * For the first time, the method will be run (instructions uploaded),
+	 * and the generated Routine will be compiled and executed
+	 * The next time it's called, the compiled routine will be executed directly.
+	 * @param methodName
+	 */
+	void execute(string methodName)
 	{
 		assert_throw(key_exists(networkMethodMap, methodName),
 			NetworkException("no Network member method is associated with \"" + methodName + "\""));
 
-		auto method = networkMethodMap[methodName];
-		// call the member method
-		// initialize, forward, backward, reset, etc.
-		(this->*method)();
-		this->routineMap[methodName] = engine->flush();
-	}
-
-	/**
-	 * Compile all uploaded routines
-	 */
-	virtual void compile()
-	{
-		for (auto methodKey : this->routineMap)
-			this->engine->compile(methodKey.second);
-	}
-
-	void execute(string methodName)
-	{
-		assert_throw(key_exists(routineMap, methodName),
-			NetworkException("no Network Routine is associated with \"" + methodName + "\""));
+		// if the instructions haven't been generated
+		if (!key_exists(routineMap, methodName))
+		{
+			auto method = networkMethodMap[methodName];
+			// call the member method
+			// initialize, forward, backward, reset, etc.
+			(this->*method)();
+			auto routine = engine->flush();
+			engine->compile(routine);
+			this->routineMap[methodName] = routine;
+		}
 
 		this->routineMap[methodName]->execute();
 	}

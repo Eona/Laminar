@@ -383,7 +383,6 @@ TEST(RecurrentNet, LSTM)
 	/********** Gradient check **********/
 	gradient_check(net, 1e-2, 1);
 
-	// TODO
 	/********** Use hard-coded LSTM **********/
 	auto dummyEng2 = EngineBase::make<DummyEngine>();
 	auto dummyData2 = DataManagerBase::make<DummyDataManager>(dummyEng2);
@@ -401,10 +400,6 @@ TEST(RecurrentNet, LSTM)
 	lstmDebugNet.new_connection<ConstantConnection>(lstmLayer, l1);
 	lstmDebugNet.add_layer(l1);
 
-	lstmDebugNet.upload("initialize");
-	lstmDebugNet.upload("forward");
-
-	lstmDebugNet.compile();
 	lstmDebugNet.execute("initialize");
 	lstmDebugNet.execute("forward");
 

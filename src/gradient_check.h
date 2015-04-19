@@ -28,11 +28,6 @@ inline void gradient_check(Network& net,
 	}
 	catch (std::bad_cast& err) { }
 
-	net.upload("initialize");
-	net.upload("forward");
-	net.upload("backward");
-	net.compile();
-
 	net.execute("initialize");
 	net.execute("forward");
 	net.execute("backward");
@@ -40,11 +35,11 @@ inline void gradient_check(Network& net,
 	// helper
 	auto reset_net = [&]()
 	{
-		net.zero_clear();
+		net.execute("zero_clear");
 		dataman->start_new_epoch();
 		// forward loads input, backward loads target,
 		// but backward isn't called here, so we manually load_target
-		net.load_target();
+		net.execute("load_target");
 	};
 
 	vector<Tensor::Ptr> analyticGrads;
@@ -96,7 +91,6 @@ inline void gradient_check(Network& net,
 
 	/****** perturb the input ******/
 	reset_net();
-	engine->flush_execute();
 	net.execute("forward");
 	net.execute("backward");
 
@@ -112,7 +106,6 @@ inline void gradient_check(Network& net,
 	{
 		reset_net();
 		dataman->perturb_input(inp, -perturb);
-		engine->flush_execute();
 
 		net.execute("forward");
 
@@ -122,7 +115,6 @@ inline void gradient_check(Network& net,
 		reset_net();
 
 		dataman->perturb_input(inp, +perturb);
-		engine->flush_execute();
 
 		net.execute("forward");
 
@@ -139,7 +131,6 @@ inline void gradient_check(Network& net,
 
 	}
 	reset_net();
-	engine->flush_execute();
 }
 
 #endif /* GRADIENT_CHECK_H_ */
