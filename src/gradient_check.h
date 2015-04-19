@@ -6,8 +6,10 @@
 #define GRADIENT_CHECK_H_
 
 #include "network.h"
+#include "laminar_utils.h"
 
 /**
+ * Main gradient checker function
  * % difference between analytic (backprop)
  * and numeric (finite-difference) gradients
  */
@@ -59,7 +61,7 @@ inline void gradient_check(Network& net,
 		for (int p = 0; p < param->size(); ++p)
 		{
 			reset_net();
-			param->gradient_check_perturb(p, -perturb);
+			param->gradient_check_perturb(p, {}, -perturb);
 			engine->flush_execute();
 
 			net.execute("forward");
@@ -69,7 +71,7 @@ inline void gradient_check(Network& net,
 			param->gradient_check_restore();
 			reset_net();
 
-			param->gradient_check_perturb(p, +perturb);
+			param->gradient_check_perturb(p, {}, +perturb);
 			engine->flush_execute();
 
 			net.execute("forward");
@@ -88,48 +90,53 @@ inline void gradient_check(Network& net,
 		}
 	}
 
-	/****** perturb the input ******/
+	/****** perturb the input if GradientCheckable ******/
 	reset_net();
-	net.execute("forward");
-	net.execute("backward");
 
-	analyticGrads.clear();
-	for (int t = 0; t < historyLength; ++t)
-		analyticGrads.push_back(
-				Tensor::make(net.layers[0]->in_gradient(t)));
-
-	engine->flush_execute();
-
-	// perturb each input in sequence
-	for (int inp = 0; inp < historyLength; ++inp)
+	// If the given data manager implmenets GradientCheckable<FloatT>
+	if (is_gradient_checkable<DataManagerT>::value)
 	{
-		reset_net();
-		dataman->perturb_input(inp, -perturb);
-
 		net.execute("forward");
+		net.execute("backward");
 
-		float lossMinus = *engine->read_memory(net.lossLayer->total_loss());
+		analyticGrads.clear();
+		for (int t = 0; t < historyLength; ++t)
+			analyticGrads.push_back(
+					Tensor::make(net.layers[0]->in_gradient(t)));
 
-		dataman->restore_last_input();
+		engine->flush_execute();
+
+		// perturb each input in sequence
+		for (int inp = 0; inp < historyLength; ++inp)
+		{
+			reset_net();
+			dataman->gradient_check_perturb(inp, {}, -perturb);
+
+			net.execute("forward");
+
+			float lossMinus = *engine->read_memory(net.lossLayer->total_loss());
+
+			dataman->gradient_check_restore();
+			reset_net();
+
+			dataman->gradient_check_perturb(inp, {}, +perturb);
+
+			net.execute("forward");
+
+			float lossPlus = *engine->read_memory(net.lossLayer->total_loss());
+
+			dataman->gradient_check_restore();
+
+			float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
+
+			float analyticGrad = *engine->read_memory(analyticGrads[inp]);
+
+			assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
+					"input analytic != numeric", "input gradcheck pass");
+
+		}
 		reset_net();
-
-		dataman->perturb_input(inp, +perturb);
-
-		net.execute("forward");
-
-		float lossPlus = *engine->read_memory(net.lossLayer->total_loss());
-
-		dataman->restore_last_input();
-
-		float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
-
-		float analyticGrad = *engine->read_memory(analyticGrads[inp]);
-
-		assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
-				"input analytic != numeric", "input gradcheck pass");
-
-	}
-	reset_net();
+	} // endif is_gradient_checkable<DataManager>
 }
 
 #endif /* GRADIENT_CHECK_H_ */

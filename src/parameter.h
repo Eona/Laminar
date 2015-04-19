@@ -7,9 +7,10 @@
 #define PARAMETER_H_
 
 #include "global_utils.h"
+#include "laminar_utils.h"
 #include "engine/tensor_ops.h"
 
-class ParamContainer
+class ParamContainer : public GradientCheckable<float>
 {
 public:
 	ParamContainer(int size = 1) :
@@ -73,27 +74,29 @@ public:
 						std::forward<ArgT>(args) ...);
 	}
 
-	/*********** DEBUG ONLY ***********/
-	// restore() calls must correspond one-by-one to perturb() calls
-	// TODO add 2D index
-	void gradient_check_perturb(int changeIdx, float eps)
+	/*********** Gradient checking ***********/
+	/**
+	 * GradientCheckable<float> interface
+	 */
+	virtual void gradient_check_perturb_impl(
+			int changeItem, DimIndex dimIdx, float eps)
 	{
-		lastChangedIdx = changeIdx;
-		lastEps = eps;
-		lmn::perturb(*paramValues[changeIdx], {}, eps);
+		lmn::perturb(*paramValues[changeItem], dimIdx, eps);
 	}
 
-	void gradient_check_restore()
+	/**
+	 * GradientCheckable<float> interface
+	 */
+	virtual void gradient_check_restore_impl(
+			int lastChangeItem, DimIndex lastDimIdx, float lastEps)
 	{
-		lmn::perturb(*paramValues[lastChangedIdx], {}, -lastEps);
+		lmn::perturb(*paramValues[lastChangeItem], lastDimIdx, -lastEps);
+
 	}
 
-	/************************************/
 private:
 	vector<Tensor::Ptr> paramValues;
 	vector<Tensor::Ptr> paramGradients;
-
-	int lastChangedIdx; float lastEps; // DEBUG ONLY
 };
 
 TYPEDEF_PTR_EXTERNAL(ParamContainer);

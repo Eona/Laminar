@@ -6,9 +6,11 @@
 #define ENGINE_DUMMY_DATA_H_
 
 #include "../../engine/data_manager.h"
+#include "../../laminar_utils.h"
 #include "../../rand_utils.h"
 
-class DummyDataManager : public DataManager<float>
+class DummyDataManager :
+		public DataManager<float>, public GradientCheckable<float>
 {
 public:
 	typedef std::shared_ptr<float> DataPtr;
@@ -39,31 +41,30 @@ public:
 		target_rand.reset_seq();
 	}
 
+	/*********** Gradient checking ***********/
 	/**
-	 * Debug only, for gradient check
-	 * Perturbs the internal 'random sequence', doesn't upload any instruction
+	 * GradientCheckable<float> interface
+	 * Because dummy is only a single float, dimIdx is ignored
 	 */
-	void perturb_input(int idx, float eps)
+	virtual void gradient_check_perturb_impl(
+			int changeItem, DimIndex dimIdx, float eps)
 	{
-		this->lastPerturbedIdx = idx;
-		this->lastEps = eps;
-		input_rand[idx] += eps;
+		input_rand[changeItem] += eps;
 	}
+
 	/**
-	 * Debug only, for gradient check
+	 * GradientCheckable<float> interface
+	 * Because dummy is only a single float, dimIdx is ignored
 	 */
-	void restore_last_input()
+	virtual void gradient_check_restore_impl(
+			int lastChangeItem, DimIndex lastDimIdx, float lastEps)
 	{
-		input_rand[lastPerturbedIdx] -= lastEps;
+		input_rand[lastChangeItem] -= lastEps;
 	}
 
 private:
 	FakeRand& input_rand = FakeRand::instance_input();
 	FakeRand& target_rand = FakeRand::instance_target();
-
-	// for restoring perturbed input
-	int lastPerturbedIdx;
-	float lastEps;
 };
 
 #endif /* ENGINE_DUMMY_DATA_H_ */
