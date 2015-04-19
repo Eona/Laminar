@@ -88,5 +88,9 @@ __global__ void mat_op_kernel(float *c, float *a, float *b, int N, op_func_dual_
 	c[tid] = (*op)(a[tid], b[tid]);
 }
 
+__global__ void mat_sum_kernel(float *m)
+{
+
+}
 
 #endif

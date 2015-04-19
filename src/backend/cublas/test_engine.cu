@@ -70,8 +70,9 @@ int main(int argc, char **argv)
 	lmn::CudaImpl::element_mult(v, out, true);
 	out->print_matrix("m1 .* m2");
 
-	lmn::CudaImpl::square_loss(v, out, true);
-	out->print_matrix("sqloss(m1,m2)");
+	float loss;
+	lmn::CudaImpl::square_loss(v, &loss, true);
+	cout<<"loss: "<<loss<<endl;
 
 	lmn::CudaImpl::fill_rand(v, out, true);
 	out->print_matrix("rand");
