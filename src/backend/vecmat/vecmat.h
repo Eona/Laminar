@@ -2,8 +2,8 @@
  * Eona Studio (c) 2015
  */
 
-#ifndef BACKEND_VECTOR_VECMAT_H_
-#define BACKEND_VECTOR_VECMAT_H_
+#ifndef BACKEND_VECMAT_VECMAT_H_
+#define BACKEND_VECMAT_VECMAT_H_
 
 #include "../../utils/global_utils.h"
 
@@ -257,4 +257,4 @@ std::ostream& operator<<(std::ostream& os, Vecmat<FloatT> mat)
 	return os << "]";
 }
 
-#endif /* BACKEND_VECTOR_VECMAT_H_ */
+#endif /* BACKEND_VECMAT_VECMAT_H_ */

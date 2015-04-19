@@ -2,13 +2,13 @@
  * Eona Studio (c) 2015
  */
 
-#ifndef BACKEND_VECTOR_VECMAT_ENGINE_H_
-#define BACKEND_VECTOR_VECMAT_ENGINE_H_
+#ifndef BACKEND_VECMAT_VECMAT_ENGINE_H_
+#define BACKEND_VECMAT_VECMAT_ENGINE_H_
 
 #include "../../engine/engine.h"
 #include "../../engine/tensor.h"
 #include "../../engine/tensor_ops.h"
-#include "vecmat.h"
+#include "../vecmat/vecmat.h"
 
 #define VECTORMAT_DEBUG true
 
@@ -379,4 +379,4 @@ public:
 };
 
 
-#endif /* BACKEND_VECTOR_VECMAT_ENGINE_H_ */
+#endif /* BACKEND_VECMAT_VECMAT_ENGINE_H_ */

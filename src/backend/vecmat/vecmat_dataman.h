@@ -2,12 +2,12 @@
  * Eona Studio (c) 2015
  */
 
-#ifndef BACKEND_VECTOR_VECMAT_DATAMAN_H_
-#define BACKEND_VECTOR_VECMAT_DATAMAN_H_
+#ifndef BACKEND_VECMAT_VECMAT_DATAMAN_H_
+#define BACKEND_VECMAT_VECMAT_DATAMAN_H_
 
 #include "../../engine/data_manager.h"
 #include "../../utils/rand_utils.h"
-#include "vecmat_engine.h"
+#include "../vecmat/vecmat_engine.h"
 
 class VecmatDataManager : public DataManager<lmn::VecmatImpl::Vecmatf>
 {
@@ -91,4 +91,4 @@ private:
 	float lastEps;
 };
 
-#endif /* BACKEND_VECTOR_VECMAT_DATAMAN_H_ */
+#endif /* BACKEND_VECMAT_VECMAT_DATAMAN_H_ */
