@@ -6,9 +6,9 @@
 #ifndef DUMMY_ENGINE_H_
 #define DUMMY_ENGINE_H_
 
-#include "engine.h"
-#include "tensor.h"
-#include "../rand_utils.h"
+#include "../../engine/engine.h"
+#include "../../engine/tensor.h"
+#include "../../rand_utils.h"
 
 #define DUMMY_DEBUG false
 

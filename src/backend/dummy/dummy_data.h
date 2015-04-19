@@ -5,8 +5,8 @@
 #ifndef ENGINE_DUMMY_DATA_H_
 #define ENGINE_DUMMY_DATA_H_
 
-#include "data_manager.h"
-#include "../rand_utils.h"
+#include "../../engine/data_manager.h"
+#include "../../rand_utils.h"
 
 class DummyDataManager : public DataManager<float>
 {

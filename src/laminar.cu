@@ -7,7 +7,7 @@
 #include "full_connection.h"
 #include "gated_connection.h"
 #include "activation_layer.h"
-#include "engine/dummy_data.h"
+#include "backend/dummy/dummy_data.h"
 #include "loss_layer.h"
 #include "parameter.h"
 #include "lstm.h"
@@ -16,7 +16,7 @@
 #include "engine/engine.h"
 #include "engine/tensor.h"
 #include "engine/tensor_ops.h"
-#include "engine/dummy_engine.h"
+#include "backend/dummy/dummy_engine.h"
 
 FakeRand& rand_conn = FakeRand::instance_connection();
 FakeRand& rand_prehis = FakeRand::instance_prehistory();
