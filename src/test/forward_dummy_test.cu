@@ -8,7 +8,7 @@ FakeRand& rand_conn = FakeRand::instance_connection();
 FakeRand& rand_input = FakeRand::instance_input();
 FakeRand& rand_target = FakeRand::instance_target();
 
-TEST(ForwardNet, Interconnected)
+TEST(DummyForwardNet, Diamond)
 {
 	rand_conn.set_rand_seq(
 			vector<float> { 2.51, 5.39, 5.80, -2.96, -2.73, -2.4, 0.55, -.47 });

@@ -2,19 +2,19 @@
  * Eona Studio (c) 2015
  */
 
-#ifndef BACKEND_VECTOR_VECTOR_DATAMAN_H_
-#define BACKEND_VECTOR_VECTOR_DATAMAN_H_
+#ifndef BACKEND_VECTOR_VECMAT_DATAMAN_H_
+#define BACKEND_VECTOR_VECMAT_DATAMAN_H_
 
 #include "../../engine/data_manager.h"
 #include "../../utils/rand_utils.h"
-#include "vector_engine.h"
+#include "vecmat_engine.h"
 
-class VectorDataManager : public DataManager<lmn::VectorImpl::Vecmatf>
+class VecmatDataManager : public DataManager<lmn::VecmatImpl::Vecmatf>
 {
 public:
-	typedef lmn::VectorImpl::VecmatfPtr DataPtr;
+	typedef lmn::VecmatImpl::VecmatfPtr DataPtr;
 
-	VectorDataManager(EngineBase::Ptr engine, int inputDim_, int batchSize_) :
+	VecmatDataManager(EngineBase::Ptr engine, int inputDim_, int batchSize_) :
 		DataManager(engine),
 		inputDim(inputDim_), batchSize(batchSize_)
 	{}
@@ -91,4 +91,4 @@ private:
 	float lastEps;
 };
 
-#endif /* BACKEND_VECTOR_VECTOR_DATAMAN_H_ */
+#endif /* BACKEND_VECTOR_VECMAT_DATAMAN_H_ */

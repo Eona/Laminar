@@ -2,14 +2,14 @@
  * Eona Studio (c) 2015
  */
 
-#ifndef BACKEND_VECTOR_VECTOR_MAT_H_
-#define BACKEND_VECTOR_VECTOR_MAT_H_
+#ifndef BACKEND_VECTOR_VECMAT_H_
+#define BACKEND_VECTOR_VECMAT_H_
 
 #include "../../utils/global_utils.h"
 
-class VectorMatException: public LaminarException {
+class VecmatException: public LaminarException {
 public:
-    VectorMatException(const string& msg):
+    VecmatException(const string& msg):
     	LaminarException(msg)
 	{}
 
@@ -21,35 +21,35 @@ public:
 
 
 template<typename FloatT>
-class VectorMat
+class Vecmat
 {
 public:
-	VectorMat() {}
+	Vecmat() {}
 
-	VectorMat(int row, int col)
+	Vecmat(int row, int col)
 	{
 		mat.resize(row);
 		for (int r = 0; r < row; ++r)
 			mat[r].resize(col);
 	}
 
-	VectorMat(std::initializer_list<std::initializer_list<FloatT>> initer)
+	Vecmat(std::initializer_list<std::initializer_list<FloatT>> initer)
 	{
 		mat.insert(mat.end(), initer.begin(), initer.end());
 	}
 
 	// Copy ctor
-	VectorMat(const VectorMat& other) :
+	Vecmat(const Vecmat& other) :
 		mat(other.mat)
 	{ }
 
-	TYPEDEF_PTR(VectorMat<FloatT>);
+	TYPEDEF_PTR(Vecmat<FloatT>);
 
 	// Copy assignment
-	VectorMat& operator=(const VectorMat& other)
+	Vecmat& operator=(const Vecmat& other)
 	{
 		assert_throw(!is_empty(),
-			VectorMatException("\nShouldn't copy assign to a default constructed "
+			VecmatException("\nShouldn't copy assign to a default constructed "
 					"empty matrix. \nUse 'mat.new_zeros()' first."));
 
 		assert_same_dim(other, "copy assign");
@@ -58,15 +58,15 @@ public:
 	}
 
 	// Move ctor
-	VectorMat(VectorMat&& other) :
+	Vecmat(Vecmat&& other) :
 		mat(std::move(other.mat))
 	{ }
 
 	// Move assignment
-	VectorMat& operator=(VectorMat&& other)
+	Vecmat& operator=(Vecmat&& other)
 	{
 		assert_throw(!is_empty(),
-			VectorMatException("\nShouldn't move assign to a default constructed "
+			VecmatException("\nShouldn't move assign to a default constructed "
 					"empty matrix. \nUse 'mat.new_zeros()' first."));
 
 		assert_same_dim(other, "move assign");
@@ -78,7 +78,7 @@ public:
 	void new_zeros(int row, int col)
 	{
 		assert_throw(is_empty(),
-			VectorMatException("\nalloc_size() should only be used with default "
+			VecmatException("\nalloc_size() should only be used with default "
 					"constructed empty matrix."));
 
 		mat.resize(row);
@@ -89,10 +89,10 @@ public:
 	/**
 	 * Make a zero matrix of the same size as 'other'
 	 */
-	void new_zeros(const VectorMat& other)
+	void new_zeros(const Vecmat& other)
 	{
 		assert_throw(!other.is_empty(),
-			VectorMatException("\nalloc_size(other) the other matrix cannot be empty."));
+			VecmatException("\nalloc_size(other) the other matrix cannot be empty."));
 
 		this->new_zeros(other.row(), other.col());
 	}
@@ -100,7 +100,7 @@ public:
 	/**
 	 * Make a zero matrix of the same size as 'other'
 	 */
-	void new_zeros(VectorMat::Ptr other)
+	void new_zeros(Vecmat::Ptr other)
 	{
 		this->new_zeros(*other);
 	}
@@ -145,11 +145,11 @@ public:
 		return row() != 0 && col() != 0;
 	}
 
-	VectorMat operator+(const VectorMat& rhs)
+	Vecmat operator+(const Vecmat& rhs)
 	{
 		assert_same_dim(rhs, "addition");
 
-		VectorMat ans(row(), col());
+		Vecmat ans(row(), col());
 		for (int r = 0; r < row(); ++r)
 			for (int c = 0; c < col(); ++c)
 				ans[r][c] = this->mat[r][c] + rhs(r, c);
@@ -157,11 +157,11 @@ public:
 		return ans;
 	}
 
-	VectorMat operator-(const VectorMat& rhs)
+	Vecmat operator-(const Vecmat& rhs)
 	{
 		assert_same_dim(rhs, "subtraction");
 
-		VectorMat ans(row(), col());
+		Vecmat ans(row(), col());
 		for (int r = 0; r < row(); ++r)
 			for (int c = 0; c < col(); ++c)
 				ans[r][c] = this->mat[r][c] - rhs(r, c);
@@ -169,9 +169,9 @@ public:
 		return ans;
 	}
 
-	VectorMat scale(FloatT scalor)
+	Vecmat scale(FloatT scalor)
 	{
-		VectorMat ans(row(), col());
+		Vecmat ans(row(), col());
 		for (int r = 0; r < row(); ++r)
 			for (int c = 0; c < col(); ++c)
 				ans[r][c] = this->mat[r][c] * scalor;
@@ -179,23 +179,23 @@ public:
 		return ans;
 	}
 
-	VectorMat operator*(FloatT scalor)
+	Vecmat operator*(FloatT scalor)
 	{
 		return this->scale(scalor);
 	}
 
 	// Negation
-	VectorMat operator-()
+	Vecmat operator-()
 	{
 		return this->scale(FloatT(-1));
 	}
 
-	VectorMat operator*(const VectorMat& rhs)
+	Vecmat operator*(const Vecmat& rhs)
 	{
 		assert_throw(this->col() == rhs.row(),
-			VectorMatException("multiplication dimension mismatch"));
+			VecmatException("multiplication dimension mismatch"));
 
-		VectorMat ans(this->row(), rhs.col());
+		Vecmat ans(this->row(), rhs.col());
 
 		for(int i = 0; i < this->row(); ++i)
 		  for(int j = 0; j < rhs.col(); ++j)
@@ -205,9 +205,9 @@ public:
 		return ans;
 	}
 
-	VectorMat transpose()
+	Vecmat transpose()
 	{
-		VectorMat ans(col(), row());
+		Vecmat ans(col(), row());
 		for (int r = 0; r < row(); ++r)
 			for (int c = 0; c < col(); ++c)
 				ans[c][r] = this->mat[r][c];
@@ -221,7 +221,7 @@ public:
 	void fill(std::function<FloatT(int, int)> gen)
 	{
 		assert_throw(!this->is_empty(),
-			VectorMatException("cannot fill emptry matrix"));
+			VecmatException("cannot fill emptry matrix"));
 
 		for (int r = 0; r < row(); ++r)
 			for (int c = 0; c < col(); ++c)
@@ -233,11 +233,11 @@ public:
 		return row() == 0;
 	}
 
-	void assert_same_dim(const VectorMat& other, string msg)
+	void assert_same_dim(const Vecmat& other, string msg)
 	{
 		assert_throw(this->row() == other.row()
 			&& this->col() == other.col(),
-			VectorMatException(msg + " dimension mismatch"));
+			VecmatException(msg + " dimension mismatch"));
 	}
 
 private:
@@ -245,7 +245,7 @@ private:
 };
 
 template<typename FloatT>
-std::ostream& operator<<(std::ostream& os, VectorMat<FloatT> mat)
+std::ostream& operator<<(std::ostream& os, Vecmat<FloatT> mat)
 {
 	os << "[";
 	for (int r = 0; r < mat.row(); ++r)
@@ -257,4 +257,4 @@ std::ostream& operator<<(std::ostream& os, VectorMat<FloatT> mat)
 	return os << "]";
 }
 
-#endif /* BACKEND_VECTOR_VECTOR_MAT_H_ */
+#endif /* BACKEND_VECTOR_VECMAT_H_ */

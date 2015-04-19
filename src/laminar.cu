@@ -18,9 +18,9 @@
 
 #include "backend/dummy/dummy_engine.h"
 #include "backend/dummy/dummy_dataman.h"
+#include "backend/vector/vecmat_dataman.h"
+#include "backend/vector/vecmat_engine.h"
 
-#include "backend/vector/vector_engine.h"
-#include "backend/vector/vector_dataman.h"
 #include "utils/global_utils.h"
 #include "utils/timer.h"
 
@@ -37,19 +37,19 @@ FakeRand& rand_target = FakeRand::instance_target();
 
 int main(int argc, char **argv)
 {
-	VectorMat<float> A = {
+	Vecmat<float> A = {
 		{9, -2},
 		{-3, 4},
 		{5, -7}
 	};
 
-	VectorMat<float> A2 = {
+	Vecmat<float> A2 = {
 		{3, 0},
 		{-2, 4},
 		{10, -7}
 	};
 
-	VectorMat<float> B = {
+	Vecmat<float> B = {
 		{-3, 0, 9, 11},
 		{-2, -6, 1, 7}
 	};
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 	DEBUG_MSG("A t\n" << A.transpose());
 
 
-	auto eng = EngineBase::make<VectorEngine>();
+	auto eng = EngineBase::make<VecmatEngine>();
 
 	auto get = [eng] (const TensorBase& t) {
 		return *eng->read_memory(t);
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 	Tensor t1(eng, {3, 4});
 	Tensor t2(eng, {4, 2});
 	Tensor tinput(eng);
-	auto vecData = DataManagerBase::make<VectorDataManager>(eng, 8, 5);
+	auto vecData = DataManagerBase::make<VecmatDataManager>(eng, 8, 5);
 	vecData->upload_input(tinput);
 	vecData->upload_target(tinput);
 

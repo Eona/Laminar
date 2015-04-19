@@ -23,12 +23,8 @@
 #include "../backend/dummy/dummy_dataman.h"
 #include "../backend/dummy/dummy_engine.h"
 
-#include "../backend/vector/vector_dataman.h"
-#include "../backend/vector/vector_engine.h"
-#include "../utils/global_utils.h"
-#include "../utils/laminar_utils.h"
-#include "../utils/rand_utils.h"
-#include "../utils/timer.h"
+#include "../backend/vector/vecmat_dataman.h"
+#include "../backend/vector/vecmat_engine.h"
 
 using namespace std;
 

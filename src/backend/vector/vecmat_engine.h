@@ -2,21 +2,21 @@
  * Eona Studio (c) 2015
  */
 
-#ifndef BACKEND_VECTOR_VECTOR_ENGINE_H_
-#define BACKEND_VECTOR_VECTOR_ENGINE_H_
+#ifndef BACKEND_VECTOR_VECMAT_ENGINE_H_
+#define BACKEND_VECTOR_VECMAT_ENGINE_H_
 
-#include "vector_mat.h"
 #include "../../engine/engine.h"
 #include "../../engine/tensor.h"
 #include "../../engine/tensor_ops.h"
+#include "vecmat.h"
 
 #define VECTORMAT_DEBUG true
 
 namespace lmn {
 
-namespace VectorImpl {
+namespace VecmatImpl {
 
-typedef VectorMat<float> Vecmatf;
+typedef Vecmat<float> Vecmatf;
 typedef std::shared_ptr<Vecmatf> VecmatfPtr;
 
 enum TensorT {
@@ -332,13 +332,13 @@ inline void perturb(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initiali
 } // end of lmn::
 
 
-class VectorEngine : public Engine<lmn::VectorImpl::Vecmatf>
+class VecmatEngine : public Engine<lmn::VecmatImpl::Vecmatf>
 {
 public:
-	VectorEngine() :
+	VecmatEngine() :
 		Engine()
 	{
-		namespace Impl = lmn::VectorImpl;
+		namespace Impl = lmn::VecmatImpl;
 		const int T = Impl::TENSOR;
 		const int S = Impl::SCALOR;
 
@@ -379,4 +379,4 @@ public:
 };
 
 
-#endif /* BACKEND_VECTOR_VECTOR_ENGINE_H_ */
+#endif /* BACKEND_VECTOR_VECMAT_ENGINE_H_ */
