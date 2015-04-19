@@ -197,8 +197,6 @@ inline void fill_rand_prehistory(vector<FloatPtr> reads, FloatPtr write, bool is
 	assert_throw(is_initialized,
 		EngineException("DummyEngine: fill_rand_prehistory must have been initialized"));
 	debug_msg("fill_rand_prehistory", is_initialized);
-	if (write == nullptr)
-		cout << "BAD bAD bAD" << endl;
 	*write = FakeRand::instance_prehistory()();
 }
 

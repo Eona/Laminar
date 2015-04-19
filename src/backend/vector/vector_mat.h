@@ -43,14 +43,16 @@ public:
 		mat(other.mat)
 	{ }
 
+	TYPEDEF_PTR(VectorMat<FloatT>);
+
 	// Copy assignment
 	VectorMat& operator=(const VectorMat& other)
 	{
 		assert_throw(!is_empty(),
 			VectorMatException("\nShouldn't copy assign to a default constructed "
-					"empty matrix. \nUse 'mat.alloc()' instead."));
+					"empty matrix. \nUse 'mat.new_zeros()' first."));
 
-		check_dim(other, "copy assign");
+		assert_same_dim(other, "copy assign");
 		this->mat = other.mat;
 		return *this;
 	}
@@ -65,23 +67,52 @@ public:
 	{
 		assert_throw(!is_empty(),
 			VectorMatException("\nShouldn't move assign to a default constructed "
-					"empty matrix. \nUse 'mat.alloc()' instead."));
+					"empty matrix. \nUse 'mat.new_zeros()' first."));
 
-		check_dim(other, "move assign");
+		assert_same_dim(other, "move assign");
 		this->mat = std::move(other.mat);
 		return *this;
 	}
 
 	// Only for default constructed matrix
-	void alloc(int row, int col)
+	void new_zeros(int row, int col)
 	{
 		assert_throw(is_empty(),
-			VectorMatException("\nalloc() should only be used with default "
+			VectorMatException("\nalloc_size() should only be used with default "
 					"constructed empty matrix."));
 
 		mat.resize(row);
 		for (int r = 0; r < row; ++r)
 			mat[r].resize(col);
+	}
+
+	/**
+	 * Make a zero matrix of the same size as 'other'
+	 */
+	void new_zeros(const VectorMat& other)
+	{
+		assert_throw(!other.is_empty(),
+			VectorMatException("\nalloc_size(other) the other matrix cannot be empty."));
+
+		this->new_zeros(other.row(), other.col());
+	}
+
+	/**
+	 * Make a zero matrix of the same size as 'other'
+	 */
+	void new_zeros(VectorMat::Ptr other)
+	{
+		this->new_zeros(*other);
+	}
+
+	/**
+	 * Set all entries to 0
+	 */
+	void zero_clear()
+	{
+		for (int r = 0; r < row(); ++r)
+			for (int c = 0; c < col(); ++c)
+				mat[r][c] = FloatT(0);
 	}
 
 	vector<FloatT>& operator[](int row)
@@ -116,7 +147,7 @@ public:
 
 	VectorMat operator+(const VectorMat& rhs)
 	{
-		check_dim(rhs, "addition");
+		assert_same_dim(rhs, "addition");
 
 		VectorMat ans(row(), col());
 		for (int r = 0; r < row(); ++r)
@@ -128,7 +159,7 @@ public:
 
 	VectorMat operator-(const VectorMat& rhs)
 	{
-		check_dim(rhs, "subtraction");
+		assert_same_dim(rhs, "subtraction");
 
 		VectorMat ans(row(), col());
 		for (int r = 0; r < row(); ++r)
@@ -146,6 +177,11 @@ public:
 				ans[r][c] = this->mat[r][c] * scalor;
 
 		return ans;
+	}
+
+	VectorMat operator*(FloatT scalor)
+	{
+		return this->scale(scalor);
 	}
 
 	// Negation
@@ -179,20 +215,33 @@ public:
 		return ans;
 	}
 
-private:
-	vector<vector<FloatT>> mat;
+	/**
+	 * Fill the matrix with a generator f(r, c)
+	 */
+	void fill(std::function<FloatT(int, int)> gen)
+	{
+		assert_throw(!this->is_empty(),
+			VectorMatException("cannot fill emptry matrix"));
 
-	void check_dim(const VectorMat& other, string msg)
+		for (int r = 0; r < row(); ++r)
+			for (int c = 0; c < col(); ++c)
+				mat[r][c] = gen(r, c);
+	}
+
+	bool is_empty() const
+	{
+		return row() == 0;
+	}
+
+	void assert_same_dim(const VectorMat& other, string msg)
 	{
 		assert_throw(this->row() == other.row()
 			&& this->col() == other.col(),
 			VectorMatException(msg + " dimension mismatch"));
 	}
 
-	bool is_empty()
-	{
-		return row() == 0;
-	}
+private:
+	vector<vector<FloatT>> mat;
 };
 
 template<typename FloatT>

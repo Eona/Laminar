@@ -60,8 +60,27 @@ int main(int argc, char **argv)
 	DEBUG_MSG("A * B\n" << A*B);
 	DEBUG_MSG("A t\n" << A.transpose());
 
-	VectorMat<float> C;
-	C = A + A2;
+
+	auto eng = EngineBase::make<VectorEngine>();
+
+	auto get = [eng] (const TensorBase& t) {
+		return *eng->read_memory(t);
+	};
+
+	auto exec = [eng] () { return eng->flush_execute(); };
+
+	Tensor t1(eng, {3, 4});
+	Tensor t2(eng, {4, 2});
+	lmn::fill_rand(t1);
+	lmn::fill_rand(t2);
+
+	t1 = lmn::sigmoid(t1);
+	t2 = lmn::tanh_gradient(t2);
+	Tensor t3 = t1 * t2;
+
+	eng->eliminate_temporary();
+	auto routine = exec();
+	DEBUG_MSG(get(t3));
 
 	/*auto dummyEng = EngineBase::make<DummyEngine>();
 
