@@ -7,7 +7,7 @@
 #include "full_connection.h"
 #include "gated_connection.h"
 #include "activation_layer.h"
-#include "backend/dummy/dummy_data.h"
+#include "backend/dummy/dummy_dataman.h"
 #include "loss_layer.h"
 #include "parameter.h"
 #include "lstm.h"

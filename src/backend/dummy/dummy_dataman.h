@@ -33,9 +33,10 @@ public:
 		target_rand.reset_seq();
 	}
 
-	// FIXME
 	void start_new_sequence()
 	{
+		input_rand.reset_seq();
+		target_rand.reset_seq();
 	}
 
 	/**

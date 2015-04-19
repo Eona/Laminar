@@ -22,7 +22,7 @@
 
 #include "../engine/tensor.h"
 #include "../engine/tensor_ops.h"
-#include "../backend/dummy/dummy_data.h"
+#include "../backend/dummy/dummy_dataman.h"
 #include "../backend/dummy/dummy_engine.h"
 
 using namespace std;

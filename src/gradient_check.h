@@ -5,9 +5,9 @@
 #ifndef GRADIENT_CHECK_H_
 #define GRADIENT_CHECK_H_
 
+#include "backend/dummy/dummy_dataman.h"
 #include "network.h"
 #include "backend/dummy/dummy_engine.h"
-#include "backend/dummy/dummy_data.h"
 
 /**
  * % difference between analytic (backprop)
