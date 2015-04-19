@@ -46,6 +46,10 @@ public:
 	// Copy assignment
 	VectorMat& operator=(const VectorMat& other)
 	{
+		assert_throw(!is_empty(),
+			VectorMatException("Shouldn't copy assign to a default constructed "
+					"empty matrix. Use 'mat.alloc()' instead."));
+
 		check_dim(other, "copy assign");
 		this->mat = other.mat;
 		return *this;
@@ -59,9 +63,25 @@ public:
 	// Move assignment
 	VectorMat& operator=(VectorMat&& other)
 	{
+		assert_throw(!is_empty(),
+			VectorMatException("Shouldn't move assign to a default constructed "
+					"empty matrix. Use 'mat.alloc()' instead."));
+
 		check_dim(other, "move assign");
 		this->mat = std::move(other.mat);
 		return *this;
+	}
+
+	// Only for default constructed matrix
+	void alloc(int row, int col)
+	{
+		assert_throw(is_empty(),
+			VectorMatException("alloc() should only be used with default "
+					"constructed empty matrix."));
+
+		mat.resize(row);
+		for (int r = 0; r < row; ++r)
+			mat[r].resize(col);
 	}
 
 	vector<FloatT>& operator[](int row)
@@ -168,6 +188,11 @@ private:
 			&& this->col() == other.col(),
 			VectorMatException(msg + " dimension mismatch"));
 	}
+
+	bool is_empty()
+	{
+		return row() == 0;
+	}
 };
 
 template<typename FloatT>
@@ -187,7 +212,7 @@ namespace lmn {
 
 namespace VectorImpl {
 
-typedef std::shared_ptr<float> FloatPtr;
+typedef std::shared_ptr<VectorMat<float>> VecmatPtr;
 
 enum TensorT {
 	TENSOR = 0,

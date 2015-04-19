@@ -60,6 +60,9 @@ int main(int argc, char **argv)
 	DEBUG_MSG("A * B\n" << A*B);
 	DEBUG_MSG("A t\n" << A.transpose());
 
+	VectorMat<float> C;
+	C = A + A2;
+
 	/*auto dummyEng = EngineBase::make<DummyEngine>();
 
 	auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
