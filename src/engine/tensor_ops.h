@@ -183,12 +183,15 @@ typedef Tensor (*TransferFunction)(const Tensor&);
 		return ans;
 	}
 
-	template<typename TensorT>
-	typename std::enable_if<is_tensor_base<TensorT>::value, void>::type
-	clear(const TensorT& x)
+	void clear(const TensorBase& x)
 	{
-		string operand = tensor_class_info<TensorT>::operand;
-		x.upload(Instruction("clear_" + operand, {}, x.addr));
+		x.upload(Instruction("clear", {}, x.addr));
+	}
+
+	void set_value(const TensorBase& x, DimIndex idx, float val)
+	{
+		x.upload(Instruction("set_value", {}, x.addr,
+					OpContext<DimIndex, float>::make(idx, val)));
 	}
 
 	// TODO

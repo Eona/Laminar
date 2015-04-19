@@ -89,86 +89,85 @@ protected:
 /**
  * DEBUG ONLY
  */
-/*class LstmDebugLayer : public Layer, public ParamContainer
+class LstmDebugLayer : public Layer, public ParamContainer
 {
 public:
-	LstmDebugLayer(vector<float> dummyWeights,
-			vector<float> dummyPrehistory) :
-		Layer(),
+	LstmDebugLayer(Dimension dim,
+			vector<float> dummyWeights_,
+			vector<float> dummyPrehistory_) :
+		Layer(dim),
 		ParamContainer(LSTM_PARAM_SIZE),
+		dummyWeights(dummyWeights_),
+		dummyPrehistory(dummyPrehistory_),
 
-		W_xi(paramValues[_W_xi]),
-		W_hi(paramValues[_W_hi]),
-		W_ci(paramValues[_W_ci]),
-		b_i(paramValues[_b_i]),
-		W_xf(paramValues[_W_xf]),
-		W_hf(paramValues[_W_hf]),
-		W_cf(paramValues[_W_cf]),
-		b_f(paramValues[_b_f]),
-		W_xc(paramValues[_W_xc]),
-		W_hc(paramValues[_W_hc]),
-		b_c(paramValues[_b_c]),
-		W_xo(paramValues[_W_xo]),
-		W_ho(paramValues[_W_ho]),
-		W_co(paramValues[_W_co]),
-		b_o(paramValues[_b_o]),
-		h_0(paramValues[_h_0]),
-		cell_0(paramValues[_cell_0]),
+		W_xi(param_value_ptr(_W_xi)),
+		W_hi(param_value_ptr(_W_hi)),
+		W_ci(param_value_ptr(_W_ci)),
+		b_i(param_value_ptr(_b_i)),
+		W_xf(param_value_ptr(_W_xf)),
+		W_hf(param_value_ptr(_W_hf)),
+		W_cf(param_value_ptr(_W_cf)),
+		b_f(param_value_ptr(_b_f)),
+		W_xc(param_value_ptr(_W_xc)),
+		W_hc(param_value_ptr(_W_hc)),
+		b_c(param_value_ptr(_b_c)),
+		W_xo(param_value_ptr(_W_xo)),
+		W_ho(param_value_ptr(_W_ho)),
+		W_co(param_value_ptr(_W_co)),
+		b_o(param_value_ptr(_b_o)),
+		h_0(param_value_ptr(_h_0)),
+		cell_0(param_value_ptr(_cell_0)),
 
 		gateActivator(lmn::sigmoid),
 		cellInputActivator(lmn::tanh),
 		cellOutputActivator(lmn::tanh),
-		gateActivatorGradient(lmn::sigmoidGradient),
-		cellInputActivatorGradient(lmn::tanhGradient),
-		cellOutputActivatorGradient(lmn::tanhGradient)
-	{
-		int i = 0;
-		for (float* elem : { &W_xi, &W_hi, &W_ci, &W_xf, &W_hf, &W_cf, &W_xc, &W_hc, &W_xo, &W_ho, &W_co })
-			*elem = dummyWeights[i ++];
-		i = 0;
-		// TODO add biases
-		for (float* elem : { &b_i, &b_f, &b_c, &b_o })
-			*elem = 0;
-		i = 0;
-		for (float* elem : { &h_0, &cell_0 })
-			*elem = dummyPrehistory[i ++];
-	}
+		gateActivatorGradient(lmn::sigmoid_gradient),
+		cellInputActivatorGradient(lmn::tanh_gradient),
+		cellOutputActivatorGradient(lmn::tanh_gradient)
+	{ }
+
+	LstmDebugLayer(int dim,
+			vector<float> dummyWeights,
+			vector<float> dummyPrehistory) :
+		LstmDebugLayer(Dimension{ dim }, dummyWeights, dummyPrehistory)
+	{}
 
 	virtual ~LstmDebugLayer() { }
 
-	virtual void forward_impl(float& inValue, float& outValue)
+	virtual void forward_impl(Tensor& inValue, Tensor& outValue)
 	{
-		float h_last = frame() > 0 ?
-				this->outValues[frame() - 1] :
-				h_0;
+		Tensor& h_last = frame() > 0 ?
+				this->out_value(frame() - 1) :
+				*h_0;
 
-		float cell_last = frame() > 0 ?
-				this->cellValues[frame() - 1] :
-				cell_0;
+		Tensor& cell_last = frame() > 0 ?
+				*this->cellValues[frame() - 1] :
+				*cell_0;
 
-		float inputGate = gateActivator(
-				W_xi * inValue + W_hi * h_last + W_ci * cell_last + b_i);
+		Tensor inputGate = gateActivator(
+				*W_xi * inValue + *W_hi * h_last + *W_ci * cell_last + *b_i);
 
-		float forgetGate = gateActivator(
-				W_xf * inValue + W_hf * h_last + W_cf * cell_last + b_f);
+		Tensor forgetGate = gateActivator(
+				*W_xf * inValue + *W_hf * h_last + *W_cf * cell_last + *b_f);
 
-		float cell_hat = cellInputActivator(
-				W_xc * inValue + W_hc * h_last + b_c);
+		Tensor cell_hat = cellInputActivator(
+				*W_xc * inValue + *W_hc * h_last + *b_c);
 
-		float cell = inputGate * cell_hat + forgetGate * cell_last;
+		Tensor cell = inputGate * cell_hat + forgetGate * cell_last;
 
-		vec_resize_on_demand(cellValues, frame());
-		cellValues[frame()] = cell;
+		*cellValues[frame()] = cell;
 
-		float outputGate = gateActivator(
-				W_xo * inValue + W_ho * h_last + W_co * cell + b_o);
+		Tensor outputGate = gateActivator(
+				*W_xo * inValue + *W_ho * h_last + *W_co * cell + *b_o);
 
-		float cellOutput = cellOutputActivator(cell);
+		Tensor cellOutput = cellOutputActivator(cell);
 
 		outValue = outputGate * cellOutput;
 	}
 
-	virtual void backward_impl(float& outValue, float& outGradient, float& inValue, float& inGradient)
+	virtual void backward_impl(
+			Tensor& outValue, Tensor& outGradient,
+			Tensor& inValue, Tensor& inGradient)
 	{
 		throw UnimplementedException(
 				"This LSTM layer is for debugging only.\n"
@@ -181,26 +180,62 @@ public:
 				+ Layer::operator string() + "]";
 	}
 
+protected:
 	// internal state history
-	vector<float> cellValues;
+	vector<Tensor::Ptr> cellValues;
+	vector<float> dummyWeights;
+	vector<float> dummyPrehistory;
 
-	function<float(float)>
+	virtual void initialize_impl()
+	{
+		Layer::initialize_impl();
+
+		for (int t = 0; t < history_length(); ++t)
+		{
+			cellValues.push_back(Tensor::make(engine));
+		}
+
+		int i = 0;
+		for (Tensor::Ptr* elem : { &W_xi, &W_hi, &W_ci, &W_xf, &W_hf, &W_cf, &W_xc, &W_hc, &W_xo, &W_ho, &W_co })
+		{
+			*elem = Tensor::make(engine, this->dim());
+			lmn::set_value(**elem, {}, dummyWeights[i++]);
+		}
+
+		i = 0;
+		// TODO add biases
+		for (Tensor::Ptr* elem : { &b_i, &b_f, &b_c, &b_o })
+		{
+			*elem = Tensor::make(engine, this->dim());
+			lmn::set_value(**elem, {}, dummyWeights[i++]);
+		}
+
+		i = 0;
+		for (Tensor::Ptr* elem : { &h_0, &cell_0 })
+		{
+			*elem = Tensor::make(engine, this->dim());
+			lmn::set_value(**elem, {}, dummyPrehistory[i++]);
+		}
+	}
+
+	lmn::TransferFunction
 		gateActivator,
 		cellInputActivator,
 		cellOutputActivator;
 
-	*
+	/*
 	 * Function like sigmoid's gradient can be more easily computed
 	 * given the output value.
 	 * We do not support gradient computation given input, because of
 	 * storage concern.
+	 */
 
-	function<float(float)>
+	lmn::TransferFunction
 		gateActivatorGradient,
 		cellInputActivatorGradient,
 		cellOutputActivatorGradient;
 
-	*
+	/*
 	 * Parameter index positions
 	 * x: inValue[frame]
 	 * i: input gate
@@ -209,7 +244,7 @@ public:
 	 * c: state cell
 	 * o: output gate
 	 * b: bias
-
+	 */
 	enum {
 		_W_xi,
 		_W_hi,
@@ -232,7 +267,7 @@ public:
 	};
 
 	// All parameter value aliases
-	float &W_xi,
+	Tensor::Ptr &W_xi,
 		&W_hi,
 		&W_ci,
 		&b_i,
@@ -249,6 +284,6 @@ public:
 		&b_o,
 		&h_0,
 		&cell_0;
-};*/
+};
 
 #endif /* LSTM_LAYER_H_ */

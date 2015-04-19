@@ -397,13 +397,15 @@ TEST(RecurrentNet, LSTM)
 
 	// TODO
 	/********** Use hard-coded LSTM **********/
-/*	RecurrentNetwork lstmDebugNet;
-	lstmDebugNet.set_input(input);
-	lstmDebugNet.set_target(target);
+	auto dummyEng2 = EngineBase::make<DummyEngine>();
+	auto dummyData2 = DataManagerBase::make<DummyDataManager>(dummyEng2);
+	dummyData2->start_new_epoch();
 
-	auto l0 = Layer::make<ConstantLayer>();
-	auto lstmLayer = Layer::make<LstmDebugLayer>(LSTM_CONNECTION_WEIGHTS, LSTM_PREHISTORY);
-	auto l1 = Layer::make<SquareLossLayer>();
+	RecurrentNetwork lstmDebugNet(dummyEng2, dummyData2, inputSeq.size(), 1);
+
+	auto l0 = Layer::make<ConstantLayer>(DUMMY_DIM);
+	auto lstmLayer = Layer::make<LstmDebugLayer>(DUMMY_DIM, LSTM_CONNECTION_WEIGHTS, LSTM_PREHISTORY);
+	auto l1 = Layer::make<SquareLossLayer>(DUMMY_DIM);
 
 	lstmDebugNet.add_layer(l0);
 	lstmDebugNet.new_connection<ConstantConnection>(l0, lstmLayer);
@@ -411,21 +413,38 @@ TEST(RecurrentNet, LSTM)
 	lstmDebugNet.new_connection<ConstantConnection>(lstmLayer, l1);
 	lstmDebugNet.add_layer(l1);
 
-	lstmDebugNet.initialize();
-	for (int i = 0; i < input.size(); ++i)
-		lstmDebugNet.forward_prop();
+	lstmDebugNet.upload("initialize");
+	lstmDebugNet.upload("forward");
 
-	********* Output check against lstmDebugNet *********
-	net.reset();
-	for (int i = 0; i < input.size(); ++i)
-		net.forward_prop();
+	lstmDebugNet.compile();
+	lstmDebugNet.execute("initialize");
+	lstmDebugNet.execute("forward");
+	dummyEng2->print_routines();
 
-	for (int i = 0; i < input.size(); ++i)
-		EXPECT_NEAR(net.lossLayer->outValues[i],
-				lstmDebugNet.lossLayer->outValues[i],
-				1e-4) << "LSTM output doesn't agree with LstmDebugLayer";
+	/********* Output check against lstmDebugNet *********/
+	net.zero_clear();
+	dummyData->start_new_epoch();
+	// forward loads input, backward loads target,
+	// but backward isn't called here, so we manually load_target
+	net.load_target();
+	dummyEng->flush_execute();
+	net.execute("forward");
 
+	vector<float> netOutput;
+	vector<float> lstmDebugOutput;
+	for (int t = 0; t < net.history_length(); ++t)
+	{
+		netOutput.push_back(*dummyEng->read_memory(net.lossLayer->out_value(t)));
+		lstmDebugOutput.push_back(*dummyEng2->read_memory(lstmDebugNet.lossLayer->out_value(t)));
+	}
 
+	cout << "Net output: " << netOutput << endl;
+	cout << "LSTM debug output: " << lstmDebugOutput << endl;
+
+	for (int t = 0; t < net.history_length(); ++t)
+		EXPECT_NEAR(netOutput[t], lstmDebugOutput[t], 1e-4) << "LSTM output doesn't agree with LstmDebugLayer";
+
+/*
 	for (ConnectionPtr c : fullConns)
 		cout << std::setprecision(4) << Connection::cast<FullConnection>(c)->param << "  \n";
 	cout << endl;
@@ -452,7 +471,8 @@ TEST(RecurrentNet, LSTM)
 		if (key_exists(net.prehistoryLayerMap, l))
 		cout << std::setprecision(4) << static_cast<ParamContainerPtr>(net.prehistoryLayerMap[l])->paramGradients << "  ";
 	}
-	cout << endl;*/
+	cout << endl;
+*/
 
 }
 

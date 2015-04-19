@@ -175,6 +175,14 @@ inline void clear(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 	*write = 0;
 }
 
+inline void set_value(vector<FloatPtr> reads, FloatPtr write, bool is_initialized,
+		DimIndex idx, float val)
+{
+	debug_msg("set_value: " + container2str(idx) + "=" + to_str(val), is_initialized);
+	*write = val;
+}
+
+
 // FIXME add contextual rand engine
 inline void fill_rand(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
@@ -250,12 +258,12 @@ public:
 		register_normal_op("square_loss", Impl::square_loss);
 
 		register_normal_op("destroy", Impl::destroy);
-		register_normal_op("clear_t", Impl::clear);
-		register_normal_op("clear_s", Impl::clear);
+		register_normal_op("clear", Impl::clear);
 
 		register_normal_op("fill_rand", Impl::fill_rand);
 		register_normal_op("fill_rand_prehistory", Impl::fill_rand_prehistory);
 		register_context_op<DimIndex, float>("perturb", Impl::perturb);
+		register_context_op<DimIndex, float>("set_value", Impl::set_value);
 		register_context_op<float>("scale", Impl::scale);
 
 		/*********** DEBUG ONLY ***********/
