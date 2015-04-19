@@ -32,8 +32,8 @@ public:
 
 	DataPtr operator[](int i)
 	{
-		assert_throw(i < size(),
-			EngineException("memory read out of bound."));
+//		assert_throw(is_initialized(i),
+//			EngineException("MemoryPool[] address not initialized."));
 		return memory[i];
 	}
 

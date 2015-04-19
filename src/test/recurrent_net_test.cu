@@ -284,11 +284,11 @@ TEST(RecurrentNet, LSTM)
 		-0.904, 0.312, -0.944, 1.34, -2.14, -1.69, -2.88, -0.889, -2.28, -0.414, -2.07
 	};
 	vector<float> LSTM_PREHISTORY {
-		.3, -.47
+	// must be the same for the outputs to agree, because initialization order is different
+		.3, .3
 	};
 
 	rand_conn.set_rand_seq(LSTM_CONNECTION_WEIGHTS);
-
 	rand_prehis.set_rand_seq(LSTM_PREHISTORY);
 
 	vector<float> inputSeq {
@@ -419,30 +419,24 @@ TEST(RecurrentNet, LSTM)
 	lstmDebugNet.compile();
 	lstmDebugNet.execute("initialize");
 	lstmDebugNet.execute("forward");
-	dummyEng2->print_routines();
 
 	/********* Output check against lstmDebugNet *********/
-	net.zero_clear();
-	dummyData->start_new_epoch();
-	// forward loads input, backward loads target,
-	// but backward isn't called here, so we manually load_target
-	net.load_target();
-	dummyEng->flush_execute();
 	net.execute("forward");
 
 	vector<float> netOutput;
 	vector<float> lstmDebugOutput;
 	for (int t = 0; t < net.history_length(); ++t)
 	{
-		netOutput.push_back(*dummyEng->read_memory(net.lossLayer->out_value(t)));
-		lstmDebugOutput.push_back(*dummyEng2->read_memory(lstmDebugNet.lossLayer->out_value(t)));
+		// lossLayer only propagates to inValue, outValue is left blank
+		netOutput.push_back(*dummyEng->read_memory(net.lossLayer->in_value(t)));
+		lstmDebugOutput.push_back(*dummyEng2->read_memory(lstmDebugNet.lossLayer->in_value(t)));
 	}
 
 	cout << "Net output: " << netOutput << endl;
 	cout << "LSTM debug output: " << lstmDebugOutput << endl;
 
 	for (int t = 0; t < net.history_length(); ++t)
-		EXPECT_NEAR(netOutput[t], lstmDebugOutput[t], 1e-4) << "LSTM output doesn't agree with LstmDebugLayer";
+		EXPECT_NEAR(netOutput[t], lstmDebugOutput[t], 1e-6) << "LSTM output doesn't agree with LstmDebugLayer";
 
 /*
 	for (ConnectionPtr c : fullConns)

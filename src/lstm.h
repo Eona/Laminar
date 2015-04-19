@@ -207,7 +207,7 @@ protected:
 		for (Tensor::Ptr* elem : { &b_i, &b_f, &b_c, &b_o })
 		{
 			*elem = Tensor::make(engine, this->dim());
-			lmn::set_value(**elem, {}, dummyWeights[i++]);
+			lmn::set_value(**elem, {}, 0);
 		}
 
 		i = 0;
