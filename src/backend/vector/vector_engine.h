@@ -5,6 +5,218 @@
 #ifndef BACKEND_VECTOR_VECTOR_ENGINE_H_
 #define BACKEND_VECTOR_VECTOR_ENGINE_H_
 
+#include "vector_mat.h"
+
+namespace lmn {
+
+namespace VectorImpl {
+
+typedef std::shared_ptr<VectorMat<float>> VecmatPtr;
+
+enum TensorT {
+	TENSOR = 0,
+	SCALOR = 1
+};
+
+template<int TensorT>
+struct tensor_op {};
+
+template<>
+struct tensor_op<TENSOR>
+{
+	static constexpr const char *operand = "t";
+};
+
+template<>
+struct tensor_op<SCALOR>
+{
+	static constexpr const char *operand = "s";
+};
+
+void create(VecmatPtr write, Dimension dim)
+{
+#if DUMMY_DEBUG
+	DEBUG_MSG("Dummy::create dim=" << dim);
+#endif
+	*write = 0;
+}
+
+void debug_msg(string msg, bool is_initialized)
+{
+#if DUMMY_DEBUG
+	DEBUG_MSG(("Dummy::" + msg + " ->init=") << std::boolalpha << is_initialized);
+#endif
+}
+
+template<int TensorT>
+void add(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	string op = tensor_op<TensorT>::operand;
+	debug_msg(op + "+" + op, is_initialized);
+	*write = *reads[0] + *reads[1];
+}
+
+template<int TensorT>
+void sub(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	string op = tensor_op<TensorT>::operand;
+	debug_msg(op + "-" + op, is_initialized);
+	*write = *reads[0] - *reads[1];
+}
+
+template<int TensorT>
+void negate(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	string op = tensor_op<TensorT>::operand;
+	debug_msg("-" + op, is_initialized);
+	*write = - (*reads[0]);
+}
+
+template<int TensorT1, int TensorT2>
+void mult(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	string op1 = tensor_op<TensorT1>::operand;
+	string op2 = tensor_op<TensorT2>::operand;
+	debug_msg(op1 + "*" + op2, is_initialized);
+	*write = (*reads[0]) * (*reads[1]);
+}
+
+void scale(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized, float scalorContext)
+{
+	debug_msg("scale * " + to_str(scalorContext), is_initialized);
+	*write = scalorContext * (*reads[0]);
+}
+
+template<int TensorT>
+void assign(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	string op = tensor_op<TensorT>::operand;
+	debug_msg(op + "=" + op, is_initialized);
+	*write = *reads[0];
+}
+
+inline void destroy(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	debug_msg("destroy", is_initialized);
+}
+
+
+// standalone single-float non-linear functions
+inline void transpose(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	debug_msg("transpose", is_initialized);
+	float r = *reads[0];
+	*write = *reads[0];
+}
+
+inline void sigmoid(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	debug_msg("sigmoid", is_initialized);
+	float r = *reads[0];
+	*write = 1.f / (1.f + exp(-r));
+}
+
+inline void sigmoid_gradient(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	debug_msg("sigmoid_gradient", is_initialized);
+	float r = *reads[0];
+	*write = r * (1.f - r);
+}
+
+inline void sin(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	debug_msg("sin", is_initialized);
+	float r = *reads[0];
+	*write = std::sin(r);
+}
+
+inline void cos(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	debug_msg("cos", is_initialized);
+	float r = *reads[0];
+	*write = std::cos(r);
+}
+
+inline void tanh(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	debug_msg("tanh", is_initialized);
+	float r = *reads[0];
+	*write = std::tanh(r);
+}
+
+inline void tanh_gradient(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	debug_msg("tanh_gradient", is_initialized);
+	float r = *reads[0];
+	*write = 1.f - r * r;
+}
+
+inline void element_mult(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	debug_msg("element_mult", is_initialized);
+	*write = (*reads[0]) * (*reads[1]);
+}
+
+inline void square_loss(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	debug_msg("square_loss", is_initialized);
+	float diff = *reads[0] - *reads[1];
+	*write = 0.5f * diff * diff;
+}
+
+inline void clear(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	debug_msg("clear", is_initialized);
+	*write = 0;
+}
+
+inline void set_value(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized,
+		DimIndex idx, float val)
+{
+	debug_msg("set_value: " + container2str(idx) + "=" + to_str(val), is_initialized);
+	*write = val;
+}
+
+
+// FIXME add contextual rand engine
+inline void fill_rand(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	assert_throw(is_initialized,
+		EngineException("DummyEngine: fill_rand must have been initialized"));
+	debug_msg("fill_rand", is_initialized);
+	*write = FakeRand::instance_connection()();
+}
+
+inline void fill_rand_prehistory(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized)
+{
+	assert_throw(is_initialized,
+		EngineException("DummyEngine: fill_rand_prehistory must have been initialized"));
+	debug_msg("fill_rand_prehistory", is_initialized);
+	if (write == nullptr)
+		cout << "BAD bAD bAD" << endl;
+	*write = FakeRand::instance_prehistory()();
+}
+
+// For gradient checking
+inline void perturb(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized,
+		DimIndex idx, float eps)
+{
+	debug_msg("perturb", is_initialized);
+	*write += eps;
+}
+
+/*********** DEBUG ONLY ***********/
+
+inline void debug_context_tmp(vector<VecmatPtr> reads, VecmatPtr write, bool is_initialized, string x, float y, std::pair<char, int> z)
+{
+	DEBUG_MSG("DEBUG_CONTEXT executed: "
+		<< "string=" << x << " float=" << y
+		<< " pair=<" << z.first << ", " << z.second << ">");
+}
+
+} // end of DummyImpl::
+} // end of lmn::
+
 
 
 /*
