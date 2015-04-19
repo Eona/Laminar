@@ -108,7 +108,6 @@ inline void gradient_check(Network& net,
 	engine->flush_execute();
 
 	// perturb each input in sequence
-	// FIXME sequence
 	for (int inp = 0; inp < historyLength; ++inp)
 	{
 		reset_net();

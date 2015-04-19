@@ -9,6 +9,8 @@
 #include "parameter.h"
 #include "composite.h"
 #include "network.h"
+#include "engine/tensor.h"
+#include "engine/tensor_ops.h"
 
 class LstmComposite : public Composite<RecurrentNetwork>
 {
@@ -65,22 +67,22 @@ protected:
 		net->add_layer(outLayer);
 	}
 
-	virtual Layer::Ptr initialize_outlayer()
+	virtual Layer::Ptr initialize_outlayer(Dimension inLayerDim)
 	{
-		return Layer::make<ConstantLayer>();
+		return Layer::make<ConstantLayer>(inLayerDim);
 	}
 
 	/**
 	 * Will be called in constructor
 	 */
 	virtual void initialize_layers(
-			std::unordered_map<string, Layer::Ptr>& layerMap)
+			std::unordered_map<string, Layer::Ptr>& layerMap, Dimension inLayerDim)
 	{
-		layerMap["forget-gate"] = Layer::make<SigmoidLayer>();
-		layerMap["input-gate"] = Layer::make<SigmoidLayer>();
-		layerMap["cellhat"] = Layer::make<TanhLayer>();
-		layerMap["cell"]  = Layer::make<ConstantLayer>();
-		layerMap["output-gate"]  = Layer::make<SigmoidLayer>();
+		layerMap["forget-gate"] = Layer::make<SigmoidLayer>(inLayerDim);
+		layerMap["input-gate"] = Layer::make<SigmoidLayer>(inLayerDim);
+		layerMap["cellhat"] = Layer::make<TanhLayer>(inLayerDim);
+		layerMap["cell"]  = Layer::make<ConstantLayer>(inLayerDim);
+		layerMap["output-gate"]  = Layer::make<SigmoidLayer>(inLayerDim);
 	}
 };
 

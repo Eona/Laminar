@@ -455,7 +455,8 @@ TEST(RecurrentNet, LSTM)
 	cout << endl;*/
 
 }
-/*
+
+
 TEST(Composite, LSTM)
 {
 	// same fake params as RecurrentNet.LSTM test
@@ -467,21 +468,24 @@ TEST(Composite, LSTM)
 	};
 	rand_conn.set_rand_seq(LSTM_CONNECTION_WEIGHTS);
 	rand_prehis.set_rand_seq(LSTM_PREHISTORY);
-	vector<float> input {
+
+	vector<float> inputSeq {
 		1.2, -0.9, 0.57, -1.47, 2.2
 	};
-	vector<float> target {
+	vector<float> targetSeq {
 		1.39, 0.75, -0.45, -0.11, 1.9
 	};
 
-	auto inLayer = Layer::make<ConstantLayer>();
+	rand_input.set_rand_seq(inputSeq);
+	rand_target.set_rand_seq(targetSeq);
 
-	auto lossLayer = Layer::make<SquareLossLayer>();
+	auto inLayer = Layer::make<ConstantLayer>(DUMMY_DIM);
+	auto lossLayer = Layer::make<SquareLossLayer>(DUMMY_DIM);
 
-	RecurrentNetwork net;
-	net.set_input(input);
-	net.set_target(target);
-	net.set_max_temporal_skip(1);
+	auto dummyEng = EngineBase::make<DummyEngine>();
+	auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
+
+	RecurrentNetwork net(dummyEng, dummyData, inputSeq.size(), 1);
 
 	net.add_layer(inLayer);
 
@@ -497,4 +501,4 @@ TEST(Composite, LSTM)
 
 	gradient_check(net, 1e-2, 1);
 
-}*/
+}

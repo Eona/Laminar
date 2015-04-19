@@ -21,8 +21,8 @@ static_assert(std::is_base_of<Network, NetworkT>::value,
 		"Composite<> template argument must be a subclass of Network type");
 
 public:
-	Composite(Layer::Ptr _inLayer) :
-		inLayer(_inLayer)
+	Composite(Layer::Ptr inLayer_) :
+		inLayer(inLayer_)
 	{
 	}
 
@@ -35,12 +35,12 @@ public:
 		if (netCast)
 			this->manipulate_impl(netCast);
 		else
-			throw NetworkException("Composite is applied on a wrong Network type. ");
+			throw NetworkException("Composite is applied on a wrong Network type.");
 	}
 
 	virtual Layer::Ptr& operator[](string name)
 	{
-		return this->_layerMap[name];
+		return this->layerMap[name];
 	}
 
 	Layer::Ptr out_layer()
@@ -58,14 +58,14 @@ public:
 	template<typename CompositeT, typename ...ArgT>
 	static Composite<NetworkT>::Ptr make(ArgT&& ... args)
 	{
-		auto compositePtr = std::static_pointer_cast<Composite<NetworkT>>(
+		auto compPtr = std::static_pointer_cast<Composite<NetworkT>>(
 				std::make_shared<CompositeT>(
 						std::forward<ArgT>(args) ...));
 
-		compositePtr->outLayer = compositePtr->initialize_outlayer();
-		compositePtr->initialize_layers(compositePtr->_layerMap);
+		compPtr->outLayer = compPtr->initialize_outlayer(compPtr->inLayer->dim());
+		compPtr->initialize_layers(compPtr->layerMap, compPtr->inLayer->dim());
 
-		return compositePtr;
+		return compPtr;
 	}
 
 	/**
@@ -81,8 +81,8 @@ public:
 		// Only reference and pointer types are polymorphic.
 		Composite<NetworkT>& comp = composite;
 
-		comp.outLayer = comp.initialize_outlayer();
-		comp.initialize_layers(comp._layerMap);
+		comp.outLayer = comp.initialize_outlayer(comp.inLayer->dim());
+		comp.initialize_layers(comp.layerMap, comp.inLayer->dim());
 
 		return composite;
 	}
@@ -97,6 +97,7 @@ protected:
 	/**
 	 * Composite logic goes here.
 	 * Intended to work with network's "this" pointer
+	 * @param inLayer dimension
 	 */
 	virtual void manipulate_impl(NetworkT *net) = 0;
 
@@ -104,22 +105,23 @@ protected:
 	 * Will be called in static ::make
 	 */
 	virtual void initialize_layers(
-			std::unordered_map<string, Layer::Ptr>& layerMap) = 0;
+		std::unordered_map<string, Layer::Ptr>& layerMap, Dimension inLayerDim) = 0;
 
 	/**
 	 * Will be called in static ::make
+	 * @param inLayer dimension
 	 */
-	virtual Layer::Ptr initialize_outlayer() = 0;
+	virtual Layer::Ptr initialize_outlayer(Dimension inLayerDim) = 0;
 
 	Layer::Ptr get_layer(string name)
 	{
-		return _layerMap[name];
+		return layerMap[name];
 	}
 
 	LayerPtr inLayer, outLayer;
 
 private:
-	std::unordered_map<string, Layer::Ptr> _layerMap;
+	std::unordered_map<string, Layer::Ptr> layerMap;
 };
 
 /**
