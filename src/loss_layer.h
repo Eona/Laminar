@@ -31,7 +31,7 @@ public:
 	virtual void zero_clear()
 	{
 		Layer::zero_clear();
-		lmn::clear(*totalLoss);
+		lmn::zero_clear(*totalLoss);
 	}
 
 	TensorBase& target_value(int t)

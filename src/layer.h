@@ -156,14 +156,14 @@ public:
 	{
 		for (int t = 0; t < this->historyLength; ++t)
 		{
-			lmn::clear(in_value(t));
-			lmn::clear(out_value(t));
+			lmn::zero_clear(in_value(t));
+			lmn::zero_clear(out_value(t));
 		}
 
 		for (int t = 0; t < gradient_history_length(); ++t)
 		{
-			lmn::clear(in_gradient(t));
-			lmn::clear(out_gradient(t));
+			lmn::zero_clear(in_gradient(t));
+			lmn::zero_clear(out_gradient(t));
 		}
 	}
 
@@ -338,10 +338,10 @@ public:
 	virtual void zero_clear()
 	{
 		for (int t = 0; t < history_length(); ++t)
-			lmn::clear(in_value(t));
+			lmn::zero_clear(in_value(t));
 
 		for (int t = 0; t < gradient_history_length(); ++t)
-			lmn::clear(in_gradient(t));
+			lmn::zero_clear(in_gradient(t));
 	}
 
 	void forward_impl(Tensor& inValue, Tensor& outValue) {}

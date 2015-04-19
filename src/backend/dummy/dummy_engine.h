@@ -169,9 +169,9 @@ inline void square_loss(vector<FloatPtr> reads, FloatPtr write, bool is_initiali
 	*write = 0.5f * diff * diff;
 }
 
-inline void clear(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
+inline void zero_clear(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
-	debug_msg("clear", is_initialized);
+	debug_msg("zero_clear", is_initialized);
 	*write = 0;
 }
 
@@ -258,7 +258,7 @@ public:
 		register_normal_op("square_loss", Impl::square_loss);
 
 		register_normal_op("destroy", Impl::destroy);
-		register_normal_op("clear", Impl::clear);
+		register_normal_op("zero_clear", Impl::zero_clear);
 
 		register_normal_op("fill_rand", Impl::fill_rand);
 		register_normal_op("fill_rand_prehistory", Impl::fill_rand_prehistory);

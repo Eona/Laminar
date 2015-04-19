@@ -22,13 +22,13 @@ public:
 	void clear_values()
 	{
 		for (auto ptr : paramValues)
-			lmn::clear(*ptr);
+			lmn::zero_clear(*ptr);
 	}
 
 	void clear_gradients()
 	{
 		for (auto ptr : paramGradients)
-			lmn::clear(*ptr);
+			lmn::zero_clear(*ptr);
 	}
 
 	/**

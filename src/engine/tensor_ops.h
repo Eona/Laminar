@@ -183,9 +183,9 @@ typedef std::function<Tensor(const Tensor&)> TransferFunction;
 		return ans;
 	}
 
-	void clear(const TensorBase& x)
+	void zero_clear(const TensorBase& x)
 	{
-		x.upload(Instruction("clear", {}, x.addr));
+		x.upload(Instruction("zero_clear", {}, x.addr));
 	}
 
 	void set_value(const TensorBase& x, DimIndex idx, float val)
