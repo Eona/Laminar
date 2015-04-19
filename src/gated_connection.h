@@ -145,7 +145,7 @@ struct GatedTanhConnection : public GatedCachedNonlinearConnection
 	GatedTanhConnection(
 			Layer::Ptr inLayer, Layer::Ptr gateLayer, Layer::Ptr outLayer):
 		GatedCachedNonlinearConnection(inLayer, gateLayer, outLayer,
-				lmn::tanh, lmn::tanh_gradient)
+				lmn::tanh<Tensor>, lmn::tanh_gradient<Tensor>)
 	{ }
 
 	virtual ~GatedTanhConnection() {}
@@ -162,7 +162,7 @@ struct GatedSigmoidConnection : public GatedCachedNonlinearConnection
 	GatedSigmoidConnection(
 			Layer::Ptr inLayer, Layer::Ptr gateLayer, Layer::Ptr outLayer):
 		GatedCachedNonlinearConnection(inLayer, gateLayer, outLayer,
-				lmn::sigmoid, lmn::sigmoid_gradient)
+				lmn::sigmoid<Tensor>, lmn::sigmoid_gradient<Tensor>)
 	{ }
 
 	virtual ~GatedSigmoidConnection() {}

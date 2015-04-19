@@ -118,12 +118,12 @@ public:
 		h_0(param_value_ptr(_h_0)),
 		cell_0(param_value_ptr(_cell_0)),
 
-		gateActivator(lmn::sigmoid),
-		cellInputActivator(lmn::tanh),
-		cellOutputActivator(lmn::tanh),
-		gateActivatorGradient(lmn::sigmoid_gradient),
-		cellInputActivatorGradient(lmn::tanh_gradient),
-		cellOutputActivatorGradient(lmn::tanh_gradient)
+		gateActivator(lmn::sigmoid<Tensor>),
+		cellInputActivator(lmn::tanh<Tensor>),
+		cellOutputActivator(lmn::tanh<Tensor>),
+		gateActivatorGradient(lmn::sigmoid_gradient<Tensor>),
+		cellInputActivatorGradient(lmn::tanh_gradient<Tensor>),
+		cellOutputActivatorGradient(lmn::tanh_gradient<Tensor>)
 	{ }
 
 	LstmDebugLayer(int dim,
