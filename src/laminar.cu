@@ -1,8 +1,6 @@
 /*
  * Eona Studio (c)2015
  */
-#include "global_utils.h"
-#include "timer.h"
 #include "connection.h"
 #include "full_connection.h"
 #include "gated_connection.h"
@@ -23,6 +21,8 @@
 
 #include "backend/vector/vector_engine.h"
 #include "backend/vector/vector_dataman.h"
+#include "utils/global_utils.h"
+#include "utils/timer.h"
 
 FakeRand& rand_conn = FakeRand::instance_connection();
 FakeRand& rand_prehis = FakeRand::instance_prehistory();

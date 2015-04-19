@@ -5,10 +5,10 @@
 #ifndef gpu_utils_h__
 #define gpu_utils_h__
 
-#include "global_utils.h"
 #include "cuda.h"
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
+#include "global_utils.h"
 
 // To cheat the intellisense syntax highligher in VS2013
 #ifdef __INTELLISENSE__

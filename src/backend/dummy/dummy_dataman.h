@@ -6,8 +6,8 @@
 #define ENGINE_DUMMY_DATA_H_
 
 #include "../../engine/data_manager.h"
-#include "../../laminar_utils.h"
-#include "../../rand_utils.h"
+#include "../../utils/laminar_utils.h"
+#include "../../utils/rand_utils.h"
 
 class DummyDataManager :
 		public DataManager<float>, public GradientCheckable<float>

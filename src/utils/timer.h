@@ -6,8 +6,9 @@
 #ifndef MYTIMER_H_
 #define MYTIMER_H_
 
-#include "global_utils.h"
 #include <ctime>
+
+#include "global_utils.h"
 #ifdef is_CPP_11
 #include <chrono>
 #endif

@@ -7,10 +7,6 @@
 #define TEST_H_
 
 #include <gtest/gtest.h>
-#include "../global_utils.h"
-#include "../rand_utils.h"
-#include "../laminar_utils.h"
-#include "../timer.h"
 #include "../connection.h"
 #include "../full_connection.h"
 #include "../gated_connection.h"
@@ -29,6 +25,10 @@
 
 #include "../backend/vector/vector_dataman.h"
 #include "../backend/vector/vector_engine.h"
+#include "../utils/global_utils.h"
+#include "../utils/laminar_utils.h"
+#include "../utils/rand_utils.h"
+#include "../utils/timer.h"
 
 using namespace std;
 

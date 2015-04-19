@@ -5,7 +5,7 @@
 #ifndef BACKEND_VECTOR_VECTOR_MAT_H_
 #define BACKEND_VECTOR_VECTOR_MAT_H_
 
-#include "../../global_utils.h"
+#include "../../utils/global_utils.h"
 
 class VectorMatException: public LaminarException {
 public:

@@ -6,9 +6,9 @@
 #ifndef INSTRUCTIONS_H_
 #define INSTRUCTIONS_H_
 
-#include "../global_utils.h"
-#include "../laminar_utils.h"
-#include "../debug_utils.h"
+#include "../utils/global_utils.h"
+#include "../utils/laminar_utils.h"
+#include "../utils/debug_utils.h"
 
 struct Opcode
 {

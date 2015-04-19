@@ -5,10 +5,10 @@
 #ifndef COMPONENT_H_
 #define COMPONENT_H_
 
-#include "global_utils.h"
-#include "laminar_utils.h"
-#include "debug_utils.h"
 #include "engine/engine.h"
+#include "utils/debug_utils.h"
+#include "utils/global_utils.h"
+#include "utils/laminar_utils.h"
 
 class Component
 {

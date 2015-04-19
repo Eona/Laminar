@@ -5,8 +5,8 @@
 #ifndef COMPOSITE_H_
 #define COMPOSITE_H_
 
-#include "global_utils.h"
 #include "layer.h"
+#include "utils/global_utils.h"
 
 class Network;
 

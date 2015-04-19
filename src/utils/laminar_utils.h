@@ -2,8 +2,8 @@
  * Eona Studio (c) 2015
  */
 
-#ifndef LAMINAR_UTILS_H_
-#define LAMINAR_UTILS_H_
+#ifndef UTILS_LAMINAR_UTILS_H_
+#define UTILS_LAMINAR_UTILS_H_
 
 #include <iostream>
 #include <string>
@@ -154,4 +154,4 @@ public:
     }
 };
 
-#endif /* LAMINAR_UTILS_H_ */
+#endif /* UTILS_LAMINAR_UTILS_H_ */

@@ -6,7 +6,7 @@
 #define GRADIENT_CHECK_H_
 
 #include "network.h"
-#include "laminar_utils.h"
+#include "utils/laminar_utils.h"
 
 /**
  * Check if a given class is a subclass of GradientCheckable<FloatT> for any FloatT

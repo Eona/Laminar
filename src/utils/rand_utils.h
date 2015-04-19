@@ -2,12 +2,13 @@
  * Eona Studio (c) 2015
  */
 
-#ifndef RAND_UTILS_H_
-#define RAND_UTILS_H_
+#ifndef UTILS_RAND_UTILS_H_
+#define UTILS_RAND_UTILS_H_
 
-#include "global_utils.h"
 #include <random>
 #include <chrono>
+
+#include "global_utils.h"
 using std::default_random_engine;
 using std::uniform_real_distribution;
 
@@ -146,4 +147,4 @@ public:
 	}
 };
 
-#endif /* RAND_UTILS_H_ */
+#endif /* UTILS_RAND_UTILS_H_ */

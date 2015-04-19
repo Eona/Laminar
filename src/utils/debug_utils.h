@@ -2,8 +2,8 @@
  * Eona Studio (c) 2015
  */
 
-#ifndef DEBUG_UTILS_H_
-#define DEBUG_UTILS_H_
+#ifndef UTILS_DEBUG_UTILS_H_
+#define UTILS_DEBUG_UTILS_H_
 
 #include <iostream>
 #include <string>
@@ -174,4 +174,4 @@ void print_title(std::string title = "", int leng = 10)
 #endif
 
 
-#endif /* DEBUG_UTILS_H_ */
+#endif /* UTILS_DEBUG_UTILS_H_ */

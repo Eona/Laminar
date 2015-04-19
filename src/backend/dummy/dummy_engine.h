@@ -8,7 +8,7 @@
 
 #include "../../engine/engine.h"
 #include "../../engine/tensor.h"
-#include "../../rand_utils.h"
+#include "../../utils/rand_utils.h"
 
 #define DUMMY_DEBUG false
 

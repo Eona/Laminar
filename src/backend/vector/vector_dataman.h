@@ -6,7 +6,7 @@
 #define BACKEND_VECTOR_VECTOR_DATAMAN_H_
 
 #include "../../engine/data_manager.h"
-#include "../../rand_utils.h"
+#include "../../utils/rand_utils.h"
 #include "vector_engine.h"
 
 class VectorDataManager : public DataManager<lmn::VectorImpl::Vecmatf>

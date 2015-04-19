@@ -5,12 +5,12 @@
 #ifndef CONNECTION_H_
 #define CONNECTION_H_
 
-#include "global_utils.h"
-#include "rand_utils.h"
 #include "layer.h"
 #include "component.h"
 #include "parameter.h"
 #include "engine/tensor.h"
+#include "utils/global_utils.h"
+#include "utils/rand_utils.h"
 
 /**
  * Contains the actual parameters

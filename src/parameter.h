@@ -6,9 +6,9 @@
 #ifndef PARAMETER_H_
 #define PARAMETER_H_
 
-#include "global_utils.h"
-#include "laminar_utils.h"
 #include "engine/tensor_ops.h"
+#include "utils/global_utils.h"
+#include "utils/laminar_utils.h"
 
 class ParamContainer : public GradientCheckable<float>
 {

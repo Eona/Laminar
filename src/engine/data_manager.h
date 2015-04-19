@@ -5,7 +5,7 @@
 #ifndef DATA_MANAGER_H_
 #define DATA_MANAGER_H_
 
-#include "../global_utils.h"
+#include "../utils/global_utils.h"
 #include "engine.h"
 
 class DataManagerBase
