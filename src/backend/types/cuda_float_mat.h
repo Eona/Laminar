@@ -20,7 +20,7 @@ static void gpuCheckError( cudaError_t err,
 }
 
 
-class CudaFloatMat : public GPUFLoatMat
+class CudaFloatMat : public GPUFloatMat
 {
 public:
     int LDIM; //leading dimension
@@ -31,6 +31,8 @@ public:
 	float * device_data;
 
 	CudaFloatMat(){
+		init_dim(1,1);
+		op = CUBLAS_OP_N;
 		device_data = NULL;
 		host_data = NULL;
 	}
@@ -38,6 +40,7 @@ public:
 	CudaFloatMat(float *d, int m, int n) {
 		device_data = NULL;
 		host_data = NULL;
+		op = CUBLAS_OP_N;
 		init_dim(m, n); //initialize matrix dimensions
 		init_device_mem(d); //copy data to device
 	}
@@ -45,6 +48,7 @@ public:
 	CudaFloatMat(int m, int n) {
 		device_data = NULL;
 		host_data = NULL;
+		op = CUBLAS_OP_N;
 		init_dim(m, n); //initialize matrix dimensions
 		init_device_mem();
 	}
@@ -53,6 +57,7 @@ public:
 	CudaFloatMat(std::vector<int> dim) {
 		device_data = NULL;
 		host_data = NULL;
+		op = CUBLAS_OP_N;
 		init_dim(dim); //initialize matrix dimensions
 		init_device_mem();
 	}
@@ -63,7 +68,7 @@ public:
 	 */
 	void to_device(float *d) {
 		GPU_CHECKERROR(
-		cudaMemcpy( device_data, d, DATA_LEN, cudaMemcpyHostToDevice )
+		cudaMemcpy( device_data, d, MEM_SIZE, cudaMemcpyHostToDevice )
 		);
 	}
 
@@ -72,13 +77,35 @@ public:
 	 */
 
 	void to_host() {
-		host_data = (float *)malloc(DATA_LEN);
+		if (!host_data) host_data = (float *)malloc(MEM_SIZE);
 
 		GPU_CHECKERROR(
-		cudaMemcpy( host_data, device_data, DATA_LEN, cudaMemcpyDeviceToHost )
+		cudaMemcpy( host_data, device_data, MEM_SIZE, cudaMemcpyDeviceToHost )
 		);
 	}
 
+	void fill_rand(int seed) {
+		float r[MEM_SIZE];
+		srand (seed);
+		for (int i = 0; i < LEN; ++i) {
+			r[i] = (double) rand() / (RAND_MAX);
+		}
+		to_device(r);
+	}
+
+	void fill(float num) {
+		float r[MEM_SIZE];
+		for (int i = 0; i < LEN; ++i) {
+			r[i] = num;
+		}
+		to_device(r);
+	}
+
+
+    void print_matrix(std::string msg) {
+        to_host();
+        GPUFloatMat::print_matrix(msg);
+    }
 
     cublasOperation_t getOp() {
         return op;
@@ -107,39 +134,37 @@ private:
     cublasOperation_t op;
 
 	void init_device_mem() {
-		op = CUBLAS_OP_N;
 
 		GPU_CHECKERROR(
-		cudaMalloc( (void**)&device_data, DATA_LEN )
+		cudaMalloc( (void**)&device_data, MEM_SIZE )
 		);
 		GPU_CHECKERROR(
-		cudaMemset( (void *)device_data, 0, DATA_LEN )
+		cudaMemset( (void *)device_data, 0, MEM_SIZE )
 		);
 	}
 
 
 	void init_device_mem(float *d) {
-		op = CUBLAS_OP_N;
 
 		GPU_CHECKERROR(
-		cudaMalloc( (void**)&device_data, DATA_LEN )
+		cudaMalloc( (void**)&device_data, MEM_SIZE )
 		);
 
 		GPU_CHECKERROR(
-		cudaMemcpy( device_data, d, DATA_LEN, cudaMemcpyHostToDevice )
+		cudaMemcpy( device_data, d, MEM_SIZE, cudaMemcpyHostToDevice )
 		);
 	}
 
 
 	void init_dim(int m, int n) {
-		GPUFLoatMat::init_dim(m, n);
+		GPUFloatMat::init_dim(m, n);
         LDIM = DIM_ROW;
         BLOCK_DIM.x = NUM_THREAD_PER_BLOCK;
         GRID_DIM.x = ceil(float(LEN)/float(BLOCK_DIM.x));
 	}
 
 	void init_dim(std::vector<int> dim){
-		GPUFLoatMat::init_dim(dim);
+		GPUFloatMat::init_dim(dim);
         LDIM = DIM_ROW;
         BLOCK_DIM.x = NUM_THREAD_PER_BLOCK; //number of thread per block
         GRID_DIM.x = ceil(float(LEN)/float(BLOCK_DIM.x)); //number of block

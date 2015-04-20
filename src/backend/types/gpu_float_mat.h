@@ -6,15 +6,15 @@
 class GPUFloatMat
 {
 public:
-	int DIM_ROW; //
-	int DIM_COL;
-	int LEN;
-	int MEM_SIZE;
-	int NUM_DIM;
+	int DIM_ROW; //number of rows
+	int DIM_COL; //number of columns
+	int LEN; //number of data element in the buffer
+	int MEM_SIZE; //size of the buffer
+	int NUM_DIM; //number of dimensions
 
-	std::vector<int> DIM_ALL;
+	std::vector<int> DIM_ALL; //all dimensions
 
-	float * host_data;
+	float * host_data; //host data
 
 	GPUFloatMat(): host_data(NULL) {
 
@@ -59,7 +59,6 @@ public:
 		for (int i = 0; i < LEN; ++i) {
 			r[i] = (double) rand() / (RAND_MAX);
 		}
-		to_device(r);
 	}
 
 	void fill(float num) {
@@ -67,13 +66,12 @@ public:
 		for (int i = 0; i < LEN; ++i) {
 			r[i] = num;
 		}
-		to_device(r);
 	}
 
 
     void print_matrix(std::string msg) {
-        to_host();
         std::cout << "\n" << msg << "\n";
+        std::cout<<DIM_ROW<<"x"<<DIM_COL<<endl;
         for (int i = 0; i < DIM_ROW; ++i) {
             for (int j = 0; j < DIM_COL; ++j) {
                 std::cout << host_data[j*DIM_ROW+i] << '\t';
@@ -91,11 +89,11 @@ public:
 	}
 
 protected:
-
+	//Initialize device memory and set the memory to zero
 	void init_device_mem() {
 	}
 
-
+	//Initialize device memory and set the memory to input data
 	void init_device_mem(float *d) {
 	}
 

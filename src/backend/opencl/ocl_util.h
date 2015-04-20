@@ -220,6 +220,9 @@ public:
     	OCL_CHECKERROR(clEnqueueReadBuffer(command_queue, memobj, CL_TRUE, 0, MEM_SIZE, out, 0, NULL, NULL));
     }
 
+    void copy(cl_mem& dest, cl_mem& src, size_t MEM_SIZE) {
+    	OCL_CHECKERROR(clEnqueueCopyBuffer(command_queue, src, dest, 0, 0, MEM_SIZE, 0, NULL, NULL));
+    }
 
     /*Clean up*/
     ~OclUtilContext(){

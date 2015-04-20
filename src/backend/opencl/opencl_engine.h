@@ -1,3 +1,10 @@
+/*
+ * Eona Studio (c) 2015
+ */
+
+#ifndef OPENCL_ENGINE_H_
+#define OPENCL_ENGINE_H_
+
 #ifdef __APPLE__
 #include <OpenCL/cl.h>
 #include <OpenCL/cl_platform.h>
@@ -10,125 +17,252 @@
 #include <assert.h>
 #include <iostream>
 #include <math.h>
- 
-#define MAX_SOURCE_SIZE (0x100000)
- 
+
+#include "ocl_util.h"
+#include "../types/opencl_float_mat.h"
+
+#include "../../engine/engine.h"
+#include "../../engine/tensor.h"
+#include "../../rand_utils.h"
+
 using namespace std;
 
 
-/*Part of the setup code comes from 
-*http://www.fixstars.com/en/opencl/book/OpenCLProgrammingBook/first-opencl-program/ 
-*/
-
-void oclutil_build_program(cl_program & program, std::string filename, cl_context & context, cl_device_id device_id) {
-    /*read in program text*/
-    cl_int ret;
-    FILE *fp;
-    char *source_str;
-    size_t source_size;
-
-    fp = fopen(filename.c_str(), "r");
-    if (!fp) {
-        fprintf(stderr, "Failed to load kernel.\n");
-        exit(1);
-    }
-
-    source_str = (char*)malloc(MAX_SOURCE_SIZE);
-    source_size = fread(source_str, 1, MAX_SOURCE_SIZE, fp);
-    fclose(fp);
-
-    /* Create and build kernel program */
-    program = clCreateProgramWithSource(context, 1, (const char **)&source_str, (const size_t *)&source_size, &ret);
-    assert(ret == CL_SUCCESS);
-    free(source_str);
-
-    assert(clBuildProgram(program, 1, &device_id, NULL, NULL, NULL) == CL_SUCCESS);
-
-    // Shows the log
-    char* build_log;
-    size_t log_size;
-    // First call to know the proper size
-    clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
-    build_log = new char[log_size+1];
-    // Second call to get the log
-    clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, log_size, build_log, NULL);
-    build_log[log_size] = '\0';
-    cout << build_log << endl;
-    delete[] build_log;
-}
-
-int main(int argc, char *argv[])
+class OpenclEngine : public Engine<OpenclFloatMat>
 {
-	float * data = new float[100];
-    int DATA_SIZE = 100;
-    int MEM_SIZE = DATA_SIZE*sizeof(float);
+public:
 
-
-    cl_device_id device_id = NULL;
-    cl_context context = NULL;
-    cl_command_queue command_queue = NULL;
-    cl_mem memobj = NULL;
-    cl_program program = NULL;
-    cl_kernel kernel = NULL;
-    cl_platform_id platform_id = NULL;
-    cl_int ret;
- 
- 
-    /* Get Platform and Device Info */
-    ret = clGetPlatformIDs(1, &platform_id, NULL);
-    ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id, NULL);
- 
-    /* Create OpenCL context */
-    context = clCreateContext(NULL, 1, &device_id, NULL, NULL, &ret);
-    assert(ret == CL_SUCCESS);
-
-    /* Create Command Queue */
-    command_queue = clCreateCommandQueue(context, device_id, 0, &ret);
-    assert(ret == CL_SUCCESS);
- 
-    /* Create Memory Buffer */
-    memobj = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, MEM_SIZE, data, &ret);
-    assert(ret == CL_SUCCESS);
- 
-    /*Build program from source code*/
-    oclutil_build_program(program, "./greyScale.cl", context, device_id);
- 
-    /* Create OpenCL Kernel */
-    kernel = clCreateKernel(program, "greyScale", &ret);
-    assert(ret == CL_SUCCESS);
- 
-    /* Set OpenCL Kernel Parameters */
-    assert(clSetKernelArg(kernel, 0, sizeof(cl_mem), &memobj) == CL_SUCCESS);
-    assert(clSetKernelArg(kernel, 1, sizeof(int), &DATA_SIZE) == CL_SUCCESS);
- 
-    /* Execute OpenCL Kernel */
-    const size_t local_ws = 100;    // Number of work-items per work-group
-    // shrRoundUp returns the smallest multiple of local_ws bigger than size
-    const size_t global_ws = ceil(double(DATA_SIZE)/double(local_ws))*local_ws;    // Total number of work-items
-    cout<<global_ws<<endl;
-    ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_ws, &local_ws, 0, NULL, NULL);
-    assert(ret == CL_SUCCESS);
- 
-    /* Copy results from the memory buffer */
-    float* out = new float[MEM_SIZE];
-    ret = clEnqueueReadBuffer(command_queue, memobj, CL_TRUE, 0,
-    MEM_SIZE, out, 0, NULL, NULL);
-    assert(ret == CL_SUCCESS);
-	for (int i = 0; i < DATA_SIZE; ++i) {
-		cout<<out[i];
+	OpenclEngine() :
+		Engine<OpenclFloatMat>()
+	{
+		cl = new OclUtilContext(true);
+		cout<<"created context"<<endl;
+//		register_create(CudaEngine::create);
+//		register_opcode("t+t", CudaEngine::add);
+////		register_opcode("s+s", Impl::add<S>);
+//		register_opcode("t-t", CudaEngine::sub);
+////		register_opcode("s-s", sub);
+//		register_opcode("-t", CudaEngine::negate);
+////		register_opcode("-s", negate<S>);
+//		register_opcode("t*t", CudaEngine::mult);
+////		register_opcode("t*s", mult<T, S>);
+////		register_opcode("s*t", mult<S, T>);
+////		register_opcode("s*s", mult<S, S>);
+//		register_opcode("t=t", CudaEngine::assign);
+////		register_opcode("s=s", assign<S>);
+//
+//		register_opcode("scale", CudaEngine::scale);
+//		register_opcode("sin", CudaEngine::sin);
+//		register_opcode("cos", CudaEngine::cos);
+//		register_opcode("tanh", CudaEngine::tanh);
+//		register_opcode("tanh_gradient", CudaEngine::tanh_gradient);
+//		register_opcode("sigmoid", CudaEngine::sigmoid);
+//		register_opcode("sigmoid_gradient", CudaEngine::sigmoid_gradient);
+//		register_opcode("transpose", CudaEngine::transpose);
+//		register_opcode("element_mult", CudaEngine::element_mult);
+//		register_opcode("square_loss", CudaEngine::square_loss);
+//
+//		register_opcode("destroy", CudaEngine::destroy);
+//		register_opcode("fill_rand", CudaEngine::fill_rand);
+//
+//		/*********** DEBUG ONLY ***********/
+//		register_opcode("debug_fill", CudaEngine::debug_fill);
 	}
- 
-    /* Finalization */
-    ret = clFlush(command_queue);
-    ret = clFinish(command_queue);
-    ret = clReleaseKernel(kernel);
-    ret = clReleaseProgram(program);
-    ret = clReleaseMemObject(memobj);
-    ret = clReleaseCommandQueue(command_queue);
-    ret = clReleaseContext(context);
- 
-    delete[] out;
-    delete[] data;
- 
-    return 0;
-}
+
+
+	typedef std::shared_ptr<OpenclFloatMat> OpenclFloatMatPtr;
+	typedef std::shared_ptr<float> FloatPtr;
+
+	void create(OpenclFloatMatPtr write, vector<int> dim)
+	{
+		DEBUG_MSG("CudaImpl::create dim=" << dim);
+		*write = OpenclFloatMat(dim, cl);
+	}
+
+	void debug_msg(string msg, bool is_initialized)
+	{
+		DEBUG_MSG(("CudaImpl::" + msg + " ->init=") << std::boolalpha << is_initialized);
+	}
+
+	/*
+	 * write = alpha * Op(reads[0]) + beta * Op(reads[1])
+	 */
+	void addMat(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized, float alpha, float beta)
+	{
+
+	    int m = reads[0]->DIM_ROW;
+	    int n = reads[0]->DIM_COL;
+	    if (!is_initialized) {
+	        *write = OpenclFloatMat(m, n, cl); //initialize LHS if not already
+	    }
+	}
+
+
+	/*
+	 * write = alpha .* Op(reads[0]) * Op(reads[1]) + beta * write
+	 */
+	void multMat(vector<OpenclFloatMatPtr> reads,
+				OpenclFloatMatPtr write, bool is_initialized,
+				float alpha, float beta,
+				std::string opA, std::string opB)
+	{
+	    int m = reads[0]->DIM_ROW;
+	    int n = reads[0]->DIM_COL;
+	    int k = reads[1]->DIM_COL;
+	    if (!is_initialized) {
+	        *write = OpenclFloatMat(m, n, cl); //initialize LHS if not already
+	    }
+
+	    //C = a Op(A)* Op(B) + b C  -- A [mxn] B [nxk] C[mxk]
+	}
+
+	/*
+	 * assign reads[0] to write
+	 */
+	void assignMat(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+	    int m = reads[0]->DIM_ROW;
+	    int n = reads[0]->DIM_COL;
+	    if (!is_initialized) {
+	        *write = OpenclFloatMat(m, n, cl); //initialize LHS if not already
+	    }
+	    //y = x
+	    cl->copy(write->device_data, reads[0]->device_data, reads[0]->MEM_SIZE);
+	}
+
+
+	void add(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+	    debug_msg("c=a+b", is_initialized);
+	    float alpha = 1.0f;
+	    addMat(reads, write, is_initialized, alpha, alpha);
+	}
+
+	void sub(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+	    debug_msg("c=a-b", is_initialized);
+
+	    float alpha = 1.0f;
+	    addMat(reads, write, is_initialized, alpha, -alpha);
+	}
+
+	void negate(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+	    debug_msg("c=-a", is_initialized);
+	    //y = x
+	    assignMat(reads, write, is_initialized);
+
+	    //y = -y
+	    const float alpha = -1.0f;
+
+	}
+
+	void mult(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+	    debug_msg("c=a*b", is_initialized);
+		float alpha = 1.0f;
+		multMat(reads, write, is_initialized, alpha, 0, "N", "N");
+	}
+
+	void assign(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+	    debug_msg("c=a", is_initialized);
+	    assignMat(reads, write, is_initialized);
+	}
+
+	inline void scale(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized, float* scaler)
+	{
+		debug_msg("scale", is_initialized);
+	    //y = x
+	    assignMat(reads, write, is_initialized);
+	    //y = ay
+	}
+
+	inline void destroy(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		debug_msg("destroy", is_initialized);
+		reads[0]->free_data();
+	}
+
+
+	// standalone single-float non-linear functions
+	inline void transpose(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		debug_msg("transpose", is_initialized);
+		//TODO
+	}
+
+
+
+	inline void sigmoid(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		debug_msg("sigmoid", is_initialized);
+	}
+
+	inline void sigmoid_gradient(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		debug_msg("sigmoid_gradient", is_initialized);
+	}
+
+	inline void sin(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		debug_msg("sin", is_initialized);
+	}
+
+	inline void cos(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		debug_msg("cos", is_initialized);
+	}
+
+	inline void tanh(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		debug_msg("tanh", is_initialized);
+	}
+
+	inline void tanh_gradient(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		debug_msg("tanh_gradient", is_initialized);
+	}
+
+	inline void element_mult(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		debug_msg("element_mult", is_initialized);
+	}
+
+	inline void square_loss(vector<OpenclFloatMatPtr> reads, float* write, bool is_initialized)
+	{
+		debug_msg("square_loss", is_initialized);
+
+	}
+
+	// FIXME add contextual rand engine
+	inline void fill_rand(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		debug_msg("fill_rand", is_initialized);
+		if (!is_initialized) {
+			*write = OpenclFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL, cl);
+		}
+		write->fill_rand(1);
+	}
+
+
+	/*********** DEBUG ONLY ***********/
+	inline void debug_fill(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		if (!is_initialized) {
+			*write = OpenclFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL, cl);
+		}
+		write->fill(0.66337);
+	}
+
+	~OpenclEngine()
+	{
+		delete cl;
+	}
+	OclUtilContext* cl;
+
+private:
+
+};
+
+#endif /* OPENCL_ENGINE_H_ */

@@ -1,3 +1,7 @@
+/*
+ * Eona Studio (c)2015
+ */
+
 #ifndef OPENCL_FLOAT_MAT_H_
 #define OPENCL_FLOAT_MAT_H_
 
@@ -9,96 +13,69 @@
 #include <CL/cl_platform.h>
 #endif
 #include <vector>
-#include "ocl_util.h"
+#include "../opencl/ocl_util.h"
+#include "gpu_float_mat.h"
 
 #define NUM_WORKER_LOCAL 512;
 
 
-
-class CudaFloatMat
+class OpenclFloatMat : public GPUFloatMat
 {
 public:
-	int DIM_ROW;
-	int DIM_COL;
-	int LEN;
-	int DATA_LEN;
-	int NUM_DIM;
-    int LDIM;
-	std::vector<int> DIM_ALL;
 
-	dim3 BLOCK_DIM; //block dim
-	dim3 GRID_DIM; //grid dim
+	size_t NUM_GLOBAL_WORKER; // total number of workers
+	size_t NUM_LOCAL_WORKER; // number of workers per block
     
+	cl_mem device_data;
+	OclUtilContext* cl;
 
-	float * device_data;
-	float * host_data;
 
-
-	CudaFloatMat():
-		device_data(NULL),
-		host_data(NULL),
-        op(CUBLAS_OP_N) {
-
+	OpenclFloatMat(){
+		init_dim(1,1);
+		host_data = NULL;
 	}
 
-	CudaFloatMat(float *d, int m, int n):
-		device_data(NULL),
-		host_data(NULL),
-        op(CUBLAS_OP_N) {
-
+	OpenclFloatMat(float *d, int m, int n, OclUtilContext* context) {
+		cl = context;
+		host_data = NULL;
 		init_dim(m, n); //initialize matrix dimensions
-		init_cuda_mem(d); //copy data to device
+		init_device_mem(d); //copy data to device
 	}
 
-	CudaFloatMat(int m, int n):
-		device_data(NULL),
-		host_data(NULL),
-        op(CUBLAS_OP_N) {
-
+	OpenclFloatMat(int m, int n, OclUtilContext* context) {
+		cl = context;
+		host_data = NULL;
 		init_dim(m, n); //initialize matrix dimensions
-		init_cuda_mem();
+		init_device_mem();
 	}
 
 
-	CudaFloatMat(std::vector<int> dim):
-		device_data(NULL),
-		host_data(NULL),
-        op(CUBLAS_OP_N) {
-
+	OpenclFloatMat(std::vector<int> dim, OclUtilContext* context) {
+		cl = context;
+		host_data = NULL;
 		init_dim(dim); //initialize matrix dimensions
-		init_cuda_mem();
+		init_device_mem();
 	}
 
 
 	/*
-	 * Copy data to CUDA device
+	 * Copy data to device
 	 */
-	float* to_device(float *d) {
-		GPU_CHECKERROR(
-		cudaMemcpy( device_data, d, DATA_LEN, cudaMemcpyHostToDevice )
-		);
-		return device_data;
+	void to_device(float *d) {
+		cl->to_device_write(device_data, d, MEM_SIZE);
 	}
 
 	/*
 	 * Copy device data to host
 	 */
-
-	float* to_host() {
-
-		host_data = (float *)malloc(DATA_LEN);
-
-		GPU_CHECKERROR(
-		cudaMemcpy( host_data, device_data, DATA_LEN, cudaMemcpyDeviceToHost )
-		);
-
-
-		return host_data;
+	void to_host() {
+		if (!host_data) host_data = new float[MEM_SIZE];
+		cl->to_host(host_data, device_data, MEM_SIZE);
 	}
-    
+
 
 	void fill_rand(int seed) {
-		float r[DATA_LEN];
+		float r[MEM_SIZE];
 		srand (seed);
 		for (int i = 0; i < LEN; ++i) {
 			r[i] = (double) rand() / (RAND_MAX);
@@ -107,7 +84,7 @@ public:
 	}
 
 	void fill(float num) {
-		float r[DATA_LEN];
+		float r[MEM_SIZE];
 		for (int i = 0; i < LEN; ++i) {
 			r[i] = num;
 		}
@@ -117,126 +94,42 @@ public:
 
     void print_matrix(std::string msg) {
         to_host();
-        std::cout << "\n" << msg << "\n";
-        for (int i = 0; i < DIM_ROW; ++i) {
-            for (int j = 0; j < DIM_COL; ++j) {
-                std::cout << host_data[j*DIM_ROW+i] << '\t';
-            }
-            std::cout<<"\n";
-        } 
+        GPUFloatMat::print_matrix(msg);
     }
 
 
-    cublasOperation_t getOp() {
-        return op;
-    }
-
-    cublasOperation_t getOp(std::string opcode) {
-        if (opcode == "C") {
-        	return CUBLAS_OP_C;
-        } else if (opcode == "T") {
-        	return CUBLAS_OP_T;
-        } else {
-        	return CUBLAS_OP_N;
-        }
-    }
-
-    void free_data(){
-    	if (device_data) cudaFree(device_data);
-		if (host_data) free(host_data);
-    }
-
-	~CudaFloatMat(){
+	~OpenclFloatMat(){
 		free_data();
 	}
 
-private:
-    cublasOperation_t op;
+    void free_data(){
+		if (host_data) delete [] host_data;
+		clReleaseMemObject(device_data);
+    }
 
-	void init_cuda_mem() {
-		GPU_CHECKERROR(
-		cudaMalloc( (void**)&device_data, DATA_LEN )
-		);
-		GPU_CHECKERROR(
-		cudaMemset( (void *)device_data, 0, DATA_LEN )
-		);
+
+private:
+
+	void init_device_mem() {
+		device_data = cl->to_device_create_zero<float>(MEM_SIZE);
 	}
 
 
-	void init_cuda_mem(float *d) {
-		GPU_CHECKERROR(
-		cudaMalloc( (void**)&device_data, DATA_LEN )
-		);
-
-		GPU_CHECKERROR(
-		cudaMemcpy( device_data, d, DATA_LEN, cudaMemcpyHostToDevice )
-		);
+	void init_device_mem(float *d) {
+		device_data = cl->to_device(d, MEM_SIZE);
 	}
 
 
 	void init_dim(int m, int n) {
-		NUM_DIM = 2;
-		DIM_ROW = m;
-		DIM_COL = n;
-		LEN = DIM_ROW * DIM_COL;
-
-		DATA_LEN = LEN * sizeof(float);
-        LDIM = DIM_ROW;
-
-        BLOCK_DIM.x = NUM_THREAD_PER_BLOCK;
-        GRID_DIM.x = ceil(float(LEN)/float(BLOCK_DIM.x));
+		GPUFloatMat::init_dim(m, n);
+		NUM_LOCAL_WORKER = NUM_WORKER_LOCAL; // number of workers per block
+		NUM_GLOBAL_WORKER = ceil(double(LEN)/double(NUM_LOCAL_WORKER))*NUM_LOCAL_WORKER;
 	}
 
 	void init_dim(std::vector<int> dim){
-		DIM_ALL = dim;
-		NUM_DIM = dim.size();
-		LEN = 1;
-
-		for (int i = 0; i < dim.size(); ++i) {
-			LEN *= dim[i];
-		}
-
-		if (dim.size() > 0) {
-			DIM_ROW = dim[0];
-		} else {
-			printf("Error: The matrix has no dimension information");
-		}
-
-		if (dim.size() > 1) {
-			DIM_COL = dim[1];
-		} else {
-			DIM_COL = 1;
-		}
-
-		DATA_LEN = LEN * sizeof(float);
-        LDIM = DIM_ROW;
-
-        BLOCK_DIM.x = NUM_THREAD_PER_BLOCK; //number of thread per block
-        GRID_DIM.x = ceil(float(LEN)/float(BLOCK_DIM.x)); //number of block
-	}
-
-
-
-	//not used
-	void to_column_major(float *target, float *source){
-		int c = 0;
-		for (int i = 0; i < DIM_COL; ++i) {
-			for (int j = 0; j < DIM_ROW; ++j) {
-				target[c] = source[j*DIM_COL+i];
-				c++;
-			}
-		}
-	}
-
-	//not used
-	void to_row_major(float *target, float *source){
-		int c = 0;
-		for (int i = 0; i < DIM_ROW; ++i) {
-			for (int j = 0; j < DIM_COL; ++j) {
-				target[c] = source[j*DIM_ROW+i];
-				c++;
-			}
-		}
+		GPUFloatMat::init_dim(dim);
+		NUM_LOCAL_WORKER = NUM_WORKER_LOCAL; // number of workers per block
+		NUM_GLOBAL_WORKER = ceil(double(LEN)/double(NUM_LOCAL_WORKER))*NUM_LOCAL_WORKER;
 	}
 };
 
