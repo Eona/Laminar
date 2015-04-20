@@ -552,9 +552,11 @@ protected:
 				auto& valuePtr = h_0->param_value_ptr(paramIdx);
 				auto& gradPtr = h_0->param_gradient_ptr(paramIdx);
 
-			// FIXME FIXME: dim of prehistory should be { layerDim * batchSize }
-				valuePtr = Tensor::make(engine, vec_augment(layer->dim(), 1));
-				gradPtr = Tensor::make(engine, vec_augment(layer->dim(), 1));
+				// prehistory dimension augmented by minibatch size
+				Dimension dimWithBatch = vec_augment(layer->dim(), dataManager->batch_size());
+
+				valuePtr = Tensor::make(engine, dimWithBatch);
+				gradPtr = Tensor::make(engine, dimWithBatch);
 
 				// Randomly initialize prehistory
 				lmn::fill_rand_prehistory(*valuePtr);
