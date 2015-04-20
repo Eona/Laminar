@@ -122,7 +122,7 @@ cl_program oclutil_build_program(std::string filename, cl_context & context, cl_
     // Second call to get the log
     clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, log_size, build_log, NULL);
     build_log[log_size] = '\0';
-    cout << build_log << endl;
+    cout << "OpenCL: log of compiling " <<filename << endl << build_log << endl;
     delete[] build_log;
 
     return program;
@@ -185,6 +185,7 @@ public:
     	OCL_CHECKERROR(clFlush(command_queue));
     }
 
+    ///////////////////Memory Functions////////////////////
     cl_mem to_device(float* d, size_t MEM_SIZE){
     	cl_mem memobj = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, MEM_SIZE, d, &ret);
     	OCL_CHECKERROR(ret);
@@ -195,6 +196,20 @@ public:
     	cl_mem memobj = clCreateBuffer(context, CL_MEM_READ_WRITE, MEM_SIZE, NULL, &ret);
     	OCL_CHECKERROR(ret);
     	return memobj;
+    }
+
+    template<typename T>
+    cl_mem to_device_create_zero(size_t MEM_SIZE){
+    	cl_mem memobj = clCreateBuffer(context, CL_MEM_READ_WRITE, MEM_SIZE, NULL, &ret);
+    	OCL_CHECKERROR(ret);
+    	T pattern = 0;
+    	to_device_fill<T>(memobj, MEM_SIZE, pattern);
+    	return memobj;
+    }
+
+    template<typename T>
+    void to_device_fill(cl_mem memobj, size_t MEM_SIZE, T pattern){
+    	OCL_CHECKERROR(clEnqueueFillBuffer(command_queue, memobj, &pattern, sizeof(T), 0, MEM_SIZE, 0, NULL, NULL));
     }
 
     void to_device_write(cl_mem& buffer, float* d, size_t MEM_SIZE){
