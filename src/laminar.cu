@@ -89,6 +89,16 @@ int main(int argc, char **argv)
 	auto routine = exec();
 	DEBUG_MSG(get(tinput));
 
+	Dimension total {5, 3};
+
+	DimIndexEnumerator idxEnumer(total);
+	int i = 0;
+	while (idxEnumer.has_next())
+	{
+		DEBUG_MSG(idxEnumer.next());
+		++ i;
+	}
+	DEBUG_MSG("count", i);
 
 
 	/*auto dummyEng = EngineBase::make<DummyEngine>();

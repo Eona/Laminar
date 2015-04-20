@@ -72,6 +72,60 @@ private:
 	FloatT lastEps;
 };
 
+
+/**
+ * Enumerate dimension indices.
+ * e.g. for a 3*2 tensor, the sequence generated will be:
+ * (0,0); (1,0); (2,0); (0,1); (1,1); (2,1)
+ */
+class DimIndexEnumerator
+{
+public:
+	DimIndexEnumerator(Dimension totalDim_) :
+		totalDim(totalDim_),
+		// start at all zeros
+		current(totalDim.size(), 0)
+	{
+		hasNext = !totalDim.empty();
+	}
+
+	bool has_next() const
+	{
+		return this->hasNext;
+	}
+
+	DimIndex next()
+	{
+		// To start with [0, 0, 0]
+		last = current;
+		for (int di = 0; di < totalDim.size(); ++di)
+		{
+			if (current[di] == totalDim[di] - 1)
+			{
+				current[di] = 0;
+				if (di + 1 == totalDim.size())
+				{
+					this->hasNext = false;
+					return last; // no next DimIndex, enumeration completed
+				}
+			}
+			else
+			{
+				current[di] += 1;
+				break;
+			}
+		}
+		return last;
+	}
+
+private:
+	Dimension totalDim;
+	DimIndex current; //current idx
+	bool hasNext;
+	DimIndex last;
+};
+
+
 /**************************************
 ******* Laminar specific exceptions *********
 **************************************/
