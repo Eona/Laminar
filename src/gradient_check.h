@@ -106,11 +106,12 @@ inline void gradient_check(Network& net,
 				FloatT numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 
 				FloatT analyticGrad = engine->element_at(
-						engine->read_memory(analyticGrads[agpt++]), perturbDimIdx);
+						engine->read_memory(analyticGrads[agpt]), perturbDimIdx);
 
 				assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
 						"param analytic != numeric", "param gradcheck pass");
 			}
+			++ agpt; // go to the next tensor stored in analyticGrads
 		}
 	}
 
