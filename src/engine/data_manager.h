@@ -50,6 +50,12 @@ public:
 	 */
 	virtual void start_new_sequence() = 0;
 
+	virtual Dimension input_dim() const = 0;
+
+	virtual Dimension target_dim() const = 0;
+
+	virtual int batch_size() const = 0;
+
 	/**
 	 * If template unspecified, return EngineBase::Ptr
 	 */
@@ -118,10 +124,6 @@ public:
 	virtual void load_input(DataPtr write, bool is_initialized) = 0;
 
 	virtual void load_target(DataPtr write, bool is_initialized) = 0;
-
-	virtual Dimension input_dim() const = 0;
-
-	virtual Dimension target_dim() const = 0;
 };
 
 #endif /* DATA_MANAGER_H_ */

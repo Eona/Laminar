@@ -40,6 +40,11 @@ public:
 		return {1, 1};
 	}
 
+	int batch_size() const
+	{
+		return 1;
+	}
+
 	void start_new_epoch()
 	{
 		input_rand.reset_seq();
