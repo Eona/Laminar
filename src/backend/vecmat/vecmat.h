@@ -203,8 +203,10 @@ public:
 
 	Vecmat operator*(const Vecmat& rhs)
 	{
-		assert_throw<VecmatException>(this->col() == rhs.row(),
-				"multiplication dimension mismatch");
+		LMN_ASSERT_THROW(this->is_initialized()
+				&& this->col() == rhs.row(),
+			VecmatException("multiplication dimension mismatch\n"
+				+ dims_errmsg(rhs)));
 
 		Vecmat ans(this->row(), rhs.col());
 
@@ -244,14 +246,29 @@ public:
 		return row() == 0;
 	}
 
+	bool is_initialized() const
+	{
+		return row() != 0;
+	}
+
 	void assert_same_dim(const Vecmat& other, string msg)
 	{
-		LMN_ASSERT_THROW(this->row() == other.row()
+		LMN_ASSERT_THROW(this->is_initialized()
+			&& other.is_initialized()
+			&& this->row() == other.row()
 			&& this->col() == other.col(),
 
 			VecmatException(msg + " dimension mismatch\n"
-			+ container2str(this->dim()) + " <-> "
-			+ container2str(other.dim())));
+			+ dims_errmsg(other)));
+	}
+
+	/**
+	 * Helper for dimension mismatch error message
+	 */
+	string dims_errmsg(const Vecmat& other)
+	{
+		return container2str(this->dim())
+				+ " <-> " + container2str(other.dim());
 	}
 
 private:
