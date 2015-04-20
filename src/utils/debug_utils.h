@@ -71,7 +71,7 @@ assert_throw(bool cond, string errmsg = "")
 /**
  * Macro equivalent to delay errmsg evaluation
  */
-#define ASSERT_THROW(cond, exc) \
+#define LMN_ASSERT_THROW(cond, exc) \
 	{if (!(cond)) \
 	{ \
 		std::cerr << __FILE__ << " @ line " << __LINE__ << " assertion failure\n"; \

@@ -251,7 +251,7 @@ public:
 
 	void assert_same_dim(const Vecmat& other, string msg)
 	{
-		ASSERT_THROW(this->row() == other.row()
+		LMN_ASSERT_THROW(this->row() == other.row()
 			&& this->col() == other.col(),
 
 			VecmatException(msg + " dimension mismatch\n"

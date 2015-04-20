@@ -22,7 +22,7 @@ public:
 		Connection(inLayer_, outLayer_),
 		gateLayer(gateLayer_)
 	{
-		ASSERT_THROW(inLayer_->dim() == gateLayer_->dim()
+		LMN_ASSERT_THROW(inLayer_->dim() == gateLayer_->dim()
 				&& inLayer_->dim() == outLayer_->dim(),
 			ComponentException("GatedConnection inLayer, gateLayer and outLayer "
 					"must have the same dimension"));
@@ -47,6 +47,12 @@ public:
 								out_frame() : 0));
 	}
 
+	virtual explicit operator string() const
+	{
+		return "[GatedConnection]";
+	}
+
+protected:
 	/*********** Subclasses should override following ***********/
 	virtual void gated_forward_impl(Tensor& inlayerOutval, Tensor& gateOutval,
 			// output param:
@@ -63,12 +69,6 @@ public:
 		gateOutgrad += outlayerIngrad * inlayerOutval;
 	}
 
-	virtual explicit operator string() const
-	{
-		return "[GatedConnection]";
-	}
-
-protected:
 	Layer::Ptr gateLayer;
 };
 
