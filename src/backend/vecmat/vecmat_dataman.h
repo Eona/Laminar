@@ -16,15 +16,15 @@ class VecmatDataManager :
 public:
 	typedef lmn::VecmatfPtr DataPtr;
 
-	VecmatDataManager(EngineBase::Ptr engine, int inputDim_, int batchSize_) :
+	VecmatDataManager(EngineBase::Ptr engine, int inputDim_, int targetDim_, int batchSize_) :
 		DataManager(engine),
-		dataDim(inputDim_), batchSize(batchSize_)
+		inputDim(inputDim_), targetDim(targetDim_), batchSize(batchSize_)
 	{}
 
 	void load_input(DataPtr write, bool is_initialized)
 	{
 		if (!is_initialized)
-			write->new_zeros(dataDim, batchSize);
+			write->new_zeros(inputDim, batchSize);
 
 		write->fill([&](int i, int j) {
 			return input_rand();
@@ -34,7 +34,7 @@ public:
 	void load_target(DataPtr write, bool is_initialized)
 	{
 		if (!is_initialized)
-			write->new_zeros(dataDim, batchSize);
+			write->new_zeros(targetDim, batchSize);
 
 		write->fill([&](int i, int j) {
 			return target_rand();
@@ -55,12 +55,12 @@ public:
 
 	Dimension input_dim() const
 	{
-		return { this->dataDim, this->batchSize };
+		return { this->inputDim, this->batchSize };
 	}
 
 	Dimension target_dim() const
 	{
-		return input_dim();
+		return { this->targetDim, this->batchSize };
 	}
 
 	int batch_size() const
@@ -74,7 +74,8 @@ public:
 	 */
 
 private:
-	int dataDim;
+	int inputDim;
+	int targetDim;
 	int batchSize;
 
 	FakeRand& input_rand = FakeRand::instance_input();

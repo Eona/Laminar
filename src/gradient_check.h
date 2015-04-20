@@ -133,6 +133,14 @@ inline void gradient_check(Network& net,
 
 		engine->flush_execute();
 
+		// Cast gauranteed to succeed because we've checked is_gradient_checkable<>
+		// in the enclosing if() block.
+		auto datamanGradCheck =
+				std::dynamic_pointer_cast<GradientCheckable<FloatT> >(dataman);
+
+		assert_throw_nullptr<LaminarException>(datamanGradCheck,
+				"DataManager type doesn't implement GradientCheckable<FloatT>");
+
 		// perturb each input tensor in sequence
 		for (int inp = 0; inp < historyLength; ++inp)
 		{
@@ -141,25 +149,26 @@ inline void gradient_check(Network& net,
 			DimIndexEnumerator idxEnumer(totalInputDim);
 			while (idxEnumer.has_next())
 			{
+
 				DimIndex perturbDimIdx = idxEnumer.next();
 
 				reset_net();
-				dataman->gradient_check_perturb(inp, perturbDimIdx, -perturb);
+				datamanGradCheck->gradient_check_perturb(inp, perturbDimIdx, -perturb);
 
 				net.execute("forward");
 
 				FloatT lossMinus = read_loss();
 
-				dataman->gradient_check_restore();
+				datamanGradCheck->gradient_check_restore();
 				reset_net();
 
-				dataman->gradient_check_perturb(inp, perturbDimIdx, +perturb);
+				datamanGradCheck->gradient_check_perturb(inp, perturbDimIdx, +perturb);
 
 				net.execute("forward");
 
 				FloatT lossPlus = read_loss();
 
-				dataman->gradient_check_restore();
+				datamanGradCheck->gradient_check_restore();
 
 				FloatT numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 

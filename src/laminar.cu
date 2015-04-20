@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 	Tensor t1(eng, {3, 4});
 	Tensor t2(eng, {4, 2});
 	Tensor tinput(eng);
-	auto vecData = DataManagerBase::make<VecmatDataManager>(eng, 8, 5);
+	auto vecData = DataManagerBase::make<VecmatDataManager>(eng, 8, 7, 5);
 	vecData->upload_input(tinput);
 	vecData->upload_target(tinput);
 
