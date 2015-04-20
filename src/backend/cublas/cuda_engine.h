@@ -11,7 +11,7 @@
 #include "../../rand_utils.h"
 #include <cuda.h>
 #include "cublas_v2.h"
-#include "cuda_float_mat.h"
+#include "../types/cuda_float_mat.h"
 #include "cuda_func.h"
 using namespace std;
 
