@@ -585,4 +585,19 @@ protected:
 	CreateFuncType command_create;
 };
 
+
+// Internal use
+struct ElementInspectionBase {};
+/**
+ * Get a specific element from the tensor matrix
+ * Implement this interface to have your engine work with gradient checking
+ */
+template<typename DataT, typename FloatT = float>
+struct ElementInspection : public ElementInspectionBase
+{
+	virtual ~ElementInspection() {}
+
+	virtual FloatT element_at(std::shared_ptr<DataT>, DimIndex) = 0;
+};
+
 #endif /* ENGINE_H_ */

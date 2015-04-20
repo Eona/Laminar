@@ -45,6 +45,6 @@ using namespace std;
 				"LaminarException should have been thrown, but no throwing detected."); \
 	}
 
-static constexpr const int DUMMY_DIM = 666;
+static constexpr const int DUMMY_DIM = 1;
 
 #endif /* TEST_H_ */

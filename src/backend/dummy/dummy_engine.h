@@ -14,9 +14,9 @@
 
 namespace lmn {
 
-namespace DummyImpl {
-
 typedef std::shared_ptr<float> FloatPtr;
+
+namespace DummyImpl {
 
 enum TensorT {
 	TENSOR = 0,
@@ -220,7 +220,9 @@ inline void debug_context_tmp(vector<FloatPtr> reads, FloatPtr write, bool is_in
 } // end of DummyImpl::
 } // end of lmn::
 
-class DummyEngine : public Engine<float>
+class DummyEngine :
+	public Engine<float>,
+	public ElementInspection<float, float>
 {
 public:
 	DummyEngine() :
@@ -266,6 +268,14 @@ public:
 
 		/*********** DEBUG ONLY ***********/
 		register_context_op<string, float, std::pair<char, int>>("debug_context_tmp", Impl::debug_context_tmp);
+	}
+
+	/**
+	 * Implements ElementInspection abstract interface
+	 */
+	float element_at(lmn::FloatPtr f, DimIndex)
+	{
+		return *f;
 	}
 };
 

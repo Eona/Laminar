@@ -9,10 +9,10 @@
 #include "../../utils/rand_utils.h"
 #include "../vecmat/vecmat_engine.h"
 
-class VecmatDataManager : public DataManager<lmn::VecmatImpl::Vecmatf>
+class VecmatDataManager : public DataManager<lmn::Vecmatf>
 {
 public:
-	typedef lmn::VecmatImpl::VecmatfPtr DataPtr;
+	typedef lmn::VecmatfPtr DataPtr;
 
 	VecmatDataManager(EngineBase::Ptr engine, int inputDim_, int batchSize_) :
 		DataManager(engine),

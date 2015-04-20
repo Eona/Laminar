@@ -14,10 +14,10 @@
 
 namespace lmn {
 
-namespace VecmatImpl {
-
 typedef Vecmat<float> Vecmatf;
 typedef std::shared_ptr<Vecmatf> VecmatfPtr;
+
+namespace VecmatImpl {
 
 enum TensorT {
 	TENSOR = 0,
@@ -287,7 +287,7 @@ inline void set_value(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initia
 	assert_throw(is_initialized,
 		EngineException("VecmatEngine: calling set_value on uninitialized write addr"));
 
-	(*write)(idx[0], idx[1]) = val;
+	write->at(idx) = val;
 }
 
 
@@ -324,7 +324,7 @@ inline void perturb(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initiali
 	assert_throw(is_initialized,
 		EngineException("VecmatEngine: calling perturb on uninitialized write addr"));
 
-	(*write)(idx[0], idx[1]) += eps;
+	write->at(idx) += eps;
 }
 
 
@@ -332,7 +332,9 @@ inline void perturb(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initiali
 } // end of lmn::
 
 
-class VecmatEngine : public Engine<lmn::VecmatImpl::Vecmatf>
+class VecmatEngine :
+	public Engine<lmn::Vecmatf>,
+	public ElementInspection<lmn::Vecmatf, float>
 {
 public:
 	VecmatEngine() :
@@ -375,6 +377,14 @@ public:
 		register_context_op<DimIndex, float>("perturb", Impl::perturb);
 		register_context_op<DimIndex, float>("set_value", Impl::set_value);
 		register_context_op<float>("scale", Impl::scale);
+	}
+
+	float element_at(lmn::VecmatfPtr vecmat, DimIndex idx)
+	{
+		assert_throw(!vecmat->is_empty(),
+			EngineException("VecmatEngine: element_at() called on null matrix"));
+
+		return vecmat->at(idx);
 	}
 };
 

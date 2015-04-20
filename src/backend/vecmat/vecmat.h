@@ -20,7 +20,7 @@ public:
 };
 
 
-template<typename FloatT>
+template<typename FloatT = float>
 class Vecmat
 {
 public:
@@ -128,6 +128,16 @@ public:
 	FloatT operator()(int row, int col) const
 	{
 		return mat[row][col];
+	}
+
+	FloatT& at(DimIndex idx)
+	{
+		return mat[idx[0]][idx[1]];
+	}
+
+	FloatT at(DimIndex idx) const
+	{
+		return mat[idx[0]][idx[1]];
 	}
 
 	int row() const
