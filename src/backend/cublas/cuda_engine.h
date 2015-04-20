@@ -16,51 +16,49 @@
 using namespace std;
 
 
-cublasHandle_t & cublasHandleInstance() {
-    static cublasHandle_t handle;
-    cublasCreate(&handle);
-    return handle;
-}
-
-
-
-namespace lmn {
-
-namespace CudaImpl {
-
-
-
-
-
-} // end of DummyImpl::
-} // end of lmn::
-
-
-
 class CudaEngine : public Engine<CudaFloatMat>
 {
 public:
-	enum TensorT {
-		TENSOR = 0,
-		SCALOR = 1
-	};
 
-//	struct tensor_op<TENSOR>
-//	{
-//		static constexpr const char *operand = "t";
-//	};
+	CudaEngine() :
+		Engine<CudaFloatMat>()
+	{
+	    cublasCreate(&handle);
+//		register_create(CudaEngine::create);
+//		register_opcode("t+t", CudaEngine::add);
+////		register_opcode("s+s", Impl::add<S>);
+//		register_opcode("t-t", CudaEngine::sub);
+////		register_opcode("s-s", sub);
+//		register_opcode("-t", CudaEngine::negate);
+////		register_opcode("-s", negate<S>);
+//		register_opcode("t*t", CudaEngine::mult);
+////		register_opcode("t*s", mult<T, S>);
+////		register_opcode("s*t", mult<S, T>);
+////		register_opcode("s*s", mult<S, S>);
+//		register_opcode("t=t", CudaEngine::assign);
+////		register_opcode("s=s", assign<S>);
+//
+//		register_opcode("scale", CudaEngine::scale);
+//		register_opcode("sin", CudaEngine::sin);
+//		register_opcode("cos", CudaEngine::cos);
+//		register_opcode("tanh", CudaEngine::tanh);
+//		register_opcode("tanh_gradient", CudaEngine::tanh_gradient);
+//		register_opcode("sigmoid", CudaEngine::sigmoid);
+//		register_opcode("sigmoid_gradient", CudaEngine::sigmoid_gradient);
+//		register_opcode("transpose", CudaEngine::transpose);
+//		register_opcode("element_mult", CudaEngine::element_mult);
+//		register_opcode("square_loss", CudaEngine::square_loss);
+//
+//		register_opcode("destroy", CudaEngine::destroy);
+//		register_opcode("fill_rand", CudaEngine::fill_rand);
+//
+//		/*********** DEBUG ONLY ***********/
+//		register_opcode("debug_fill", CudaEngine::debug_fill);
+	}
 
-//	struct tensor_op<SCALOR>
-//	{
-//		static constexpr const char *operand = "s";
-//	};
 
 	typedef std::shared_ptr<CudaFloatMat> CudaFloatMatPtr;
 	typedef std::shared_ptr<float> FloatPtr;
-
-//	struct tensor_op {};
-
-
 
 	void create(CudaFloatMatPtr write, vector<int> dim)
 	{
@@ -72,7 +70,6 @@ public:
 	{
 		DEBUG_MSG(("CudaImpl::" + msg + " ->init=") << std::boolalpha << is_initialized);
 	}
-
 
 	/*
 	 * write = alpha * Op(reads[0]) + beta * Op(reads[1])
@@ -86,7 +83,7 @@ public:
 	        *write = CudaFloatMat(m, n); //initialize LHS if not already
 	    }
 
-	    cublasSgeam(cublasHandleInstance(),
+	    cublasSgeam(handle,
 	                reads[0]->getOp(), reads[1]->getOp(),
 	                m, n,
 	                &alpha, reads[0]->device_data, reads[0]->LDIM,
@@ -112,7 +109,7 @@ public:
 
 	    //C = a Op(A)* Op(B) + b C  -- A [mxn] B [nxk] C[mxk]
 	    //handle, A_len, x, incx, y, incy
-	    cublasSgemm(cublasHandleInstance(),
+	    cublasSgemm(handle,
 	                reads[0]->getOp(opA), reads[1]->getOp(opB),
 	                m, n, k,
 	                &alpha, reads[0]->device_data, reads[0]->LDIM,
@@ -132,7 +129,7 @@ public:
 	    }
 	    //y = x
 	    //handle, x_len, x, incx, y, incy
-	    cublasScopy(cublasHandleInstance(), reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);
+	    cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);
 	}
 
 
@@ -151,7 +148,7 @@ public:
 	    addMat(reads, write, is_initialized, alpha, -alpha);
 	}
 
-	void negate_(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
+	void negate(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 	    debug_msg("c=-a", is_initialized);
 	    //y = x
@@ -159,7 +156,7 @@ public:
 
 	    //y = -y
 	    const float alpha = -1.0f;
-	    cublasSscal(cublasHandleInstance(), write->LEN, &alpha, write->device_data, 1);
+	    cublasSscal(handle, write->LEN, &alpha, write->device_data, 1);
 
 	}
 
@@ -182,7 +179,7 @@ public:
 	    //y = x
 	    assignMat(reads, write, is_initialized);
 	    //y = ay
-	    cublasSscal(cublasHandleInstance(), write->LEN, scaler, write->device_data, 1);
+	    cublasSscal(handle, write->LEN, scaler, write->device_data, 1);
 	}
 
 	inline void destroy(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
@@ -204,7 +201,7 @@ public:
 	#define MATOP(device_func) {\
 			if (!is_initialized) {\
 				*write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
-			    cublasScopy(cublasHandleInstance(), reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);\
+			    cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);\
 			}\
 			op_func_t h_func;\
 			cudaMemcpyFromSymbol( &h_func, device_func, sizeof( op_func_t ) );\
@@ -218,7 +215,7 @@ public:
 	#define MATOP_DUAL(device_func) {\
 			if (!is_initialized) {\
 				*write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
-			    cublasScopy(cublasHandleInstance(), reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);\
+			    cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);\
 			}\
 			op_func_dual_t h_func;\
 			cudaMemcpyFromSymbol( &h_func, device_func, sizeof( op_func_t ) );\
@@ -277,7 +274,7 @@ public:
 	{
 		debug_msg("square_loss", is_initialized);
 		CudaFloatMat aux(reads[0]->DIM_ROW, reads[0]->DIM_COL);
-		cublasScopy(cublasHandleInstance(), reads[0]->LEN, reads[0]->device_data, 1, aux.device_data, 1);
+		cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, aux.device_data, 1);
 		op_func_dual_t h_func;
 		cudaMemcpyFromSymbol( &h_func, cu_square_loss_func, sizeof( op_func_t ) );
 		mat_op_kernel<<<aux.GRID_DIM, aux.BLOCK_DIM>>>( aux.device_data,
@@ -286,7 +283,7 @@ public:
 														aux.LEN,
 														h_func );
 
-	    cublasSasum(cublasHandleInstance(), aux.LEN, aux.device_data, 1, write);
+	    cublasSasum(handle, aux.LEN, aux.device_data, 1, write);
 	}
 
 	// FIXME add contextual rand engine
@@ -305,46 +302,9 @@ public:
 		write->fill(0.66337);
 	}
 
+private:
+	cublasHandle_t handle;
 
-
-
-	CudaEngine() :
-		Engine<CudaFloatMat>()
-	{
-//		namespace Impl = lmn::CudaImpl;
-//		const int T = Impl::TENSOR;
-//		const int S = Impl::SCALOR;
-//		register_create(Impl::create);
-//		register_opcode("t+t", Impl::add<T>);
-//		register_opcode("s+s", Impl::add<S>);
-//		register_opcode("t-t", Impl::sub<T>);
-//		register_opcode("s-s", Impl::sub<S>);
-//		register_opcode("-t", Impl::negate<T>);
-//		register_opcode("-s", Impl::negate<S>);
-//		register_opcode("t*t", Impl::mult<T, T>);
-//		register_opcode("t*s", Impl::mult<T, S>);
-//		register_opcode("s*t", Impl::mult<S, T>);
-//		register_opcode("s*s", Impl::mult<S, S>);
-//		register_opcode("t=t", Impl::assign<T>);
-//		register_opcode("s=s", Impl::assign<S>);
-
-//		register_opcode("scale", Impl::scale);
-//		register_opcode("sin", Impl::sin);
-//		register_opcode("cos", Impl::cos);
-//		register_opcode("tanh", Impl::tanh);
-//		register_opcode("tanh_gradient", Impl::tanh_gradient);
-//		register_opcode("sigmoid", Impl::sigmoid);
-//		register_opcode("sigmoid_gradient", Impl::sigmoid_gradient);
-//		register_opcode("transpose", Impl::transpose);
-//		register_opcode("element_mult", Impl::element_mult);
-//		register_opcode("square_loss", Impl::square_loss);
-//
-//		register_opcode("destroy", Impl::destroy);
-//		register_opcode("fill_rand", Impl::fill_rand);
-//
-//		/*********** DEBUG ONLY ***********/
-//		register_opcode("debug_fill", Impl::debug_fill);
-	}
 };
 
 #endif /* CUDA_ENGINE_H_ */

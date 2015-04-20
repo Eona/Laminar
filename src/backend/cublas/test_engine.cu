@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 	ce.sub(v, out, true);
 	out->print_matrix("m1 - m2");
 
-	ce.negate_(v, out, true);
+	ce.negate(v, out, true);
 	out->print_matrix("-m1");
 
 	ce.mult(v, out, true);
