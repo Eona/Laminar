@@ -263,7 +263,7 @@ inline void square_loss(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_init
 	Vecmatf& rmat2 = *reads[1];
 	Vecmatf& wmat = *write;
 
-	rmat1.assert_same_dim(rmat2, "square_loess reads[0] VS reads[1] addr");
+	rmat1.assert_same_dim(rmat2, "square_loss reads[0] VS reads[1] addr");
 
 	wmat(0, 0) = 0;
 	for (int r = 0; r < rmat1.row(); ++r)

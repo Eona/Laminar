@@ -150,6 +150,12 @@ public:
 		return mat[0].size();
 	}
 
+	Dimension dim() const
+	{
+		return is_empty() ? Dimension{} :
+				Dimension{ row(), col() };
+	}
+
 	bool is_initialized() const
 	{
 		return row() != 0 && col() != 0;
@@ -245,9 +251,12 @@ public:
 
 	void assert_same_dim(const Vecmat& other, string msg)
 	{
-		assert_throw<VecmatException>(this->row() == other.row()
+		ASSERT_THROW(this->row() == other.row()
 			&& this->col() == other.col(),
-			msg + " dimension mismatch");
+
+			VecmatException(msg + " dimension mismatch\n"
+			+ container2str(this->dim()) + " <-> "
+			+ container2str(other.dim())));
 	}
 
 private:

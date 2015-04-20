@@ -69,6 +69,16 @@ assert_throw(bool cond, string errmsg = "")
 }
 
 /**
+ * Macro equivalent to delay errmsg evaluation
+ */
+#define ASSERT_THROW(cond, exc) \
+	{if (!(cond)) \
+	{ \
+		std::cerr << __FILE__ << " @ line " << __LINE__ << " assertion failure\n"; \
+		throw exc; \
+	}}
+
+/**
  * Throw exception if the shared pointer is null
  * @param shared pointer
  * @param throwable
@@ -80,6 +90,16 @@ assert_throw_nullptr(const std::shared_ptr<T>& ptr, string errmsg)
 	if (ptr == nullptr)
 		throw ExceptionT(errmsg);
 }
+
+/**
+ * Macro equivalent to delay errmsg evaluation
+ */
+#define ASSERT_THROW_NULLPTR(ptr, exc) \
+	{if (ptr == nullptr) \
+	{ \
+		std::cerr << __FILE__ << " @ line " << __LINE__ << " nullptr error\n"; \
+		throw exc; \
+	}}
 
 template<typename FloatT = float>
 void assert_float_eq(FloatT f1, FloatT f2, FloatT tol = 1e-4f,
