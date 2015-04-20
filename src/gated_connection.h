@@ -58,15 +58,15 @@ protected:
 			// output param:
 			Tensor& outlayerInval)
 	{
-		outlayerInval += gateOutval * inlayerOutval;
+		outlayerInval += lmn::element_mult(gateOutval, inlayerOutval);
 	}
 
 	virtual void gated_backward_impl(Tensor& outlayerIngrad, Tensor& inlayerOutval, Tensor& gateOutval,
 			// write to output params:
 			Tensor& inlayerOutgrad, Tensor& gateOutgrad)
 	{
-		inlayerOutgrad += gateOutval * outlayerIngrad;
-		gateOutgrad += outlayerIngrad * inlayerOutval;
+		inlayerOutgrad += lmn::element_mult(gateOutval, outlayerIngrad);
+		gateOutgrad += lmn::element_mult(outlayerIngrad, inlayerOutval);
 	}
 
 	Layer::Ptr gateLayer;
