@@ -45,9 +45,6 @@ inline void gradient_check(Network& net,
 	{
 		net.execute("zero_clear");
 		dataman->start_new_epoch();
-		// forward loads input, backward loads target,
-		// but backward isn't called here, so we manually load_target
-		net.execute("load_target");
 	};
 
 	// helper

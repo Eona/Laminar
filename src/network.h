@@ -191,24 +191,21 @@ protected:
 	}
 
 	/**
-	 * Request DataManager to fill in input
+	 * Request DataManager to fill in input and target
 	 */
 	void forward()
 	{
 		check_initialized("forward");
 		load_input();
+		load_target();
 		forward_impl();
 	}
 
 	virtual void forward_impl() = 0;
 
-	/**
-	 * Request DataManager to fill in target
-	 */
 	void backward()
 	{
 		check_initialized("backward");
-		load_target();
 		backward_impl();
 	}
 
