@@ -50,6 +50,14 @@ inline void gradient_check(Network& net,
 		net.execute("load_target");
 	};
 
+	// helper
+	// loss "tensor" is always a 1x1 Scalor
+	auto read_loss = [&]() -> FloatT
+	{
+		return engine->element_at(
+			engine->read_memory(net.lossLayer->total_loss()), {0, 0});
+	};
+
 	vector<Tensor::Ptr> analyticGrads;
 	for (ParamContainer::Ptr container : net.paramContainers)
 	{
@@ -83,9 +91,7 @@ inline void gradient_check(Network& net,
 
 				net.execute("forward");
 
-				// loss "tensor" is always a 1x1 Scalor
-				FloatT lossMinus = engine->element_at(
-						engine->read_memory(net.lossLayer->total_loss()), {0, 0});
+				FloatT lossMinus = read_loss();
 
 				param->gradient_check_restore();
 				reset_net();
@@ -95,8 +101,7 @@ inline void gradient_check(Network& net,
 
 				net.execute("forward");
 
-				FloatT lossPlus = engine->element_at(
-						engine->read_memory(net.lossLayer->total_loss()), {0, 0});
+				FloatT lossPlus = read_loss();
 
 				param->gradient_check_restore();
 				engine->flush_execute();
@@ -128,34 +133,42 @@ inline void gradient_check(Network& net,
 
 		engine->flush_execute();
 
-		// perturb each input in sequence
+		// perturb each input tensor in sequence
 		for (int inp = 0; inp < historyLength; ++inp)
 		{
-			reset_net();
-			dataman->gradient_check_perturb(inp, {}, -perturb);
+			// step through every element entry in the input tensor
+			Dimension totalInputDim = dataman->input_dim();
+			DimIndexEnumerator idxEnumer(totalInputDim);
+			while (idxEnumer.has_next())
+			{
+				DimIndex perturbDimIdx = idxEnumer.next();
 
-			net.execute("forward");
+				reset_net();
+				dataman->gradient_check_perturb(inp, perturbDimIdx, -perturb);
 
-			FloatT lossMinus = *engine->read_memory(net.lossLayer->total_loss());
+				net.execute("forward");
 
-			dataman->gradient_check_restore();
-			reset_net();
+				FloatT lossMinus = read_loss();
 
-			dataman->gradient_check_perturb(inp, {}, +perturb);
+				dataman->gradient_check_restore();
+				reset_net();
 
-			net.execute("forward");
+				dataman->gradient_check_perturb(inp, perturbDimIdx, +perturb);
 
-			FloatT lossPlus = *engine->read_memory(net.lossLayer->total_loss());
+				net.execute("forward");
 
-			dataman->gradient_check_restore();
+				FloatT lossPlus = read_loss();
 
-			FloatT numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
+				dataman->gradient_check_restore();
 
-			FloatT analyticGrad = *engine->read_memory(analyticGrads[inp]);
+				FloatT numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 
-			assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
-					"input analytic != numeric", "input gradcheck pass");
+				FloatT analyticGrad = engine->element_at(
+						engine->read_memory(analyticGrads[inp]), perturbDimIdx);
 
+				assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
+						"input analytic != numeric", "input gradcheck pass");
+			}
 		}
 		reset_net();
 	} // endif is_gradient_checkable<DataManager>
