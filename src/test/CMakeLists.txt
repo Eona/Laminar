@@ -2,8 +2,9 @@ message("Folder test/ for gtest template")
 include(eona_gtest)
 
 set(TEST_SUITE 
-    forward_dummy_test rnn_dummy_test
-    forward_vecmat_test
+#    forward_dummy_test rnn_dummy_test
+#    forward_vecmat_test 
+    rnn_vecmat_test
 #   cuda_test
 #    misc_test
     )
