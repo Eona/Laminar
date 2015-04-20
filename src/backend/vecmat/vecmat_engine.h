@@ -10,7 +10,7 @@
 #include "../../engine/tensor_ops.h"
 #include "../vecmat/vecmat.h"
 
-#define VECTORMAT_DEBUG true
+#define VECTORMAT_DEBUG false
 
 namespace lmn {
 
@@ -61,7 +61,11 @@ void add(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
 	debug_msg(op + "+" + op, is_initialized);
 
 	if (!is_initialized)
-		write->new_zeros(reads[0]);
+		// WARNING in unoptimized version, x += a translates to
+		// x = x + a, where reads[0] == write == x and reads[1] == a
+		// if x is null created (as often in layer gradient += ops)
+		// reads[0] will be empty. So here 'write' should be initialized with reads[1] size.
+ 		write->new_zeros(reads[1]);
 
 	*write = *reads[0] + *reads[1];
 }
@@ -261,6 +265,7 @@ inline void square_loss(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_init
 
 	rmat1.assert_same_dim(rmat2, "square_loess reads[0] VS reads[1] addr");
 
+	wmat(0, 0) = 0;
 	for (int r = 0; r < rmat1.row(); ++r)
 		for (int c = 0; c < rmat1.col(); ++c)
 		{
@@ -273,10 +278,12 @@ inline void zero_clear(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initi
 {
 	debug_msg("zero_clear", is_initialized);
 
-	assert_throw<EngineException>(is_initialized,
-		"VecmatEngine: calling zero_clear on uninitialized write addr");
+	// FIXME loss layer output might be zero cleared without being initialized
+//	assert_throw<EngineException>(is_initialized,
+//		"VecmatEngine: calling zero_clear on uninitialized write addr");
 
-	write->zero_clear();
+	if (is_initialized)
+		write->zero_clear();
 }
 
 inline void set_value(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized,
