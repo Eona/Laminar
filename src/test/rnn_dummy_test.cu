@@ -456,7 +456,7 @@ TEST(Composite, LSTM)
 
 	net.add_layer(inLayer);
 
-	auto lstmComposite = Composite<RecurrentNetwork>::make<LstmComposite>(inLayer);
+	auto lstmComposite = Composite<RecurrentNetwork>::make<LstmComposite>(inLayer, DUMMY_DIM);
 	// or you can add the object directly:
 	// auto lstmCompositeObject = Composite<RecurrentNetwork>::create<LstmComposite>(inLayer);
 

@@ -9,40 +9,50 @@ FakeRand& rand_prehis = FakeRand::instance_prehistory();
 FakeRand& rand_input = FakeRand::instance_input();
 FakeRand& rand_target = FakeRand::instance_target();
 
-TEST(RecurrentNet, Simple)
+TEST(VecmatRecurrentNet, Simple)
 {
 	rand_conn.set_rand_seq(vector<float> {
-		0.543, 0.44, 1.47, 1.64, 1.31, -0.616
+		1.15, 0.549, -0.751, 0.575, 1.41, -0.39, 1.1, -1.18, -0.84, 1.5,
+		0.0886, -1.22, 0.575, 1.42, 0.89, 0.546, -0.857, -0.734, 0.972,
+		0.294, -1.1, 0.739, 1.33, -0.638, -0.969, 0.454, 1.23, 0.228,
+		-0.68, 1.04, -0.745, -0.17, 0.877, -0.778, -0.0865, 0.664, 0.513,
+		0.105, 0.0317, 1.38, 0.741, -0.894, 0.595, 0.414, 1.03, 0.961,
+		-1.13, 1.41, 0.752, -0.0889
 	});
-	rand_conn.gen_uniform_rand(100, -.5, .5);
+//	rand_conn.gen_uniform_rand(50, -1.5, 1.5);
 //	rand_conn.print_rand_seq();
 
 	rand_prehis.set_rand_seq(vector<float> {
-		.7
+		-0.0998, -0.0139, 0.109, 0.402, 0.417, -0.352, -0.069, -0.347, 0.329, -0.35,
+		0.294, 0.22, -0.479, -0.165, 0.425, 0.206, 0.3, 0.0826, -0.13,
+		-0.486, 0.339, -0.497, 0.317, 0.327, -0.229, -0.187, -0.00966, -0.338
 	});
-	rand_prehis.gen_uniform_rand(100, -.5, .5);
+//	rand_prehis.gen_uniform_rand(30, -.5, .5);
 //	rand_prehis.print_rand_seq();
 
 	rand_input.set_rand_seq(vector<float> {
-		0.276, 2.54, 2.27, 2.81, -0.0979, 0.205
+		0.397, 0.572, 0.99, -0.131, -0.45, -0.322, -0.115, 0.448, 0.705, -0.799,
+		-0.583, -0.527, 0.206, 0.963, 0.0171, -0.661, -0.367, 0.967, -0.0181,
+		0.144, -0.0365, 0.942, -0.0321, 0.106, -0.541, -0.701, 0.0964, 0.951, 0.213, -0.00518
 	});
-	rand_input.gen_uniform_rand(100, -1, 1);
+//	rand_input.gen_uniform_rand(30, -1, 1);
 //	rand_input.print_rand_seq();
 
 	rand_target.set_rand_seq(vector<float> {
-		0.457, -0.516, -0.312, 0.126
+		-0.998, -0.559, -0.00601, 0.953, 0.703, -0.456, 0.221, 0.488, 0.131, 0.48,
+		0.701, 0.0961, -0.596, 0.701, 0.633, -0.707, 0.984, 0.33, 0.582, -0.411
 	});
-	rand_target.gen_uniform_rand(100, -1, 1);
+//	rand_target.gen_uniform_rand(20, -1, 1);
 //	rand_target.print_rand_seq();
 
 	const int HISTORY = 5;
 	const int INPUT_DIM = 3;
-	const int TARGET_DIM = 6;
-	const int BATCH = 10;
+	const int TARGET_DIM = 2;
+	const int BATCH = 2;
 
 	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
-	auto l2 = Layer::make<SigmoidLayer>(7);
-	auto l3 = Layer::make<SigmoidLayer>(4);
+	auto l2 = Layer::make<SigmoidLayer>(2);
+	auto l3 = Layer::make<SigmoidLayer>(3);
 	auto l4 = Layer::make<SquareLossLayer>(TARGET_DIM);
 
 	// Naming: c<in><out>_<skip>
@@ -77,95 +87,106 @@ TEST(RecurrentNet, Simple)
 	gradient_check<VecmatEngine, VecmatDataManager, float>(net, 1e-2, 1);
 }
 
-//TEST(RecurrentNet, TemporalSkip)
-//{
-//	rand_conn.set_rand_seq(vector<float> {
-//		0.91, 1.329, -0.525, 1.724, 1.613, -0.864, 0.543, 0.59, -0.819, -0.938
-//	});
-//
-//	rand_prehis.set_rand_seq(vector<float> {
-//		.3
-//	});
-//
-////	rand_conn.gen_uniform_rand(10, -1, 2);
-////	rand_conn.print_rand_seq();
-//
-//	vector<float> inputSeq { 1.2, -0.9, 0.57, -1.47, -3.08, 1.2, .31, -2.33, -0.89 };
-//	vector<float> targetSeq { 1.39, 0.75, -0.45, -0.11, 1.55, -.44, 2.39, 1.72, -3.06 };
-//
-//	rand_input.set_rand_seq(inputSeq);
-//	rand_target.set_rand_seq(targetSeq);
-//
-//	auto l1 = Layer::make<ConstantLayer>(DUMMY_DIM);
-//	auto l2 = Layer::make<SigmoidLayer>(DUMMY_DIM);
-//	auto l3 = Layer::make<CosineLayer>(DUMMY_DIM);
-//	auto l4 = Layer::make<SquareLossLayer>(DUMMY_DIM);
-//
-//	// NOTE IMPORTANT RULE
-//	// For recurrent linear connection conn[layer(alpha) => layer(beta)]
-//	// Must be added before you add layer(beta). alpha doesn't matter
-//
-//	// Naming: c<in><out>_<skip>
-//	auto c12 = conn_full(l1, l2);
-//	auto c23 = conn_full(l2, l3);
-//	auto c34 = conn_full(l3, l4);
-//
-//	auto c22_1 = conn_full(l2, l2);
-//	auto c22_3 = conn_full(l2, l2);
-//	auto c23_1 = conn_full(l2, l3);
-//	auto c23_2 = conn_full(l2, l3);
-//	auto c32_3 = conn_full(l3, l2);
-//	auto c33_1 = conn_full(l3, l3);
-//	auto c33_2 = conn_full(l3, l3);
-//
-//	auto dummyEng = EngineBase::make<DummyEngine>();
-//	auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
-//
-//	RecurrentNetwork net(dummyEng, dummyData, inputSeq.size());
-//	net.init_max_temporal_skip(3); // or Layer::UNLIMITED_TEMPORAL_SKIP
-//
-//	net.add_layer(l1);
-//
-//	net.add_connection(c12);
-//	net.add_recurrent_connection(c22_1);
-//	net.add_recurrent_connection(c22_3, 3);
-//	net.add_recurrent_connection(c32_3, 3);
-//
-//	net.add_layer(l2);
-//
-//	net.add_connection(c23);
-//	net.add_recurrent_connection(c23_1);
-//	net.add_recurrent_connection(c23_2, 2);
-//	net.add_recurrent_connection(c33_1);
-//	net.add_recurrent_connection(c33_2, 2);
-//
-//	net.add_layer(l3);
-//	net.add_connection(c34);
-//	net.add_layer(l4);
-//
-///*	net.add_layer(l1);
-//
-//	net.new_recurrent_connection<FullConnection>(l2, l2);
-//	net.new_recurrent_skip_connection<FullConnection>(3, l2, l2);
-//	net.new_recurrent_skip_connection<FullConnection>(3, l3, l2);
-//	net.new_connection<FullConnection>(l1, l2);
-//
-//	net.add_layer(l2);
-//
-//	net.new_connection<FullConnection>(l2, l3);
-//	net.new_recurrent_skip_connection<FullConnection>(2, l2, l3);
-//	net.new_recurrent_connection<FullConnection>(l2, l3);
-//	net.new_recurrent_connection<FullConnection>(l3, l3);
-//	net.new_recurrent_skip_connection<FullConnection>(2, l3, l3);
-//
-//	net.add_layer(l3);
-//	net.new_connection<FullConnection>(l3, l4);
-//	net.add_layer(l4);*/
-//
-//	gradient_check<DummyEngine, DummyDataManager, float>(net, 1e-2, 1);
-//}
-//
-//TEST(RecurrentNet, GatedConnection)
+TEST(VecmatRecurrentNet, TemporalSkip)
+{
+	rand_conn.set_rand_seq(vector<float> {
+		-0.0246, 0.134, 0.396, 0.424, 0.441, 1.01, 0.381, 0.926, -0.391, -0.0287,
+		1.39, 1.47, 1.4, -0.257, 0.294, 0.159, -1.18, 1.49, 0.342,
+		-0.201, -0.759, 0.0732, 0.529, -0.133, 0.0745, 1.12, 1.01, 1.13,
+		-1.36, 0.374, 0.745, -0.817, -0.46, 0.0725, 0.834, 0.507, 0.304,
+		1.33, -1.43, 1.37, 0.781, -0.233, 0.0268, 0.27, 1.02, -1,
+		1.02, -0.606, 0.931, 1.25, -1.34, -0.702, -0.583, -0.404, 0.414,
+		-0.943, -0.0178, 0.796, 0.222, 0.879, -0.206, 1.25, 0.628, 1.19,
+		-1.2, -0.246, -0.928, 0.705, 0.783, 0.836, 1.37, 0.882, 1.41,
+		-1.11, -0.0715, -1.19, 1.49, -1.41, 1.18, 0.866, -0.929, 0.00423,
+		-0.859, 0.351, 0.577, -1.25, -1.09, -1.39, 0.579, 1.39
+	});
+//	rand_conn.gen_uniform_rand(90, -1.5, 1.5);
+//	rand_conn.print_rand_seq();
+
+	rand_prehis.set_rand_seq(vector<float> {
+		-0.467, 0.436, -0.0718, -0.247, 0.141, -0.0445, -0.255, 0.336, -0.256, -0.277,
+		0.414, 0.418, -0.421, 0.196, 0.382, -0.00522, 0.203, -0.257, 0.0887,
+		0.338, 0.31, -0.197, 0.433, 0.405, 0.157, -0.296, -0.304, -0.32, 0.328, -0.259
+	});
+//	rand_prehis.gen_uniform_rand(30, -.5, .5);
+//	rand_prehis.print_rand_seq();
+
+	rand_input.set_rand_seq(vector<float> {
+		-0.557, -0.218, 0.567, -0.806, 0.86, -0.942, -0.678, 0.0253, -0.35, -0.749,
+		-0.0705, -0.179, 0.674, 0.974, -0.0647, 0.717, -0.167, 0.585, -0.888, 0.874
+	});
+//	rand_input.gen_uniform_rand(20, -1, 1);
+//	rand_input.print_rand_seq();
+
+	rand_target.set_rand_seq(vector<float> {
+		-0.323, 0.236, 0.143, 0.999, 0.469, -0.939, -0.232, -0.635, -0.105, 0.83,
+		-0.892, 0.293, -0.786, 0.542, 0.224, 0.634, 0.515, 0.73, -0.293,
+		-0.811, -0.891, -0.0717, -0.881, -0.24, -0.359, -0.401, 0.0343, -0.262,
+		-0.963, -0.13, -0.282, -0.133, -0.728, 0.42, -0.046, -0.34, 0.536, 0.988, -0.282, 0.893
+	});
+//	rand_target.gen_uniform_rand(40, -1, 1);
+//	rand_target.print_rand_seq();
+
+	const int HISTORY = 5;
+	const int INPUT_DIM = 2;
+	const int TARGET_DIM = 4;
+	const int BATCH = 2;
+
+	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
+	auto l2 = Layer::make<SigmoidLayer>(3);
+	auto l3 = Layer::make<CosineLayer>(2);
+	auto l4 = Layer::make<SquareLossLayer>(TARGET_DIM);
+
+	// NOTE IMPORTANT RULE
+	// For recurrent linear connection conn[layer(alpha) => layer(beta)]
+	// Must be added before you add layer(beta). alpha doesn't matter
+
+	// Naming: c<in><out>_<skip>
+	auto c12 = conn_full(l1, l2);
+	auto c23 = conn_full(l2, l3);
+	auto c34 = conn_full(l3, l4);
+
+	auto c22_1 = conn_full(l2, l2);
+	auto c22_3 = conn_full(l2, l2);
+	auto c23_1 = conn_full(l2, l3);
+	auto c23_2 = conn_full(l2, l3);
+	auto c32_3 = conn_full(l3, l2);
+	auto c33_1 = conn_full(l3, l3);
+	auto c33_2 = conn_full(l3, l3);
+
+	auto engine = EngineBase::make<VecmatEngine>();
+	auto dataman = DataManagerBase::make<VecmatDataManager>(
+			engine, INPUT_DIM, TARGET_DIM, BATCH);
+
+	RecurrentNetwork net(engine, dataman, HISTORY);
+
+	net.init_max_temporal_skip(3); // or Layer::UNLIMITED_TEMPORAL_SKIP
+
+	net.add_layer(l1);
+
+	net.add_connection(c12);
+	net.add_recurrent_connection(c22_1);
+	net.add_recurrent_connection(c22_3, 3);
+	net.add_recurrent_connection(c32_3, 3);
+
+	net.add_layer(l2);
+
+	net.add_connection(c23);
+	net.add_recurrent_connection(c23_1);
+	net.add_recurrent_connection(c23_2, 2);
+	net.add_recurrent_connection(c33_1);
+	net.add_recurrent_connection(c33_2, 2);
+
+	net.add_layer(l3);
+	net.add_connection(c34);
+	net.add_layer(l4);
+
+	gradient_check<VecmatEngine, VecmatDataManager, float>(net, 1e-2, 1);
+}
+
+// FIXME Vecmat
+//TEST(DummyRecurrentNet, GatedConnection)
 //{
 //	rand_conn.set_rand_seq(vector<float> {
 //			0.163, 1.96, 1.09, 0.516, -0.585, 0.776, 1, -0.301, -0.167, 0.732
@@ -221,28 +242,60 @@ TEST(RecurrentNet, Simple)
 //
 //	gradient_check<DummyEngine, DummyDataManager>(net, 1e-2f, 1.f);
 //}
-//
-//
-//TEST(RecurrentNet, GatedTanhConnection)
+
+
+//TEST(VecmatRecurrentNet, GatedTanhConnection)
 //{
 //	rand_conn.set_rand_seq(vector<float> {
-//			.798, 0.617
+//		-0.0246, 0.134, 0.396, 0.424, 0.441, 1.01, 0.381, 0.926, -0.391, -0.0287,
+//		1.39, 1.47, 1.4, -0.257, 0.294, 0.159, -1.18, 1.49, 0.342,
+//		-0.201, -0.759, 0.0732, 0.529, -0.133, 0.0745, 1.12, 1.01, 1.13,
+//		-1.36, 0.374, 0.745, -0.817, -0.46, 0.0725, 0.834, 0.507, 0.304,
+//		1.33, -1.43, 1.37, 0.781, -0.233, 0.0268, 0.27, 1.02, -1,
+//		1.02, -0.606, 0.931, 1.25, -1.34, -0.702, -0.583, -0.404, 0.414,
+//		-0.943, -0.0178, 0.796, 0.222, 0.879, -0.206, 1.25, 0.628, 1.19,
+//		-1.2, -0.246, -0.928, 0.705, 0.783, 0.836, 1.37, 0.882, 1.41,
+//		-1.11, -0.0715, -1.19, 1.49, -1.41, 1.18, 0.866, -0.929, 0.00423,
+//		-0.859, 0.351, 0.577, -1.25, -1.09, -1.39, 0.579, 1.39
 //	});
+////	rand_conn.gen_uniform_rand(90, -1.5, 1.5);
+////	rand_conn.print_rand_seq();
 //
 //	rand_prehis.set_rand_seq(vector<float> {
-//		.3
+//		-0.467, 0.436, -0.0718, -0.247, 0.141, -0.0445, -0.255, 0.336, -0.256, -0.277,
+//		0.414, 0.418, -0.421, 0.196, 0.382, -0.00522, 0.203, -0.257, 0.0887,
+//		0.338, 0.31, -0.197, 0.433, 0.405, 0.157, -0.296, -0.304, -0.32, 0.328, -0.259
 //	});
+////	rand_prehis.gen_uniform_rand(30, -.5, .5);
+////	rand_prehis.print_rand_seq();
 //
-//	vector<float> inputSeq { 1.2, -0.9, 0.57, -1.47, -3.08 };
-//	vector<float> targetSeq { 1.39, 0.75, -0.45, -0.11, 1.55 };
+//	rand_input.set_rand_seq(vector<float> {
+//		-0.557, -0.218, 0.567, -0.806, 0.86, -0.942, -0.678, 0.0253, -0.35, -0.749,
+//		-0.0705, -0.179, 0.674, 0.974, -0.0647, 0.717, -0.167, 0.585, -0.888, 0.874
+//	});
+////	rand_input.gen_uniform_rand(20, -1, 1);
+////	rand_input.print_rand_seq();
 //
-//	rand_input.set_rand_seq(inputSeq);
-//	rand_target.set_rand_seq(targetSeq);
+//	rand_target.set_rand_seq(vector<float> {
+//		-0.323, 0.236, 0.143, 0.999, 0.469, -0.939, -0.232, -0.635, -0.105, 0.83,
+//		-0.892, 0.293, -0.786, 0.542, 0.224, 0.634, 0.515, 0.73, -0.293,
+//		-0.811, -0.891, -0.0717, -0.881, -0.24, -0.359, -0.401, 0.0343, -0.262,
+//		-0.963, -0.13, -0.282, -0.133, -0.728, 0.42, -0.046, -0.34, 0.536, 0.988, -0.282, 0.893
+//	});
+////	rand_target.gen_uniform_rand(40, -1, 1);
+////	rand_target.print_rand_seq();
 //
-//	auto l1 = Layer::make<ConstantLayer>(DUMMY_DIM);
-//	auto l2 = Layer::make<ScalorLayer>(DUMMY_DIM, 1.3f);
-//	auto l3 = Layer::make<CosineLayer>(DUMMY_DIM); // gate
-//	auto l4 = Layer::make<SquareLossLayer>(DUMMY_DIM);
+//	const int HISTORY = 5;
+//	const int INPUT_DIM = 2;
+//	const int TARGET_DIM = 4;
+//	const int BATCH = 2;
+//
+//	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
+//
+//	// NOTE layers engaged in a gate must have the same dims
+//	auto l2 = Layer::make<ScalorLayer>(TARGET_DIM, 1.3f);
+//	auto l3 = Layer::make<CosineLayer>(TARGET_DIM); // gate
+//	auto l4 = Layer::make<SquareLossLayer>(TARGET_DIM);
 //
 //	auto c12 = conn_full(l1, l2);
 //	auto c13 = conn_full(l1, l3);
@@ -250,10 +303,11 @@ TEST(RecurrentNet, Simple)
 //	auto g234_1 = Connection::make<GatedTanhConnection>(l2, l3, l4);
 //	auto g234_2 = Connection::make<GatedTanhConnection>(l2, l3, l4);
 //
-//	auto dummyEng = EngineBase::make<DummyEngine>();
-//	auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
+//	auto engine = EngineBase::make<VecmatEngine>();
+//	auto dataman = DataManagerBase::make<VecmatDataManager>(
+//			engine, INPUT_DIM, TARGET_DIM, BATCH);
 //
-//	RecurrentNetwork net(dummyEng, dummyData, inputSeq.size(), 2);
+//	RecurrentNetwork net(engine, dataman, HISTORY, 2);
 //
 //	net.add_layer(l1);
 //	net.add_connection(c13);
@@ -264,50 +318,77 @@ TEST(RecurrentNet, Simple)
 //	net.add_recurrent_connection(g234_2, 2);
 //	net.add_layer(l4);
 //
-//	gradient_check<DummyEngine, DummyDataManager>(net, 1e-2f, 1.f);
+//	gradient_check<VecmatEngine, VecmatDataManager>(net, 1e-2f, 1.f);
 //}
-//
-//TEST(Composite, LSTM)
-//{
-//	// same fake params as RecurrentNet.LSTM test
-//	vector<float> LSTM_CONNECTION_WEIGHTS {
-//		-0.236, -0.648, -0.669, 0.76, -0.607, 0.323, -0.932, -0.737, 0.315, -0.109, 0.764
-//	};
-//	vector<float> LSTM_PREHISTORY {
-//		.3, -.47
-//	};
-//	rand_conn.set_rand_seq(LSTM_CONNECTION_WEIGHTS);
-//	rand_prehis.set_rand_seq(LSTM_PREHISTORY);
-//
-//	vector<float> inputSeq {
-//		1.2, -0.9, 0.57, -1.47, 2.2
-//	};
-//	vector<float> targetSeq {
-//		1.39, 0.75, -0.45, -0.11, 1.9
-//	};
-//
-//	rand_input.set_rand_seq(inputSeq);
-//	rand_target.set_rand_seq(targetSeq);
-//
-//	auto inLayer = Layer::make<ConstantLayer>(DUMMY_DIM);
-//	auto lossLayer = Layer::make<SquareLossLayer>(DUMMY_DIM);
-//
-//	auto dummyEng = EngineBase::make<DummyEngine>();
-//	auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
-//
-//	RecurrentNetwork net(dummyEng, dummyData, inputSeq.size(), 1);
-//
-//	net.add_layer(inLayer);
-//
-//	auto lstmComposite = Composite<RecurrentNetwork>::make<LstmComposite>(inLayer);
-//	// or you can add the object directly:
-//	// auto lstmCompositeObject = Composite<RecurrentNetwork>::create<LstmComposite>(inLayer);
-//
-//	net.add_composite(lstmComposite);
-//
-//	net.new_connection<ConstantConnection>(lstmComposite->out_layer(), lossLayer);
-//
-//	net.add_layer(lossLayer);
-//
-//	gradient_check<DummyEngine, DummyDataManager>(net, 1e-2f, 1.f);
-//}
+
+TEST(Composite, LSTM)
+{
+	rand_conn.set_rand_seq(vector<float> {
+		-0.0246, 0.134, 0.396, 0.424, 0.441, 1.01, 0.381, 0.926, -0.391, -0.0287,
+		1.39, 1.47, 1.4, -0.257, 0.294, 0.159, -1.18, 1.49, 0.342,
+		-0.201, -0.759, 0.0732, 0.529, -0.133, 0.0745, 1.12, 1.01, 1.13,
+		-1.36, 0.374, 0.745, -0.817, -0.46, 0.0725, 0.834, 0.507, 0.304,
+		1.33, -1.43, 1.37, 0.781, -0.233, 0.0268, 0.27, 1.02, -1,
+		1.02, -0.606, 0.931, 1.25, -1.34, -0.702, -0.583, -0.404, 0.414,
+		-0.943, -0.0178, 0.796, 0.222, 0.879, -0.206, 1.25, 0.628, 1.19,
+		-1.2, -0.246, -0.928, 0.705, 0.783, 0.836, 1.37, 0.882, 1.41,
+		-1.11, -0.0715, -1.19, 1.49, -1.41, 1.18, 0.866, -0.929, 0.00423,
+		-0.859, 0.351, 0.577, -1.25, -1.09, -1.39, 0.579, 1.39
+	});
+//	rand_conn.gen_uniform_rand(90, -1.5, 1.5);
+//	rand_conn.print_rand_seq();
+
+	rand_prehis.set_rand_seq(vector<float> {
+		-0.467, 0.436, -0.0718, -0.247, 0.141, -0.0445, -0.255, 0.336, -0.256, -0.277,
+		0.414, 0.418, -0.421, 0.196, 0.382, -0.00522, 0.203, -0.257, 0.0887,
+		0.338, 0.31, -0.197, 0.433, 0.405, 0.157, -0.296, -0.304, -0.32, 0.328, -0.259
+	});
+//	rand_prehis.gen_uniform_rand(30, -.5, .5);
+//	rand_prehis.print_rand_seq();
+
+	rand_input.set_rand_seq(vector<float> {
+		-0.557, -0.218, 0.567, -0.806, 0.86, -0.942, -0.678, 0.0253, -0.35, -0.749,
+		-0.0705, -0.179, 0.674, 0.974, -0.0647, 0.717, -0.167, 0.585, -0.888, 0.874
+	});
+//	rand_input.gen_uniform_rand(20, -1, 1);
+//	rand_input.print_rand_seq();
+
+	rand_target.set_rand_seq(vector<float> {
+		-0.323, 0.236, 0.143, 0.999, 0.469, -0.939, -0.232, -0.635, -0.105, 0.83,
+		-0.892, 0.293, -0.786, 0.542, 0.224, 0.634, 0.515, 0.73, -0.293,
+		-0.811, -0.891, -0.0717, -0.881, -0.24, -0.359, -0.401, 0.0343, -0.262,
+		-0.963, -0.13, -0.282, -0.133, -0.728, 0.42, -0.046, -0.34, 0.536, 0.988, -0.282, 0.893
+	});
+//	rand_target.gen_uniform_rand(40, -1, 1);
+//	rand_target.print_rand_seq();
+
+	const int HISTORY = 5;
+	const int INPUT_DIM = 2;
+	const int TARGET_DIM = 4;
+	const int BATCH = 2;
+
+	auto inLayer = Layer::make<ConstantLayer>(INPUT_DIM);
+	auto lossLayer = Layer::make<SquareLossLayer>(TARGET_DIM);
+
+	auto engine = EngineBase::make<VecmatEngine>();
+	auto dataman = DataManagerBase::make<VecmatDataManager>(
+			engine, INPUT_DIM, TARGET_DIM, BATCH);
+
+	RecurrentNetwork net(engine, dataman, HISTORY);
+
+	net.add_layer(inLayer);
+
+	auto lstmComposite =
+			Composite<RecurrentNetwork>::make<LstmComposite>(inLayer, 7);
+	// or you can add the object directly:
+	// auto lstmCompositeObject =
+	//		Composite<RecurrentNetwork>::create<LstmComposite>(inLayer, 7);
+
+	net.add_composite(lstmComposite);
+
+	net.new_connection<FullConnection>(lstmComposite->out_layer(), lossLayer);
+
+	net.add_layer(lossLayer);
+
+	gradient_check<VecmatEngine, VecmatDataManager>(net, 1e-2f, 1.f);
+}
