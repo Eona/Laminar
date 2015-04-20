@@ -1,3 +1,9 @@
+/*
+ * Eona Studio (c) 2015
+ */
+#ifndef OCL_UTIL_H_
+#define OCL_UTIL_H_
+
 #ifdef __APPLE__
 #include <OpenCL/cl.h>
 #include <OpenCL/cl_platform.h>
@@ -159,18 +165,22 @@ public:
         OCL_CHECKERROR(ret);
     }
 
+    /*Setup the parameter of a kernel specified by kernel_name*/
     void setup_kernel(std::string kernel_name, size_t param_index, size_t param_type_size, void* param){
         OCL_CHECKERROR(clSetKernelArg(kernel_list[kernel_name], param_index, param_type_size, param));
     }
 
+    /*Execute a kernel specified by kernel_name*/
     void exec_kernel(cl_kernel& kernel, size_t global_ws, size_t local_ws){
     	OCL_CHECKERROR(clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_ws, &local_ws, 0, NULL, NULL));
 	}
 
+    /*Execute a kernel specified by kernel_name*/
     void exec_kernel(std::string kernel_name, size_t global_ws, size_t local_ws){
     	OCL_CHECKERROR(clEnqueueNDRangeKernel(command_queue, kernel_list[kernel_name], 1, NULL, &global_ws, &local_ws, 0, NULL, NULL));
 	}
 
+    /*flush the command queue*/
     void flush_queue(){
     	OCL_CHECKERROR(clFlush(command_queue));
     }
@@ -196,14 +206,22 @@ public:
     }
 
 
-
-
-
+    /*Clean up*/
     ~OclUtilContext(){
     	OCL_CHECKERROR(clFlush(command_queue));
     	OCL_CHECKERROR(clFinish(command_queue));
     	OCL_CHECKERROR(clReleaseCommandQueue(command_queue));
     	OCL_CHECKERROR(clReleaseContext(context));
+
+    	//Delete programs
+    	for ( auto it = program_list.begin(); it != program_list.end(); ++it ) {
+    		OCL_CHECKERROR(clReleaseProgram(it->second));
+    	}
+
+    	//Delete kernels
+    	for ( auto it = kernel_list.begin(); it != kernel_list.end(); ++it ) {
+    		OCL_CHECKERROR(clReleaseKernel(it->second));
+    	}
     }
 };
 
@@ -236,3 +254,4 @@ public:
 //
 //}
 
+#endif
