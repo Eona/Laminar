@@ -71,7 +71,6 @@ public:
 
     void print_matrix(std::string msg) {
         std::cout << "\n" << msg << "\n";
-        std::cout<<DIM_ROW<<"x"<<DIM_COL<<endl;
         for (int i = 0; i < DIM_ROW; ++i) {
             for (int j = 0; j < DIM_COL; ++j) {
                 std::cout << host_data[j*DIM_ROW+i] << '\t';

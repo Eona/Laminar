@@ -18,7 +18,7 @@
 #include <math.h>
 #include <unordered_map>
  
-#define MAX_SOURCE_SIZE (0x100000)
+#define MAX_SOURCE_SIZE (0x500000)
  
 using namespace std;
 
@@ -111,7 +111,7 @@ cl_program oclutil_build_program(std::string filename, cl_context & context, cl_
     OCL_CHECKERROR(ret);
     free(source_str);
 
-    OCL_CHECKERROR(clBuildProgram(program, 1, &device_id, NULL, NULL, NULL));
+    clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
 
     // Shows the log
     char* build_log;

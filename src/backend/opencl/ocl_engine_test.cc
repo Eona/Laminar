@@ -25,16 +25,16 @@ int main(int argc, char **argv)
     m2->print_matrix("m2");
     m3->print_matrix("m3");
 //
-//	std::vector<CudaFloatMatPtr> v;
-//	v.push_back(m1);
-//	v.push_back(m2);
+	std::vector<OpenclFloatMatPtr> v;
+	v.push_back(m1);
+	v.push_back(m2);
 //
-//	std::vector<CudaFloatMatPtr> v1;
-//	v1.push_back(m3);
-//	v1.push_back(m1);
+	std::vector<OpenclFloatMatPtr> v1;
+	v1.push_back(m3);
+	v1.push_back(m1);
 //
-//	lmn::CudaImpl::add<0>(v, out, false);
-//	out->print_matrix("m1 + m2");
+	oe.add(v, out, false);
+	out->print_matrix("m1 + m2");
 //
 //	lmn::CudaImpl::sub<0>(v, out, true);
 //	out->print_matrix("m1 - m2");

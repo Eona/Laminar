@@ -36,7 +36,20 @@ public:
 		Engine<OpenclFloatMat>()
 	{
 		cl = new OclUtilContext(true);
-		cout<<"created context"<<endl;
+		cout<<"Initialized context"<<endl;
+		/*Build program from source*/
+		cl->build_program("./mat_op_kernel.cl", "matop_prog");
+		/*Register kernel functions*/
+		cl->register_kernel("mat_add_kernel", "matop_prog");
+		cl->register_kernel("mat_scale_kernel", "matop_prog");
+		cl->register_kernel("mat_elem_mult_kernel", "matop_prog");
+		cl->register_kernel("mat_sigmoid_kernel", "matop_prog");
+		cl->register_kernel("mat_sigmoid_gradient_kernel", "matop_prog");
+		cl->register_kernel("mat_sin_kernel", "matop_prog");
+		cl->register_kernel("mat_cos_kernel", "matop_prog");
+		cl->register_kernel("mat_tanh_kernel", "matop_prog");
+		cl->register_kernel("mat_tanh_gradient_kernel", "matop_prog");
+
 //		register_create(CudaEngine::create);
 //		register_opcode("t+t", CudaEngine::add);
 ////		register_opcode("s+s", Impl::add<S>);
@@ -89,12 +102,16 @@ public:
 	 */
 	void addMat(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized, float alpha, float beta)
 	{
-
 	    int m = reads[0]->DIM_ROW;
 	    int n = reads[0]->DIM_COL;
 	    if (!is_initialized) {
 	        *write = OpenclFloatMat(m, n, cl); //initialize LHS if not already
 	    }
+	    cl->setup_kernel("mat_add_kernel", 0, sizeof(cl_mem), &write->device_data);
+	    cl->setup_kernel("mat_add_kernel", 1, sizeof(cl_mem), &reads[0]->device_data);
+	    cl->setup_kernel("mat_add_kernel", 2, sizeof(cl_mem), &reads[1]->device_data);
+	    cl->setup_kernel("mat_add_kernel", 3, sizeof(int), &(write->LEN));
+	    cl->exec_kernel("mat_add_kernel", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
 	}
 
 

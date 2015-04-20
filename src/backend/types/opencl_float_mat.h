@@ -93,8 +93,16 @@ public:
 
 
     void print_matrix(std::string msg) {
-        to_host();
-        GPUFloatMat::print_matrix(msg);
+    	float d[MEM_SIZE];
+		cl->to_host(d, device_data, MEM_SIZE);
+        std::cout <<  msg << "\n";
+        for (int i = 0; i < DIM_ROW; ++i) {
+            for (int j = 0; j < DIM_COL; ++j) {
+                std::cout << d[j*DIM_ROW+i] << '\t';
+            }
+            std::cout<<"\n";
+        }
+        std::cout << std::endl;
     }
 
 
