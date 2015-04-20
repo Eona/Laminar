@@ -22,6 +22,8 @@ template<typename EngineT, typename DataManagerT>
 inline void gradient_check(Network& net,
 		float perturb = 1e-2f, float percentTol = 1.0f)
 {
+
+
 	auto engine = net.get_engine<EngineT>();
 	auto dataman = net.get_data_manager<DataManagerT>();
 

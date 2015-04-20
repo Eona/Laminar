@@ -59,7 +59,7 @@ public:
 	template<typename ComponentT>
 	static std::shared_ptr<ComponentT> cast(Component::Ptr compon)
 	{
-		static_assert(std::is_base_of<Component, ComponentT>::value,
+		LAMINAR_STATIC_ASSERT((std::is_base_of<Component, ComponentT>::value),
 				"cast() failed: type parameter must be a subclass of Component");
 		return std::dynamic_pointer_cast<ComponentT>(compon);
 	}

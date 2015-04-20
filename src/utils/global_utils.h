@@ -142,8 +142,8 @@ bool key_exists(std::unordered_map<KeyT, ValueT>& map, KeyT& key)
 }
 
 // enclose x as "x" in macro expansion
-#define _STRINGFY(x) #x
-#define STRINGFY(x) _STRINGFY(x)
+#define STRINGFY_(x) #x
+#define STRINGFY(x) STRINGFY_(x)
 
 /**
  * Example: suppose we have template<typename T> MyClass;

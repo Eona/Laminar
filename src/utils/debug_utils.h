@@ -14,6 +14,26 @@
 #define TERMINATE_ASSERT false
 #define DEBUG true
 
+/**
+ * 'Press enter to continue...'
+ */
+void input_halt()
+{
+	do {
+		std::cout << "Press Enter to continue ...";
+	}
+	while (std::cin.get() != '\n');
+}
+
+/**
+ * static_assert doesn't support string concat
+ * Use a macro to append a big title to the error message
+ * WARNING if 'cond' has comman, like foo<int, int>, you must enclose it with parenthesis
+ * (foo<int, int>) to avoid being interpreted as two separate macro args
+ */
+#define LAMINAR_STATIC_ASSERT(cond, errmsg) \
+	static_assert(cond, "\n\n\n\n\nLaminar static assert failure:\n" errmsg "\n\n\n\n\n")
+
 class AssertFailure: public std::exception {
 protected:
     std::string msg;
@@ -59,17 +79,6 @@ assert_throw_nullptr(const std::shared_ptr<T>& ptr, string errmsg)
 {
 	if (ptr == nullptr)
 		throw ExceptionT(errmsg);
-}
-
-/**
- * Debug only
- * 'Press enter to continue...'
- */
-void input_halt()
-{
-	std::cout << "Press Enter to continue ...";
-	while (std::cin.get() != '\n')
-		std::cout << "Press Enter to continue ...";
 }
 
 template<typename FloatT>

@@ -17,7 +17,7 @@ class Network;
 template<typename NetworkT>
 class Composite
 {
-static_assert(std::is_base_of<Network, NetworkT>::value,
+LAMINAR_STATIC_ASSERT((std::is_base_of<Network, NetworkT>::value),
 		"Composite<> template argument must be a subclass of Network type");
 
 public:

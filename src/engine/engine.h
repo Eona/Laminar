@@ -11,7 +11,7 @@
 template<typename DataT>
 class MemoryPool
 {
-static_assert(std::is_default_constructible<DataT>::value,
+LAMINAR_STATIC_ASSERT(std::is_default_constructible<DataT>::value,
 		"Data type in MemoryPool must be default constructible.");
 
 public:
@@ -296,7 +296,7 @@ public:
 	template<typename EngineT, typename ...ArgT>
 	static std::shared_ptr<EngineT> make(ArgT&& ... args)
 	{
-		static_assert(std::is_base_of<EngineBase, EngineT>::value,
+		LAMINAR_STATIC_ASSERT((std::is_base_of<EngineBase, EngineT>::value),
 				"make() failed: Engine type parameter must be a subclass of EngineBase");
 
 		return std::make_shared<EngineT>(
@@ -309,7 +309,7 @@ public:
 	template<typename EngineT>
 	static std::shared_ptr<EngineT> cast(EngineBase::Ptr engine)
 	{
-		static_assert(std::is_base_of<EngineBase, EngineT>::value,
+		LAMINAR_STATIC_ASSERT((std::is_base_of<EngineBase, EngineT>::value),
 				"cast() failed: Engine type parameter must be a subclass of EngineBase");
 
 		return std::dynamic_pointer_cast<EngineT>(engine);
@@ -443,8 +443,8 @@ public:
 	template <typename... ContextArgT>
 	struct ContextCommand : public Command
 	{
-		static_assert(sizeof...(ContextArgT) > 0,
-				"\n\n\n\nLaminar static assert:\nContextCommand must have at least 1 template ArgType\n\n\n\n\n");
+		LAMINAR_STATIC_ASSERT(sizeof...(ContextArgT) > 0,
+				"ContextCommand must have at least 1 template ArgType");
 
 		typedef std::function<void(vector<DataPtr>, DataPtr, bool, ContextArgT...)> ContextFuncType;
 
