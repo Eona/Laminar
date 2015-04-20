@@ -13,15 +13,20 @@ class GatedConnection : public Connection
 {
 public:
 	/**
-	 * outLayer = gateLayer * inLayer
+	 * outLayer = gateLayer .* inLayer
 	 * If used in a recurrent fashion, inLayer will be from the past while
 	 * gateLayer and outLayer will both be in the current timeframe.
-	 * outLayer[t] = gateLayer[t] * inLayer[t - temporalSkip]
+	 * outLayer[t] = gateLayer[t] .* inLayer[t - temporalSkip]
 	 */
-	GatedConnection(Layer::Ptr _inLayer, Layer::Ptr _gateLayer, Layer::Ptr _outLayer):
-		Connection(_inLayer, _outLayer),
-		gateLayer(_gateLayer)
-	{ }
+	GatedConnection(Layer::Ptr inLayer_, Layer::Ptr gateLayer_, Layer::Ptr outLayer_):
+		Connection(inLayer_, outLayer_),
+		gateLayer(gateLayer_)
+	{
+		ASSERT_THROW(inLayer_->dim() == gateLayer_->dim()
+				&& inLayer_->dim() == outLayer_->dim(),
+			ComponentException("GatedConnection inLayer, gateLayer and outLayer "
+					"must have the same dimension"));
+	}
 
 	virtual ~GatedConnection() {};
 
@@ -69,10 +74,10 @@ protected:
 
 
 /**
- * Compute outLayer = gateLayer * nonlinear(inLayer)
+ * Compute outLayer = gateLayer .* nonlinear(inLayer)
  * If used in a recurrent fashion, inLayer will be from the past while
  * gateLayer and outLayer will both be in the current timeframe.
- * outLayer[t] = gateLayer[t] * nonlinear(inLayer[t - temporalSkip])
+ * outLayer[t] = gateLayer[t] .* nonlinear(inLayer[t - temporalSkip])
  *
  * Some gated gradient can be calculated more efficiently given
  * the stored output value from the history.
@@ -81,9 +86,9 @@ class GatedCachedNonlinearConnection : public GatedConnection
 {
 public:
 	GatedCachedNonlinearConnection(
-			Layer::Ptr _inLayer, Layer::Ptr _gateLayer, Layer::Ptr _outLayer,
+			Layer::Ptr inLayer_, Layer::Ptr gateLayer_, Layer::Ptr outLayer_,
 			lmn::TransferFunction nonlinear_, lmn::TransferFunction nonlinear_gradient_):
-		GatedConnection(_inLayer, _gateLayer, _outLayer),
+		GatedConnection(inLayer_, gateLayer_, outLayer_),
 		nonlinear(nonlinear_), nonlinear_gradient(nonlinear_gradient_)
 	{ }
 
@@ -96,7 +101,8 @@ public:
 		Tensor& cachedOutval = *cachedOutvals[out_frame()];
 
 		cachedOutval = nonlinear(inlayerOutval);
-		outlayerInval += gateOutval * cachedOutval;
+
+		outlayerInval += lmn::element_mult(gateOutval, cachedOutval);
 	}
 
 	virtual void gated_backward_impl(Tensor& outlayerIngrad, Tensor& inlayerOutval, Tensor& gateOutval,
@@ -105,8 +111,11 @@ public:
 	{
 		Tensor& cachedOutval = *cachedOutvals[out_frame()];
 
-		inlayerOutgrad += gateOutval * nonlinear_gradient(cachedOutval) * outlayerIngrad;
-		gateOutgrad += outlayerIngrad * cachedOutval;
+		inlayerOutgrad += lmn::element_mult(
+				lmn::element_mult(gateOutval, nonlinear_gradient(cachedOutval)),
+				outlayerIngrad);
+
+		gateOutgrad += lmn::element_mult(outlayerIngrad, cachedOutval);
 	}
 
 	virtual explicit operator string() const
