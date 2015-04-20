@@ -52,6 +52,11 @@ public:
 		return paramValues.size();
 	}
 
+	Dimension param_dim(int paramIdx) const
+	{
+		return paramValues[paramIdx]->dim();
+	}
+
 	/************************************/
 	TYPEDEF_PTR(ParamContainer);
 
