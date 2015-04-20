@@ -138,20 +138,28 @@ public:
 class Tensor : public TensorBase
 {
 public:
-	Tensor(EngineBase::Ptr _engine) :
-		TensorBase(_engine)
+	Tensor(EngineBase::Ptr engine) :
+		TensorBase(engine)
 	{
 		engine->upload(Instruction( "create_null_t", {}, addr));
 	}
 
-	Tensor(EngineBase::Ptr _engine, Dimension dim) :
-		TensorBase(_engine)
+	Tensor(EngineBase::Ptr engine, Dimension dim) :
+		TensorBase(engine), dim_(dim)
 	{
 		engine->upload(Instruction("create", {}, addr,
 				OpContext<Dimension>::make(dim)));
 	}
 
 	virtual ~Tensor() {}
+
+	Dimension dim() const
+	{
+		assert_throw(!dim_.empty(),
+			TensorException("null created, cannot query dimension."));
+
+		return this->dim_;
+	}
 
 	// Copy ctor
 	Tensor(const Tensor& other) :
@@ -220,6 +228,9 @@ public:
 		return std::make_shared<Tensor>(
                     std::forward<ArgT>(args) ...);
 	}
+
+private:
+	Dimension dim_;
 };
 
 /**
