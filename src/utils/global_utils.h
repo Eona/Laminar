@@ -157,7 +157,7 @@ bool key_exists(std::unordered_map<KeyT, ValueT>& map, KeyT& key)
 #define GEN_IS_DERIVED_TEMPLATE_TRAIT(typeTraitFuncName, className) \
 template <typename T> \
 std::true_type typeTraitFuncName##_impl(const className<T>* impl); \
-std::false_type typeTraitFuncName_impl(...); \
+std::false_type typeTraitFuncName##_impl(...); \
 template <typename Derived> \
 using typeTraitFuncName = \
     decltype(typeTraitFuncName##_impl(std::declval<Derived*>()));
