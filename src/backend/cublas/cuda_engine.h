@@ -45,24 +45,20 @@ public:
 		SCALOR = 1
 	};
 
-	template<>
-	struct tensor_op<TENSOR>
-	{
-		static constexpr const char *operand = "t";
-	};
+//	struct tensor_op<TENSOR>
+//	{
+//		static constexpr const char *operand = "t";
+//	};
 
-	template<>
-	struct tensor_op<SCALOR>
-	{
-		static constexpr const char *operand = "s";
-	};
+//	struct tensor_op<SCALOR>
+//	{
+//		static constexpr const char *operand = "s";
+//	};
 
 	typedef std::shared_ptr<CudaFloatMat> CudaFloatMatPtr;
 	typedef std::shared_ptr<float> FloatPtr;
 
-
-	template<int TensorT>
-	struct tensor_op {};
+//	struct tensor_op {};
 
 
 
@@ -140,30 +136,24 @@ public:
 	}
 
 
-	template<int TensorT>
 	void add(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
-	    string op = tensor_op<TensorT>::operand;
-	    debug_msg(op + "+" + op, is_initialized);
+	    debug_msg("c=a+b", is_initialized);
 	    float alpha = 1.0f;
 	    addMat(reads, write, is_initialized, alpha, alpha);
 	}
 
-	template<int TensorT>
 	void sub(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
-		string op = tensor_op<TensorT>::operand;
-		debug_msg(op + "-" + op, is_initialized);
+	    debug_msg("c=a-b", is_initialized);
+
 	    float alpha = 1.0f;
 	    addMat(reads, write, is_initialized, alpha, -alpha);
 	}
 
-	template<int TensorT>
 	void negate_(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
-		string op = tensor_op<TensorT>::operand;
-		debug_msg("-" + op, is_initialized);
-
+	    debug_msg("c=-a", is_initialized);
 	    //y = x
 	    assignMat(reads, write, is_initialized);
 
@@ -173,23 +163,16 @@ public:
 
 	}
 
-	template<int TensorT1, int TensorT2>
 	void mult(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
-		string op1 = tensor_op<TensorT1>::operand;
-		string op2 = tensor_op<TensorT2>::operand;
-		debug_msg(op1 + "*" + op2, is_initialized);
-
+	    debug_msg("c=a*b", is_initialized);
 		float alpha = 1.0f;
 		multMat(reads, write, is_initialized, alpha, 0, "N", "N");
 	}
 
-	template<int TensorT>
 	void assign(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
-		string op = tensor_op<TensorT>::operand;
-		debug_msg(op + "=" + op, is_initialized);
-
+	    debug_msg("c=a", is_initialized);
 	    assignMat(reads, write, is_initialized);
 	}
 
@@ -326,7 +309,7 @@ public:
 
 
 	CudaEngine() :
-		Engine<float>()
+		Engine<CudaFloatMat>()
 	{
 //		namespace Impl = lmn::CudaImpl;
 //		const int T = Impl::TENSOR;

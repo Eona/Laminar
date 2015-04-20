@@ -30,53 +30,53 @@ int main(int argc, char **argv)
 	std::vector<CudaFloatMatPtr> v1;
 	v1.push_back(m3);
 	v1.push_back(m1);
-
-	lmn::CudaImpl::add<0>(v, out, false);
+	CudaEngine ce;
+	ce.add(v, out, false);
 	out->print_matrix("m1 + m2");
 
-	lmn::CudaImpl::sub<0>(v, out, true);
+	ce.sub(v, out, true);
 	out->print_matrix("m1 - m2");
 
-	lmn::CudaImpl::negate<0>(v, out, true);
+	ce.negate_(v, out, true);
 	out->print_matrix("-m1");
 
-	lmn::CudaImpl::mult<0, 0>(v, out, true);
+	ce.mult(v, out, true);
 	out->print_matrix("m1 * m2");
 
-	lmn::CudaImpl::mult<0, 0>(v1, out, false);
+	ce.mult(v1, out, false);
 	out->print_matrix("m3 * m1");
 
-	lmn::CudaImpl::assign<0>(v1, out, true);
+	ce.assign(v1, out, true);
 	out->print_matrix("m3 -> out");
 
-	lmn::CudaImpl::sigmoid(v, out, false);
+	ce.sigmoid(v, out, false);
 	out->print_matrix("sigmod(m1)");
 
-	lmn::CudaImpl::sigmoid_gradient(v, out, true);
+	ce.sigmoid_gradient(v, out, true);
 	out->print_matrix("sigmoid_gradient(m1)");
 
-	lmn::CudaImpl::sin(v, out, true);
+	ce.sin(v, out, true);
 	out->print_matrix("sin(m1)");
 
-	lmn::CudaImpl::cos(v, out, true);
+	ce.cos(v, out, true);
 	out->print_matrix("cos(m1)");
 
-	lmn::CudaImpl::tanh(v, out, true);
+	ce.tanh(v, out, true);
 	out->print_matrix("tanh(m1)");
 
-	lmn::CudaImpl::tanh_gradient(v, out, true);
+	ce.tanh_gradient(v, out, true);
 	out->print_matrix("tanh_gradient(m1)");
 
-	lmn::CudaImpl::element_mult(v, out, true);
+	ce.element_mult(v, out, true);
 	out->print_matrix("m1 .* m2");
 
 	float loss;
-	lmn::CudaImpl::square_loss(v, &loss, true);
+	ce.square_loss(v, &loss, true);
 	cout<<"loss: "<<loss<<endl;
 
-	lmn::CudaImpl::fill_rand(v, out, true);
+	ce.fill_rand(v, out, true);
 	out->print_matrix("rand");
 
-	lmn::CudaImpl::debug_fill(v, out, true);
+	ce.debug_fill(v, out, true);
 	out->print_matrix("0.66337");
 }
