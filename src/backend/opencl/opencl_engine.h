@@ -107,10 +107,14 @@ public:
 	    if (!is_initialized) {
 	        *write = OpenclFloatMat(m, n, cl); //initialize LHS if not already
 	    }
-	    cl->setup_kernel("mat_add_kernel", 0, sizeof(cl_mem), &write->device_data);
-	    cl->setup_kernel("mat_add_kernel", 1, sizeof(cl_mem), &reads[0]->device_data);
-	    cl->setup_kernel("mat_add_kernel", 2, sizeof(cl_mem), &reads[1]->device_data);
-	    cl->setup_kernel("mat_add_kernel", 3, sizeof(int), &(write->LEN));
+
+	    //Register parameters and execute kernel
+	    cl->setup_kernel("mat_add_kernel", 0, sizeof(cl_mem), &write->device_data); // C
+	    cl->setup_kernel("mat_add_kernel", 1, sizeof(cl_mem), &reads[0]->device_data); //A
+	    cl->setup_kernel("mat_add_kernel", 2, sizeof(cl_mem), &reads[1]->device_data); //B
+	    cl->setup_kernel("mat_add_kernel", 3, sizeof(float), &alpha); //a
+	    cl->setup_kernel("mat_add_kernel", 4, sizeof(float), &beta); //b
+	    cl->setup_kernel("mat_add_kernel", 5, sizeof(int), &(write->LEN)); //DATA_SIZE
 	    cl->exec_kernel("mat_add_kernel", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
 	}
 
@@ -131,6 +135,24 @@ public:
 	    }
 
 	    //C = a Op(A)* Op(B) + b C  -- A [mxn] B [nxk] C[mxk]
+	}
+
+	void scaleMat(vector<OpenclFloatMatPtr> reads,
+				OpenclFloatMatPtr write, bool is_initialized,
+				float alpha)
+	{
+	    int m = reads[0]->DIM_ROW;
+	    int n = reads[0]->DIM_COL;
+	    int k = reads[1]->DIM_COL;
+	    if (!is_initialized) {
+	        *write = OpenclFloatMat(m, n, cl); //initialize LHS if not already
+	    }
+
+	    cl->setup_kernel("mat_scale_kernel", 0, sizeof(cl_mem), &write->device_data); // Y
+	    cl->setup_kernel("mat_scale_kernel", 1, sizeof(cl_mem), &reads[0]->device_data); // X
+	    cl->setup_kernel("mat_scale_kernel", 2, sizeof(float), &alpha); //a
+	    cl->setup_kernel("mat_scale_kernel", 3, sizeof(int), &(write->LEN)); //DATA_SIZE
+	    cl->exec_kernel("mat_scale_kernel", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
 	}
 
 	/*
@@ -166,12 +188,8 @@ public:
 	void negate(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 	    debug_msg("c=-a", is_initialized);
-	    //y = x
-	    assignMat(reads, write, is_initialized);
-
 	    //y = -y
-	    const float alpha = -1.0f;
-
+	    scaleMat(reads, write, is_initialized, -1);
 	}
 
 	void mult(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
@@ -190,9 +208,8 @@ public:
 	inline void scale(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized, float* scaler)
 	{
 		debug_msg("scale", is_initialized);
-	    //y = x
-	    assignMat(reads, write, is_initialized);
 	    //y = ay
+	    scaleMat(reads, write, is_initialized, *scaler);
 	}
 
 	inline void destroy(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)

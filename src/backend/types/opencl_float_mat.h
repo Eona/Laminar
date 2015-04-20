@@ -111,6 +111,7 @@ public:
 	}
 
     void free_data(){
+    	std::cout<<"Delete matrix!"<<std::endl;
 		if (host_data) delete [] host_data;
 		clReleaseMemObject(device_data);
     }

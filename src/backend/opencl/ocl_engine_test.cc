@@ -16,6 +16,7 @@ int main(int argc, char **argv)
 	float t2[9] = {0.1, 6.8, 4.9, 2.0, 1, 4, 5, 9, 4};
 	float t3[6] = {1.1, 7.8, 5.9, 3.0, 2, 5};
 
+	vector<int> dim = {3,3};
 	OpenclEngine oe;
 	OpenclFloatMatPtr m1 (new OpenclFloatMat(t1, 3, 3, oe.cl));
 	OpenclFloatMatPtr m2 (new OpenclFloatMat(t2, 3, 3, oe.cl));
@@ -33,12 +34,17 @@ int main(int argc, char **argv)
 	v1.push_back(m3);
 	v1.push_back(m1);
 //
-	oe.add(v, out, false);
+
+	oe.create(out, dim);
+
+	oe.sub(v, out, true);
+	out->print_matrix("m1 - m2");
+
+	oe.add(v, out, true);
 	out->print_matrix("m1 + m2");
-//
-//	lmn::CudaImpl::sub<0>(v, out, true);
-//	out->print_matrix("m1 - m2");
-//
+
+
+
 //	lmn::CudaImpl::negate<0>(v, out, true);
 //	out->print_matrix("-m1");
 //
