@@ -62,8 +62,8 @@ public:
 				std::make_shared<CompositeT>(
 						std::forward<ArgT>(args) ...));
 
-		compPtr->outLayer = compPtr->initialize_outlayer(compPtr->inLayer->dim());
-		compPtr->initialize_layers(compPtr->layerMap, compPtr->inLayer->dim());
+		compPtr->outLayer = compPtr->initialize_outlayer();
+		compPtr->initialize_layers(compPtr->layerMap);
 
 		return compPtr;
 	}
@@ -81,8 +81,8 @@ public:
 		// Only reference and pointer types are polymorphic.
 		Composite<NetworkT>& comp = composite;
 
-		comp.outLayer = comp.initialize_outlayer(comp.inLayer->dim());
-		comp.initialize_layers(comp.layerMap, comp.inLayer->dim());
+		comp.outLayer = comp.initialize_outlayer();
+		comp.initialize_layers(comp.layerMap);
 
 		return composite;
 	}
@@ -105,13 +105,12 @@ protected:
 	 * Will be called in static ::make
 	 */
 	virtual void initialize_layers(
-		std::unordered_map<string, Layer::Ptr>& layerMap, Dimension inLayerDim) = 0;
+		std::unordered_map<string, Layer::Ptr>& layerMap) = 0;
 
 	/**
 	 * Will be called in static ::make
-	 * @param inLayer dimension
 	 */
-	virtual Layer::Ptr initialize_outlayer(Dimension inLayerDim) = 0;
+	virtual Layer::Ptr initialize_outlayer() = 0;
 
 	Layer::Ptr get_layer(string name)
 	{

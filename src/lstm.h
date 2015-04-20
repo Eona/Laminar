@@ -15,12 +15,16 @@
 class LstmComposite : public Composite<RecurrentNetwork>
 {
 public:
-	LstmComposite(Layer::Ptr _inLayer) :
-		Composite<RecurrentNetwork>(_inLayer)
+	LstmComposite(Layer::Ptr inLayer_, Dimension lstmDim_) :
+		Composite<RecurrentNetwork>(inLayer_),
+		lstmDim(lstmDim_)
+	{ }
+
+	LstmComposite(Layer::Ptr inLayer, int lstmDim) :
+		LstmComposite(inLayer, Dimension {lstmDim})
 	{ }
 
 	virtual ~LstmComposite() {};
-
 
 protected:
 	/**
@@ -67,23 +71,25 @@ protected:
 		net->add_layer(outLayer);
 	}
 
-	virtual Layer::Ptr initialize_outlayer(Dimension inLayerDim)
+	virtual Layer::Ptr initialize_outlayer()
 	{
-		return Layer::make<ConstantLayer>(inLayerDim);
+		return Layer::make<ConstantLayer>(lstmDim);
 	}
 
 	/**
 	 * Will be called in constructor
 	 */
 	virtual void initialize_layers(
-			std::unordered_map<string, Layer::Ptr>& layerMap, Dimension inLayerDim)
+			std::unordered_map<string, Layer::Ptr>& layerMap)
 	{
-		layerMap["forget-gate"] = Layer::make<SigmoidLayer>(inLayerDim);
-		layerMap["input-gate"] = Layer::make<SigmoidLayer>(inLayerDim);
-		layerMap["cellhat"] = Layer::make<TanhLayer>(inLayerDim);
-		layerMap["cell"]  = Layer::make<ConstantLayer>(inLayerDim);
-		layerMap["output-gate"]  = Layer::make<SigmoidLayer>(inLayerDim);
+		layerMap["forget-gate"] = Layer::make<SigmoidLayer>(lstmDim);
+		layerMap["input-gate"] = Layer::make<SigmoidLayer>(lstmDim);
+		layerMap["cellhat"] = Layer::make<TanhLayer>(lstmDim);
+		layerMap["cell"]  = Layer::make<ConstantLayer>(lstmDim);
+		layerMap["output-gate"]  = Layer::make<SigmoidLayer>(lstmDim);
 	}
+
+	Dimension lstmDim; // LSTM hidden unit dimension
 };
 
 /**
