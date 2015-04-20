@@ -9,7 +9,7 @@ FakeRand& rand_prehis = FakeRand::instance_prehistory();
 FakeRand& rand_input = FakeRand::instance_input();
 FakeRand& rand_target = FakeRand::instance_target();
 
-TEST(RecurrentNet, Simple)
+TEST(DummyRecurrentNet, Simple)
 {
 	rand_conn.set_rand_seq(vector<float> {
 		0.543, 0.44, 1.47, 1.64, 1.31, -0.616
@@ -74,7 +74,7 @@ TEST(RecurrentNet, Simple)
 	gradient_check<DummyEngine, DummyDataManager, float>(net, 1e-2, 1);
 }
 
-TEST(RecurrentNet, TemporalSkip)
+TEST(DummyRecurrentNet, TemporalSkip)
 {
 	rand_conn.set_rand_seq(vector<float> {
 		0.91, 1.329, -0.525, 1.724, 1.613, -0.864, 0.543, 0.59, -0.819, -0.938
@@ -162,7 +162,7 @@ TEST(RecurrentNet, TemporalSkip)
 	gradient_check<DummyEngine, DummyDataManager, float>(net, 1e-2, 1);
 }
 
-TEST(RecurrentNet, GatedConnection)
+TEST(DummyRecurrentNet, GatedConnection)
 {
 	rand_conn.set_rand_seq(vector<float> {
 			0.163, 1.96, 1.09, 0.516, -0.585, 0.776, 1, -0.301, -0.167, 0.732
@@ -220,7 +220,7 @@ TEST(RecurrentNet, GatedConnection)
 }
 
 
-TEST(RecurrentNet, GatedTanhConnection)
+TEST(DummyRecurrentNet, GatedTanhConnection)
 {
 	rand_conn.set_rand_seq(vector<float> {
 			.798, 0.617
@@ -265,7 +265,7 @@ TEST(RecurrentNet, GatedTanhConnection)
 }
 
 
-TEST(RecurrentNet, LSTM)
+TEST(DummyRecurrentNet, LSTM)
 {
 	/********** FAKE_RAND **********/
 	vector<float> LSTM_CONNECTION_WEIGHTS {
