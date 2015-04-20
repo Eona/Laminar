@@ -138,11 +138,22 @@ public:
 	void print_rand_seq()
 	{
 		cout << std::setprecision(3) << "Seq(" << name << ") = ";
-		for (int j = 0; j < size(); ++j)
+		// 10 numbers per line break
+		int lineBreak = 0;
+		for (int j = 0; j < size(); ++j, ++lineBreak)
 		{
 			cout << randSeq[j];
 			if (j != size() - 1)
+			{
 				cout << ", ";
+				if (lineBreak == 9)
+				{
+					cout << "\n";
+					lineBreak = 0;
+				}
+			}
+			else
+				cout << "\n";
 		}
 	}
 };
