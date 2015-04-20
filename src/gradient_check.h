@@ -6,7 +6,6 @@
 #define GRADIENT_CHECK_H_
 
 #include "network.h"
-#include "utils/laminar_utils.h"
 
 /**
  * Check if a given class is a subclass of GradientCheckable<FloatT> for any FloatT
@@ -18,11 +17,12 @@ GEN_IS_DERIVED_TEMPLATE_TRAIT(is_gradient_checkable, GradientCheckable);
  * % difference between analytic (backprop)
  * and numeric (finite-difference) gradients
  */
-template<typename EngineT, typename DataManagerT>
+template<typename EngineT, typename DataManagerT, typename FloatT = float>
 inline void gradient_check(Network& net,
-		float perturb = 1e-2f, float percentTol = 1.0f)
+		FloatT perturb = 1e-2f, FloatT percentTol = 1.0f)
 {
-
+	LAMINAR_STATIC_ASSERT((std::is_base_of<ElementInspectionBase, EngineT>::value),
+		"Engine must implement ElementInspection<> interface to work with gradient_check");
 
 	auto engine = net.get_engine<EngineT>();
 	auto dataman = net.get_data_manager<DataManagerT>();
@@ -63,37 +63,52 @@ inline void gradient_check(Network& net,
 
 	/****** perturb parameters matrices stored in connections ******/
 	int agpt = 0; // point to analyticGrads
+	// step through every parameter container
 	for (ParamContainer::Ptr param : net.paramContainers)
 	{
+		// step through every parameter in the container
 		for (int p = 0; p < param->size(); ++p)
 		{
-			reset_net();
-			param->gradient_check_perturb(p, {}, -perturb);
-			engine->flush_execute();
+			// step through every element entry in the parameter tensor
+			Dimension totalParamDim = param->param_dim(p);
+			DimIndexEnumerator idxEnumer(totalParamDim);
 
-			net.execute("forward");
+			while (idxEnumer.has_next())
+			{
+				DimIndex perturbDimIdx = idxEnumer.next();
 
-			float lossMinus = *engine->read_memory(net.lossLayer->total_loss());
+				reset_net();
+				param->gradient_check_perturb(p, perturbDimIdx, -perturb);
+				engine->flush_execute();
 
-			param->gradient_check_restore();
-			reset_net();
+				net.execute("forward");
 
-			param->gradient_check_perturb(p, {}, +perturb);
-			engine->flush_execute();
+				// loss "tensor" is always a 1x1 Scalor
+				FloatT lossMinus = engine->element_at(
+						engine->read_memory(net.lossLayer->total_loss()), {0, 0});
 
-			net.execute("forward");
+				param->gradient_check_restore();
+				reset_net();
 
-			float lossPlus = *engine->read_memory(net.lossLayer->total_loss());
+				param->gradient_check_perturb(p, perturbDimIdx, +perturb);
+				engine->flush_execute();
 
-			param->gradient_check_restore();
-			engine->flush_execute();
+				net.execute("forward");
 
-			float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
+				FloatT lossPlus = engine->element_at(
+						engine->read_memory(net.lossLayer->total_loss()), {0, 0});
 
-			float analyticGrad = *engine->read_memory(analyticGrads[agpt++]);
+				param->gradient_check_restore();
+				engine->flush_execute();
 
-			assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
-					"param analytic != numeric", "param gradcheck pass");
+				FloatT numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
+
+				FloatT analyticGrad = engine->element_at(
+						engine->read_memory(analyticGrads[agpt++]), perturbDimIdx);
+
+				assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
+						"param analytic != numeric", "param gradcheck pass");
+			}
 		}
 	}
 
@@ -121,7 +136,7 @@ inline void gradient_check(Network& net,
 
 			net.execute("forward");
 
-			float lossMinus = *engine->read_memory(net.lossLayer->total_loss());
+			FloatT lossMinus = *engine->read_memory(net.lossLayer->total_loss());
 
 			dataman->gradient_check_restore();
 			reset_net();
@@ -130,13 +145,13 @@ inline void gradient_check(Network& net,
 
 			net.execute("forward");
 
-			float lossPlus = *engine->read_memory(net.lossLayer->total_loss());
+			FloatT lossPlus = *engine->read_memory(net.lossLayer->total_loss());
 
 			dataman->gradient_check_restore();
 
-			float numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
+			FloatT numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 
-			float analyticGrad = *engine->read_memory(analyticGrads[inp]);
+			FloatT analyticGrad = *engine->read_memory(analyticGrads[inp]);
 
 			assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
 					"input analytic != numeric", "input gradcheck pass");

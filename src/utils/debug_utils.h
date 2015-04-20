@@ -81,7 +81,7 @@ assert_throw_nullptr(const std::shared_ptr<T>& ptr, string errmsg)
 		throw ExceptionT(errmsg);
 }
 
-template<typename FloatT>
+template<typename FloatT = float>
 void assert_float_eq(FloatT f1, FloatT f2, FloatT tol = 1e-4f,
 		std::string errmsg = "", std::string successmsg="")
 {
@@ -102,11 +102,11 @@ void assert_float_eq(FloatT f1, FloatT f2, FloatT tol = 1e-4f,
  * If the difference percentage (w.r.t average of two operand values)
  * is greater than TOL, we assert failure.
  */
-template<typename FloatT>
+template<typename FloatT = float>
 void assert_float_percent_eq(FloatT f1, FloatT f2, FloatT percentTol = 1.0f,
 		std::string errmsg = "", std::string successmsg="")
 {
-	const float DEFAULT_ABS_TOL = 1e-3f;
+	const FloatT DEFAULT_ABS_TOL = 1e-3f;
 	if (abs(f1) < DEFAULT_ABS_TOL || abs(f2) < DEFAULT_ABS_TOL)
 	{
 		assert_float_eq(f1, f2, DEFAULT_ABS_TOL, errmsg, successmsg);
