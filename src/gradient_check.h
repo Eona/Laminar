@@ -66,7 +66,12 @@ inline void gradient_check(Network& net,
 //	for (auto& tensor : analyticGrads)
 //		DEBUG_MSG("gradient check: " << engine->read_memory(tensor));
 
-	/****** perturb parameters matrices stored in connections ******/
+	/**************************************
+	******* Perturb every element in the parameter tensors *********
+	**************************************/
+	// total number of elements in all parameter tensors combined
+	int totalParamElementCount = 0;
+
 	int agpt = 0; // point to analyticGrads
 	// step through every parameter container
 	for (ParamContainer::Ptr param : net.paramContainers)
@@ -75,8 +80,10 @@ inline void gradient_check(Network& net,
 		for (int p = 0; p < param->size(); ++p)
 		{
 			// step through every element entry in the parameter tensor
-			Dimension totalParamDim = param->param_dim(p);
-			DimIndexEnumerator idxEnumer(totalParamDim);
+			Dimension paramDim = param->param_dim(p);
+			DimIndexEnumerator idxEnumer(paramDim);
+			totalParamElementCount +=
+					std::accumulate(paramDim.begin(), paramDim.end(), 1, std::multiplies<int>());
 
 			while (idxEnumer.has_next())
 			{
@@ -114,6 +121,7 @@ inline void gradient_check(Network& net,
 			++ agpt; // go to the next tensor stored in analyticGrads
 		}
 	}
+	cout << "Total parameter element count: " << totalParamElementCount << endl;
 
 	/****** perturb the input if GradientCheckable ******/
 	reset_net();
