@@ -12,6 +12,18 @@
 
 #define VECTORMAT_DEBUG false
 
+class VecmatEngineException: public EngineException {
+public:
+    VecmatEngineException(const std::string& msg):
+    	EngineException(msg)
+	{}
+
+    virtual std::string error_header() const
+    {
+    	return "VecmatEngine error";
+    }
+};
+
 namespace lmn {
 
 typedef Vecmat<float> Vecmatf;
@@ -52,6 +64,12 @@ void debug_msg(string msg, bool is_initialized)
 #if VECTORMAT_DEBUG
 	DEBUG_MSG(("VectorMat::" + msg + " ->init=") << std::boolalpha << is_initialized);
 #endif
+}
+
+void debug_assert_init(string msg, bool is_initialized)
+{
+	LMN_ASSERT_THROW(is_initialized,
+		VecmatEngineException("calling "+msg+" on uninitialized write addr"));
 }
 
 template<int TensorT>
@@ -110,6 +128,9 @@ void mult(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
 void scale(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized, float scalorContext)
 {
 	debug_msg("scale * " + to_str(scalorContext), is_initialized);
+
+	LMN_ASSERT_THROW(!reads[0]->is_empty(),
+		VecmatEngineException("calling scale on unintialized reads[0] addr"));
 
 	if (!is_initialized)
 		write->new_zeros(reads[0]);
@@ -279,8 +300,7 @@ inline void zero_clear(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initi
 	debug_msg("zero_clear", is_initialized);
 
 	// FIXME loss layer output might be zero cleared without being initialized
-//	assert_throw<EngineException>(is_initialized,
-//		"VecmatEngine: calling zero_clear on uninitialized write addr");
+//	debug_assert_init("zero_clear", is_initialized);
 
 	if (is_initialized)
 		write->zero_clear();
@@ -290,9 +310,7 @@ inline void set_value(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initia
 		DimIndex idx, float val)
 {
 	debug_msg("set_value: " + container2str(idx) + "=" + to_str(val), is_initialized);
-
-	assert_throw<EngineException>(is_initialized,
-		"VecmatEngine: calling set_value on uninitialized write addr");
+	debug_assert_init("set_value", is_initialized);
 
 	write->at(idx) = val;
 }
@@ -301,10 +319,8 @@ inline void set_value(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initia
 // FIXME add contextual rand engine
 inline void fill_rand(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
 {
-	assert_throw<EngineException>(is_initialized,
-		"VecmatEngine: calling fill_rand on uninitialized write addr");
-
 	debug_msg("fill_rand", is_initialized);
+	debug_assert_init("fill_rand", is_initialized);
 
 	write->fill([](int i, int j) {
 		return FakeRand::instance_connection()();
@@ -313,10 +329,8 @@ inline void fill_rand(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initia
 
 inline void fill_rand_prehistory(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
 {
-	assert_throw<EngineException>(is_initialized,
-		"VecmatEngine: calling fill_rand_prehistory on uninitialized write addr");
-
 	debug_msg("fill_rand_prehistory", is_initialized);
+	debug_assert_init("fill_rand_prehistory", is_initialized);
 
 	write->fill([](int i, int j) {
 		return FakeRand::instance_prehistory()();
@@ -328,8 +342,7 @@ inline void perturb(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initiali
 		DimIndex idx, float eps)
 {
 	debug_msg("perturb", is_initialized);
-	assert_throw<EngineException>(is_initialized,
-		"VecmatEngine: calling perturb on uninitialized write addr");
+	debug_assert_init("perturb", is_initialized);
 
 	write->at(idx) += eps;
 }

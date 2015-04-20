@@ -156,11 +156,6 @@ public:
 				Dimension{ row(), col() };
 	}
 
-	bool is_initialized() const
-	{
-		return row() != 0 && col() != 0;
-	}
-
 	Vecmat operator+(const Vecmat& rhs)
 	{
 		assert_same_dim(rhs, "addition");
