@@ -417,10 +417,10 @@ public:
 
 		CommandFuncType adapt_context(OpContextBase::Ptr context)
 		{
-			assert_throw(!context,
-				EngineException("OpContext in Instruction is not null: \n\""
+			assert_throw<EngineException>(!context,
+				"OpContext in Instruction is not null: \n\""
 					+ Command::opName +"\" "
-					"is not a NormalCommand, should be registered as ContextCommand instead."));
+					"is not a NormalCommand, should be registered as ContextCommand instead.");
 			return cmd;
 		}
 
@@ -475,15 +475,14 @@ public:
 		template<int ...S>
 		CommandFuncType adapt_context_helper(OpContextBase::Ptr contextBase, unpack_seq<S...>)
 		{
-			assert_throw_nullptr(contextBase,
-				EngineException("\""+ Command::opName + "\" is registered as a ContextCommand\n"
-						"the OpContext in Instruction must be specified (now it's nullptr)"));
+			assert_throw_nullptr<EngineException>(contextBase,
+				"\""+ Command::opName + "\" is registered as a ContextCommand\n"
+						"the OpContext in Instruction must be specified (now it's nullptr)");
 
 			auto context = OpContextBase::cast<ContextArgT...>(contextBase);
 
-			assert_throw_nullptr(context,
-				EngineException("OpContext fails to supply "
-						"the correct number/types of extra context parameters"));
+			assert_throw_nullptr<EngineException>(context,
+				"OpContext fails to supply the correct number/types of extra context parameters");
 
 			auto contextArgPack = context->get_context_arg_pack();
 
@@ -543,9 +542,9 @@ public:
 
 			if (instr.opcode == "create")
 			{
-				assert_throw_nullptr(instr.context,
-					EngineException("context variable (Dimension) is not supplied as part of "
-							"the instruction for create command."));
+				assert_throw_nullptr<EngineException>(instr.context,
+					"context variable (Dimension) is not supplied as part of "
+							"the instruction for create command.");
 
 				// Get the context directly
 				std::tuple<Dimension> dim =
@@ -561,9 +560,9 @@ public:
 			}
 			else
 			{
-				assert_throw(key_exists(this->commandMap, instr.opcode),
-					EngineException(string("Engine compilation failure: ") +
-							"Opcode \"" + string(instr.opcode) + "\" not registered."));
+				assert_throw<EngineException>(key_exists(this->commandMap, instr.opcode),
+						string("Engine compilation failure: ") +
+							"Opcode \"" + string(instr.opcode) + "\" not registered.");
 
 				CommandFuncType cmd = this->commandMap[instr.opcode]->adapt_context(instr.context);
 				// value capture by '=' includes 'this'

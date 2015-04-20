@@ -155,8 +155,8 @@ public:
 
 	Dimension dim() const
 	{
-		assert_throw(!dim_.empty(),
-			TensorException("null created, cannot query dimension."));
+		assert_throw<TensorException>(!dim_.empty(),
+				"null created, cannot query dimension.");
 
 		return this->dim_;
 	}
@@ -241,8 +241,8 @@ template<typename DataT>
 inline Engine<DataT>::DataPtr Engine<DataT>::read_memory(TensorBase::Ptr tensorPtr)
 {
 	int addr = tensorPtr->addr;
-	assert_throw(this->memoryPool.is_initialized(addr),
-		EngineException("MemoryPool[] address not initialized."));
+	assert_throw<EngineException>(this->memoryPool.is_initialized(addr),
+			"MemoryPool[] address not initialized.");
 	return this->memoryPool[addr];
 }
 
@@ -250,8 +250,8 @@ template<typename DataT>
 inline Engine<DataT>::DataPtr Engine<DataT>::read_memory(const TensorBase& tensorPtr)
 {
 	int addr = tensorPtr.addr;
-	assert_throw(this->memoryPool.is_initialized(addr),
-		EngineException("MemoryPool[] address not initialized."));
+	assert_throw<EngineException>(this->memoryPool.is_initialized(addr),
+			"MemoryPool[] address not initialized.");
 	return this->memoryPool[tensorPtr.addr];
 }
 

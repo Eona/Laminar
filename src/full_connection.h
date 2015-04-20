@@ -44,9 +44,9 @@ public:
 		param(ParamContainer::param_value_ptr(0)),
 		gradient(ParamContainer::param_gradient_ptr(0))
 	{
-		assert_throw(inLayer->dim().size() == 1
+		assert_throw<ComponentException>(inLayer->dim().size() == 1
 				&& outLayer->dim().size() == 1,
-			ComponentException("FullConnection requires the in/outLayers to be one-dimensional"));
+			"FullConnection requires the in/outLayers to be one-dimensional");
 	}
 
 	virtual ~FullConnection() {};

@@ -19,8 +19,8 @@ public:
 	Network(EngineBase::Ptr engine_, DataManagerBase::Ptr dataManager_)
 		: engine(engine_), dataManager(dataManager_)
 	{
-		assert_throw(engine == dataManager->get_engine(),
-				NetworkException("DataManager has a different engine"));
+		assert_throw<NetworkException>(engine == dataManager->get_engine(),
+				"DataManager has a different engine");
 
 		/**
 		 * Tag the member methods with their names
@@ -88,8 +88,8 @@ public:
 	std::shared_ptr<EngineT> get_engine()
 	{
 		auto engine_ = std::dynamic_pointer_cast<EngineT>(this->engine);
-		assert_throw_nullptr(engine_,
-			NetworkException("get_engine()'s template type is incompatible"));
+		assert_throw_nullptr<NetworkException>(engine_,
+			"get_engine()'s template type is incompatible");
 		return engine_;
 	}
 
@@ -100,8 +100,8 @@ public:
 	std::shared_ptr<DataManagerT> get_data_manager()
 	{
 		auto dataManager_ = std::dynamic_pointer_cast<DataManagerT>(this->dataManager);
-		assert_throw_nullptr(dataManager_,
-			NetworkException("get_data_manager()'s template type is incompatible"));
+		assert_throw_nullptr<NetworkException>(dataManager_,
+			"get_data_manager()'s template type is incompatible");
 		return dataManager_;
 	}
 
@@ -130,8 +130,8 @@ public:
 	 */
 	void execute(string methodName)
 	{
-		assert_throw(key_exists(networkMethodMap, methodName),
-			NetworkException("no Network member method is associated with \"" + methodName + "\""));
+		assert_throw<NetworkException>(key_exists(networkMethodMap, methodName),
+			"no Network member method is associated with \"" + methodName + "\"");
 
 		// if the instructions haven't been generated
 		if (!key_exists(routineMap, methodName))
@@ -147,11 +147,11 @@ public:
 	 */
 	void recompile(string methodName)
 	{
-		assert_throw(key_exists(networkMethodMap, methodName),
-			NetworkException("no Network member method is associated with \"" + methodName + "\""));
+		assert_throw<NetworkException>(key_exists(networkMethodMap, methodName),
+			"no Network member method is associated with \"" + methodName + "\"");
 
-		assert_throw(key_exists(routineMap, methodName),
-			NetworkException(methodName + " has never been compiled."));
+		assert_throw<NetworkException>(key_exists(routineMap, methodName),
+				methodName + " has never been compiled.");
 
 		this->compile_helper(methodName);
 	}
@@ -216,8 +216,8 @@ protected:
 
 	void initialize()
 	{
-		assert_throw(!this->is_initialized,
-			ComponentException("Network already initialized, can't init again unless reset()"));
+		assert_throw<NetworkException>(!this->is_initialized,
+			"Network already initialized, can't init again unless reset()");
 
 		this->initialize_impl();
 
@@ -231,8 +231,8 @@ protected:
 	{
 		this->lossLayer = Layer::cast<LossLayer>(layers[layers.size() - 1]);
 
-		assert_throw_nullptr(this->lossLayer,
-			NetworkException("Last layer must be a LossLayer"));
+		assert_throw_nullptr<NetworkException>(this->lossLayer,
+				"Last layer must be a LossLayer");
 
 		for (Component::Ptr c : this->components)
 		{
@@ -283,8 +283,8 @@ protected:
 	 */
 	void check_initialized(string msg)
 	{
-		assert_throw(this->is_initialized,
-			NetworkException(msg + ": Network has not been initialized yet."));
+		assert_throw<NetworkException>(this->is_initialized,
+			msg + ": Network has not been initialized yet.");
 	}
 
 	/**
@@ -293,8 +293,8 @@ protected:
 	 */
 	void check_uninitialized(string msg)
 	{
-		assert_throw(!this->is_initialized,
-			NetworkException(msg + " should be called before Network initialization."));
+		assert_throw<NetworkException>(!this->is_initialized,
+			msg + " should be called before Network initialization.");
 	}
 };
 
@@ -388,11 +388,11 @@ public:
 
 	virtual void add_recurrent_connection(Connection::Ptr conn, int temporalSkip = 1)
 	{
-		assert_throw(
+		assert_throw<NetworkException>(
 			maxTemporalSkip == Layer::UNLIMITED_TEMPORAL_SKIP
 				|| temporalSkip <= maxTemporalSkip,
-			NetworkException("temporalSkip should be <= maxTemporalSkip.\n"
-					"Use init_max_temporal_skip() to change the upper limit."));
+			"temporalSkip should be <= maxTemporalSkip.\n"
+				"Use init_max_temporal_skip() to change the upper limit.");
 
 		components.push_back(Component::upcast(conn));
 		connections.push_back(conn);

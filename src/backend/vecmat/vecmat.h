@@ -48,9 +48,9 @@ public:
 	// Copy assignment
 	Vecmat& operator=(const Vecmat& other)
 	{
-		assert_throw(!is_empty(),
-			VecmatException("\nShouldn't copy assign to a default constructed "
-					"empty matrix. \nUse 'mat.new_zeros()' first."));
+		assert_throw<VecmatException>(!is_empty(),
+			"\nShouldn't copy assign to a default constructed "
+					"empty matrix. \nUse 'mat.new_zeros()' first.");
 
 		assert_same_dim(other, "copy assign");
 		this->mat = other.mat;
@@ -65,9 +65,9 @@ public:
 	// Move assignment
 	Vecmat& operator=(Vecmat&& other)
 	{
-		assert_throw(!is_empty(),
-			VecmatException("\nShouldn't move assign to a default constructed "
-					"empty matrix. \nUse 'mat.new_zeros()' first."));
+		assert_throw<VecmatException>(!is_empty(),
+			"\nShouldn't move assign to a default constructed "
+					"empty matrix. \nUse 'mat.new_zeros()' first.");
 
 		assert_same_dim(other, "move assign");
 		this->mat = std::move(other.mat);
@@ -77,9 +77,9 @@ public:
 	// Only for default constructed matrix
 	void new_zeros(int row, int col)
 	{
-		assert_throw(is_empty(),
-			VecmatException("\nalloc_size() should only be used with default "
-					"constructed empty matrix."));
+		assert_throw<VecmatException>(is_empty(),
+			"\nalloc_size() should only be used with default "
+					"constructed empty matrix.");
 
 		mat.resize(row);
 		for (int r = 0; r < row; ++r)
@@ -91,8 +91,8 @@ public:
 	 */
 	void new_zeros(const Vecmat& other)
 	{
-		assert_throw(!other.is_empty(),
-			VecmatException("\nalloc_size(other) the other matrix cannot be empty."));
+		assert_throw<VecmatException>(!other.is_empty(),
+			"\nalloc_size(other) the other matrix cannot be empty.");
 
 		this->new_zeros(other.row(), other.col());
 	}
@@ -202,8 +202,8 @@ public:
 
 	Vecmat operator*(const Vecmat& rhs)
 	{
-		assert_throw(this->col() == rhs.row(),
-			VecmatException("multiplication dimension mismatch"));
+		assert_throw<VecmatException>(this->col() == rhs.row(),
+				"multiplication dimension mismatch");
 
 		Vecmat ans(this->row(), rhs.col());
 
@@ -230,8 +230,8 @@ public:
 	 */
 	void fill(std::function<FloatT(int, int)> gen)
 	{
-		assert_throw(!this->is_empty(),
-			VecmatException("cannot fill emptry matrix"));
+		assert_throw<VecmatException>(!this->is_empty(),
+				"cannot fill emptry matrix");
 
 		for (int r = 0; r < row(); ++r)
 			for (int c = 0; c < col(); ++c)
@@ -245,9 +245,9 @@ public:
 
 	void assert_same_dim(const Vecmat& other, string msg)
 	{
-		assert_throw(this->row() == other.row()
+		assert_throw<VecmatException>(this->row() == other.row()
 			&& this->col() == other.col(),
-			VecmatException(msg + " dimension mismatch"));
+			msg + " dimension mismatch");
 	}
 
 private:

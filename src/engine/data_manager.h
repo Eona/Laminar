@@ -57,8 +57,8 @@ public:
 	std::shared_ptr<EngineT> get_engine()
 	{
 		auto engine_ = std::dynamic_pointer_cast<EngineT>(this->engine);
-		assert_throw_nullptr(engine_,
-			NetworkException("get_engine()'s template type is incompatible"));
+		assert_throw_nullptr<NetworkException>(engine_,
+			"get_engine()'s template type is incompatible");
 		return engine_;
 	}
 

@@ -186,16 +186,16 @@ inline void set_value(vector<FloatPtr> reads, FloatPtr write, bool is_initialize
 // FIXME add contextual rand engine
 inline void fill_rand(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
-	assert_throw(is_initialized,
-		EngineException("DummyEngine: fill_rand must have been initialized"));
+	assert_throw<EngineException>(is_initialized,
+		"DummyEngine: fill_rand must have been initialized");
 	debug_msg("fill_rand", is_initialized);
 	*write = FakeRand::instance_connection()();
 }
 
 inline void fill_rand_prehistory(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
-	assert_throw(is_initialized,
-		EngineException("DummyEngine: fill_rand_prehistory must have been initialized"));
+	assert_throw<EngineException>(is_initialized,
+		"DummyEngine: fill_rand_prehistory must have been initialized");
 	debug_msg("fill_rand_prehistory", is_initialized);
 	*write = FakeRand::instance_prehistory()();
 }

@@ -273,8 +273,8 @@ inline void zero_clear(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initi
 {
 	debug_msg("zero_clear", is_initialized);
 
-	assert_throw(is_initialized,
-		EngineException("VecmatEngine: calling zero_clear on uninitialized write addr"));
+	assert_throw<EngineException>(is_initialized,
+		"VecmatEngine: calling zero_clear on uninitialized write addr");
 
 	write->zero_clear();
 }
@@ -284,8 +284,8 @@ inline void set_value(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initia
 {
 	debug_msg("set_value: " + container2str(idx) + "=" + to_str(val), is_initialized);
 
-	assert_throw(is_initialized,
-		EngineException("VecmatEngine: calling set_value on uninitialized write addr"));
+	assert_throw<EngineException>(is_initialized,
+		"VecmatEngine: calling set_value on uninitialized write addr");
 
 	write->at(idx) = val;
 }
@@ -294,8 +294,8 @@ inline void set_value(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initia
 // FIXME add contextual rand engine
 inline void fill_rand(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
 {
-	assert_throw(is_initialized,
-		EngineException("VecmatEngine: calling fill_rand on uninitialized write addr"));
+	assert_throw<EngineException>(is_initialized,
+		"VecmatEngine: calling fill_rand on uninitialized write addr");
 
 	debug_msg("fill_rand", is_initialized);
 
@@ -306,8 +306,8 @@ inline void fill_rand(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initia
 
 inline void fill_rand_prehistory(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
 {
-	assert_throw(is_initialized,
-		EngineException("VecmatEngine: calling fill_rand_prehistory on uninitialized write addr"));
+	assert_throw<EngineException>(is_initialized,
+		"VecmatEngine: calling fill_rand_prehistory on uninitialized write addr");
 
 	debug_msg("fill_rand_prehistory", is_initialized);
 
@@ -321,8 +321,8 @@ inline void perturb(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initiali
 		DimIndex idx, float eps)
 {
 	debug_msg("perturb", is_initialized);
-	assert_throw(is_initialized,
-		EngineException("VecmatEngine: calling perturb on uninitialized write addr"));
+	assert_throw<EngineException>(is_initialized,
+		"VecmatEngine: calling perturb on uninitialized write addr");
 
 	write->at(idx) += eps;
 }
@@ -381,8 +381,8 @@ public:
 
 	float element_at(lmn::VecmatfPtr vecmat, DimIndex idx)
 	{
-		assert_throw(!vecmat->is_empty(),
-			EngineException("VecmatEngine: element_at() called on null matrix"));
+		assert_throw<EngineException>(!vecmat->is_empty(),
+			"VecmatEngine: element_at() called on null matrix");
 
 		return vecmat->at(idx);
 	}

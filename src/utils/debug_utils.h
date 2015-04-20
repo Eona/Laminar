@@ -42,10 +42,10 @@ inline void assert(bool cond, std::string errmsg = "", std::string successmsg=""
 
 template<typename ExceptionT>
 typename std::enable_if<std::is_base_of<std::exception, ExceptionT>::value, void>::type
-assert_throw(bool cond, ExceptionT&& throwable)
+assert_throw(bool cond, string errmsg = "")
 {
 	if (!cond)
-		throw throwable;
+		throw ExceptionT(errmsg);
 }
 
 /**
@@ -55,10 +55,10 @@ assert_throw(bool cond, ExceptionT&& throwable)
  */
 template<typename ExceptionT, typename T>
 typename std::enable_if<std::is_base_of<std::exception, ExceptionT>::value, void>::type
-assert_throw_nullptr(const std::shared_ptr<T>& ptr, ExceptionT&& throwable)
+assert_throw_nullptr(const std::shared_ptr<T>& ptr, string errmsg)
 {
 	if (ptr == nullptr)
-		throw throwable;
+		throw ExceptionT(errmsg);
 }
 
 /**
