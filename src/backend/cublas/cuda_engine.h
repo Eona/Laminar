@@ -297,10 +297,10 @@ inline void square_loss(vector<CudaFloatMatPtr> reads, float* write, bool is_ini
 	op_func_dual_t h_func;
 	cudaMemcpyFromSymbol( &h_func, cu_square_loss_func, sizeof( op_func_t ) );
 	mat_op_kernel<<<aux.GRID_DIM, aux.BLOCK_DIM>>>( aux.device_data,
-														  reads[0]->device_data,
-														  reads[1]->device_data,
-														  aux.LEN,
-														  h_func );
+													reads[0]->device_data,
+													reads[1]->device_data,
+													aux.LEN,
+													h_func );
 
     cublasSasum(cublasHandleInstance(), aux.LEN, aux.device_data, 1, write);
 }
