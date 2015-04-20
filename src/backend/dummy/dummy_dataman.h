@@ -10,7 +10,8 @@
 #include "../../utils/rand_utils.h"
 
 class DummyDataManager :
-		public DataManager<float>, public GradientCheckable<float>
+		public DataManager<float>,
+		public GradientCheckable<>
 {
 public:
 	typedef std::shared_ptr<float> DataPtr;
@@ -27,6 +28,16 @@ public:
 	void load_target(DataPtr write, bool is_initialized)
 	{
 		*write = target_rand();
+	}
+
+	Dimension input_dim() const
+	{
+		return {1, 1};
+	}
+
+	Dimension target_dim() const
+	{
+		return {1, 1};
 	}
 
 	void start_new_epoch()

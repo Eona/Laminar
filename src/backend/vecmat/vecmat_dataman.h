@@ -9,20 +9,22 @@
 #include "../../utils/rand_utils.h"
 #include "../vecmat/vecmat_engine.h"
 
-class VecmatDataManager : public DataManager<lmn::Vecmatf>
+class VecmatDataManager :
+		public DataManager<lmn::Vecmatf>
+//		public GradientCheckable<>
 {
 public:
 	typedef lmn::VecmatfPtr DataPtr;
 
 	VecmatDataManager(EngineBase::Ptr engine, int inputDim_, int batchSize_) :
 		DataManager(engine),
-		inputDim(inputDim_), batchSize(batchSize_)
+		dataDim(inputDim_), batchSize(batchSize_)
 	{}
 
 	void load_input(DataPtr write, bool is_initialized)
 	{
 		if (!is_initialized)
-			write->new_zeros(inputDim, batchSize);
+			write->new_zeros(dataDim, batchSize);
 
 		write->fill([&](int i, int j) {
 			return input_rand();
@@ -32,7 +34,7 @@ public:
 	void load_target(DataPtr write, bool is_initialized)
 	{
 		if (!is_initialized)
-			write->new_zeros(inputDim, batchSize);
+			write->new_zeros(dataDim, batchSize);
 
 		write->fill([&](int i, int j) {
 			return target_rand();
@@ -51,9 +53,14 @@ public:
 		target_rand.reset_seq();
 	}
 
-	int input_dim() const
+	Dimension input_dim() const
 	{
-		return this->inputDim;
+		return { this->dataDim, this->batchSize };
+	}
+
+	Dimension target_dim() const
+	{
+		return input_dim();
 	}
 
 	int batch_size() const
@@ -61,26 +68,13 @@ public:
 		return this->batchSize;
 	}
 
-	/**
-	 * Debug only, for gradient check
-	 * Perturbs the internal 'random sequence', doesn't upload any instruction
+	/*********** Gradient checking ***********/
+	/** TODO
+	 * GradientCheckable<float> interface
 	 */
-	void perturb_input(int idx, float eps)
-	{
-		this->lastPerturbedIdx = idx;
-		this->lastEps = eps;
-		input_rand[idx] += eps;
-	}
-	/**
-	 * Debug only, for gradient check
-	 */
-	void restore_last_input()
-	{
-		input_rand[lastPerturbedIdx] -= lastEps;
-	}
 
 private:
-	int inputDim;
+	int dataDim;
 	int batchSize;
 
 	FakeRand& input_rand = FakeRand::instance_input();

@@ -35,7 +35,7 @@ typedef std::vector<int> DimIndex;
 /**
  * Inherit from this tagging interface to work with gradient check
  */
-template<typename FloatT>
+template<typename FloatT = float>
 class GradientCheckable
 {
 public:
