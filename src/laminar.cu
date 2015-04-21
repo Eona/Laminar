@@ -95,7 +95,9 @@ int main(int argc, char **argv)
 	int i = 0;
 	while (idxEnumer.has_next())
 	{
-		DEBUG_MSG(idxEnumer.next());
+		auto a = idxEnumer.next();
+		DEBUG_MSG(a << " linear = " << idxEnumer.linearize(a));
+
 		++ i;
 	}
 	DEBUG_MSG("count", i);

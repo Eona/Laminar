@@ -260,7 +260,7 @@ TEST(VecmatRecurrentNet, GatedTanhConnection)
 	net.add_recurrent_connection(g234_2, 2);
 	net.add_layer(l4);
 
-	gradient_check<VecmatEngine, VecmatDataManager>(net, 1e-2f, 1.f);
+	gradient_check<VecmatEngine, VecmatDataManager>(net, 1e-2f, 1.3f);
 }
 
 TEST(Composite, LSTM)
@@ -289,8 +289,8 @@ TEST(Composite, LSTM)
 //	rand_prehis.print_rand_seq();
 
 	rand_input.set_rand_seq(vector<float> {
-		-0.511, 0.145, -0.781, 0.193, -0.216, 0.428, -0.156, 0.396, -0.24, 0.318,
-		-0.617, 0.541, 0.0988, 0.204, -0.534, 0.0399, -0.0431, -0.254, -0.562, 0.715
+		-0.671, -0.0565, -0.0937, -0.862, -0.651, 0.057, 0.121, -0.141, 0.0475, -0.0606,
+		-0.583, -0.252, -0.43, -0.782, 0.487, 0.372, -0.47, -0.515, -0.795, -0.732
 	});
 //	rand_input.gen_uniform_rand(20, -1, 1);
 //	rand_input.print_rand_seq();

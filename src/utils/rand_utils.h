@@ -119,7 +119,7 @@ public:
 	 */
 	float& operator[](int i)
 	{
-		return this->randSeq[i];
+		return this->randSeq[i % size()];
 	}
 
 	void gen_uniform_rand(int seqLength, float low, float high)

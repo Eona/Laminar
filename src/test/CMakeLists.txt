@@ -2,7 +2,7 @@ message("Folder test/ for gtest template")
 include(eona_gtest)
 
 # toggle this to avoid recompiling gtests
-set(RUN_GTEST TRUE)
+set(RUN_GTEST true)
 
 set(TEST_SUITE 
 #    forward_dummy_test rnn_dummy_test

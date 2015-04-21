@@ -10,15 +10,16 @@
 #include "../vecmat/vecmat_engine.h"
 
 class VecmatDataManager :
-		public DataManager<lmn::Vecmatf>
-//		public GradientCheckable<>
+		public DataManager<lmn::Vecmatf>,
+		public GradientCheckable<>
 {
 public:
 	typedef lmn::VecmatfPtr DataPtr;
 
 	VecmatDataManager(EngineBase::Ptr engine, int inputDim_, int targetDim_, int batchSize_) :
 		DataManager(engine),
-		inputDim(inputDim_), targetDim(targetDim_), batchSize(batchSize_)
+		inputDim(inputDim_), targetDim(targetDim_), batchSize(batchSize_),
+		indexer(Dimension { inputDim, batchSize }) // for gradient check debugging
 	{}
 
 	void load_input(DataPtr write, bool is_initialized)
@@ -68,10 +69,26 @@ public:
 		return this->batchSize;
 	}
 
+protected:
 	/*********** Gradient checking ***********/
-	/** TODO
+	/**
 	 * GradientCheckable<float> interface
 	 */
+	virtual void gradient_check_perturb_impl(
+				int changeItem, DimIndex dimIdx, float eps)
+	{
+		// assume input_rand is fully reset
+		// calculate the 1D index inside input_rand
+		input_rand[changeItem * inputDim * batchSize
+			+ this->indexer.linearize(dimIdx)] += eps;
+	}
+
+	virtual void gradient_check_restore_impl(
+			int lastChangeItem, DimIndex lastDimIdx, float lastEps)
+	{
+		input_rand[lastChangeItem * inputDim * batchSize
+			+ this->indexer.linearize(lastDimIdx)] -= lastEps;
+	}
 
 private:
 	int inputDim;
@@ -82,8 +99,7 @@ private:
 	FakeRand& target_rand = FakeRand::instance_target();
 
 	// for restoring perturbed input
-	int lastPerturbedIdx;
-	float lastEps;
+	DimIndexEnumerator indexer;
 };
 
 #endif /* BACKEND_VECMAT_VECMAT_DATAMAN_H_ */

@@ -230,14 +230,15 @@ public:
 
 	/**
 	 * Fill the matrix with a generator f(r, c)
+	 * NOTE must be column major to work with VecmatDataManager
 	 */
 	void fill(std::function<FloatT(int, int)> gen)
 	{
 		assert_throw<VecmatException>(!this->is_empty(),
 				"cannot fill emptry matrix");
 
-		for (int r = 0; r < row(); ++r)
-			for (int c = 0; c < col(); ++c)
+		for (int c = 0; c < col(); ++c)
+			for (int r = 0; r < row(); ++r)
 				mat[r][c] = gen(r, c);
 	}
 
