@@ -147,8 +147,8 @@ public:
     }
 
     void free_data(){
-    	if (device_data) cudaFree(device_data);
-		if (device_data_initialized) free(host_data);
+    	if (device_data_initialized) cudaFree(device_data);
+		if (host_data) free(host_data);
     }
 
 	~CudaFloatMat(){
