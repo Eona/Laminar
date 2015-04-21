@@ -283,8 +283,17 @@ public:
 	inline void element_mult(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("element_mult", is_initialized);
-		elementOp("mat_elem_mult_kernel", reads, write, is_initialized);
-	}
+	    int m = reads[0]->DIM_ROW;
+	    int n = reads[0]->DIM_COL;
+	    if (!is_initialized) {
+	        write->reset(m, n, cl); //initialize LHS if not already
+	    }
+	    //y = x
+	    cl->setup_kernel("mat_elem_mult_kernel", 0, sizeof(cl_mem), &write->device_data); // Y
+	    cl->setup_kernel("mat_elem_mult_kernel", 1, sizeof(cl_mem), &reads[0]->device_data); // X
+	    cl->setup_kernel("mat_elem_mult_kernel", 2, sizeof(cl_mem), &reads[1]->device_data); // X
+	    cl->setup_kernel("mat_elem_mult_kernel", 3, sizeof(int), &(write->LEN)); //DATA_SIZE
+	    cl->exec_kernel("mat_elem_mult_kernel", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);	}
 
 	inline void square_loss(vector<OpenclFloatMatPtr> reads, float* write, bool is_initialized)
 	{
