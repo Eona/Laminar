@@ -337,6 +337,17 @@ inline void fill_rand_prehistory(vector<VecmatfPtr> reads, VecmatfPtr write, boo
 	});
 }
 
+inline void fill_element(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized,
+		lmn::ElementFillFunc<float> filler)
+{
+	debug_msg("fill_element", is_initialized);
+	debug_assert_init("fill_element", is_initialized);
+
+	write->fill([filler](int i, int j) {
+		return filler(DimIndex {i, j});
+	});
+}
+
 // For gradient checking
 inline void perturb(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized,
 		DimIndex idx, float eps)
@@ -394,6 +405,9 @@ public:
 
 		register_normal_op("fill_rand", Impl::fill_rand);
 		register_normal_op("fill_rand_prehistory", Impl::fill_rand_prehistory);
+		register_context_op<lmn::ElementFillFunc<float>>(
+						"fill_element", Impl::fill_element);
+
 		register_context_op<DimIndex, float>("perturb", Impl::perturb);
 		register_context_op<DimIndex, float>("set_value", Impl::set_value);
 		register_context_op<float>("scale", Impl::scale);

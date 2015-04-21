@@ -237,6 +237,7 @@ public:
 		assert_throw<VecmatException>(!this->is_empty(),
 				"cannot fill emptry matrix");
 
+		// fill by column major to comply with DimIndexEnumerator
 		for (int c = 0; c < col(); ++c)
 			for (int r = 0; r < row(); ++r)
 				mat[r][c] = gen(r, c);

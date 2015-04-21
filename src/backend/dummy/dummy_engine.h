@@ -200,6 +200,17 @@ inline void fill_rand_prehistory(vector<FloatPtr> reads, FloatPtr write, bool is
 	*write = FakeRand::instance_prehistory()();
 }
 
+inline void fill_element(vector<FloatPtr> reads, FloatPtr write, bool is_initialized,
+		lmn::ElementFillFunc<float> filler)
+{
+	assert_throw<EngineException>(is_initialized,
+		"DummyEngine: fill_element must have been initialized");
+
+	debug_msg("fill_element", is_initialized);
+
+	*write = filler({0});
+}
+
 // For gradient checking
 inline void perturb(vector<FloatPtr> reads, FloatPtr write, bool is_initialized,
 		DimIndex idx, float eps)
@@ -262,6 +273,9 @@ public:
 
 		register_normal_op("fill_rand", Impl::fill_rand);
 		register_normal_op("fill_rand_prehistory", Impl::fill_rand_prehistory);
+		register_context_op<lmn::ElementFillFunc<float>>(
+						"fill_element", Impl::fill_element);
+
 		register_context_op<DimIndex, float>("perturb", Impl::perturb);
 		register_context_op<DimIndex, float>("set_value", Impl::set_value);
 		register_context_op<float>("scale", Impl::scale);

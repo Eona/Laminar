@@ -206,6 +206,21 @@ typedef std::function<Tensor(const Tensor&)> TransferFunction;
 		x.upload(Instruction("fill_rand_prehistory", {}, x.addr));
 	}
 
+	// template typedef
+	template<typename FloatT = float>
+	using ElementFillFunc = std::function<FloatT(DimIndex)>;
+
+	/**
+	 * Element-wise filling by a function that takes DimIndex
+	 */
+	template<typename FloatT = float>
+	void fill_element(const Tensor& x, ElementFillFunc<FloatT> filler)
+	{
+		x.upload(Instruction("fill_element", {}, x.addr,
+				// equivalent to OpContext<ElementFillFunc<FloatT>>::make()
+				OpContext<ElementFillFunc<FloatT>>::make(filler)));
+	}
+
 	void perturb(const Tensor& x, DimIndex idx, float eps)
 	{
 		x.upload(Instruction("perturb", {}, x.addr,
