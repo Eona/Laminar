@@ -189,10 +189,12 @@ TEST(VecmatLSTM, Agreement)
 		lstmDebugOutput.push_back(*engine2->read_memory(lstmDebugNet.lossLayer->in_value(t)));
 	}
 
-	cout << "Net output: " << netOutput << endl;
+	cout << "Net output: " << netOutput << "\n\n";
 	cout << "LSTM debug output: " << lstmDebugOutput << endl;
 //
-//	for (int t = 0; t < net.history_length(); ++t)
-//		EXPECT_NEAR(netOutput[t], lstmDebugOutput[t], 1e-6)
-//			<< "LSTM output doesn't agree with LstmDebugLayer";
+	for (int t = 0; t < HISTORY; ++t)
+		// Vecmat comparison by default 1e-6 tolerance
+		ASSERT_EQ(netOutput[t], lstmDebugOutput[t]) <<
+				"LSTM output doesn't agree with LstmDebugLayer:\n"
+				<< netOutput[t] << "\n<->\n" << lstmDebugOutput[t];
 }

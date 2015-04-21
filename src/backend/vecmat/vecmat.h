@@ -218,6 +218,27 @@ public:
 		return ans;
 	}
 
+	/**
+	 * Compare entry by entry with tolerance
+	 * @return is same
+	 */
+	bool equals(const Vecmat& other, FloatT eps = 1e-6) const
+	{
+		assert_same_dim(other, "entry-by-entry equals");
+
+		for (int r = 0; r < row(); ++r)
+			for (int c = 0; c < col(); ++c)
+				if (std::abs(mat[r][c] - other(r, c)) > eps)
+					return false;
+
+		return true;
+	}
+
+	bool operator==(const Vecmat& other) const
+	{
+		return this->equals(other, FloatT(1e-6));
+	}
+
 	Vecmat transpose()
 	{
 		Vecmat ans(col(), row());
@@ -234,10 +255,9 @@ public:
 	 */
 	void fill(std::function<FloatT(int, int)> gen)
 	{
-		assert_throw<VecmatException>(!this->is_empty(),
-				"cannot fill emptry matrix");
+		LMN_ASSERT_THROW(this->is_initialized(),
+				VecmatException("cannot fill emptry matrix"));
 
-		// fill by column major to comply with DimIndexEnumerator
 		for (int c = 0; c < col(); ++c)
 			for (int r = 0; r < row(); ++r)
 				mat[r][c] = gen(r, c);
@@ -253,21 +273,34 @@ public:
 		return row() != 0;
 	}
 
-	void assert_same_dim(const Vecmat& other, string msg)
+	void assert_same_dim(const Vecmat& other, string msg) const
 	{
 		LMN_ASSERT_THROW(this->is_initialized()
 			&& other.is_initialized()
 			&& this->row() == other.row()
 			&& this->col() == other.col(),
 
-			VecmatException(msg + " dimension mismatch\n"
-			+ dims_errmsg(other)));
+			VecmatException(msg + " dimension mismatch\n" + dims_errmsg(other)));
+	}
+
+	explicit operator string() const
+	{
+		std::ostringstream os;
+		os << "[";
+		for (int r = 0; r < row(); ++r)
+		{
+			os << mat[r];
+			if (r != row() - 1)
+				os << ",\n";
+		}
+		os << "]";
+		return os.str();
 	}
 
 	/**
 	 * Helper for dimension mismatch error message
 	 */
-	string dims_errmsg(const Vecmat& other)
+	string dims_errmsg(const Vecmat& other) const
 	{
 		return container2str(this->dim())
 				+ " <-> " + container2str(other.dim());
@@ -280,14 +313,7 @@ private:
 template<typename FloatT>
 std::ostream& operator<<(std::ostream& os, Vecmat<FloatT> mat)
 {
-	os << "[";
-	for (int r = 0; r < mat.row(); ++r)
-	{
-		os << mat[r];
-		if (r != mat.row() - 1)
-			os << ",\n";
-	}
-	return os << "]";
+	return os << string(mat);
 }
 
 #endif /* BACKEND_VECMAT_VECMAT_H_ */
