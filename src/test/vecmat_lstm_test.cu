@@ -103,10 +103,9 @@ TEST(VecmatLSTM, Agreement)
 //	rand_conn.print_rand_seq();
 
 	rand_prehis.set_rand_seq(vector<float> {
-//		-0.211, 0.445, -0.13, 0.13, -0.331, 0.184, -0.288, -0.13, -0.276, 0.353,
-//		-0.154, -0.00805, -0.239, -0.126, -0.343, -0.37, 0.346, -0.496, -0.375,
-//		0.402, 0.336, 0.352, -0.333, 0.205, 0.297, -0.0315, 0.325, 0.231, -0.491, -0.315
-		0.2
+		-0.211, 0.445, -0.13, 0.13, -0.331, 0.184, -0.288, -0.13, -0.276, 0.353,
+		-0.154, -0.00805, -0.239, -0.126, -0.343, -0.37, 0.346, -0.496, -0.375,
+		0.402, 0.336, 0.352, -0.333, 0.205, 0.297, -0.0315, 0.325, 0.231, -0.491, -0.315
 	});
 //	rand_prehis.gen_uniform_rand(30, -.5, .5);
 //	rand_prehis.print_rand_seq();
@@ -165,8 +164,7 @@ TEST(VecmatLSTM, Agreement)
 
 	// suffix D for debugging
 	auto inLayerD = Layer::make<ConstantLayer>(INPUT_DIM);
-	auto lstmLayerD = Layer::make<LstmDebugLayer>(
-			LSTM_DIM, INPUT_DIM, BATCH, rand_conn.get_rand_seq(), rand_prehis.get_rand_seq());
+	auto lstmLayerD = Layer::make<LstmDebugLayer>(LSTM_DIM, INPUT_DIM, BATCH);
 	auto lossLayerD = Layer::make<SquareLossLayer>(TARGET_DIM);
 
 	lstmDebugNet.add_layer(inLayerD);
@@ -175,6 +173,9 @@ TEST(VecmatLSTM, Agreement)
 	lstmDebugNet.new_connection<FullConnection>(lstmLayerD, lossLayerD);
 	lstmDebugNet.add_layer(lossLayerD);
 
+	// reset rand weights to fill the parameters exactly like LstmComposite network
+	rand_conn.reset_seq();
+	rand_prehis.reset_seq();
 	lstmDebugNet.execute("initialize");
 	lstmDebugNet.execute("forward");
 

@@ -100,13 +100,9 @@ class LstmDebugLayer : public Layer, public ParamContainer
 public:
 	LstmDebugLayer(Dimension dim,
 			int inLayerDim_,
-			int batchSize_,
-			vector<float> dummyWeights_,
-			vector<float> dummyPrehistory_) :
+			int batchSize_) :
 		Layer(dim),
 		ParamContainer(LSTM_PARAM_SIZE),
-		dummyWeights(dummyWeights_),
-		dummyPrehistory(dummyPrehistory_),
 		inLayerDim(inLayerDim_),
 		batchSize(batchSize_),
 
@@ -138,11 +134,9 @@ public:
 
 	LstmDebugLayer(int dim,
 			int inLayerDim,
-			int batchSize,
-			vector<float> dummyWeights,
-			vector<float> dummyPrehistory) :
+			int batchSize) :
 		LstmDebugLayer(
-			Dimension{ dim }, inLayerDim, batchSize, dummyWeights, dummyPrehistory)
+			Dimension{ dim }, inLayerDim, batchSize)
 	{}
 
 	virtual ~LstmDebugLayer() { }
@@ -203,8 +197,6 @@ protected:
 
 	// internal state history
 	vector<Tensor::Ptr> cellValues;
-	vector<float> dummyWeights;
-	vector<float> dummyPrehistory;
 
 	virtual void initialize_impl()
 	{
@@ -241,18 +233,9 @@ protected:
 		}
 
 		/*********** Fill parameters with fake rand ***********/
-		int i = 0;
 		for (Tensor::Ptr* elem : { &W_xi, &W_hi, &W_ci, &W_xf, &W_hf, &W_cf, &W_xc, &W_hc, &W_xo, &W_ho, &W_co })
 		{
-			DimIndexEnumerator indexer((*elem)->dim());
-
-			while (indexer.has_next())
-			{
-				lmn::set_value(**elem, indexer.next(), dummyWeights[i++]);
-
-				if (i == dummyWeights.size())
-					i = 0; // wrap reset just like FakeRand
-			}
+			lmn::fill_rand(**elem);
 		}
 
 		// Fill in [1, 1, 1...], will never change again, just a matrix multiplier
@@ -261,25 +244,15 @@ protected:
 				[](DimIndex)->float { return 1; });
 
 
-		i = 0;
 		// TODO add biases
 		for (Tensor::Ptr* elem : { &b_i, &b_f, &b_c, &b_o })
 		{
 //			lmn::set_value(**elem, {}, 0);
 		}
 
-		i = 0;
-		for (Tensor::Ptr* elem : { &h_0, &cell_0 })
+		for (Tensor::Ptr* elem : { &cell_0, &h_0 })
 		{
-			DimIndexEnumerator indexer((*elem)->dim());
-
-			while (indexer.has_next())
-			{
-				lmn::set_value(**elem, indexer.next(), dummyPrehistory[i++]);
-
-				if (i == dummyPrehistory.size())
-					i = 0; // wrap reset just like FakeRand
-			}
+			lmn::fill_rand_prehistory(**elem);
 		}
 	}
 

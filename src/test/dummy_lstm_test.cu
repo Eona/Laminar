@@ -13,16 +13,14 @@ FakeRand& rand_target = FakeRand::instance_target();
 TEST(DummyLSTM, LSTM)
 {
 	/********** FAKE_RAND **********/
-	vector<float> LSTM_CONNECTION_WEIGHTS {
+	rand_conn.set_rand_seq(vector<float>{
 		-0.904, 0.312, -0.944, 1.34, -2.14, -1.69, -2.88, -0.889, -2.28, -0.414, -2.07
-	};
-	vector<float> LSTM_PREHISTORY {
-	// must be the same for the outputs to agree, because initialization order is different
-		.3, .3
-	};
+	});
 
-	rand_conn.set_rand_seq(LSTM_CONNECTION_WEIGHTS);
-	rand_prehis.set_rand_seq(LSTM_PREHISTORY);
+	rand_prehis.set_rand_seq(vector<float>{
+		// should be same, otherwise initialization order might change
+		.3, .3
+	});
 
 	vector<float> inputSeq {
 		1.2, -0.9, 0.57, -1.47, -3.08, 1.2, .31, -2.33, -0.89
@@ -137,8 +135,8 @@ TEST(DummyLSTM, LSTM)
 
 	auto l0 = Layer::make<ConstantLayer>(DUMMY_DIM);
 	auto lstmLayer = Layer::make<LstmDebugLayer>(
-			// LSTM dim, inLayeyDim, batchSize, all set to 1
-			DUMMY_DIM, DUMMY_DIM, DUMMY_DIM, LSTM_CONNECTION_WEIGHTS, LSTM_PREHISTORY);
+				// LSTM dim, inLayeyDim, batchSize, all set to 1
+				DUMMY_DIM, DUMMY_DIM, DUMMY_DIM);
 	auto l1 = Layer::make<SquareLossLayer>(DUMMY_DIM);
 
 	lstmDebugNet.add_layer(l0);
@@ -147,6 +145,9 @@ TEST(DummyLSTM, LSTM)
 	lstmDebugNet.new_connection<ConstantConnection>(lstmLayer, l1);
 	lstmDebugNet.add_layer(l1);
 
+	// Manually reset
+	rand_conn.reset_seq();
+	rand_prehis.reset_seq();
 	lstmDebugNet.execute("initialize");
 	lstmDebugNet.execute("forward");
 
