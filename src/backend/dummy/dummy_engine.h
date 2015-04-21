@@ -162,11 +162,19 @@ inline void element_mult(vector<FloatPtr> reads, FloatPtr write, bool is_initial
 	*write = (*reads[0]) * (*reads[1]);
 }
 
-inline void square_loss(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
+inline void square_loss_batch(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
-	debug_msg("square_loss", is_initialized);
+	debug_msg("square_loss_batch", is_initialized);
+
 	float diff = *reads[0] - *reads[1];
 	*write = 0.5f * diff * diff;
+}
+
+inline void square_loss_gradient_batch(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
+{
+	debug_msg("square_loss_gradient_batch", is_initialized);
+
+	*write = *reads[0] - *reads[1];;
 }
 
 inline void zero_clear(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
@@ -255,7 +263,8 @@ public:
 		register_normal_op("sigmoid_gradient", Impl::sigmoid_gradient);
 		register_normal_op("transpose", Impl::transpose);
 		register_normal_op("element_mult", Impl::element_mult);
-		register_normal_op("square_loss", Impl::square_loss);
+		register_normal_op("square_loss_batch", Impl::square_loss_batch);
+		register_normal_op("square_loss_gradient_batch", Impl::square_loss_gradient_batch);
 
 		register_normal_op("destroy", Impl::destroy);
 		register_normal_op("zero_clear", Impl::zero_clear);

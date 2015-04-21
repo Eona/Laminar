@@ -269,13 +269,15 @@ inline void element_mult(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_ini
 }
 
 /**
+ * NOTE 'batch' is typically the last dimension of the tensor.
+ * The loss value is calculated by summing all square differences and divide by batch
  * @param reads
- * @param write a scalor that's the sum of all square differences
+ * @param write scalor of loss value
  * @param is_initialized
  */
-inline void square_loss(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
+inline void square_loss_batch(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
 {
-	debug_msg("square_loss", is_initialized);
+	debug_msg("square_loss_batch", is_initialized);
 
 	if (!is_initialized)
 		write->new_zeros(1, 1);
@@ -293,6 +295,28 @@ inline void square_loss(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_init
 			float diff = rmat1(r, c) - rmat2(r, c);
 			wmat(0, 0) += 0.5f * diff * diff;
 		}
+
+	// Divide by batch to get actual square loss value
+	// Assume the last dim (col) of the matrix is batch size
+	wmat(0, 0) /= 1.f * rmat1.col();
+}
+
+/**
+ * NOTE 'batch' is typically the last dimension of the tensor.
+ * Divide the gradient by batch
+ */
+inline void square_loss_gradient_batch(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
+{
+	debug_msg("square_loss_gradient_batch", is_initialized);
+
+	if (!is_initialized)
+		write->new_zeros(reads[0]);
+
+	*write = *reads[0] - *reads[1];
+
+	// Divide by batch to get actual square loss value
+	// Assume the last dim (col) of the matrix is batch size
+	write->scale(1.f / reads[0]->col());
 }
 
 inline void zero_clear(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
@@ -387,7 +411,8 @@ public:
 		register_normal_op("sigmoid_gradient", Impl::sigmoid_gradient);
 		register_normal_op("transpose", Impl::transpose);
 		register_normal_op("element_mult", Impl::element_mult);
-		register_normal_op("square_loss", Impl::square_loss);
+		register_normal_op("square_loss_batch", Impl::square_loss_batch);
+		register_normal_op("square_loss_gradient_batch", Impl::square_loss_gradient_batch);
 
 		register_normal_op("destroy", Impl::destroy);
 		register_normal_op("zero_clear", Impl::zero_clear);
