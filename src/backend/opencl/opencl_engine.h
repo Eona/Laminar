@@ -53,6 +53,7 @@ public:
 		cl->register_kernel("mat_cos_kernel", "matop_prog");
 		cl->register_kernel("mat_tanh_kernel", "matop_prog");
 		cl->register_kernel("mat_tanh_gradient_kernel", "matop_prog");
+		cl->register_kernel("mat_square_loss_kernel", "matop_prog");
 
 //		register_create(CudaEngine::create);
 //		register_opcode("t+t", CudaEngine::add);
@@ -91,13 +92,13 @@ public:
 
 	void create(OpenclFloatMatPtr write, vector<int> dim)
 	{
-		DEBUG_MSG("CudaImpl::create dim=" << dim);
+		DEBUG_MSG("OpenclEngine::create dim=" << dim);
 		write->reset(dim, cl);
 	}
 
 	void debug_msg(string msg, bool is_initialized)
 	{
-		DEBUG_MSG(("CudaImpl::" + msg + " ->init=") << std::boolalpha << is_initialized);
+		DEBUG_MSG(("OpenclEngine::" + msg + " ->init=") << std::boolalpha << is_initialized);
 	}
 
 	/*
@@ -243,7 +244,6 @@ public:
 	}
 
 
-
 	inline void sigmoid(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("sigmoid", is_initialized);
@@ -293,11 +293,27 @@ public:
 	    cl->setup_kernel("mat_elem_mult_kernel", 1, sizeof(cl_mem), &reads[0]->device_data); // X
 	    cl->setup_kernel("mat_elem_mult_kernel", 2, sizeof(cl_mem), &reads[1]->device_data); // X
 	    cl->setup_kernel("mat_elem_mult_kernel", 3, sizeof(int), &(write->LEN)); //DATA_SIZE
-	    cl->exec_kernel("mat_elem_mult_kernel", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);	}
+	    cl->exec_kernel("mat_elem_mult_kernel", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
+	}
 
 	inline void square_loss(vector<OpenclFloatMatPtr> reads, float* write, bool is_initialized)
 	{
 		debug_msg("square_loss", is_initialized);
+	    int m = reads[0]->DIM_ROW;
+	    int n = reads[0]->DIM_COL;
+	    OpenclFloatMat aux(m, n, cl);
+	    //y = x
+	    cl->setup_kernel("mat_square_loss_kernel", 0, sizeof(cl_mem), &aux.device_data); // Y
+	    cl->setup_kernel("mat_square_loss_kernel", 1, sizeof(cl_mem), &reads[0]->device_data); // X
+	    cl->setup_kernel("mat_square_loss_kernel", 2, sizeof(cl_mem), &reads[1]->device_data); // X
+	    cl->setup_kernel("mat_square_loss_kernel", 3, sizeof(int), &(aux.LEN)); //DATA_SIZE
+	    cl->exec_kernel("mat_square_loss_kernel", aux.NUM_GLOBAL_WORKER, aux.NUM_LOCAL_WORKER);
+
+	    float t[aux.MEM_SIZE];
+	    aux.to_host(t);
+	    for (int i = 0; i < aux.LEN; ++i) {
+	    	*write += t[i];
+	    }
 	}
 
 	// FIXME add contextual rand engine

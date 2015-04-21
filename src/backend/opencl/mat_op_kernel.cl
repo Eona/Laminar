@@ -7,7 +7,12 @@ __kernel void dummy(__global float * d, int DATA_SIZE)
 }
 
 /*Vector addition, C = aA + bB */
-__kernel void mat_add_kernel(__global float * C, __global float * A, __global float * B, float a, float b, int DATA_SIZE)
+__kernel void 
+mat_add_kernel(__global float * C,
+               __global float * A, 
+               __global float * B, 
+               float a, float b, 
+               int DATA_SIZE)
 {
     int idx = get_global_id(0);
     if (idx < DATA_SIZE) {
@@ -15,12 +20,38 @@ __kernel void mat_add_kernel(__global float * C, __global float * A, __global fl
     }
 }
 
+__kernel void
+matrixMul(__global float* C, 
+          __global float* A, 
+          __global float* B, 
+          int m, int n, int k
+		  int tA, int tB)
+{
+  
+   int idx = get_global_id(0); 
+   
+ 
+}
+
+
+
+
 /*Element wise multiplicatipn, C = A .* B */
 __kernel void mat_elem_mult_kernel(__global float * C, __global float * A, __global float * B, int DATA_SIZE)
 {
     int idx = get_global_id(0);
     if (idx < DATA_SIZE) {
 		C[idx] = A[idx] * B[idx];
+    }
+}
+
+/*Square loss */
+__kernel void mat_square_loss_kernel (__global float * C, __global float * A, __global float * B, int DATA_SIZE)
+{
+    int idx = get_global_id(0);
+    if (idx < DATA_SIZE) {
+		float diff =  A[idx] - B[idx];
+		C[idx] = 0.5*(diff*diff);
     }
 }
 
@@ -86,3 +117,4 @@ __kernel void mat_tanh_gradient_kernel(__global float * Y, __global float * X, i
 		Y[idx] = 1.f / (1.f + exp(-X[idx]));
 	}
 }
+
