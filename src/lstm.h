@@ -99,12 +99,16 @@ class LstmDebugLayer : public Layer, public ParamContainer
 {
 public:
 	LstmDebugLayer(Dimension dim,
+			int inLayerDim_,
+			int batchSize_,
 			vector<float> dummyWeights_,
 			vector<float> dummyPrehistory_) :
 		Layer(dim),
 		ParamContainer(LSTM_PARAM_SIZE),
 		dummyWeights(dummyWeights_),
 		dummyPrehistory(dummyPrehistory_),
+		inLayerDim(inLayerDim_),
+		batchSize(batchSize_),
 
 		W_xi(param_value_ptr(_W_xi)),
 		W_hi(param_value_ptr(_W_hi)),
@@ -133,9 +137,12 @@ public:
 	{ }
 
 	LstmDebugLayer(int dim,
+			int inLayerDim,
+			int batchSize,
 			vector<float> dummyWeights,
 			vector<float> dummyPrehistory) :
-		LstmDebugLayer(Dimension{ dim }, dummyWeights, dummyPrehistory)
+		LstmDebugLayer(
+			Dimension{ dim }, inLayerDim, batchSize, dummyWeights, dummyPrehistory)
 	{}
 
 	virtual ~LstmDebugLayer() { }
@@ -151,24 +158,25 @@ public:
 				*cell_0;
 
 		Tensor inputGate = gateActivator(
-				*W_xi * inValue + *W_hi * h_last + *W_ci * cell_last + *b_i);
+			*W_xi * inValue + *W_hi * h_last + *W_ci * cell_last + *b_i * *biasActivation);
 
 		Tensor forgetGate = gateActivator(
-				*W_xf * inValue + *W_hf * h_last + *W_cf * cell_last + *b_f);
+			*W_xf * inValue + *W_hf * h_last + *W_cf * cell_last + *b_f * *biasActivation);
 
 		Tensor cell_hat = cellInputActivator(
-				*W_xc * inValue + *W_hc * h_last + *b_c);
+			*W_xc * inValue + *W_hc * h_last + *b_c * *biasActivation);
 
-		Tensor cell = inputGate * cell_hat + forgetGate * cell_last;
+		Tensor cell = lmn::element_mult(inputGate, cell_hat)
+					+ lmn::element_mult(forgetGate, cell_last);
 
 		*cellValues[frame()] = cell;
 
 		Tensor outputGate = gateActivator(
-				*W_xo * inValue + *W_ho * h_last + *W_co * cell + *b_o);
+			*W_xo * inValue + *W_ho * h_last + *W_co * cell + *b_o * *biasActivation);
 
 		Tensor cellOutput = cellOutputActivator(cell);
 
-		outValue = outputGate * cellOutput;
+		outValue = lmn::element_mult(outputGate, cellOutput);
 	}
 
 	virtual void backward_impl(
@@ -187,6 +195,12 @@ public:
 	}
 
 protected:
+	// incoming layer connected by ConstantConnection
+	int inLayerDim;
+	int batchSize;
+	// Just a row matrix of [1, 1, 1, ....] to work with bias
+	Tensor::Ptr biasActivation;
+
 	// internal state history
 	vector<Tensor::Ptr> cellValues;
 	vector<float> dummyWeights;
@@ -201,26 +215,71 @@ protected:
 			cellValues.push_back(Tensor::make(engine));
 		}
 
+		/*********** Initialize parameters with dim info ***********/
+		for (Tensor::Ptr* elem : { &W_xi, &W_xf, &W_xc, &W_xo })
+		{
+			// Parameters connecting inLayer with LSTM internals
+			*elem = Tensor::make(engine, Dimension{ dim()[0], inLayerDim });
+		}
+
+		for (Tensor::Ptr* elem : { &W_hi, &W_ci, &W_hf, &W_cf, &W_hc, &W_ho, &W_co })
+		{
+			// Parameters connecting LSTM internals with other internals
+			*elem = Tensor::make(engine, Dimension{ dim()[0], dim()[0] });
+		}
+
+		for (Tensor::Ptr* elem : { &b_i, &b_f, &b_c, &b_o })
+		{
+			// biases always have col dim 1
+			*elem = Tensor::make(engine, Dimension{ dim()[0], 1 });
+		}
+
+		for (Tensor::Ptr* elem : { &h_0, &cell_0 })
+		{
+			// prehistory: dim * batchSize
+			*elem = Tensor::make(engine, Dimension{ dim()[0], batchSize });
+		}
+
+		/*********** Fill parameters with fake rand ***********/
 		int i = 0;
 		for (Tensor::Ptr* elem : { &W_xi, &W_hi, &W_ci, &W_xf, &W_hf, &W_cf, &W_xc, &W_hc, &W_xo, &W_ho, &W_co })
 		{
-			*elem = Tensor::make(engine, this->dim());
-			lmn::set_value(**elem, {}, dummyWeights[i++]);
+			DimIndexEnumerator indexer((*elem)->dim());
+
+			while (indexer.has_next())
+			{
+				lmn::set_value(**elem, indexer.next(), dummyWeights[i++]);
+
+				if (i == dummyWeights.size())
+					i = 0; // wrap reset just like FakeRand
+			}
 		}
+
+		// Fill in [1, 1, 1...], will never change again, just a matrix multiplier
+		this->biasActivation = Tensor::make(engine, Dimension({1, batchSize}));
+		lmn::fill_element<float>(*biasActivation,
+				[](DimIndex)->float { return 1; });
+
 
 		i = 0;
 		// TODO add biases
 		for (Tensor::Ptr* elem : { &b_i, &b_f, &b_c, &b_o })
 		{
-			*elem = Tensor::make(engine, this->dim());
-			lmn::set_value(**elem, {}, 0);
+//			lmn::set_value(**elem, {}, 0);
 		}
 
 		i = 0;
 		for (Tensor::Ptr* elem : { &h_0, &cell_0 })
 		{
-			*elem = Tensor::make(engine, this->dim());
-			lmn::set_value(**elem, {}, dummyPrehistory[i++]);
+			DimIndexEnumerator indexer((*elem)->dim());
+
+			while (indexer.has_next())
+			{
+				lmn::set_value(**elem, indexer.next(), dummyPrehistory[i++]);
+
+				if (i == dummyPrehistory.size())
+					i = 0; // wrap reset just like FakeRand
+			}
 		}
 	}
 

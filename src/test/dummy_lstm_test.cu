@@ -136,7 +136,9 @@ TEST(DummyLSTM, LSTM)
 	RecurrentNetwork lstmDebugNet(dummyEng2, dummyData2, inputSeq.size(), 1);
 
 	auto l0 = Layer::make<ConstantLayer>(DUMMY_DIM);
-	auto lstmLayer = Layer::make<LstmDebugLayer>(DUMMY_DIM, LSTM_CONNECTION_WEIGHTS, LSTM_PREHISTORY);
+	auto lstmLayer = Layer::make<LstmDebugLayer>(
+			// LSTM dim, inLayeyDim, batchSize, all set to 1
+			DUMMY_DIM, DUMMY_DIM, DUMMY_DIM, LSTM_CONNECTION_WEIGHTS, LSTM_PREHISTORY);
 	auto l1 = Layer::make<SquareLossLayer>(DUMMY_DIM);
 
 	lstmDebugNet.add_layer(l0);

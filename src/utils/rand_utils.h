@@ -96,10 +96,15 @@ public:
 	/**
 	 * Manually set the internal 'random sequence'
 	 */
-	void set_rand_seq(vector<float> _randSeq)
+	void set_rand_seq(vector<float> randSeq_)
 	{
 		i = 0;
-		randSeq = _randSeq;
+		randSeq = randSeq_;
+	}
+
+	vector<float> get_rand_seq() const
+	{
+		return this->randSeq;
 	}
 
 	float operator() ()

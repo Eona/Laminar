@@ -120,15 +120,6 @@ public:
 		return this->outGradients[t];
 	}
 
-	// FIXME do we need batch size? I think null Tensors can figure out the inflow dims
-/*	void init_batch_size(int batchSize)
-	{
-		assert_throw(!this->is_initialized,
-			ComponentException("init_batch_size() must be called before initialize()"));
-
-		this->batchSize = batchSize;
-	}*/
-
 	virtual void forward(int inFrame = 0, int outFrame = 0)
 	{
 		check_frame_consistency(inFrame, outFrame);
