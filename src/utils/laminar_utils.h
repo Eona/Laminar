@@ -94,6 +94,9 @@ public:
 		return this->hasNext;
 	}
 
+	/**
+	 * @return next index, increment from the leftmost dimension
+	 */
 	DimIndex next()
 	{
 		// To start with [0, 0, 0]
@@ -116,6 +119,24 @@ public:
 			}
 		}
 		return last;
+	}
+
+	/**
+	 * Calculate linearized position of this index
+	 * Consistent with next() generation order
+	 * For example, if total dimension is [8, 9, 10], a DimIndex [4, 3, 2]
+	 * is linearized to 4 + (8) * 3 + (8*9) * 2
+	 */
+	int linearize(DimIndex idx)
+	{
+		int baseSize = 1; // running product
+		int ans = 0;
+		for (int di = 0; di < totalDim.size(); ++di)
+		{
+			ans += baseSize * idx[di];
+			baseSize *= this->totalDim[di];
+		}
+		return ans;
 	}
 
 private:
