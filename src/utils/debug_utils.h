@@ -74,7 +74,8 @@ assert_throw(bool cond, string errmsg = "")
 #define LMN_ASSERT_THROW(cond, exc) \
 	{if (!(cond)) \
 	{ \
-		std::cerr << __FILE__ << " @ line " << __LINE__ << " assertion failure\n"; \
+		std::cerr << __FILE__ << " @ line " << __LINE__ \
+			<< " Laminar assertion failure\n"; \
 		throw exc; \
 	}}
 
