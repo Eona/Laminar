@@ -53,7 +53,6 @@ public:
 		init_device_mem();
 	}
 
-
 	CudaFloatMat(std::vector<int> dim) {
 		device_data = NULL;
 		host_data = NULL;
@@ -86,7 +85,6 @@ public:
 		cudaMemcpy( device_data, d, MEM_SIZE, cudaMemcpyHostToDevice )
 		);
 	}
-
 
 	/*
 	 * Copy device data to host
@@ -186,7 +184,7 @@ private:
         GRID_DIM.x = ceil(float(LEN)/float(BLOCK_DIM.x));
 	}
 
-	void init_dim(std::vector<int> dim){
+	void init_dim(std::vector<int> dim) {
 		GPUFloatMat::init_dim(dim);
         LDIM = DIM_ROW;
         BLOCK_DIM.x = NUM_THREAD_PER_BLOCK; //number of thread per block
@@ -194,7 +192,7 @@ private:
 	}
 
 	//not used
-	void to_column_major(float *target, float *source){
+	void to_column_major(float *target, float *source) {
 		int c = 0;
 		for (int i = 0; i < DIM_COL; ++i) {
 			for (int j = 0; j < DIM_ROW; ++j) {
@@ -205,7 +203,7 @@ private:
 	}
 
 	//not used
-	void to_row_major(float *target, float *source){
+	void to_row_major(float *target, float *source) {
 		int c = 0;
 		for (int i = 0; i < DIM_ROW; ++i) {
 			for (int j = 0; j < DIM_COL; ++j) {

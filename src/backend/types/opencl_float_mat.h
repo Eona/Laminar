@@ -93,9 +93,8 @@ public:
 	/*
 	 * Copy device data to host
 	 */
-	void to_host() {
-		if (!host_data) host_data = new float[MEM_SIZE];
-		cl->to_host(host_data, device_data, MEM_SIZE);
+	void to_host(float *d) {
+		cl->to_host(d, device_data, MEM_SIZE);
 	}
 
 
@@ -137,7 +136,10 @@ public:
 
     void free_data(){
 		if (host_data) delete [] host_data;
-		if (device_data_initialized) clReleaseMemObject(device_data);
+		if (device_data_initialized) {
+			clReleaseMemObject(device_data);
+			device_data_initialized = false;
+		}
     }
 
 
