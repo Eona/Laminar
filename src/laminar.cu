@@ -8,8 +8,9 @@
 #include "backend/dummy/dummy_dataman.h"
 #include "loss_layer.h"
 #include "parameter.h"
-#include "lstm.h"
 #include "network.h"
+#include "rnn.h"
+#include "lstm.h"
 #include "gradient_check.h"
 
 #include "engine/engine.h"
