@@ -27,6 +27,10 @@ function(link_gtest target)
     target_link_libraries(${target} -pthread)
 endfunction()
 
+option(RUN_TEST_DURING_BUILD "Toggles whether you want to run test right after each time it's built. If the test fails, the build will stop midway. \n
+However if you were to build again immediately, 
+the failed test would not be run again and the build will continue")
+
 # add_gtest(<target> <sources>...)
 #
 #  Adds a GTest test executable, <target>, built from <sources> and
@@ -41,11 +45,13 @@ function(add_gtest target)
 
     # run test after each time it's built
     # Here we simply run the test and if it fails the build will stop. However if you were to build again immediately the failed test would not be run again and the build will continue. 
-    add_custom_command(TARGET ${target}
-        POST_BUILD
-        COMMAND ${target}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "GTest running ${target}" VERBATIM)
+    if (RUN_TEST_DURING_BUILD)
+        add_custom_command(TARGET ${target}
+            POST_BUILD
+            COMMAND ${target}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            COMMENT "Gtest running ${target}" VERBATIM)
+    endif()
 endfunction()
 
 # add_multiple_gtests(<target1> <target2> ...)
@@ -64,11 +70,13 @@ function(add_gtest_cuda target)
     link_gtest(${target})
     add_test(${target} ${target})
 
-#   add_custom_command(TARGET ${target}
-#       POST_BUILD
-#       COMMAND ${target}
-#       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-#       COMMENT "CUDA GTest running ${target}" VERBATIM)
+    if (RUN_TEST_DURING_BUILD)
+        add_custom_command(TARGET ${target}
+            POST_BUILD
+            COMMAND ${target}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            COMMENT "CUDA gtest running ${target}" VERBATIM)
+    endif()
 endfunction()
 
 # add_multiple_gtests_cuda(<target1> <target2> ...)

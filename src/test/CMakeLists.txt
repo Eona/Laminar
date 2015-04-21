@@ -4,6 +4,8 @@ include(eona_gtest)
 # toggle this to avoid recompiling gtests
 set(RUN_CPU_GTEST true)
 set(RUN_GPU_GTEST false)
+# global option from eona_gtest.cmake
+set(RUN_TEST_DURING_BUILD false)
 
 set(CPU_TEST_SUITE 
     dummy_forward_test dummy_rnn_test 
