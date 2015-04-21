@@ -8,7 +8,7 @@ FakeRand& rand_conn = FakeRand::instance_connection();
 FakeRand& rand_input = FakeRand::instance_input();
 FakeRand& rand_target = FakeRand::instance_target();
 
-TEST(VecmatForwardNet, Diamond)
+TEST(VecmatForward, Diamond)
 {
 	rand_conn.set_rand_seq(vector<float> {
 		0.869, -0.764, -0.255, 0.771, -0.913, 0.294, -0.957, 0.958, -0.388, -0.184,
