@@ -238,7 +238,8 @@ private:
  * avoid mutual header inclusion with tensor.h
  */
 template<typename DataT>
-inline Engine<DataT>::DataPtr Engine<DataT>::read_memory(TensorBase::Ptr tensorPtr)
+inline typename Engine<DataT>::DataPtr
+	Engine<DataT>::read_memory(TensorBase::Ptr tensorPtr)
 {
 	int addr = tensorPtr->addr;
 	assert_throw<EngineException>(this->memoryPool.is_initialized(addr),
@@ -247,7 +248,8 @@ inline Engine<DataT>::DataPtr Engine<DataT>::read_memory(TensorBase::Ptr tensorP
 }
 
 template<typename DataT>
-inline Engine<DataT>::DataPtr Engine<DataT>::read_memory(const TensorBase& tensorPtr)
+inline typename Engine<DataT>::DataPtr
+	Engine<DataT>::read_memory(const TensorBase& tensorPtr)
 {
 	int addr = tensorPtr.addr;
 	assert_throw<EngineException>(this->memoryPool.is_initialized(addr),
