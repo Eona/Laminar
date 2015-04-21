@@ -174,21 +174,12 @@ typedef std::function<Tensor(const Tensor&)> TransferFunction;
 		return ans;
 	}
 
-	// 0.5f * sum( (x1 - x2)^2 ) / batchSize
-	Scalor square_loss_batch(const Tensor& x1, const Tensor& x2)
+	// 0.5f * sum( (x1 - x2)^2 )
+	Scalor square_loss(const Tensor& x1, const Tensor& x2)
 	{
 		Scalor ans(x1.engine);
 		x1.upload(Instruction(
-				"square_loss_batch", {x1.addr, x2.addr}, ans.addr));
-		return ans;
-	}
-
-	// (x1 - x2) / batchSize
-	Tensor square_loss_gradient_batch(const Tensor& x1, const Tensor& x2)
-	{
-		Tensor ans(x1.engine);
-		x1.upload(Instruction(
-				"square_loss_gradient_batch", {x1.addr, x2.addr}, ans.addr));
+				"square_loss", {x1.addr, x2.addr}, ans.addr));
 		return ans;
 	}
 

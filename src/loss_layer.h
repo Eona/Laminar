@@ -97,18 +97,12 @@ public:
 	virtual void forward_impl(Tensor& inValue, Tensor& outValue)
 	{
 		// which is loss value if the network is feedforward
-		*totalLoss += lmn::square_loss_batch(inValue, *current_frame_target<Tensor>());
+		*totalLoss += lmn::square_loss(inValue, *current_frame_target<Tensor>());
 	}
 
 	virtual void backward_impl(Tensor& outValue, Tensor& outGradient, Tensor& inValue, Tensor& inGradient)
 	{
-		// TODO square_loss_gradient should be implemented not as a single command, but as
-		// (x1 - x2) / lmn::batch_size(x1)
-		// where lmn::batch_size returns the batch dim (normally the last dim of Tensor) in a Scalor
-
-		// inGradient = inValue - *get_cur_frame_target<Tensor>();
-
-		inGradient = lmn::square_loss_gradient_batch(inValue, *current_frame_target<Tensor>());
+		inGradient = inValue - *current_frame_target<Tensor>();
 	}
 
 	virtual explicit operator string() const
