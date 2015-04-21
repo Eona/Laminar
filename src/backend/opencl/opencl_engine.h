@@ -27,6 +27,10 @@
 
 using namespace std;
 
+typedef std::shared_ptr<OpenclFloatMat> OpenclFloatMatPtr;
+//typedef OpenclFloatMat* OpenclFloatMatPtr;
+
+//typedef std::shared_ptr<float> FloatPtr;
 
 class OpenclEngine : public Engine<OpenclFloatMat>
 {
@@ -83,13 +87,12 @@ public:
 	}
 
 
-	typedef std::shared_ptr<OpenclFloatMat> OpenclFloatMatPtr;
-	typedef std::shared_ptr<float> FloatPtr;
+
 
 	void create(OpenclFloatMatPtr write, vector<int> dim)
 	{
 		DEBUG_MSG("CudaImpl::create dim=" << dim);
-		*write = OpenclFloatMat(dim, cl);
+		write->reset(dim, cl);
 	}
 
 	void debug_msg(string msg, bool is_initialized)
@@ -105,10 +108,10 @@ public:
 	    int m = reads[0]->DIM_ROW;
 	    int n = reads[0]->DIM_COL;
 	    if (!is_initialized) {
-	        *write = OpenclFloatMat(m, n, cl); //initialize LHS if not already
+	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
-
 	    //Register parameters and execute kernel
+//		write->print_matrix("write");
 	    cl->setup_kernel("mat_add_kernel", 0, sizeof(cl_mem), &write->device_data); // C
 	    cl->setup_kernel("mat_add_kernel", 1, sizeof(cl_mem), &reads[0]->device_data); //A
 	    cl->setup_kernel("mat_add_kernel", 2, sizeof(cl_mem), &reads[1]->device_data); //B
@@ -131,7 +134,7 @@ public:
 	    int n = reads[0]->DIM_COL;
 	    int k = reads[1]->DIM_COL;
 	    if (!is_initialized) {
-	        *write = OpenclFloatMat(m, n, cl); //initialize LHS if not already
+	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
 
 	    //C = a Op(A)* Op(B) + b C  -- A [mxn] B [nxk] C[mxk]
@@ -145,7 +148,7 @@ public:
 	    int n = reads[0]->DIM_COL;
 	    int k = reads[1]->DIM_COL;
 	    if (!is_initialized) {
-	        *write = OpenclFloatMat(m, n, cl); //initialize LHS if not already
+	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
 
 	    cl->setup_kernel("mat_scale_kernel", 0, sizeof(cl_mem), &write->device_data); // Y
@@ -163,10 +166,23 @@ public:
 	    int m = reads[0]->DIM_ROW;
 	    int n = reads[0]->DIM_COL;
 	    if (!is_initialized) {
-	        *write = OpenclFloatMat(m, n, cl); //initialize LHS if not already
+	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
 	    //y = x
 	    cl->copy(write->device_data, reads[0]->device_data, reads[0]->MEM_SIZE);
+	}
+
+	void elementOp(std::string kernel_name, vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized){
+	    int m = reads[0]->DIM_ROW;
+	    int n = reads[0]->DIM_COL;
+	    if (!is_initialized) {
+	        write->reset(m, n, cl); //initialize LHS if not already
+	    }
+	    //y = x
+	    cl->setup_kernel(kernel_name, 0, sizeof(cl_mem), &write->device_data); // Y
+	    cl->setup_kernel(kernel_name, 1, sizeof(cl_mem), &reads[0]->device_data); // X
+	    cl->setup_kernel(kernel_name, 2, sizeof(int), &(write->LEN)); //DATA_SIZE
+	    cl->exec_kernel(kernel_name, write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
 	}
 
 
@@ -231,42 +247,48 @@ public:
 	inline void sigmoid(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("sigmoid", is_initialized);
+		elementOp("mat_sigmoid_kernel", reads, write, is_initialized);
 	}
 
 	inline void sigmoid_gradient(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("sigmoid_gradient", is_initialized);
+		elementOp("mat_sigmoid_kernel", reads, write, is_initialized);
 	}
 
 	inline void sin(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("sin", is_initialized);
+		elementOp("mat_sin_kernel", reads, write, is_initialized);
 	}
 
 	inline void cos(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("cos", is_initialized);
+		elementOp("mat_cos_kernel", reads, write, is_initialized);
 	}
 
 	inline void tanh(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("tanh", is_initialized);
+		elementOp("mat_tanh_kernel", reads, write, is_initialized);
 	}
 
 	inline void tanh_gradient(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("tanh_gradient", is_initialized);
+		elementOp("mat_tanh_gradient_kernel", reads, write, is_initialized);
 	}
 
 	inline void element_mult(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("element_mult", is_initialized);
+		elementOp("mat_elem_mult_kernel", reads, write, is_initialized);
 	}
 
 	inline void square_loss(vector<OpenclFloatMatPtr> reads, float* write, bool is_initialized)
 	{
 		debug_msg("square_loss", is_initialized);
-
 	}
 
 	// FIXME add contextual rand engine
@@ -274,7 +296,7 @@ public:
 	{
 		debug_msg("fill_rand", is_initialized);
 		if (!is_initialized) {
-			*write = OpenclFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL, cl);
+	        write->reset(write->DIM_ROW, write->DIM_COL, cl); //initialize LHS if not already
 		}
 		write->fill_rand(1);
 	}
@@ -284,7 +306,7 @@ public:
 	inline void debug_fill(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		if (!is_initialized) {
-			*write = OpenclFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL, cl);
+	        write->reset(write->DIM_ROW, write->DIM_COL, cl); //initialize LHS if not already
 		}
 		write->fill(0.66337);
 	}

@@ -6,8 +6,6 @@
 #include "opencl_engine.h"
 
 using namespace std;
-typedef std::shared_ptr<OpenclFloatMat> OpenclFloatMatPtr;
-
 int main(int argc, char **argv)
 {
 
@@ -22,6 +20,8 @@ int main(int argc, char **argv)
 	OpenclFloatMatPtr m2 (new OpenclFloatMat(t2, 3, 3, oe.cl));
 	OpenclFloatMatPtr m3 (new OpenclFloatMat(t3, 2, 3, oe.cl));
 	OpenclFloatMatPtr out(new OpenclFloatMat());
+
+
     m1->print_matrix("m1");
     m2->print_matrix("m2");
     m3->print_matrix("m3");
@@ -37,7 +37,11 @@ int main(int argc, char **argv)
 
 	oe.create(out, dim);
 
-	oe.sub(v, out, true);
+	oe.sub(v, out, false);
+	out->print_matrix("m1 - m2");
+	out->print_matrix("m1 - m2");
+	out->print_matrix("m1 - m2");
+	out->print_matrix("m1 - m2");
 	out->print_matrix("m1 - m2");
 
 	oe.add(v, out, true);

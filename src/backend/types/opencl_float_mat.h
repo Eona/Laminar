@@ -27,17 +27,22 @@ public:
 	size_t NUM_LOCAL_WORKER; // number of workers per block
     
 	cl_mem device_data;
+	bool device_data_initialized;
+
 	OclUtilContext* cl;
+
 
 
 	OpenclFloatMat(){
 		init_dim(1,1);
 		host_data = NULL;
+		device_data_initialized = false;
 	}
 
 	OpenclFloatMat(float *d, int m, int n, OclUtilContext* context) {
 		cl = context;
 		host_data = NULL;
+		device_data_initialized = false;
 		init_dim(m, n); //initialize matrix dimensions
 		init_device_mem(d); //copy data to device
 	}
@@ -45,6 +50,7 @@ public:
 	OpenclFloatMat(int m, int n, OclUtilContext* context) {
 		cl = context;
 		host_data = NULL;
+		device_data_initialized = false;
 		init_dim(m, n); //initialize matrix dimensions
 		init_device_mem();
 	}
@@ -53,8 +59,27 @@ public:
 	OpenclFloatMat(std::vector<int> dim, OclUtilContext* context) {
 		cl = context;
 		host_data = NULL;
+		device_data_initialized = false;
 		init_dim(dim); //initialize matrix dimensions
 		init_device_mem();
+	}
+
+	void reset(int m, int n, OclUtilContext* context) {
+		cl = context;
+		init_dim(m, n); //initialize matrix dimensions
+		init_device_mem();
+	}
+
+	void reset(vector<int> dim, OclUtilContext* context) {
+		cl = context;
+		init_dim(dim); //initialize matrix dimensions
+		init_device_mem();
+	}
+
+	void reset(float * d, int m, int n, OclUtilContext* context) {
+		cl = context;
+		init_dim(m, n); //initialize matrix dimensions
+		init_device_mem(d);
 	}
 
 
@@ -111,9 +136,8 @@ public:
 	}
 
     void free_data(){
-    	std::cout<<"Delete matrix!"<<std::endl;
 		if (host_data) delete [] host_data;
-		clReleaseMemObject(device_data);
+		if (device_data_initialized) clReleaseMemObject(device_data);
     }
 
 
@@ -121,11 +145,13 @@ private:
 
 	void init_device_mem() {
 		device_data = cl->to_device_create_zero<float>(MEM_SIZE);
+		device_data_initialized = true;
 	}
 
 
 	void init_device_mem(float *d) {
 		device_data = cl->to_device(d, MEM_SIZE);
+		device_data_initialized = true;
 	}
 
 

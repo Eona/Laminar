@@ -49,34 +49,17 @@ public:
 	 */
 
 	void to_host() {
-
 	}
 
 
 	void fill_rand(int seed) {
-		float r[MEM_SIZE];
-		srand (seed);
-		for (int i = 0; i < LEN; ++i) {
-			r[i] = (double) rand() / (RAND_MAX);
-		}
 	}
 
 	void fill(float num) {
-		float r[MEM_SIZE];
-		for (int i = 0; i < LEN; ++i) {
-			r[i] = num;
-		}
 	}
 
 
     void print_matrix(std::string msg) {
-        std::cout << "\n" << msg << "\n";
-        for (int i = 0; i < DIM_ROW; ++i) {
-            for (int j = 0; j < DIM_COL; ++j) {
-                std::cout << host_data[j*DIM_ROW+i] << '\t';
-            }
-            std::cout<<"\n";
-        }
     }
 
     void free_data(){
@@ -124,7 +107,6 @@ protected:
 		} else {
 			DIM_COL = 1;
 		}
-
 		MEM_SIZE = LEN * sizeof(float);
 	}
 };

@@ -171,7 +171,7 @@ public:
     }
 
     /*Execute a kernel specified by kernel_name*/
-    void exec_kernel(cl_kernel& kernel, size_t global_ws, size_t local_ws){
+    void exec_kernel(cl_kernel kernel, size_t global_ws, size_t local_ws){
     	OCL_CHECKERROR(clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_ws, &local_ws, 0, NULL, NULL));
 	}
 
@@ -212,15 +212,15 @@ public:
     	OCL_CHECKERROR(clEnqueueFillBuffer(command_queue, memobj, &pattern, sizeof(T), 0, MEM_SIZE, 0, NULL, NULL));
     }
 
-    void to_device_write(cl_mem& buffer, float* d, size_t MEM_SIZE){
+    void to_device_write(cl_mem buffer, float* d, size_t MEM_SIZE){
     	OCL_CHECKERROR(clEnqueueWriteBuffer(command_queue, buffer, CL_TRUE, 0, MEM_SIZE, d, 0, NULL, NULL));
     }
 
-    void to_host(float* out, cl_mem& memobj, size_t MEM_SIZE) {
+    void to_host(float* out, cl_mem memobj, size_t MEM_SIZE) {
     	OCL_CHECKERROR(clEnqueueReadBuffer(command_queue, memobj, CL_TRUE, 0, MEM_SIZE, out, 0, NULL, NULL));
     }
 
-    void copy(cl_mem& dest, cl_mem& src, size_t MEM_SIZE) {
+    void copy(cl_mem dest, cl_mem src, size_t MEM_SIZE) {
     	OCL_CHECKERROR(clEnqueueCopyBuffer(command_queue, src, dest, 0, 0, MEM_SIZE, 0, NULL, NULL));
     }
 
