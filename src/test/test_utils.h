@@ -32,7 +32,7 @@ using namespace std;
 #define conn_const Connection::make<ConstantConnection>
 #define conn_gated Connection::make<GatedConnection>
 
-#define EXPECTED_LAMINAR_FAILURE(stmt) \
+#define LMN_EXPECTED_FAILURE(stmt) \
 	{ \
 		bool is_expected_thrown = false; \
 		try { stmt } \

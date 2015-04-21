@@ -200,7 +200,7 @@ public:
 	template<typename LayerT, typename ...ArgT>
 	static Layer::Ptr make(ArgT&& ... args)
 	{
-		LAMINAR_STATIC_ASSERT((std::is_base_of<Layer, LayerT>::value),
+		LMN_STATIC_ASSERT((std::is_base_of<Layer, LayerT>::value),
 				"make() failed: type parameter must be a subclass of Layer");
 
 		return std::static_pointer_cast<Layer>(
@@ -214,7 +214,7 @@ public:
 	template<typename LayerT>
 	static std::shared_ptr<LayerT> cast(Layer::Ptr layer)
 	{
-		LAMINAR_STATIC_ASSERT((std::is_base_of<Layer, LayerT>::value),
+		LMN_STATIC_ASSERT((std::is_base_of<Layer, LayerT>::value),
 				"cast() failed: type parameter must be a subclass of Layer");
 
 		return std::dynamic_pointer_cast<LayerT>(layer);

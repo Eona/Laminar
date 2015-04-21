@@ -59,7 +59,7 @@ public:
 	template<typename CompositeT>
 	void add_composite(std::shared_ptr<CompositeT> composite)
 	{
-		LAMINAR_STATIC_ASSERT(is_composite<CompositeT>(),
+		LMN_STATIC_ASSERT(is_composite<CompositeT>(),
 				"Not a valid composite type");
 
 		composite->manipulate(this);
@@ -68,7 +68,7 @@ public:
 	template<typename CompositeT>
 	void add_composite(CompositeT& composite)
 	{
-		LAMINAR_STATIC_ASSERT(is_composite<CompositeT>(),
+		LMN_STATIC_ASSERT(is_composite<CompositeT>(),
 				"Not a valid composite type");
 		composite.manipulate(this);
 	}

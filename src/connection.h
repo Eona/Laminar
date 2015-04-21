@@ -110,7 +110,7 @@ public:
 	template<typename ConnectionT, typename ...ArgT>
 	static Connection::Ptr make(ArgT&& ... args)
 	{
-		LAMINAR_STATIC_ASSERT((std::is_base_of<Connection, ConnectionT>::value),
+		LMN_STATIC_ASSERT((std::is_base_of<Connection, ConnectionT>::value),
 				"make() failed: type parameter must be a subclass of Connection");
 
 		return std::static_pointer_cast<Connection>(
@@ -124,7 +124,7 @@ public:
 	template<typename ConnectionT>
 	static std::shared_ptr<ConnectionT> cast(Connection::Ptr conn)
 	{
-		LAMINAR_STATIC_ASSERT((std::is_base_of<Connection, ConnectionT>::value),
+		LMN_STATIC_ASSERT((std::is_base_of<Connection, ConnectionT>::value),
 				"cast() failed: type parameter must be a subclass of Connection");
 
 		return std::dynamic_pointer_cast<ConnectionT>(conn);

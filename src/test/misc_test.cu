@@ -13,7 +13,7 @@ TEST(Composite, NetworkMismatch)
 	auto lstm = Composite<RecurrentNetwork>
 			::create<LstmComposite>(Layer::make<ConstantLayer>());
 
-	EXPECTED_LAMINAR_FAILURE(
+	LMN_EXPECTED_FAILURE(
 		net.add_composite(lstm);
 	)
 }

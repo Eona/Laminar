@@ -74,7 +74,7 @@ public:
 	template<typename ManagerT, typename ...ArgT>
 	static std::shared_ptr<ManagerT> make(ArgT&& ... args)
 	{
-		LAMINAR_STATIC_ASSERT((std::is_base_of<DataManagerBase, ManagerT>::value),
+		LMN_STATIC_ASSERT((std::is_base_of<DataManagerBase, ManagerT>::value),
 				"make() failed: DataManager type parameter must be a subclass of DataManagerBase");
 
 		return std::make_shared<ManagerT>(
@@ -87,7 +87,7 @@ public:
 	template<typename ManagerT>
 	static std::shared_ptr<ManagerT> cast(DataManagerBase::Ptr manager)
 	{
-		LAMINAR_STATIC_ASSERT((std::is_base_of<DataManagerBase, ManagerT>::value),
+		LMN_STATIC_ASSERT((std::is_base_of<DataManagerBase, ManagerT>::value),
 				"cast() failed: DataManager type parameter must be a subclass of DataManagerBase");
 
 		return std::dynamic_pointer_cast<ManagerT>(manager);

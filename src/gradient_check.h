@@ -21,7 +21,7 @@ template<typename EngineT, typename DataManagerT, typename FloatT = float>
 inline void gradient_check(Network& net,
 		FloatT perturb = 1e-2f, FloatT percentTol = 1.0f)
 {
-	LAMINAR_STATIC_ASSERT((std::is_base_of<ElementInspectionBase, EngineT>::value),
+	LMN_STATIC_ASSERT((std::is_base_of<ElementInspectionBase, EngineT>::value),
 		"Engine must implement ElementInspection<> interface to work with gradient_check");
 
 	auto engine = net.get_engine<EngineT>();

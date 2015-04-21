@@ -31,7 +31,7 @@ void input_halt()
  * WARNING if 'cond' has comman, like foo<int, int>, you must enclose it with parenthesis
  * (foo<int, int>) to avoid being interpreted as two separate macro args
  */
-#define LAMINAR_STATIC_ASSERT(cond, errmsg) \
+#define LMN_STATIC_ASSERT(cond, errmsg) \
 	static_assert(cond, "\n\n\n\n\nLaminar static assert failure:\n" errmsg "\n\n\n\n\n")
 
 class AssertFailure: public std::exception {
