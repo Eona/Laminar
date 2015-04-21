@@ -71,6 +71,9 @@ public:
 	}
 
 protected:
+	bool device_data_initialized;
+
+
 	//Initialize device memory and set the memory to zero
 	void init_device_mem() {
 	}

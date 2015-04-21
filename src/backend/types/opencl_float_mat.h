@@ -27,7 +27,6 @@ public:
 	size_t NUM_LOCAL_WORKER; // number of workers per block
     
 	cl_mem device_data;
-	bool device_data_initialized;
 
 	OclUtilContext* cl;
 
