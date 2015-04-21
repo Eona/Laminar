@@ -31,13 +31,6 @@ public:
 	virtual void backward_impl(Tensor& outValue, Tensor& outGradient,
 						Tensor& inValue, Tensor& inGradient)
 	{
-		// WARNING if an activation layer's output is not connected
-		// to another layer via Connection, then it's a dead layer with no outGradient
-		// backprop should be skipped because no gradient is ever set.
-		// This happens when the layer is connected as inLayer to GatedConnection, so
-		// itself might not have an outgoing connection, especially when
-		// GatedConnection is a recurrent one.
-
 		inGradient = lmn::element_mult(
 				activation_gradient(outValue, inValue), outGradient);
 	}

@@ -349,6 +349,32 @@ protected:
 /**************************************
 ******* Recurrent Network *********
 **************************************/
+/**
+ * WARNING NOTE topology limitation:
+ * A layer cannot:
+ * (1) End in itself without any outgoing connection to loss layer
+ * (2) Only have recurrent connections to loss layer, no forward connection
+ *
+ * Example of a bad recurrent topology:
+ *
+ 	auto linput = Layer::make<ConstantLayer>(INPUT_DIM);
+	auto l2 = Layer::make<ScalorLayer>(TARGET_DIM, 1.3f);
+	auto l3 = Layer::make<CosineLayer>(TARGET_DIM); // gate
+	auto lloss = Layer::make<SquareLossLayer>(TARGET_DIM);
+
+	net.add_layer(linput);
+	net.new_connection<FullConnection>(linput, l2);
+	net.add_layer(l2);
+	net.new_connection<FullConnection>(linput, l3);
+	net.add_layer(l3);
+	// l2 is connected to lloss only by a recurrent connection: not allowed!
+	net.add_recurrent_connection<GatedTanhConnection>(l2, l3, lloss);
+	net.add_layer(lloss);
+ *
+ * In the above example, l2 is never connected to lloss in the current time frame,
+ * it's an end in itself. (The recurrent connection is from the last frame)
+ * Backprop will fail because l2's out_gradient() is never set.
+ */
 class RecurrentNetwork : public Network
 {
 public:
