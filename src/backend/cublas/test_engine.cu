@@ -31,6 +31,8 @@ int main(int argc, char **argv)
 	v1.push_back(m3);
 	v1.push_back(m1);
 	CudaEngine ce;
+
+
 	ce.add(v, out, false);
 	out->print_matrix("m1 + m2");
 

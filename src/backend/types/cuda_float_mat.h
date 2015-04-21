@@ -63,6 +63,21 @@ public:
 	}
 
 
+	void reset(int m, int n) {
+		init_dim(m, n); //initialize matrix dimensions
+		init_device_mem();
+	}
+
+	void reset(vector<int> dim) {
+		init_dim(dim); //initialize matrix dimensions
+		init_device_mem();
+	}
+
+	void reset(float * d, int m, int n) {
+		init_dim(m, n); //initialize matrix dimensions
+		init_device_mem(d);
+	}
+
 	/*
 	 * Copy data to CUDA device
 	 */
@@ -71,6 +86,7 @@ public:
 		cudaMemcpy( device_data, d, MEM_SIZE, cudaMemcpyHostToDevice )
 		);
 	}
+
 
 	/*
 	 * Copy device data to host
@@ -103,8 +119,15 @@ public:
 
 
     void print_matrix(std::string msg) {
-        to_host();
-        GPUFloatMat::print_matrix(msg);
+    	to_host();
+        std::cout <<  msg << "\n";
+        for (int i = 0; i < DIM_ROW; ++i) {
+            for (int j = 0; j < DIM_COL; ++j) {
+                std::cout << host_data[j*DIM_ROW+i] << '\t';
+            }
+            std::cout<<"\n";
+        }
+        std::cout << std::endl;
     }
 
     cublasOperation_t getOp() {

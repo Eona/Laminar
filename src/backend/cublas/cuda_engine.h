@@ -63,7 +63,7 @@ public:
 	void create(CudaFloatMatPtr write, vector<int> dim)
 	{
 		DEBUG_MSG("CudaImpl::create dim=" << dim);
-		*write = CudaFloatMat(dim);
+		write->reset(dim);
 	}
 
 	void debug_msg(string msg, bool is_initialized)
@@ -80,7 +80,7 @@ public:
 	    int m = reads[0]->DIM_ROW;
 	    int n = reads[0]->DIM_COL;
 	    if (!is_initialized) {
-	        *write = CudaFloatMat(m, n); //initialize LHS if not already
+	    	write->reset(m, n);
 	    }
 
 	    cublasSgeam(handle,
@@ -104,7 +104,7 @@ public:
 	    int n = reads[0]->DIM_COL;
 	    int k = reads[1]->DIM_COL;
 	    if (!is_initialized) {
-	        *write = CudaFloatMat(m, k); //initialize LHS if not already
+	    	write->reset(m, n);
 	    }
 
 	    //C = a Op(A)* Op(B) + b C  -- A [mxn] B [nxk] C[mxk]
@@ -125,7 +125,7 @@ public:
 	    int m = reads[0]->DIM_ROW;
 	    int n = reads[0]->DIM_COL;
 	    if (!is_initialized) {
-	        *write = CudaFloatMat(m, n); //initialize LHS if not already
+	    	write->reset(m, n);
 	    }
 	    //y = x
 	    //handle, x_len, x, incx, y, incy
@@ -200,7 +200,7 @@ public:
 
 	#define MATOP(device_func) {\
 			if (!is_initialized) {\
-				*write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
+		    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
 			    cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);\
 			}\
 			op_func_t h_func;\
@@ -214,7 +214,7 @@ public:
 
 	#define MATOP_DUAL(device_func) {\
 			if (!is_initialized) {\
-				*write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
+		    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
 			    cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);\
 			}\
 			op_func_dual_t h_func;\
@@ -290,7 +290,9 @@ public:
 	inline void fill_rand(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("fill_rand", is_initialized);
-		if (!is_initialized) *write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);
+		if (!is_initialized) {
+	    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
+		}
 		write->fill_rand(1);
 	}
 
@@ -298,7 +300,9 @@ public:
 	/*********** DEBUG ONLY ***********/
 	inline void debug_fill(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
-		if (!is_initialized) *write = CudaFloatMat(reads[0]->DIM_ROW, reads[0]->DIM_COL);
+		if (!is_initialized) {
+	    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
+		}
 		write->fill(0.66337);
 	}
 
