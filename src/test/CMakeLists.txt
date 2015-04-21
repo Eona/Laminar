@@ -5,7 +5,7 @@ include(eona_gtest)
 set(RUN_GTEST true)
 
 set(TEST_SUITE 
-#    forward_dummy_test rnn_dummy_test
+    forward_dummy_test rnn_dummy_test
 #    forward_vecmat_test 
     rnn_vecmat_test
 #   cuda_test

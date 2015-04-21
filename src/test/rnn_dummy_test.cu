@@ -165,8 +165,11 @@ TEST(DummyRecurrentNet, TemporalSkip)
 TEST(DummyRecurrentNet, GatedConnection)
 {
 	rand_conn.set_rand_seq(vector<float> {
-			0.163, 1.96, 1.09, 0.516, -0.585, 0.776, 1, -0.301, -0.167, 0.732
+		0.559, -0.259, -0.736, -0.317, 0.306, -0.509, 0.569, -0.713, -0.83, -0.401
 	});
+
+//	rand_conn.gen_uniform_rand(10, -1, 1);
+//	rand_conn.print_rand_seq();
 
 	rand_prehis.set_rand_seq(vector<float> {
 		.3
@@ -195,6 +198,7 @@ TEST(DummyRecurrentNet, GatedConnection)
 	auto c12 = conn_full(l1, l2);
 	auto c13 = conn_full(l1, l3);
 
+	auto g234 = Connection::make<GatedConnection>(l2, l3, l4);
 	auto g234_1 = Connection::make<GatedConnection>(l2, l3, l4);
 	auto g234_2 = Connection::make<GatedConnection>(l2, l3, l4);
 
@@ -211,6 +215,7 @@ TEST(DummyRecurrentNet, GatedConnection)
 	net.add_connection(c12);
 	net.add_layer(l2);
 
+	net.add_connection(g234);
 	net.add_recurrent_connection(g234_1);
 	net.add_recurrent_connection(g234_2, 2);
 
@@ -243,6 +248,7 @@ TEST(DummyRecurrentNet, GatedTanhConnection)
 
 	auto c12 = conn_full(l1, l2);
 	auto c13 = conn_full(l1, l3);
+	auto c24 = conn_full(l2, l4);
 
 	auto g234_1 = Connection::make<GatedTanhConnection>(l2, l3, l4);
 	auto g234_2 = Connection::make<GatedTanhConnection>(l2, l3, l4);
@@ -257,6 +263,7 @@ TEST(DummyRecurrentNet, GatedTanhConnection)
 	net.add_layer(l3);
 	net.add_connection(c12);
 	net.add_layer(l2);
+	net.add_connection(c24);
 	net.add_recurrent_connection(g234_1);
 	net.add_recurrent_connection(g234_2, 2);
 	net.add_layer(l4);
