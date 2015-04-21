@@ -35,6 +35,7 @@ public:
 		op = CUBLAS_OP_N;
 		device_data = NULL;
 		host_data = NULL;
+		device_data_initialized = false;
 	}
 
 	CudaFloatMat(float *d, int m, int n) {
@@ -43,6 +44,7 @@ public:
 		op = CUBLAS_OP_N;
 		init_dim(m, n); //initialize matrix dimensions
 		init_device_mem(d); //copy data to device
+		device_data_initialized = false;
 	}
 
 	CudaFloatMat(int m, int n) {
@@ -51,6 +53,7 @@ public:
 		op = CUBLAS_OP_N;
 		init_dim(m, n); //initialize matrix dimensions
 		init_device_mem();
+		device_data_initialized = false;
 	}
 
 	CudaFloatMat(std::vector<int> dim) {
@@ -59,6 +62,7 @@ public:
 		op = CUBLAS_OP_N;
 		init_dim(dim); //initialize matrix dimensions
 		init_device_mem();
+		device_data_initialized = false;
 	}
 
 
@@ -144,7 +148,7 @@ public:
 
     void free_data(){
     	if (device_data) cudaFree(device_data);
-		if (host_data) free(host_data);
+		if (device_data_initialized) free(host_data);
     }
 
 	~CudaFloatMat(){
@@ -162,6 +166,7 @@ private:
 		GPU_CHECKERROR(
 		cudaMemset( (void *)device_data, 0, MEM_SIZE )
 		);
+		device_data_initialized = true;
 	}
 
 
@@ -174,6 +179,7 @@ private:
 		GPU_CHECKERROR(
 		cudaMemcpy( device_data, d, MEM_SIZE, cudaMemcpyHostToDevice )
 		);
+		device_data_initialized = true;
 	}
 
 
