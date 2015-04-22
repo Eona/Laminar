@@ -37,7 +37,7 @@ TEST(DummyLSTM, LSTM)
 
 	auto forgetGate = Layer::make<SigmoidLayer>(DUMMY_DIM);
 	auto inputGate = Layer::make<SigmoidLayer>(DUMMY_DIM);
-	auto cellHatLayer = Layer::make<TanhLayer>(DUMMY_DIM);
+	auto cellhatLayer = Layer::make<TanhLayer>(DUMMY_DIM);
 	auto cellLayer = Layer::make<ConstantLayer>(DUMMY_DIM);
 	auto outputGate = Layer::make<SigmoidLayer>(DUMMY_DIM);
 	auto outLayer = Layer::make<ConstantLayer>(DUMMY_DIM);
@@ -54,10 +54,10 @@ TEST(DummyLSTM, LSTM)
 	auto c_outLast_forgetGate_1 = conn_full(outLayer, forgetGate);
 	auto c_cellLast_forgetGate_1 = conn_full(cellLayer, forgetGate);
 
-	auto c_in_cellHat = conn_full(inLayer, cellHatLayer);
-	auto c_outLast_cellHat_1 = conn_full(outLayer, cellHatLayer);
+	auto c_in_cellhat = conn_full(inLayer, cellhatLayer);
+	auto c_outLast_cellhat_1 = conn_full(outLayer, cellhatLayer);
 
-	auto g_cellHat_inputGate_cell = conn_gated(cellHatLayer, inputGate, cellLayer);
+	auto g_cellhat_inputGate_cell = conn_gated(cellhatLayer, inputGate, cellLayer);
 	auto g_cellLast_forgetGate_cell_1 = conn_gated(cellLayer, forgetGate, cellLayer);
 
 	auto c_in_outputGate = conn_full(inLayer, outputGate);
@@ -75,8 +75,8 @@ TEST(DummyLSTM, LSTM)
 		c_in_forgetGate,
 		c_outLast_forgetGate_1,
 		c_cellLast_forgetGate_1,
-		c_in_cellHat,
-		c_outLast_cellHat_1,
+		c_in_cellhat,
+		c_outLast_cellhat_1,
 		c_in_outputGate,
 		c_outLast_outputGate_1,
 		c_cell_outputGate
@@ -94,19 +94,22 @@ TEST(DummyLSTM, LSTM)
 	net.add_connection(c_in_inputGate);
 	net.add_recur_connection(c_outLast_inputGate_1);
 	net.add_recur_connection(c_cellLast_inputGate_1);
+	net.new_bias_layer(inputGate);
 	net.add_layer(inputGate);
 
 	net.add_connection(c_in_forgetGate);
 	net.add_recur_connection(c_outLast_forgetGate_1);
 	net.add_recur_connection(c_cellLast_forgetGate_1);
+	net.new_bias_layer(forgetGate);
 	net.add_layer(forgetGate);
 
-	net.add_connection(c_in_cellHat);
-	net.add_recur_connection(c_outLast_cellHat_1);
+	net.add_connection(c_in_cellhat);
+	net.add_recur_connection(c_outLast_cellhat_1);
 
-	net.add_layer(cellHatLayer);
+	net.new_bias_layer(cellhatLayer);
+	net.add_layer(cellhatLayer);
 
-	net.add_connection(g_cellHat_inputGate_cell);
+	net.add_connection(g_cellhat_inputGate_cell);
 	net.add_recur_connection(g_cellLast_forgetGate_cell_1);
 
 	net.add_layer(cellLayer);
@@ -115,6 +118,7 @@ TEST(DummyLSTM, LSTM)
 	net.add_recur_connection(c_outLast_outputGate_1);
 	net.add_connection(c_cell_outputGate);
 
+	net.new_bias_layer(outputGate);
 	net.add_layer(outputGate);
 
 	net.add_connection(g_cell_outputGate_out);

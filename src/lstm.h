@@ -5,7 +5,8 @@
 #ifndef LSTM_LAYER_H_
 #define LSTM_LAYER_H_
 
-#include "layer.h"
+#include "bias_layer.h"
+#include "activation_layer.h"
 #include "parameter.h"
 #include "composite.h"
 #include "rnn.h"
@@ -39,20 +40,32 @@ protected:
 		auto cell = get_layer("cell");
 		auto outputGate = get_layer("output-gate");
 
+		auto forgetBias = get_layer("forget-bias");
+		auto inputBias = get_layer("input-bias");
+		auto cellhatBias = get_layer("cellhat-bias");
+		auto outputBias = get_layer("output-bias");
+
 		net->new_connection<FullConnection>(inLayer, inputGate);
 		net->new_recur_connection<FullConnection>(outLayer, inputGate);
 		net->new_recur_connection<FullConnection>(cell, inputGate);
 
+		net->add_layer(inputBias);
+		net->new_connection<FullConnection>(inputBias, inputGate);
 		net->add_layer(inputGate);
 
 		net->new_connection<FullConnection>(inLayer, forgetGate);
 		net->new_recur_connection<FullConnection>(outLayer, forgetGate);
 		net->new_recur_connection<FullConnection>(cell, forgetGate);
+
+		net->add_layer(forgetBias);
+		net->new_connection<FullConnection>(forgetBias, forgetGate);
 		net->add_layer(forgetGate);
 
 		net->new_connection<FullConnection>(inLayer, cellhat);
 		net->new_recur_connection<FullConnection>(outLayer, cellhat);
 
+		net->add_layer(cellhatBias);
+		net->new_connection<FullConnection>(cellhatBias, cellhat);
 		net->add_layer(cellhat);
 
 		net->new_connection<GatedConnection>(cellhat, inputGate, cell);
@@ -64,6 +77,8 @@ protected:
 		net->new_recur_connection<FullConnection>(outLayer, outputGate);
 		net->new_connection<FullConnection>(cell, outputGate);
 
+		net->add_layer(outputBias);
+		net->new_connection<FullConnection>(outputBias, outputGate);
 		net->add_layer(outputGate);
 
 		net->new_connection<GatedTanhConnection>(cell, outputGate, outLayer);
@@ -87,6 +102,11 @@ protected:
 		layerMap["cellhat"] = Layer::make<TanhLayer>(lstmDim);
 		layerMap["cell"]  = Layer::make<ConstantLayer>(lstmDim);
 		layerMap["output-gate"]  = Layer::make<SigmoidLayer>(lstmDim);
+
+		layerMap["forget-bias"] = Layer::make<BiasLayer>();
+		layerMap["input-bias"] = Layer::make<BiasLayer>();
+		layerMap["cellhat-bias"] = Layer::make<BiasLayer>();
+		layerMap["output-bias"] = Layer::make<BiasLayer>();
 	}
 
 	Dimension lstmDim; // LSTM hidden unit dimension
@@ -233,7 +253,11 @@ protected:
 		}
 
 		/*********** Fill parameters with fake rand ***********/
-		for (Tensor::Ptr* elem : { &W_xi, &W_hi, &W_ci, &W_xf, &W_hf, &W_cf, &W_xc, &W_hc, &W_xo, &W_ho, &W_co })
+		for (Tensor::Ptr* elem : {
+				&W_xi, &W_hi, &W_ci, &b_i,
+				&W_xf, &W_hf, &W_cf, &b_f,
+				&W_xc, &W_hc, &b_c,
+				&W_xo, &W_ho, &W_co, &b_o })
 		{
 			lmn::fill_rand(**elem);
 		}
@@ -242,13 +266,6 @@ protected:
 		this->biasActivation = Tensor::make(engine, Dimension({1, batchSize}));
 		lmn::fill_element<float>(*biasActivation,
 				[](DimIndex)->float { return 1; });
-
-
-		// TODO add biases
-		for (Tensor::Ptr* elem : { &b_i, &b_f, &b_c, &b_o })
-		{
-//			lmn::set_value(**elem, {}, 0);
-		}
 
 		for (Tensor::Ptr* elem : { &cell_0, &h_0 })
 		{
