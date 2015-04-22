@@ -19,21 +19,23 @@ mat_add_kernel(__global float * C,
 		C[idx] = a*A[idx] + b*B[idx];
     }
 }
-
+/*COLUMN MAJOR matrix multiplication*/
 __kernel void
-matrixMul(__global float* C, 
-          __global float* A, 
-          __global float* B, 
-          int m, int n, int k
-		  int tA, int tB)
+mat_mult_NN_kernel(__global float* C, 
+                   __global float* A,
+                   __global float* B,
+                   int m, int n, int k)
 {
-  
-   int idx = get_global_id(0); 
-   
- 
+	int idx = get_global_id(0); 
+   	if (idx >= m * k) return;
+	size_t b_col = (idx / m) * n;//start index in B
+	size_t a_row = (idx % m); //start index in A
+	float sum = 0;
+	for (int i = 0; i < n; ++i) { //a column of B
+		sum += B[b_col + i] * A[a_row + i * m];
+	} 
+	C[idx] = sum;	 
 }
-
-
 
 
 /*Element wise multiplicatipn, C = A .* B */

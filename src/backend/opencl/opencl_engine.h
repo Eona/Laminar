@@ -54,6 +54,7 @@ public:
 		cl->register_kernel("mat_tanh_kernel", "matop_prog");
 		cl->register_kernel("mat_tanh_gradient_kernel", "matop_prog");
 		cl->register_kernel("mat_square_loss_kernel", "matop_prog");
+		cl->register_kernel("mat_mult_NN_kernel", "matop_prog");
 
 //		register_create(CudaEngine::create);
 //		register_opcode("t+t", CudaEngine::add);
@@ -128,8 +129,7 @@ public:
 	 */
 	void multMat(vector<OpenclFloatMatPtr> reads,
 				OpenclFloatMatPtr write, bool is_initialized,
-				float alpha, float beta,
-				std::string opA, std::string opB)
+				std::string kernel_name)
 	{
 	    int m = reads[0]->DIM_ROW;
 	    int n = reads[0]->DIM_COL;
@@ -138,6 +138,17 @@ public:
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
 
+	    //Need to re-compute number of workers
+	    int NUM_LOCAL_WORKER = write->NUM_LOCAL_WORKER;
+		int NUM_GLOBAL_WORKER = ceil(double(m * k)/double(NUM_LOCAL_WORKER))*NUM_LOCAL_WORKER;
+
+	    cl->setup_kernel(kernel_name, 0, sizeof(cl_mem), &write->device_data); // C
+	    cl->setup_kernel(kernel_name, 1, sizeof(cl_mem), &reads[0]->device_data); //A
+	    cl->setup_kernel(kernel_name, 2, sizeof(cl_mem), &reads[1]->device_data); //B
+	    cl->setup_kernel(kernel_name, 3, sizeof(int), &m); //DATA_SIZE
+	    cl->setup_kernel(kernel_name, 4, sizeof(int), &n); //DATA_SIZE
+	    cl->setup_kernel(kernel_name, 5, sizeof(int), &k); //DATA_SIZE
+	    cl->exec_kernel(kernel_name, NUM_GLOBAL_WORKER, NUM_LOCAL_WORKER);
 	    //C = a Op(A)* Op(B) + b C  -- A [mxn] B [nxk] C[mxk]
 	}
 
@@ -213,7 +224,7 @@ public:
 	{
 	    debug_msg("c=a*b", is_initialized);
 		float alpha = 1.0f;
-		multMat(reads, write, is_initialized, alpha, 0, "N", "N");
+		multMat(reads, write, is_initialized, "mat_mult_NN_kernel");
 	}
 
 	void assign(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
@@ -253,7 +264,7 @@ public:
 	inline void sigmoid_gradient(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("sigmoid_gradient", is_initialized);
-		elementOp("mat_sigmoid_kernel", reads, write, is_initialized);
+		elementOp("mat_sigmoid_gradient_kernel", reads, write, is_initialized);
 	}
 
 	inline void sin(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)

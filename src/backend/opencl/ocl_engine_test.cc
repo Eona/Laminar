@@ -48,11 +48,11 @@ int main(int argc, char **argv)
 	engine.negate(v, out, true);
 	out->print_matrix("-m1");
 
-//	engine.mult(v, out, true);
-//	out->print_matrix("m1 * m2");
+	engine.mult(v, out, true);
+	out->print_matrix("m1 * m2");
 //
-//	engine.mult(v1, out, false);
-//	out->print_matrix("m3 * m1");
+	engine.mult(v1, out, false);
+	out->print_matrix("m3 * m1");
 
 	engine.assign(v1, out, false);
 	out->print_matrix("m3 -> out");
