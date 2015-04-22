@@ -15,7 +15,7 @@
 # will run test/vecmat_lstm_test and store the output in
 # ../test_out/<testsuite>.out for future comparison
 #
-# if gen_val, will also run valgrind
+# if check_val, will also run valgrind and check output
 # valgrind will not print stuff to stdout, so doesn't affect the generated standard.out
 
 from sys import argv, stderr, exit
@@ -24,18 +24,14 @@ import os
 assert len(argv) == 3
 
 cmd = argv[1]
-precmd = '' 
-
-if cmd.endswith('_val'):
-    cmd = cmd[:-len('_val')]
-    precmd = 'valgrind '
 
 exepath = os.path.join('test', argv[2] + '_test')
 exeoutpath = os.path.join('../test_out/', argv[2]+'.tmp')
 stdpath = os.path.join('../test_out/', argv[2] + '.out')
 
-if cmd == 'check':
-    print 'Running', exepath, '...\n'
+if cmd == 'check' or cmd == 'check_val':
+    precmd = ' valgrind ' if cmd.endswith('val') else ' '
+    print 'Running' + precmd + exepath, '...\n'
     # run the test first, store the output
     os.system(precmd + exepath + ' > ' + exeoutpath)
     # check against a stored standard
@@ -59,5 +55,5 @@ if cmd == 'check':
 # generate a standard 
 elif cmd == 'gen':
     print 'Running', exepath, '...\n'
-    os.system(precmd + exepath + ' > ' + stdpath)
+    os.system(exepath + ' > ' + stdpath)
     print 'Standard generated to', stdpath
