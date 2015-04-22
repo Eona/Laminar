@@ -417,10 +417,10 @@ public:
 
 		CommandFuncType adapt_context(OpContextBase::Ptr context)
 		{
-			assert_throw<EngineException>(!context,
-				"OpContext in Instruction is not null: \n\""
+			LMN_ASSERT_THROW(!context,
+				EngineException("OpContext in Instruction is not null: \n\""
 					+ Command::opName +"\" "
-					"is not a NormalCommand, should be registered as ContextCommand instead.");
+					"is not a NormalCommand, should be registered as ContextCommand instead."));
 			return cmd;
 		}
 
@@ -560,9 +560,9 @@ public:
 			}
 			else
 			{
-				assert_throw<EngineException>(key_exists(this->commandMap, instr.opcode),
-						string("Engine compilation failure: ") +
-							"Opcode \"" + string(instr.opcode) + "\" not registered.");
+				LMN_ASSERT_THROW(key_exists(this->commandMap, instr.opcode),
+						EngineException(string("Engine compilation failure: ") +
+							"Opcode \"" + string(instr.opcode) + "\" not registered."));
 
 				CommandFuncType cmd = this->commandMap[instr.opcode]->adapt_context(instr.context);
 				// value capture by '=' includes 'this'

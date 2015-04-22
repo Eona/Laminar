@@ -25,8 +25,8 @@ public:
 
 	virtual void initialize()
 	{
-		assert_throw<ComponentException>(!this->is_initialized,
-			"Component already initialized, can't init again unless reset()");
+		LMN_ASSERT_THROW(!this->is_initialized,
+			ComponentException("Component already initialized, can't init again unless reset()"));
 
 		this->initialize_impl();
 
@@ -76,8 +76,8 @@ protected:
 	 */
 	void check_uninitialized(string msg, string componentName)
 	{
-		assert_throw<ComponentException>(!this->is_initialized,
-			msg + " should be called before " + componentName + " initialization.");
+		LMN_ASSERT_THROW(!this->is_initialized,
+			ComponentException(msg + " should be called before " + componentName + " initialization."));
 	}
 };
 

@@ -39,8 +39,8 @@ public:
 	 */
 	virtual void prehistory_forward(ParamContainer::Ptr pcontainer, int inFrame, int outFrame)
 	{
-		assert_throw<NetworkException>(inFrame < 0,
-				"inFrame should be < 0 for prehistory_forward");
+		LMN_ASSERT_THROW(inFrame < 0,
+				NetworkException("inFrame should be < 0 for prehistory_forward"));
 
 		this->inFrame_ = inFrame;
 		this->outFrame_ = outFrame;
@@ -71,8 +71,8 @@ public:
 	 */
 	virtual void prehistory_backward(ParamContainer::Ptr pcontainer, int outFrame, int inFrame)
 	{
-		assert_throw<NetworkException>(inFrame < 0,
-				"inFrame should be < 0 for prehistory_backward");
+		LMN_ASSERT_THROW(inFrame < 0,
+				NetworkException("inFrame should be < 0 for prehistory_backward"));
 		this->inFrame_ = inFrame;
 		this->outFrame_ = outFrame;
 
@@ -143,19 +143,19 @@ protected:
 	// Helper for backward/forward in/outLayer check
 	void check_frame_consistency(int inFrame, int outFrame)
 	{
-		assert_throw<NetworkException>(inFrame >= 0 && outFrame >= 0,
-			"Both inFrame and outFrame must be positive.\n"
-				"Otherwise use prehistory_forward");
+		LMN_ASSERT_THROW(inFrame >= 0 && outFrame >= 0,
+			NetworkException("Both inFrame and outFrame must be positive.\n"
+							"Otherwise use prehistory_forward"));
 
-		assert_throw<NetworkException>(
+		LMN_ASSERT_THROW(
 			inLayer->max_temporal_skip() == outLayer->max_temporal_skip(),
-				"inLayer must have the same maxTemporalSkip as outLayer");
+			NetworkException("inLayer must have the same maxTemporalSkip as outLayer"));
 
 		if (!inLayer->is_full_gradient_history_saved())
 		{
-			assert_throw<NetworkException>(
+			LMN_ASSERT_THROW(
 				inFrame <= outFrame && outFrame <= inFrame + inLayer->max_temporal_skip(),
-				"Inconsistency: inFrame <= outFrame <= inFrame + layer.maxTemporalSkip");
+				NetworkException("Inconsistency: inFrame <= outFrame <= inFrame + layer.maxTemporalSkip"));
 		}
 	}
 

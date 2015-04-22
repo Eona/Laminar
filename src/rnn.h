@@ -72,11 +72,10 @@ public:
 
 	virtual void add_recur_connection(Connection::Ptr conn, int temporalSkip = 1)
 	{
-		assert_throw<NetworkException>(
-			maxTemporalSkip == Layer::UNLIMITED_TEMPORAL_SKIP
-				|| temporalSkip <= maxTemporalSkip,
-			"temporalSkip should be <= maxTemporalSkip.\n"
-				"Use init_max_temporal_skip() to change the upper limit.");
+		LMN_ASSERT_THROW(maxTemporalSkip == Layer::UNLIMITED_TEMPORAL_SKIP
+						|| temporalSkip <= maxTemporalSkip,
+			NetworkException("temporalSkip should be <= maxTemporalSkip.\n"
+				"Use init_max_temporal_skip() to change the upper limit."));
 
 		components.push_back(Component::upcast(conn));
 		connections.push_back(conn);

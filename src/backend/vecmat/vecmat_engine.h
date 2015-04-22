@@ -415,8 +415,8 @@ public:
 
 	float element_at(lmn::VecmatfPtr vecmat, DimIndex idx)
 	{
-		assert_throw<EngineException>(!vecmat->is_empty(),
-			"VecmatEngine: element_at() called on null matrix");
+		LMN_ASSERT_THROW(!vecmat->is_empty(),
+			EngineException("VecmatEngine: element_at() called on null matrix"));
 
 		return vecmat->at(idx);
 	}

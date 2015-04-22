@@ -287,8 +287,8 @@ protected:
 
 	void check_frame_consistency(int inFrame, int outFrame)
 	{
-		assert_throw<UnimplementedException>(inFrame == outFrame,
-				"Layer in/out time cannot be different.");
+		LMN_ASSERT_THROW(inFrame == outFrame,
+				UnimplementedException("Layer in/out time cannot be different."));
 	}
 
 private:

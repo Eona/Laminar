@@ -20,8 +20,8 @@ public:
 	Network(EngineBase::Ptr engine_, DataManagerBase::Ptr dataManager_)
 		: engine(engine_), dataManager(dataManager_)
 	{
-		assert_throw<NetworkException>(engine == dataManager->get_engine(),
-				"DataManager has a different engine");
+		LMN_ASSERT_THROW(engine == dataManager->get_engine(),
+				NetworkException("DataManager has a different engine"));
 
 		/**
 		 * Tag the member methods with their names
@@ -156,8 +156,8 @@ public:
 	 */
 	void execute(string methodName)
 	{
-		assert_throw<NetworkException>(key_exists(networkMethodMap, methodName),
-			"no Network member method is associated with \"" + methodName + "\"");
+		LMN_ASSERT_THROW(key_exists(networkMethodMap, methodName),
+			NetworkException("no Network member method is associated with \"" + methodName + "\""));
 
 		// if the instructions haven't been generated
 		if (!key_exists(routineMap, methodName))
@@ -173,11 +173,11 @@ public:
 	 */
 	void recompile(string methodName)
 	{
-		assert_throw<NetworkException>(key_exists(networkMethodMap, methodName),
-			"no Network member method is associated with \"" + methodName + "\"");
+		LMN_ASSERT_THROW(key_exists(networkMethodMap, methodName),
+			NetworkException("no Network member method is associated with \"" + methodName + "\""));
 
-		assert_throw<NetworkException>(key_exists(routineMap, methodName),
-				methodName + " has never been compiled.");
+		LMN_ASSERT_THROW(key_exists(routineMap, methodName),
+			NetworkException(methodName + " has never been compiled."));
 
 		this->compile_helper(methodName);
 	}
@@ -266,8 +266,8 @@ protected:
 
 	void initialize()
 	{
-		assert_throw<NetworkException>(!this->is_initialized,
-			"Network already initialized, can't init again unless reset()");
+		LMN_ASSERT_THROW(!this->is_initialized,
+			NetworkException("Network already initialized, can't init again unless reset()"));
 
 		this->initialize_impl();
 
@@ -336,8 +336,8 @@ protected:
 	 */
 	void check_initialized(string msg)
 	{
-		assert_throw<NetworkException>(this->is_initialized,
-			msg + ": Network has not been initialized yet.");
+		LMN_ASSERT_THROW(this->is_initialized,
+			NetworkException(msg + ": Network has not been initialized yet."));
 	}
 
 	/**
@@ -346,8 +346,8 @@ protected:
 	 */
 	void check_uninitialized(string msg)
 	{
-		assert_throw<NetworkException>(!this->is_initialized,
-			msg + " should be called before Network initialization.");
+		LMN_ASSERT_THROW(!this->is_initialized,
+			NetworkException(msg + " should be called before Network initialization."));
 	}
 };
 
@@ -383,8 +383,7 @@ public:
 	template<typename ...ArgT>
 	static ForwardNetwork::Ptr make(ArgT&& ... args)
 	{
-		return std::make_shared<ForwardNetwork>(
-						std::forward<ArgT>(args) ...);
+		return std::make_shared<ForwardNetwork>(std::forward<ArgT>(args) ...);
 	}
 
 protected:

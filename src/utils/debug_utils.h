@@ -62,7 +62,7 @@ inline void assert(bool cond, std::string errmsg = "", std::string successmsg=""
 
 template<typename ExceptionT>
 typename std::enable_if<std::is_base_of<std::exception, ExceptionT>::value, void>::type
-assert_throw(bool cond, string errmsg = "")
+lmn_assert_throw(bool cond, string errmsg = "")
 {
 	if (!cond)
 		throw ExceptionT(errmsg);

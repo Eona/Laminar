@@ -164,11 +164,11 @@ struct Routine
 
 	void execute() const
 	{
-		assert_throw<EngineException>(!this->instructions.empty(),
-			"Routine contains no instructions, cannot be executed.");
+		LMN_ASSERT_THROW(!this->instructions.empty(),
+			EngineException("Routine contains no instructions, cannot be executed."));
 
-		assert_throw<EngineException>(this->is_compiled(),
-			"Routine has not been compiled yet. ");
+		LMN_ASSERT_THROW(this->is_compiled(),
+			EngineException("Routine has not been compiled yet."));
 
 		for (Executable exe : executables)
 			exe();

@@ -48,9 +48,9 @@ public:
 	// Copy assignment
 	Vecmat& operator=(const Vecmat& other)
 	{
-		assert_throw<VecmatException>(!is_empty(),
-			"\nShouldn't copy assign to a default constructed "
-					"empty matrix. \nUse 'mat.new_zeros()' first.");
+		LMN_ASSERT_THROW(!is_empty(),
+			VecmatException("\nShouldn't copy assign to a default constructed "
+					"empty matrix. \nUse 'mat.new_zeros()' first."));
 
 		assert_same_dim(other, "copy assign");
 		this->mat = other.mat;
@@ -65,9 +65,9 @@ public:
 	// Move assignment
 	Vecmat& operator=(Vecmat&& other)
 	{
-		assert_throw<VecmatException>(!is_empty(),
-			"\nShouldn't move assign to a default constructed "
-					"empty matrix. \nUse 'mat.new_zeros()' first.");
+		LMN_ASSERT_THROW(!is_empty(),
+			VecmatException("\nShouldn't move assign to a default constructed "
+							"empty matrix. \nUse 'mat.new_zeros()' first."));
 
 		assert_same_dim(other, "move assign");
 		this->mat = std::move(other.mat);
@@ -77,9 +77,9 @@ public:
 	// Only for default constructed matrix
 	void new_zeros(int row, int col)
 	{
-		assert_throw<VecmatException>(is_empty(),
-			"\nalloc_size() should only be used with default "
-					"constructed empty matrix.");
+		LMN_ASSERT_THROW(is_empty(),
+			VecmatException("\nalloc_size() should only be used with "
+							"default constructed empty matrix."));
 
 		mat.resize(row);
 		for (int r = 0; r < row; ++r)
@@ -91,8 +91,8 @@ public:
 	 */
 	void new_zeros(const Vecmat& other)
 	{
-		assert_throw<VecmatException>(!other.is_empty(),
-			"\nalloc_size(other) the other matrix cannot be empty.");
+		LMN_ASSERT_THROW(!other.is_empty(),
+			VecmatException("\nalloc_size(other) the other matrix cannot be empty."));
 
 		this->new_zeros(other.row(), other.col());
 	}
