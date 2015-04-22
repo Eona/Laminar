@@ -2,8 +2,8 @@
  * Eona Studio (c) 2015
  */
 
-#ifndef BACKEND_VECMAT_VECMAT_DATAMAN_H_
-#define BACKEND_VECMAT_VECMAT_DATAMAN_H_
+#ifndef BACKEND_VECMAT_VECMAT_RAND_DATAMAN_H_
+#define BACKEND_VECMAT_VECMAT_RAND_DATAMAN_H_
 
 #include "../../engine/data_manager.h"
 #include "../../utils/rand_utils.h"
@@ -101,4 +101,4 @@ private:
 	DimIndexEnumerator indexer;
 };
 
-#endif /* BACKEND_VECMAT_VECMAT_DATAMAN_H_ */
+#endif /* BACKEND_VECMAT_VECMAT_RAND_DATAMAN_H_ */

@@ -20,8 +20,8 @@
 
 #include "backend/dummy/dummy_engine.h"
 #include "backend/dummy/dummy_dataman.h"
-#include "backend/vecmat/vecmat_dataman.h"
 #include "backend/vecmat/vecmat_engine.h"
+#include "backend/vecmat/vecmat_rand_dataman.h"
 #include "utils/global_utils.h"
 #include "utils/timer.h"
 
