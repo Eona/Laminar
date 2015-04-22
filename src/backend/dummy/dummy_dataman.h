@@ -51,10 +51,9 @@ public:
 		target_rand.reset_seq();
 	}
 
-	void start_new_sequence()
+	int current_epoch()
 	{
-		input_rand.reset_seq();
-		target_rand.reset_seq();
+		throw UnimplementedException("DummyDataManager doesn't support epoch learning.");
 	}
 
 	/*********** Gradient checking ***********/

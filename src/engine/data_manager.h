@@ -41,14 +41,15 @@ public:
 	}
 
 	/**
-	 * Network announces that we're starting a new epoch
+	 * Reset the data stream to the beginning for a new epoch
 	 */
 	virtual void start_new_epoch() = 0;
 
 	/**
-	 * RNN announces that we're starting a new sequence
+	 * Return current epoch number.
+	 * Should update at the start of every new epoch
 	 */
-	virtual void start_new_sequence() = 0;
+	virtual int current_epoch() = 0;
 
 	virtual Dimension input_dim() const = 0;
 

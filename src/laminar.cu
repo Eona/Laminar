@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 	auto lossLayer = Layer::make<SquareLossLayer>(TARGET_DIM);
 
 	auto engine = EngineBase::make<VecmatEngine>();
-	auto dataman = DataManagerBase::make<VecmatDataManager>(
+	auto dataman = DataManagerBase::make<VecmatRandDataManager>(
 					engine, INPUT_DIM, TARGET_DIM, BATCH);
 
 	auto net = Network::make<RecurrentNetwork>(engine, dataman, HISTORY);

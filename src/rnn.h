@@ -124,16 +124,15 @@ protected:
 	/**************************************
 	******* Training logic *********
 	**************************************/
+	// FIXME notify DataManager about new sequence start?
 	virtual void load_input()
 	{
-		dataManager->start_new_sequence();
 		for (int frame = 0; frame < this->historyLength; ++frame)
 			dataManager->upload_input(layers[0]->in_value(frame));
 	}
 
 	virtual void load_target()
 	{
-		dataManager->start_new_sequence();
 		for (int frame = 0; frame < this->historyLength; ++frame)
 			dataManager->upload_target(lossLayer->target_value(frame));
 	}
