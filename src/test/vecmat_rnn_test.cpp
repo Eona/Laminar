@@ -188,6 +188,96 @@ TEST(VecmatRNN, TemporalSkip)
 }
 
 
+TEST(VecmatRNN, TemporalSkipBias)
+{
+	rand_conn.set_rand_seq(vector<float> {
+		-0.449, -0.54, 0.965, 1.03, 1.03, -1.47, -0.419, 0.468, -0.989, 0.109,
+		0.631, -1.27, 0.77, 1.07, -1.48, 0.483, -1.17, -0.0106, -0.587,
+		-0.603, -0.246, -0.233, 0.682, 0.468, 1.46, 0.708, -1.17, -0.594,
+		0.931, 1.3, -0.672, -1.12, 0.529, -1.07, 1.45, -0.177, 0.025,
+		0.153, -0.143, -0.714, -0.46, -1.35, 0.782, -1.36, -1.01, 0.397,
+		-1.07, -1.32, -1.38, -0.928, 0.206, 0.144, 0.111, 0.436, 0.549,
+		-0.0739, 0.594, -0.93, -0.504, -0.642, 1.12, -1.03, 0.665, -1.47,
+		1.23, -1.42, 1.05, 1.26, 1.05, 1.32, 0.0304, 0.183, 0.624,
+		1.17, -0.0811, -0.964, 0.85, 0.594, -1.24, 1.05, 0.695, -1.34,
+		0.965, 0.722, 1.23, 1.49, -0.868, -0.175, -1.31, -1.3, 0.0517,
+		-1.37, -1.08, -1.27, -0.108, -0.285, 0.0455, 0.341, -0.423, 0.0146
+	});
+//	rand_conn.gen_uniform_rand(110, -1.5, 1.5); rand_conn.print_rand_seq();
+
+	rand_prehis.set_rand_seq(vector<float> {
+		-0.467, 0.436, -0.0718, -0.247, 0.141, -0.0445, -0.255, 0.336, -0.256, -0.277,
+		0.414, 0.418, -0.421, 0.196, 0.382, -0.00522, 0.203, -0.257, 0.0887,
+		0.338, 0.31, -0.197, 0.433, 0.405, 0.157, -0.296, -0.304, -0.32, 0.328, -0.259
+	});
+//	rand_prehis.gen_uniform_rand(30, -.5, .5); rand_prehis.print_rand_seq();
+
+
+	const int HISTORY = 5;
+	const int INPUT_DIM = 2;
+	const int TARGET_DIM = 4;
+	const int BATCH = 2;
+
+	rand_input.set_rand_seq(vector<float> {
+		 0.232, 0.957, 0.831, 0.997, 0.105, -0.938, -0.475, 0.755, -0.575, 0.792,
+		0.139, -0.114, -0.14, -0.0363, 0.571, -0.378, -0.065, 0.171, -0.63, -0.542
+	});
+//	rand_input.gen_uniform_rand(INPUT_DIM * BATCH * HISTORY, -1, 1); rand_input.print_rand_seq();
+
+	rand_target.set_rand_seq(vector<float> {
+		0.68, -0.343, -0.769, -0.561, -0.92, 0.769, 0.595, 0.662, 0.00725, -0.162,
+		-0.882, -0.275, -0.161, 0.106, 0.438, -0.715, 0.834, 0.2, -0.592,
+		0.16, 0.0274, 0.263, 0.168, -0.0622, 0.556, 0.534, 0.368, 0.702,
+		0.952, -0.752, 0.431, -0.736, -0.59, -0.00748, 0.234, -0.355, -0.969, -0.836, 0.411, 0.574
+	});
+//	rand_target.gen_uniform_rand(TARGET_DIM * BATCH * HISTORY, -1, 1); rand_target.print_rand_seq();
+
+	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
+	auto l2 = Layer::make<SigmoidLayer>(3);
+	auto l3 = Layer::make<CosineLayer>(2);
+	auto l4 = Layer::make<SquareLossLayer>(TARGET_DIM);
+
+	// NOTE IMPORTANT RULE
+	// For recurrent linear connection conn[layer(alpha) => layer(beta)]
+	// Must be added before you add layer(beta). alpha doesn't matter
+
+	auto engine = EngineBase::make<VecmatEngine>();
+	auto dataman = DataManagerBase::make<VecmatDataManager>(
+			engine, INPUT_DIM, TARGET_DIM, BATCH);
+
+	RecurrentNetwork net(engine, dataman, HISTORY);
+
+	net.init_max_temporal_skip(3); // or Layer::UNLIMITED_TEMPORAL_SKIP
+
+	net.add_layer(l1);
+
+	net.new_connection<FullConnection>(l1, l2);
+
+	net.new_recurrent_connection<FullConnection>(l2, l2);
+	net.new_recurrent_skip_connection<FullConnection>(3, l2, l2);
+	net.new_recurrent_skip_connection<FullConnection>(3, l3, l2);
+
+	net.new_bias_layer(l2);
+	net.add_layer(l2);
+
+	net.new_connection<FullConnection>(l2, l3);
+	net.new_recurrent_connection<FullConnection>(l2, l3);
+	net.new_recurrent_skip_connection<FullConnection>(2, l2, l3);
+	net.new_recurrent_skip_connection<FullConnection>(1, l3, l3);
+	net.new_recurrent_skip_connection<FullConnection>(2, l3, l3);
+
+	net.new_bias_layer(l3);
+	net.add_layer(l3);
+
+	net.new_connection<FullConnection>(l3, l4);
+
+	net.new_bias_layer(l4);
+	net.add_layer(l4);
+
+	gradient_check<VecmatEngine, VecmatDataManager, float>(net, 1e-2, 1);
+}
+
+
 TEST(VecmatRNN, GatedTanhConnection)
 {
 	rand_conn.set_rand_seq(vector<float> {
