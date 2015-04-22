@@ -11,6 +11,7 @@
 #include "network.h"
 #include "lstm.h"
 #include "rnn.h"
+#include "learning_session.h"
 #include "gradient_check.h"
 
 #include "engine/engine.h"
@@ -32,8 +33,6 @@ FakeRand& rand_target = FakeRand::instance_target();
 #define conn_full Connection::make<FullConnection>
 #define conn_const Connection::make<ConstantConnection>
 #define conn_gated Connection::make<GatedConnection>
-
-//static constexpr const int DUMMY_DIM = 666;
 
 int main(int argc, char **argv)
 {
@@ -62,102 +61,39 @@ int main(int argc, char **argv)
 	DEBUG_MSG("A * B\n" << A*B);
 	DEBUG_MSG("A t\n" << A.transpose());
 
-	rand_conn.set_rand_seq(vector<float> {
-		0.869, -0.764, -0.255, 0.771, -0.913, 0.294, -0.957, 0.958, -0.388, -0.184,
-		0.922, 0.434, 0.217, 0.655, 0.707, 0.655, 0.368, -0.383, -0.838,
-		0.638, -0.706, 0.429, -0.72, -0.439, 0.429, -0.977, 0.858, -0.937,
-		0.381, -0.973, 0.764, -0.776, 0.907, 0.483, -0.573, -0.728, 0.587,
-		0.102, -0.763, 0.939, 0.876, 0.195, 0.423, 0.0761, -0.364, 0.0478,
-		0.558, 0.0241, -0.13, 0.591, -0.294, -0.762, 0.741, 0.0955, 0.784,
-		0.398, 0.475, -0.199, -0.533, -0.483, -0.939, -0.344
-	});
-	rand_conn.gen_uniform_rand(62, -.5, .5);
-	rand_conn.print_rand_seq();
+	rand_conn.gen_uniform_rand(90, -1.5, 1.5); rand_conn.print_rand_seq();
 
-	rand_input.set_rand_seq(vector<float> {
-		0.276, 2.54, 2.27, 2.81, -0.0979, 0.205
-	});
-	rand_input.gen_uniform_rand(100, -.5, .5);
-	rand_input.print_rand_seq();
+	rand_prehis.gen_uniform_rand(30, -.5, .5); rand_prehis.print_rand_seq();
 
-	rand_target.set_rand_seq(vector<float> {
-		0.457, -0.516, -0.312, 0.126
-	});
-	rand_target.gen_uniform_rand(100, -.5, .5);
-	rand_target.print_rand_seq();
+	rand_input.gen_uniform_rand(20, -1, 1); rand_input.print_rand_seq();
 
-	const int INPUT_DIM = 7;
-	const int TARGET_DIM = 13;
-	const int BATCH_SIZE = 3;
+	rand_target.gen_uniform_rand(40, -1, 1); rand_target.print_rand_seq();
+
+	const int HISTORY = 5;
+	const int INPUT_DIM = 2;
+	const int TARGET_DIM = 4;
+	const int BATCH = 2;
+
+	auto inLayer = Layer::make<ConstantLayer>(INPUT_DIM);
+	auto lossLayer = Layer::make<SquareLossLayer>(TARGET_DIM);
 
 	auto engine = EngineBase::make<VecmatEngine>();
 	auto dataman = DataManagerBase::make<VecmatDataManager>(
-					engine, INPUT_DIM, TARGET_DIM, BATCH_SIZE);
+					engine, INPUT_DIM, TARGET_DIM, BATCH);
 
-	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
+	auto net = Network::make<RecurrentNetwork>(engine, dataman, HISTORY);
 
-	auto l2_1 = Layer::make<ScalorLayer>(1, 1.7f);
-	auto l2_1_bias = Layer::make<BiasLayer>();
-	auto l2_2 = Layer::make<CosineLayer>(3);
-	auto l2_2_bias = Layer::make<BiasLayer>();
-	auto l3_1 = Layer::make<SigmoidLayer>(2);
-	auto l3_1_bias = Layer::make<BiasLayer>();
-	auto l3_2 = Layer::make<ScalorLayer>(2, -2.3f);
-	auto l3_2_bias = Layer::make<BiasLayer>();
+	net->add_layer(inLayer);
 
-	auto l4 = Layer::make<SquareLossLayer>(TARGET_DIM);
+	auto lstmComposite =
+			Composite<RecurrentNetwork>::create<LstmComposite>(inLayer, 3);
 
-	ForwardNetwork net(engine, dataman);
+	net->add_composite(lstmComposite);
+	net->new_connection<FullConnection>(lstmComposite.out_layer(), lossLayer);
+	net->add_layer(lossLayer);
 
-	net.add_layer(l1);
-	net.add_connection(Connection::make<FullConnection>(l1, l2_1));
-	net.add_connection(Connection::make<FullConnection>(l1, l2_2));
-	// same as add_connection(make_connection<>)
-	net.new_connection<FullConnection>(l1, l3_1);
-	net.new_connection<FullConnection>(l1, l3_2);
-	net.new_connection<FullConnection>(l1, l4);
-	net.add_layer(l2_1_bias);
-	net.new_connection<FullConnection>(l2_1_bias, l2_1);
-	net.add_layer(l2_2_bias);
-	net.new_connection<FullConnection>(l2_2_bias, l2_2);
-	net.add_layer(l2_1);
-	net.add_layer(l2_2);
-	net.new_connection<FullConnection>(l2_1, l3_1);
-	net.new_connection<FullConnection>(l2_1, l3_2);
-	net.new_connection<FullConnection>(l2_1, l4);
-	net.new_connection<FullConnection>(l2_2, l3_2);
-	net.new_connection<FullConnection>(l2_2, l3_1);
-	net.new_connection<FullConnection>(l2_2, l4);
-	net.add_layer(l3_1_bias);
-	net.new_connection<FullConnection>(l3_1_bias, l3_1);
-	net.add_layer(l3_2_bias);
-	net.new_connection<FullConnection>(l3_2_bias, l3_2);
-	net.add_layer(l3_1);
-	net.add_layer(l3_2);
-	net.new_connection<FullConnection>(l3_1, l4);
-	net.new_connection<FullConnection>(l3_2, l4);
-	net.add_layer(l4);
-
-	gradient_check<VecmatEngine, VecmatDataManager>(net, 1e-2f, 0.8f);
-
-
-	/*auto dummyEng = EngineBase::make<DummyEngine>();
-
-	auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
-
-	ForwardNetwork net(dummyEng, dummyData);
-
-	auto l1 = Layer::make<ConstantLayer>(1);
-	auto l2 = Layer::make<SigmoidLayer>(5);
-	auto l3 = Layer::make<SquareLossLayer>(1);
-
-	net.add_layer(l1);
-	net.new_connection<FullConnection>(l1, l2);
-	net.add_layer(l2);
-	net.new_connection<FullConnection>(l2, l3);
-	net.add_layer(l3);
-
-	gradient_check(net);*/
+	LearningSession<RecurrentNetwork> session(net);
+	LearningSession<ForwardNetwork> session2(net);
 
 /*	net.upload("initialize");
 	net.upload("forward");

@@ -74,8 +74,8 @@ assert_throw(bool cond, string errmsg = "")
 #define LMN_ASSERT_THROW(cond, exc) \
 	{if (!(cond)) \
 	{ \
-		std::cerr << __FILE__ << " @ line " << __LINE__ \
-			<< " Laminar assertion failure\n"; \
+		std::cerr << __FILE__ << "\n@ line " << __LINE__ \
+				<< " Laminar assertion failure\n"; \
 		throw exc; \
 	}}
 
@@ -98,7 +98,8 @@ assert_throw_nullptr(const std::shared_ptr<T>& ptr, string errmsg)
 #define LMN_ASSERT_NULLPTR(ptr, exc) \
 	{if (ptr == nullptr) \
 	{ \
-		std::cerr << __FILE__ << " @ line " << __LINE__ << " nullptr error\n"; \
+		std::cerr << __FILE__ << "\n@ line " << __LINE__ \
+				<< " Laminar assertion: should NOT be nullptr\n"; \
 		throw exc; \
 	}}
 
