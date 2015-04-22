@@ -50,7 +50,7 @@ public:
 
 	virtual void init_max_temporal_skip(int maxTemporalSkip)
 	{
-		Network::check_uninitialized("init_max_temporal_skip");
+		initGuard.assert_before_initialize("init_max_temporal_skip", "RecurrentNetwork");
 		this->maxTemporalSkip = maxTemporalSkip;
 	}
 
@@ -61,7 +61,7 @@ public:
 
 	virtual void init_history_length(int historyLength)
 	{
-		Network::check_uninitialized("init_history_length");
+		initGuard.assert_before_initialize("init_history_length", "RecurrentNetwork");
 		this->historyLength = historyLength;
 	}
 
@@ -207,7 +207,7 @@ protected:
 		}
 	}
 
-	virtual void initialize_impl()
+	virtual void initialize()
 	{
 		// initialize prehistory ParamContainers
 		this->init_prehistory_params();
@@ -218,7 +218,7 @@ protected:
 		for (Layer::Ptr layer : layers)
 			layer->init_max_temporal_skip(this->maxTemporalSkip);
 
-		Network::initialize_impl();
+		Network::initialize();
 	}
 
 	/**

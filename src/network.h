@@ -17,8 +17,10 @@
 class Network
 {
 public:
-	Network(EngineBase::Ptr engine_, DataManagerBase::Ptr dataManager_)
-		: engine(engine_), dataManager(dataManager_)
+	Network(EngineBase::Ptr engine_, DataManagerBase::Ptr dataManager_) :
+		engine(engine_),
+		dataManager(dataManager_),
+		initGuard("Network")
 	{
 		LMN_ASSERT_THROW(engine == dataManager->get_engine(),
 				NetworkException("DataManager has a different engine"));
@@ -40,6 +42,8 @@ public:
 
 	virtual void add_layer(Layer::Ptr layer)
 	{
+		initGuard.assert_before_initialize("add_layer");
+
 		this->components.push_back(Component::upcast(layer));
 		this->layers.push_back(layer);
 
@@ -53,6 +57,8 @@ public:
 
 	virtual void add_connection(Connection::Ptr conn)
 	{
+		initGuard.assert_before_initialize("add_connection");
+
 		this->components.push_back(Component::upcast(conn));
 		this->connections.push_back(conn);
 
@@ -68,6 +74,8 @@ public:
 	 */
 	virtual void new_bias_layer(Layer::Ptr layer)
 	{
+		initGuard.assert_before_initialize("new_bias_layer");
+
 		// WISHLIST topological sort can figure this out, no need to check
 		LMN_ASSERT_THROW(!vec_contains(this->layers, layer),
 			NetworkException("BiasLayer must be added before its output layer"));
@@ -86,6 +94,8 @@ public:
 		LMN_STATIC_ASSERT(is_composite<CompositeT>(),
 				"Not a valid composite type");
 
+		initGuard.assert_before_initialize("add_composite");
+
 		composite->manipulate(this);
 	}
 
@@ -94,12 +104,16 @@ public:
 	{
 		LMN_STATIC_ASSERT(is_composite<CompositeT>(),
 				"Not a valid composite type");
+
+		initGuard.assert_before_initialize("add_composite");
 		composite.manipulate(this);
 	}
 
 	template<typename ConnectionT, typename ...ArgT>
 	void new_connection(ArgT&& ... args)
 	{
+		initGuard.assert_before_initialize("new_connection");
+
 		this->add_connection(
 			Connection::make<ConnectionT>(
 					std::forward<ArgT>(args)...));
@@ -143,8 +157,10 @@ public:
 	 */
 	void execute(string methodName)
 	{
-		if (methodName != "initialize")
-			Network::check_initialized("execute " + methodName);
+		if (methodName == "initialize")
+			initGuard.initialize();
+		else
+			initGuard.assert_after_initialize("execute " + methodName);
 
 		LMN_ASSERT_THROW(key_exists(networkMethodMap, methodName),
 			NetworkException("no Network member method is associated with \"" + methodName + "\""));
@@ -169,7 +185,7 @@ public:
 		LMN_ASSERT_THROW(key_exists(routineMap, methodName),
 			NetworkException(methodName + " has never been compiled."));
 
-		Network::check_initialized("recompile " + methodName);
+		initGuard.assert_after_initialize("recompile " + methodName);
 
 		this->compile_helper(methodName);
 	}
@@ -177,6 +193,7 @@ public:
 	// WISHLIST
 	virtual void topological_sort()
 	{
+		initGuard.assert_before_initialize("topological_sort");
 		throw UnimplementedException("topological sort");
 	}
 
@@ -261,20 +278,10 @@ protected:
 	 */
 	virtual void zero_clear() = 0;
 
-	void initialize()
-	{
-		LMN_ASSERT_THROW(!this->is_initialized,
-			NetworkException("Network already initialized, can't init again unless reset()"));
-
-		this->initialize_impl();
-
-		this->is_initialized = true;
-	}
-
 	/**
 	 * Subclasses should override this
 	 */
-	virtual void initialize_impl()
+	virtual void initialize()
 	{
 		this->lossLayer = Layer::cast<LossLayer>(layers[layers.size() - 1]);
 		LMN_ASSERT_NULLPTR(this->lossLayer,
@@ -297,10 +304,7 @@ protected:
 
 	DataManagerBase::Ptr dataManager;
 
-	/**
-	 * Initialization guard: should init only once except after reset()
-	 */
-	bool is_initialized = false;
+	InitializeGuard<NetworkException> initGuard;
 
 	/**
 	 * Contains all named routines.
@@ -325,26 +329,6 @@ protected:
 		ParamContainer::Ptr param = ParamContainer::upcast(component);
 		if (param)
 			paramContainers.push_back(param);
-	}
-
-	/**
-	 * Exception helper
-	 * The function should be called *after* initialization
-	 */
-	void check_initialized(string msg)
-	{
-		LMN_ASSERT_THROW(this->is_initialized,
-			NetworkException(msg + ": Network has not been initialized yet."));
-	}
-
-	/**
-	 * Exception helper
-	 * The function should be called *before* initialization
-	 */
-	void check_uninitialized(string msg)
-	{
-		LMN_ASSERT_THROW(!this->is_initialized,
-			NetworkException(msg + " should be called before Network initialization."));
 	}
 };
 
@@ -374,9 +358,9 @@ public:
 	}
 
 protected:
-	virtual void initialize_impl()
+	virtual void initialize()
 	{
-		Network::initialize_impl();
+		Network::initialize();
 	}
 
 	virtual void load_input()
