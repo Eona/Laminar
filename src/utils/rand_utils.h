@@ -79,6 +79,8 @@ private:
 
 	string name;
 
+	bool isCircularWrap = true;
+
 public:
 // Separate instances with independent sequences
 #define GenFakeRandInstance(name) \
@@ -109,8 +111,15 @@ public:
 
 	float operator() ()
 	{
-		if (i >= randSeq.size())
-			i = 0;
+		if (i >= size())
+		{
+			if (isCircularWrap)
+				i = 0;
+			else
+				throw LaminarException("FakeRand instance " + name +
+					" internal sequence depleted and isCircularWrap = false");
+		}
+
 		return randSeq[i++];
 	}
 
@@ -124,7 +133,11 @@ public:
 	 */
 	float& operator[](int i)
 	{
-		return this->randSeq[i % size()];
+		LMN_ASSERT_THROW(i < size(),
+			LaminarException("FakeRand instance " + name + " operator[] out of range: "
+					+ to_str(i) + " requested but internal size = " + to_str(size())));
+
+		return randSeq[i];
 	}
 
 	void gen_uniform_rand(int seqLength, float low, float high)
@@ -136,6 +149,21 @@ public:
 		this->randSeq.clear();
 		for (int s = 0; s < seqLength; ++s)
 			this->randSeq.push_back(distribution(generator));
+	}
+
+	// Position of the internal rand seq
+	int current_position()
+	{
+		return this->i;
+	}
+
+	/**
+	 * Reset i to 0 when the internal seq runs out
+	 * Default: true
+	 */
+	void set_circular_wrap(bool isCircularWrap)
+	{
+		this->isCircularWrap = isCircularWrap;
 	}
 
 	void reset_seq() { i = 0; }
