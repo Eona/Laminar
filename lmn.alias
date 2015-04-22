@@ -39,6 +39,12 @@ python ../lmncheck.py gen dummy_lstm
 
 # Check Dummy against standard
 alias chd='
+python ../lmncheck.py check dummy_forward &&
+python ../lmncheck.py check dummy_rnn &&
+python ../lmncheck.py check dummy_lstm
+'
+# Check Dummy against standard, with valgrind
+alias chdv='
 python ../lmncheck.py check_val dummy_forward &&
 python ../lmncheck.py check_val dummy_rnn &&
 python ../lmncheck.py check_val dummy_lstm

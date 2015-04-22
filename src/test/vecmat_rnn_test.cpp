@@ -355,3 +355,78 @@ TEST(VecmatRNN, GatedTanhConnection)
 
 	gradient_check<VecmatEngine, VecmatDataManager>(net, 1e-2f, 1.3f);
 }
+
+
+TEST(VecmatRNN, GatedTanhBias)
+{
+	rand_conn.set_rand_seq(vector<float> {
+		1.09, -0.949, -1.2, -0.479, 0.0218, 1.01, 0.636, 1.31, -1.46, -1.08,
+		-0.55, 0.479, -1.24, 0.0951, -0.414, 0.345, 0.49, -0.788, 0.767,
+		0.762, -1.02, -0.282, 0.466, 0.408, -1.3, -0.859, -0.372, 0.46,
+		-0.15, -1.21, 0.866, -0.948, 0.488, 0.476, -0.238, 0.165, -0.104
+	});
+//	rand_conn.gen_uniform_rand(50, -1.5, 1.5); rand_conn.print_rand_seq();
+
+	rand_prehis.set_rand_seq(vector<float> {
+		-0.132, -0.0704, 0.335, -0.272, -0.224, -0.325, -0.185, 0.456, 0.314, -0.263,
+		0.477, -0.28, 0.194, -0.0456, 0.439, -0.499, -0.347, 0.162, 0.353
+	});
+//	rand_prehis.gen_uniform_rand(20, -.5, .5); rand_prehis.print_rand_seq();
+
+
+	const int HISTORY = 5;
+	const int INPUT_DIM = 3;
+	const int TARGET_DIM = 2;
+	const int BATCH = 4;
+
+	rand_input.set_rand_seq(vector<float> {
+		-0.131, 0.912, -0.566, -0.767, 0.206, -0.613, -0.958, -0.371, 0.00778, 0.825,
+		-0.516, -0.948, -0.951, -0.899, 0.468, 0.594, -0.299, 0.793, 0.518,
+		-0.297, -0.337, 0.67, 0.775, 0.179, -0.464, -0.44, 0.519, 0.997,
+		0.701, -0.0728, 0.382, -0.12, 0.715, 0.972, 0.68, 0.792, -0.36,
+		0.697, -0.979, 0.217, -0.392, 0.907, 0.58, -0.813, -0.103, 0.567,
+		0.132, 0.358, 0.0489, 0.401, -0.596, -0.706, -0.27, -0.126, -0.197, -0.739, 0.78, -0.0129, 0.546, 0.682
+	});
+//	rand_input.gen_uniform_rand(INPUT_DIM * BATCH * HISTORY, -1, 1); rand_input.print_rand_seq();
+
+	rand_target.set_rand_seq(vector<float> {
+		0.886, 0.302, -0.322, -0.942, -0.674, 0.564, -0.922, -0.267, 0.197, 0.126,
+		0.0742, -0.373, 0.0664, 0.709, 0.203, -0.757, -0.571, 0.941, -0.121,
+		-0.154, -0.559, 0.181, 0.62, 0.488, -0.462, 0.147, 0.597, 0.149,
+		-0.663, 0.609, -0.736, 0.649, 0.608, -0.438, 0.439, 0.982, 0.0423, -0.453, 0.598, -0.983
+	});
+//	rand_target.gen_uniform_rand(TARGET_DIM * BATCH * HISTORY, -1, 1); rand_target.print_rand_seq();
+
+	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
+
+	// NOTE layers engaged in a gate must have the same dims
+	auto l2 = Layer::make<CosineLayer>(TARGET_DIM);
+	auto l3 = Layer::make<TanhLayer>(TARGET_DIM); // gate
+
+	auto l4 = Layer::make<SquareLossLayer>(TARGET_DIM);
+
+	auto g234 = Connection::make<GatedTanhConnection>(l2, l3, l4);
+	auto g234_1 = Connection::make<GatedTanhConnection>(l2, l3, l4);
+	auto g234_2 = Connection::make<GatedTanhConnection>(l2, l3, l4);
+
+	auto engine = EngineBase::make<VecmatEngine>();
+	auto dataman = DataManagerBase::make<VecmatDataManager>(
+			engine, INPUT_DIM, TARGET_DIM, BATCH);
+
+	RecurrentNetwork net(engine, dataman, HISTORY, 2);
+
+	net.add_layer(l1);
+	net.new_connection<FullConnection>(l1, l2);
+	net.new_bias_layer(l2);
+	net.add_layer(l2);
+	net.new_connection<FullConnection>(l1, l3);
+	net.new_bias_layer(l3);
+	net.add_layer(l3);
+	net.add_connection(g234);
+	net.add_recur_connection(g234_1);
+	net.add_recur_connection(g234_2, 2);
+	net.new_bias_layer(l4);
+	net.add_layer(l4);
+
+	gradient_check<VecmatEngine, VecmatDataManager>(net, 1e-2f, 1.3f);
+}
