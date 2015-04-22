@@ -27,7 +27,7 @@ public:
 
 	void init_batch_size(int batchSize)
 	{
-		Component::check_uninitialized("init_batch_size", "BiasLayer");
+		Component::initGuard.assert_before_initialize("init_batch_size", "BiasLayer");
 
 		this->batchSize = batchSize;
 	}

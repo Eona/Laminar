@@ -13,24 +13,24 @@
 class Component
 {
 public:
-	Component() {}
+	Component() :
+		initGuard("Component")
+	{}
 
 	virtual ~Component() {};
 
 	void init_engine(EngineBase::Ptr engine)
 	{
-		check_uninitialized("init_engine", "Component");
+		initGuard.assert_before_initialize("init_engine");
 		this->engine = engine;
 	}
 
 	virtual void initialize()
 	{
-		LMN_ASSERT_THROW(!this->is_initialized,
-			ComponentException("Component already initialized, can't init again unless reset()"));
-
 		this->initialize_impl();
 
-		this->is_initialized = true;
+		// set *after* initialize_impl, which requires initGuard to be false
+		initGuard.initialize();
 	}
 
 	/**
@@ -66,19 +66,9 @@ public:
 
 protected:
 	EngineBase::Ptr engine;
-	bool is_initialized = false;
+	InitializeGuard<ComponentException> initGuard;
 
 	virtual void initialize_impl() = 0;
-
-	/**
-	 * Exception helper
-	 * The function should be called *before* initialization
-	 */
-	void check_uninitialized(string msg, string componentName)
-	{
-		LMN_ASSERT_THROW(!this->is_initialized,
-			ComponentException(msg + " should be called before " + componentName + " initialization."));
-	}
 };
 
 TYPEDEF_PTR_EXTERNAL(Component);

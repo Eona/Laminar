@@ -43,7 +43,7 @@ public:
 	 */
 	void init_max_temporal_skip(int maxTemporalSkip)
 	{
-		Component::check_uninitialized("init_max_temporal_skip", "Layer");
+		Component::initGuard.assert_before_initialize("init_max_temporal_skip", "Layer");
 
 		this->maxTemporalSkip = maxTemporalSkip;
 	}
@@ -63,7 +63,7 @@ public:
 	 */
 	void init_history_length(int historyLength)
 	{
-		Component::check_uninitialized("init_history_length", "Layer");
+		Component::initGuard.assert_before_initialize("init_history_length", "Layer");
 
 		this->historyLength = historyLength;
 	}

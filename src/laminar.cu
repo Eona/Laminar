@@ -34,6 +34,31 @@ FakeRand& rand_target = FakeRand::instance_target();
 #define conn_const Connection::make<ConstantConnection>
 #define conn_gated Connection::make<GatedConnection>
 
+struct Dudu
+{
+	Dudu() :
+		initGuard("Dudu")
+	{ }
+
+	void initialize()
+	{
+		initGuard.initialize(false);
+	}
+
+	void before_init()
+	{
+		initGuard.assert_before_initialize<ComponentException>("before_dudu");
+	}
+
+	void after_init()
+	{
+		initGuard.assert_after_initialize<EngineException>("after_dudu");
+	}
+
+private:
+	InitializeGuard<LaminarException> initGuard;
+};
+
 int main(int argc, char **argv)
 {
 	Vecmat<float> A = {
@@ -53,13 +78,12 @@ int main(int argc, char **argv)
 		{-2, -6, 1, 7}
 	};
 
-	DEBUG_MSG(A);
-	DEBUG_MSG(B);
-	DEBUG_MSG("A + A2\n" << A+A2);
-	DEBUG_MSG("A - A2\n" << A-A2);
-	DEBUG_MSG("-A\n" << -A);
-	DEBUG_MSG("A * B\n" << A*B);
-	DEBUG_MSG("A t\n" << A.transpose());
+	Dudu dud;
+	dud.before_init();
+	dud.after_init();
+	dud.initialize();
+
+	exit(0);
 
 	rand_conn.gen_uniform_rand(90, -1.5, 1.5); //rand_conn.print_rand_seq();
 
