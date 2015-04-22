@@ -70,7 +70,7 @@ public:
 		return this->historyLength;
 	}
 
-	virtual void add_recurrent_connection(Connection::Ptr conn, int temporalSkip = 1)
+	virtual void add_recur_connection(Connection::Ptr conn, int temporalSkip = 1)
 	{
 		assert_throw<NetworkException>(
 			maxTemporalSkip == Layer::UNLIMITED_TEMPORAL_SKIP
@@ -95,17 +95,17 @@ public:
 	}
 
 	template<typename ConnectionT, typename ...ArgT>
-	void new_recurrent_connection(ArgT&& ... args)
+	void new_recur_connection(ArgT&& ... args)
 	{
-		this->add_recurrent_connection(
+		this->add_recur_connection(
 			Connection::make<ConnectionT>(
 					std::forward<ArgT>(args)...));
 	}
 
 	template<typename ConnectionT, typename ...ArgT>
-	void new_recurrent_skip_connection(int temporalSkip, ArgT&& ... args)
+	void new_recur_skip_connection(int temporalSkip, ArgT&& ... args)
 	{
-		this->add_recurrent_connection(
+		this->add_recur_connection(
 			Connection::make<ConnectionT>(
 					std::forward<ArgT>(args)...),
 			temporalSkip);

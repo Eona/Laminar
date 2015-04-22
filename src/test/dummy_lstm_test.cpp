@@ -92,27 +92,27 @@ TEST(DummyLSTM, LSTM)
 	net.add_layer(inLayer);
 
 	net.add_connection(c_in_inputGate);
-	net.add_recurrent_connection(c_outLast_inputGate_1);
-	net.add_recurrent_connection(c_cellLast_inputGate_1);
+	net.add_recur_connection(c_outLast_inputGate_1);
+	net.add_recur_connection(c_cellLast_inputGate_1);
 	net.add_layer(inputGate);
 
 	net.add_connection(c_in_forgetGate);
-	net.add_recurrent_connection(c_outLast_forgetGate_1);
-	net.add_recurrent_connection(c_cellLast_forgetGate_1);
+	net.add_recur_connection(c_outLast_forgetGate_1);
+	net.add_recur_connection(c_cellLast_forgetGate_1);
 	net.add_layer(forgetGate);
 
 	net.add_connection(c_in_cellHat);
-	net.add_recurrent_connection(c_outLast_cellHat_1);
+	net.add_recur_connection(c_outLast_cellHat_1);
 
 	net.add_layer(cellHatLayer);
 
 	net.add_connection(g_cellHat_inputGate_cell);
-	net.add_recurrent_connection(g_cellLast_forgetGate_cell_1);
+	net.add_recur_connection(g_cellLast_forgetGate_cell_1);
 
 	net.add_layer(cellLayer);
 
 	net.add_connection(c_in_outputGate);
-	net.add_recurrent_connection(c_outLast_outputGate_1);
+	net.add_recur_connection(c_outLast_outputGate_1);
 	net.add_connection(c_cell_outputGate);
 
 	net.add_layer(outputGate);

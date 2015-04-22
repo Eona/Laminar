@@ -72,13 +72,13 @@ TEST(VecmatRNN, Simple)
 	RecurrentNetwork net(engine, dataman, HISTORY);
 
 	net.add_layer(l1);
-	net.add_recurrent_connection(c22_1);
+	net.add_recur_connection(c22_1);
 	net.add_connection(c12);
 
 	net.add_layer(l2);
 
-	net.add_recurrent_connection(c23_1);
-	net.add_recurrent_connection(c33_1);
+	net.add_recur_connection(c23_1);
+	net.add_recur_connection(c33_1);
 	net.add_connection(c23);
 
 	net.add_layer(l3);
@@ -168,17 +168,17 @@ TEST(VecmatRNN, TemporalSkip)
 	net.add_layer(l1);
 
 	net.add_connection(c12);
-	net.add_recurrent_connection(c22_1);
-	net.add_recurrent_connection(c22_3, 3);
-	net.add_recurrent_connection(c32_3, 3);
+	net.add_recur_connection(c22_1);
+	net.add_recur_connection(c22_3, 3);
+	net.add_recur_connection(c32_3, 3);
 
 	net.add_layer(l2);
 
 	net.add_connection(c23);
-	net.add_recurrent_connection(c23_1);
-	net.add_recurrent_connection(c23_2, 2);
-	net.add_recurrent_connection(c33_1);
-	net.add_recurrent_connection(c33_2, 2);
+	net.add_recur_connection(c23_1);
+	net.add_recur_connection(c23_2, 2);
+	net.add_recur_connection(c33_1);
+	net.add_recur_connection(c33_2, 2);
 
 	net.add_layer(l3);
 	net.add_connection(c34);
@@ -253,18 +253,18 @@ TEST(VecmatRNN, TemporalSkipBias)
 
 	net.new_connection<FullConnection>(l1, l2);
 
-	net.new_recurrent_connection<FullConnection>(l2, l2);
-	net.new_recurrent_skip_connection<FullConnection>(3, l2, l2);
-	net.new_recurrent_skip_connection<FullConnection>(3, l3, l2);
+	net.new_recur_connection<FullConnection>(l2, l2);
+	net.new_recur_skip_connection<FullConnection>(3, l2, l2);
+	net.new_recur_skip_connection<FullConnection>(3, l3, l2);
 
 	net.new_bias_layer(l2);
 	net.add_layer(l2);
 
 	net.new_connection<FullConnection>(l2, l3);
-	net.new_recurrent_connection<FullConnection>(l2, l3);
-	net.new_recurrent_skip_connection<FullConnection>(2, l2, l3);
-	net.new_recurrent_skip_connection<FullConnection>(1, l3, l3);
-	net.new_recurrent_skip_connection<FullConnection>(2, l3, l3);
+	net.new_recur_connection<FullConnection>(l2, l3);
+	net.new_recur_skip_connection<FullConnection>(2, l2, l3);
+	net.new_recur_skip_connection<FullConnection>(1, l3, l3);
+	net.new_recur_skip_connection<FullConnection>(2, l3, l3);
 
 	net.new_bias_layer(l3);
 	net.add_layer(l3);
@@ -349,8 +349,8 @@ TEST(VecmatRNN, GatedTanhConnection)
 	net.new_connection<FullConnection>(l1, l3);
 	net.add_layer(l3);
 	net.add_connection(g234);
-	net.add_recurrent_connection(g234_1);
-	net.add_recurrent_connection(g234_2, 2);
+	net.add_recur_connection(g234_1);
+	net.add_recur_connection(g234_2, 2);
 	net.add_layer(l4);
 
 	gradient_check<VecmatEngine, VecmatDataManager>(net, 1e-2f, 1.3f);

@@ -40,28 +40,28 @@ protected:
 		auto outputGate = get_layer("output-gate");
 
 		net->new_connection<FullConnection>(inLayer, inputGate);
-		net->new_recurrent_connection<FullConnection>(outLayer, inputGate);
-		net->new_recurrent_connection<FullConnection>(cell, inputGate);
+		net->new_recur_connection<FullConnection>(outLayer, inputGate);
+		net->new_recur_connection<FullConnection>(cell, inputGate);
 
 		net->add_layer(inputGate);
 
 		net->new_connection<FullConnection>(inLayer, forgetGate);
-		net->new_recurrent_connection<FullConnection>(outLayer, forgetGate);
-		net->new_recurrent_connection<FullConnection>(cell, forgetGate);
+		net->new_recur_connection<FullConnection>(outLayer, forgetGate);
+		net->new_recur_connection<FullConnection>(cell, forgetGate);
 		net->add_layer(forgetGate);
 
 		net->new_connection<FullConnection>(inLayer, cellhat);
-		net->new_recurrent_connection<FullConnection>(outLayer, cellhat);
+		net->new_recur_connection<FullConnection>(outLayer, cellhat);
 
 		net->add_layer(cellhat);
 
 		net->new_connection<GatedConnection>(cellhat, inputGate, cell);
-		net->new_recurrent_connection<GatedConnection>(cell, forgetGate, cell);
+		net->new_recur_connection<GatedConnection>(cell, forgetGate, cell);
 
 		net->add_layer(cell);
 
 		net->new_connection<FullConnection>(inLayer, outputGate);
-		net->new_recurrent_connection<FullConnection>(outLayer, outputGate);
+		net->new_recur_connection<FullConnection>(outLayer, outputGate);
 		net->new_connection<FullConnection>(cell, outputGate);
 
 		net->add_layer(outputGate);

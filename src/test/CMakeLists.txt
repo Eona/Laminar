@@ -8,8 +8,8 @@ set(RUN_GPU_GTEST false)
 set(RUN_TEST_DURING_BUILD false)
 
 set(CPU_TEST_SUITE 
-#    dummy_forward_test dummy_rnn_test 
-#    dummy_lstm_test
+    dummy_forward_test dummy_rnn_test 
+    dummy_lstm_test
     vecmat_forward_test vecmat_rnn_test 
     vecmat_lstm_test
 #    misc_test
