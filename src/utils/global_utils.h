@@ -135,10 +135,26 @@ inline vector<T> vec_augment(const vector<T>& vec, const T& extra)
 	return ans;
 }
 
+template<typename T>
+inline bool vec_contains(const vector<T>& vec, const T& item)
+{
+	return std::find(vec.begin(), vec.end(), item) != vec.end();
+}
+
 template <typename KeyT, typename ValueT>
 bool key_exists(std::unordered_map<KeyT, ValueT>& map, KeyT& key)
 {
 	return map.find(key) != map.end();
+}
+
+/**
+ * Check if the arg pointer can be converted to template class
+ */
+template<typename SuperClass, typename TestClass>
+bool is_convertible(std::shared_ptr<TestClass> ptr)
+{
+	auto p = std::dynamic_pointer_cast<SuperClass>(ptr);
+	return bool(p);
 }
 
 // enclose x as "x" in macro expansion
