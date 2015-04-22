@@ -66,7 +66,7 @@ TEST(VecmatRNN, Simple)
 	auto c33_1 = Connection::make<FullConnection>(l3, l3);
 
 	auto engine = EngineBase::make<VecmatEngine>();
-	auto dataman = DataManagerBase::make<VecmatDataManager>(
+	auto dataman = DataManagerBase::make<VecmatRandDataManager>(
 			engine, INPUT_DIM, TARGET_DIM, BATCH);
 
 	RecurrentNetwork net(engine, dataman, HISTORY);
@@ -85,7 +85,7 @@ TEST(VecmatRNN, Simple)
 	net.add_connection(c34);
 	net.add_layer(l4);
 
-	gradient_check<VecmatEngine, VecmatDataManager, float>(net, 1e-2, 1);
+	gradient_check<VecmatEngine, VecmatRandDataManager, float>(net, 1e-2, 1);
 }
 
 TEST(VecmatRNN, TemporalSkip)
@@ -158,7 +158,7 @@ TEST(VecmatRNN, TemporalSkip)
 	auto c33_2 = conn_full(l3, l3);
 
 	auto engine = EngineBase::make<VecmatEngine>();
-	auto dataman = DataManagerBase::make<VecmatDataManager>(
+	auto dataman = DataManagerBase::make<VecmatRandDataManager>(
 			engine, INPUT_DIM, TARGET_DIM, BATCH);
 
 	RecurrentNetwork net(engine, dataman, HISTORY);
@@ -184,7 +184,7 @@ TEST(VecmatRNN, TemporalSkip)
 	net.add_connection(c34);
 	net.add_layer(l4);
 
-	gradient_check<VecmatEngine, VecmatDataManager, float>(net, 1e-2, 1);
+	gradient_check<VecmatEngine, VecmatRandDataManager, float>(net, 1e-2, 1);
 }
 
 
@@ -242,7 +242,7 @@ TEST(VecmatRNN, TemporalSkipBias)
 	// Must be added before you add layer(beta). alpha doesn't matter
 
 	auto engine = EngineBase::make<VecmatEngine>();
-	auto dataman = DataManagerBase::make<VecmatDataManager>(
+	auto dataman = DataManagerBase::make<VecmatRandDataManager>(
 			engine, INPUT_DIM, TARGET_DIM, BATCH);
 
 	RecurrentNetwork net(engine, dataman, HISTORY);
@@ -274,7 +274,7 @@ TEST(VecmatRNN, TemporalSkipBias)
 	net.new_bias_layer(l4);
 	net.add_layer(l4);
 
-	gradient_check<VecmatEngine, VecmatDataManager, float>(net, 1e-2, 1);
+	gradient_check<VecmatEngine, VecmatRandDataManager, float>(net, 1e-2, 1);
 }
 
 
@@ -338,7 +338,7 @@ TEST(VecmatRNN, GatedTanhConnection)
 	auto g234_2 = Connection::make<GatedTanhConnection>(l2, l3, l4);
 
 	auto engine = EngineBase::make<VecmatEngine>();
-	auto dataman = DataManagerBase::make<VecmatDataManager>(
+	auto dataman = DataManagerBase::make<VecmatRandDataManager>(
 			engine, INPUT_DIM, TARGET_DIM, BATCH);
 
 	RecurrentNetwork net(engine, dataman, HISTORY, 2);
@@ -353,7 +353,7 @@ TEST(VecmatRNN, GatedTanhConnection)
 	net.add_recur_connection(g234_2, 2);
 	net.add_layer(l4);
 
-	gradient_check<VecmatEngine, VecmatDataManager>(net, 1e-2f, 1.3f);
+	gradient_check<VecmatEngine, VecmatRandDataManager>(net, 1e-2f, 1.3f);
 }
 
 
@@ -410,7 +410,7 @@ TEST(VecmatRNN, GatedTanhBias)
 	auto g234_2 = Connection::make<GatedTanhConnection>(l2, l3, l4);
 
 	auto engine = EngineBase::make<VecmatEngine>();
-	auto dataman = DataManagerBase::make<VecmatDataManager>(
+	auto dataman = DataManagerBase::make<VecmatRandDataManager>(
 			engine, INPUT_DIM, TARGET_DIM, BATCH);
 
 	RecurrentNetwork net(engine, dataman, HISTORY, 2);
@@ -428,5 +428,5 @@ TEST(VecmatRNN, GatedTanhBias)
 	net.new_bias_layer(l4);
 	net.add_layer(l4);
 
-	gradient_check<VecmatEngine, VecmatDataManager>(net, 1e-2f, 1.3f);
+	gradient_check<VecmatEngine, VecmatRandDataManager>(net, 1e-2f, 1.3f);
 }

@@ -36,7 +36,7 @@ TEST(VecmatForward, Diamond)
 //	rand_target.gen_uniform_rand(TARGET_DIM * BATCH_SIZE, -1, 3); rand_target.print_rand_seq();
 
 	auto engine = EngineBase::make<VecmatEngine>();
-	auto dataman = DataManagerBase::make<VecmatDataManager>(
+	auto dataman = DataManagerBase::make<VecmatRandDataManager>(
 					engine, INPUT_DIM, TARGET_DIM, BATCH_SIZE);
 
 	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
@@ -71,7 +71,7 @@ TEST(VecmatForward, Diamond)
 	net.new_connection<FullConnection>(l3_2, l4);
 	net.add_layer(l4);
 
-	gradient_check<VecmatEngine, VecmatDataManager>(net, 1e-2f, 0.8f);
+	gradient_check<VecmatEngine, VecmatRandDataManager>(net, 1e-2f, 0.8f);
 }
 
 
@@ -110,7 +110,7 @@ TEST(VecmatForward, Bias)
 //	rand_target.gen_uniform_rand(TARGET_DIM * BATCH_SIZE, -1, 3); rand_target.print_rand_seq();
 
 	auto engine = EngineBase::make<VecmatEngine>();
-	auto dataman = DataManagerBase::make<VecmatDataManager>(
+	auto dataman = DataManagerBase::make<VecmatRandDataManager>(
 					engine, INPUT_DIM, TARGET_DIM, BATCH_SIZE);
 
 	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
@@ -149,7 +149,7 @@ TEST(VecmatForward, Bias)
 	net.new_connection<FullConnection>(l3_2, l4);
 	net.add_layer(l4);
 
-	gradient_check<VecmatEngine, VecmatDataManager>(net, 1e-2f, 0.8f);
+	gradient_check<VecmatEngine, VecmatRandDataManager>(net, 1e-2f, 0.8f);
 }
 
 

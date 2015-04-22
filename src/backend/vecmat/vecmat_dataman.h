@@ -9,14 +9,14 @@
 #include "../../utils/rand_utils.h"
 #include "../vecmat/vecmat_engine.h"
 
-class VecmatDataManager :
+class VecmatRandDataManager :
 		public DataManager<lmn::Vecmatf>,
 		public GradientCheckable<>
 {
 public:
 	typedef lmn::VecmatfPtr DataPtr;
 
-	VecmatDataManager(EngineBase::Ptr engine, int inputDim_, int targetDim_, int batchSize_) :
+	VecmatRandDataManager(EngineBase::Ptr engine, int inputDim_, int targetDim_, int batchSize_) :
 		DataManager(engine),
 		inputDim(inputDim_), targetDim(targetDim_), batchSize(batchSize_),
 		indexer(Dimension { inputDim, batchSize }) // for gradient check debugging
@@ -48,10 +48,9 @@ public:
 		target_rand.reset_seq();
 	}
 
-	void start_new_sequence()
+	int current_epoch()
 	{
-		input_rand.reset_seq();
-		target_rand.reset_seq();
+		throw UnimplementedException("VecmatRandDataManager doesn't support epoch learning.");
 	}
 
 	Dimension input_dim() const

@@ -60,7 +60,7 @@ TEST(VecmatLSTM, Composite)
 	auto lossLayer = Layer::make<SquareLossLayer>(TARGET_DIM);
 
 	auto engine = EngineBase::make<VecmatEngine>();
-	auto dataman = DataManagerBase::make<VecmatDataManager>(
+	auto dataman = DataManagerBase::make<VecmatRandDataManager>(
 			engine, INPUT_DIM, TARGET_DIM, BATCH);
 
 	RecurrentNetwork net(engine, dataman, HISTORY);
@@ -79,7 +79,7 @@ TEST(VecmatLSTM, Composite)
 
 	net.add_layer(lossLayer);
 
-	gradient_check<VecmatEngine, VecmatDataManager>(net, 1e-2f, 1.f);
+	gradient_check<VecmatEngine, VecmatRandDataManager>(net, 1e-2f, 1.f);
 }
 
 /**
@@ -136,7 +136,7 @@ TEST(VecmatLSTM, Agreement)
 	auto lossLayer = Layer::make<SquareLossLayer>(TARGET_DIM);
 
 	auto engine = EngineBase::make<VecmatEngine>();
-	auto dataman = DataManagerBase::make<VecmatDataManager>(
+	auto dataman = DataManagerBase::make<VecmatRandDataManager>(
 			engine, INPUT_DIM, TARGET_DIM, BATCH);
 
 	RecurrentNetwork net(engine, dataman, HISTORY);
@@ -156,7 +156,7 @@ TEST(VecmatLSTM, Agreement)
 
 	/*********** hand-coded debug layer ***********/
 	auto engine2 = EngineBase::make<VecmatEngine>();
-	auto dataman2 = DataManagerBase::make<VecmatDataManager>(
+	auto dataman2 = DataManagerBase::make<VecmatRandDataManager>(
 			engine2, INPUT_DIM, TARGET_DIM, BATCH);
 
 	dataman2->start_new_epoch();
