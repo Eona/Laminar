@@ -144,17 +144,10 @@ public:
 
 	virtual void zero_clear()
 	{
-		for (int t = 0; t < this->historyLength; ++t)
-		{
-			lmn::zero_clear(in_value(t));
-			lmn::zero_clear(out_value(t));
-		}
-
-		for (int t = 0; t < gradient_history_length(); ++t)
-		{
-			lmn::zero_clear(in_gradient(t));
-			lmn::zero_clear(out_gradient(t));
-		}
+		zero_clear_invalue();
+		zero_clear_outvalue();
+		zero_clear_ingradient();
+		zero_clear_outgradient();
 	}
 
 	/**
@@ -226,18 +219,60 @@ protected:
 	 */
 	virtual void initialize_impl()
 	{
-		for (int t = 0; t < historyLength; ++t)
-		{
-			inValues.push_back(Tensor::make(engine));
-			outValues.push_back(Tensor::make(engine));
-		}
-
-		for (int t = 0; t < gradient_history_length(); ++t)
-		{
-			inGradients.push_back(Tensor::make(engine));
-			outGradients.push_back(Tensor::make(engine));
-		}
+		initialize_impl_invalue();
+		initialize_impl_outvalue();
+		initialize_impl_ingradient();
+		initialize_impl_outgradient();
 	}
+
+	/**
+	 * Helpers for special subclasses that don't want to initialize all fields
+	 */
+	void initialize_impl_invalue()
+	{
+		for (int t = 0; t < historyLength; ++t)
+			inValues.push_back(Tensor::make(engine));
+	}
+	void initialize_impl_outvalue()
+	{
+		for (int t = 0; t < historyLength; ++t)
+			outValues.push_back(Tensor::make(engine));
+	}
+	void initialize_impl_ingradient()
+	{
+		for (int t = 0; t < gradient_history_length(); ++t)
+			inGradients.push_back(Tensor::make(engine));
+	}
+	void initialize_impl_outgradient()
+	{
+		for (int t = 0; t < gradient_history_length(); ++t)
+			outGradients.push_back(Tensor::make(engine));
+	}
+
+	/**
+	 * Helpers for special subclasses that don't need to zero clear all fields
+	 */
+	void zero_clear_invalue()
+	{
+		for (int t = 0; t < historyLength; ++t)
+			lmn::zero_clear(in_value(t));
+	}
+	void zero_clear_outvalue()
+	{
+		for (int t = 0; t < historyLength; ++t)
+			lmn::zero_clear(out_value(t));
+	}
+	void zero_clear_ingradient()
+	{
+		for (int t = 0; t < gradient_history_length(); ++t)
+			lmn::zero_clear(in_gradient(t));
+	}
+	void zero_clear_outgradient()
+	{
+		for (int t = 0; t < gradient_history_length(); ++t)
+			lmn::zero_clear(out_gradient(t));
+	}
+
 
 	// Shift the gradient window
 	// FIXME memory is not being saved, still alloc a lot of memory
@@ -326,11 +361,8 @@ public:
 
 	virtual void zero_clear()
 	{
-		for (int t = 0; t < history_length(); ++t)
-			lmn::zero_clear(in_value(t));
-
-		for (int t = 0; t < gradient_history_length(); ++t)
-			lmn::zero_clear(in_gradient(t));
+		Layer::zero_clear_invalue();
+		Layer::zero_clear_ingradient();
 	}
 
 	void forward_impl(Tensor& inValue, Tensor& outValue) {}
@@ -351,11 +383,8 @@ protected:
 	 */
 	virtual void initialize_impl()
 	{
-		for (int t = 0; t < historyLength; ++t)
-			inValues.push_back(Tensor::make(engine));
-
-		for (int t = 0; t < gradient_history_length(); ++t)
-			inGradients.push_back(Tensor::make(engine));
+		Layer::initialize_impl_invalue();
+		Layer::initialize_impl_ingradient();
 	}
 };
 

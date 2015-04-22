@@ -6,27 +6,31 @@ alias x='make && ./laminar'
 alias db='gdb ./laminar'
 alias val='valgrind ./laminar'
 
-alias gvec='
+# generate Vecmat test suite standard
+alias genv='
 read -p "Generate and overwrite standard?"
 python ../lmncheck.py gen vecmat_forward &&
 python ../lmncheck.py gen vecmat_rnn &&
 python ../lmncheck.py gen vecmat_lstm
 '
 
-alias cvec='
+# Check Vecmat against standard
+alias chv='
 python ../lmncheck.py check vecmat_forward &&
 python ../lmncheck.py check vecmat_rnn &&
 python ../lmncheck.py check vecmat_lstm
 '
 
-alias gdum='
+# generate Dummy test suite standard
+alias gend='
 read -p "Generate and overwrite standard?"
 python ../lmncheck.py gen dummy_forward &&
 python ../lmncheck.py gen dummy_rnn &&
 python ../lmncheck.py gen dummy_lstm
 '
 
-alias cdum='
+# Check Dummy against standard
+alias chd='
 python ../lmncheck.py check dummy_forward &&
 python ../lmncheck.py check dummy_rnn &&
 python ../lmncheck.py check dummy_lstm
