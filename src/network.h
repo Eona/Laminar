@@ -8,6 +8,7 @@
 #include "component.h"
 #include "composite.h"
 #include "layer.h"
+#include "bias_layer.h"
 #include "connection.h"
 #include "engine/engine.h"
 #include "engine/tensor.h"
@@ -39,18 +40,41 @@ public:
 
 	virtual void add_layer(Layer::Ptr layer)
 	{
-		components.push_back(Component::upcast(layer));
-		layers.push_back(layer);
+		this->components.push_back(Component::upcast(layer));
+		this->layers.push_back(layer);
+
+		// WISHLIST any better idea to treat biases?
+		auto biasLayer = Layer::cast<BiasLayer>(layer);
+		if (biasLayer)
+			this->biases.push_back(biasLayer);
 
 		this->check_add_param_container(layer);
 	}
 
 	virtual void add_connection(Connection::Ptr conn)
 	{
-		components.push_back(Component::upcast(conn));
-		connections.push_back(conn);
+		this->components.push_back(Component::upcast(conn));
+		this->connections.push_back(conn);
 
 		this->check_add_param_container(conn);
+	}
+
+	/**
+	 * Convenience method, same as:
+	 * 1) Construct a new BiasLayer
+	 * 2) Add it to this network
+	 * 3) Add a FullConnection from the bias to its output layer
+	 * WISHLIST make the interface work with ConvNet bias
+	 */
+	virtual void new_bias_layer(Layer::Ptr layer)
+	{
+		// WISHLIST topological sort can figure this out, no need to check
+		LMN_ASSERT_THROW(!vec_contains(this->layers, layer),
+			NetworkException("BiasLayer must be added before its output layer"));
+
+		auto biasLayer = Layer::make<BiasLayer>();
+		this->add_layer(biasLayer);
+		this->new_connection<FullConnection>(biasLayer, layer);
 	}
 
 	/**
@@ -167,6 +191,7 @@ public:
 
 	// FIXME shouldn't be public
 	vector<Layer::Ptr> layers;
+	vector<BiasLayer::Ptr> biases;
 	vector<Connection::Ptr> connections;
 	vector<Component::Ptr> components;
 	vector<ParamContainer::Ptr> paramContainers;
@@ -227,9 +252,12 @@ protected:
 	virtual void initialize_impl()
 	{
 		this->lossLayer = Layer::cast<LossLayer>(layers[layers.size() - 1]);
-
 		assert_throw_nullptr<NetworkException>(this->lossLayer,
 				"Last layer must be a LossLayer");
+
+		// WISHLIST any better way to init bias?
+		for (BiasLayer::Ptr b : this->biases)
+			b->init_batch_size(this->dataManager->batch_size());
 
 		for (Component::Ptr c : this->components)
 		{

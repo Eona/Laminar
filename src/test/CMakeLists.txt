@@ -2,7 +2,7 @@ message("Folder test/ for gtest template")
 include(eona_gtest)
 
 # toggle this to avoid recompiling gtests
-set(RUN_CPU_GTEST false)
+set(RUN_CPU_GTEST true)
 set(RUN_GPU_GTEST false)
 # global option from eona_gtest.cmake
 set(RUN_TEST_DURING_BUILD false)
@@ -40,6 +40,6 @@ endif()
 # so that you can run 'make gtest'
 #> add_custom_target(gtest COMMAND ${TEST_SUITE})
 # from eona_utils.cmake:
-if (NOT ${TEST_SUITE})
+if (TEST_SUITE)
     add_multiple_targets(gtest ${TEST_SUITE})
 endif()
