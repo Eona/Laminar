@@ -60,6 +60,9 @@ inline void assert(bool cond, std::string errmsg = "", std::string successmsg=""
 		std::cout << successmsg << "\n";
 }
 
+/**
+ * @deprecated should use LMN_ASSERT_THROW
+ */
 template<typename ExceptionT>
 typename std::enable_if<std::is_base_of<std::exception, ExceptionT>::value, void>::type
 lmn_assert_throw(bool cond, string errmsg = "")
@@ -80,13 +83,11 @@ lmn_assert_throw(bool cond, string errmsg = "")
 	}}
 
 /**
- * Throw exception if the shared pointer is null
- * @param shared pointer
- * @param throwable
+ * @deprecated should use LMN_ASSERT_NULLPTR macro
  */
 template<typename ExceptionT, typename T>
 typename std::enable_if<std::is_base_of<std::exception, ExceptionT>::value, void>::type
-lmn_assert_throw_nullptr(const std::shared_ptr<T>& ptr, string errmsg)
+lmn_assert_nullptr(const std::shared_ptr<T>& ptr, string errmsg)
 {
 	if (ptr == nullptr)
 		throw ExceptionT(errmsg);
