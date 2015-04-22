@@ -86,7 +86,7 @@ assert_throw(bool cond, string errmsg = "")
  */
 template<typename ExceptionT, typename T>
 typename std::enable_if<std::is_base_of<std::exception, ExceptionT>::value, void>::type
-assert_throw_nullptr(const std::shared_ptr<T>& ptr, string errmsg)
+lmn_assert_throw_nullptr(const std::shared_ptr<T>& ptr, string errmsg)
 {
 	if (ptr == nullptr)
 		throw ExceptionT(errmsg);

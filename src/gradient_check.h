@@ -144,8 +144,8 @@ inline void gradient_check(Network& net,
 		auto datamanGradCheck =
 				std::dynamic_pointer_cast<GradientCheckable<FloatT> >(dataman);
 
-		assert_throw_nullptr<LaminarException>(datamanGradCheck,
-				"DataManager type doesn't implement GradientCheckable<FloatT>");
+		LMN_ASSERT_NULLPTR(datamanGradCheck,
+				LaminarException("DataManager type doesn't implement GradientCheckable<FloatT>"));
 
 		// perturb each input tensor in sequence
 		for (int inp = 0; inp < historyLength; ++inp)

@@ -111,9 +111,10 @@ public:
 	template<typename EngineT = EngineBase>
 	std::shared_ptr<EngineT> get_engine()
 	{
-		auto engine_ = std::dynamic_pointer_cast<EngineT>(this->engine);
-		assert_throw_nullptr<NetworkException>(engine_,
-			"get_engine()'s template type is incompatible");
+		auto engine_ =
+				std::dynamic_pointer_cast<EngineT>(this->engine);
+		LMN_ASSERT_NULLPTR(engine_,
+			NetworkException("get_engine()'s template type is incompatible"));
 		return engine_;
 	}
 
@@ -123,9 +124,10 @@ public:
 	template<typename DataManagerT = DataManagerBase>
 	std::shared_ptr<DataManagerT> get_data_manager()
 	{
-		auto dataManager_ = std::dynamic_pointer_cast<DataManagerT>(this->dataManager);
-		assert_throw_nullptr<NetworkException>(dataManager_,
-			"get_data_manager()'s template type is incompatible");
+		auto dataManager_ =
+				std::dynamic_pointer_cast<DataManagerT>(this->dataManager);
+		LMN_ASSERT_NULLPTR(dataManager_,
+			NetworkException("get_data_manager()'s template type is incompatible"));
 		return dataManager_;
 	}
 
@@ -278,8 +280,8 @@ protected:
 	virtual void initialize_impl()
 	{
 		this->lossLayer = Layer::cast<LossLayer>(layers[layers.size() - 1]);
-		assert_throw_nullptr<NetworkException>(this->lossLayer,
-				"Last layer must be a LossLayer");
+		LMN_ASSERT_NULLPTR(this->lossLayer,
+				NetworkException("Last layer must be a LossLayer"));
 
 		// WISHLIST any better way to init bias?
 		for (BiasLayer::Ptr b : this->biases)

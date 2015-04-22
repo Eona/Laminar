@@ -63,8 +63,8 @@ public:
 	std::shared_ptr<EngineT> get_engine()
 	{
 		auto engine_ = std::dynamic_pointer_cast<EngineT>(this->engine);
-		assert_throw_nullptr<NetworkException>(engine_,
-			"get_engine()'s template type is incompatible");
+		LMN_ASSERT_NULLPTR(engine_,
+			NetworkException("get_engine()'s template type is incompatible"));
 		return engine_;
 	}
 
@@ -75,7 +75,7 @@ public:
 	static std::shared_ptr<ManagerT> make(ArgT&& ... args)
 	{
 		LMN_STATIC_ASSERT((std::is_base_of<DataManagerBase, ManagerT>::value),
-				"make() failed: DataManager type parameter must be a subclass of DataManagerBase");
+			"make() failed: DataManager type parameter must be a subclass of DataManagerBase");
 
 		return std::make_shared<ManagerT>(
 						std::forward<ArgT>(args) ...);
@@ -88,7 +88,7 @@ public:
 	static std::shared_ptr<ManagerT> cast(DataManagerBase::Ptr manager)
 	{
 		LMN_STATIC_ASSERT((std::is_base_of<DataManagerBase, ManagerT>::value),
-				"cast() failed: DataManager type parameter must be a subclass of DataManagerBase");
+			"cast() failed: DataManager type parameter must be a subclass of DataManagerBase");
 
 		return std::dynamic_pointer_cast<ManagerT>(manager);
 	}

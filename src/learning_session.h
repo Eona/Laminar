@@ -41,9 +41,7 @@ class LearningSession :
 public:
 	LearningSession(Network::Ptr network) :
 		LearningSessionBase<NetworkT>(network)
-	{
-		DEBUG_MSG("CALLING GENERIC CTOR");
-	}
+	{ }
 };
 
 /**
@@ -56,9 +54,7 @@ class LearningSession<RecurrentNetwork> :
 public:
 	LearningSession(Network::Ptr network) :
 		LearningSessionBase<RecurrentNetwork>(network)
-	{
-		DEBUG_MSG("CALLING RECURRENT CTOR");
-	}
+	{ }
 
 };
 

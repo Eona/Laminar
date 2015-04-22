@@ -61,13 +61,13 @@ int main(int argc, char **argv)
 	DEBUG_MSG("A * B\n" << A*B);
 	DEBUG_MSG("A t\n" << A.transpose());
 
-	rand_conn.gen_uniform_rand(90, -1.5, 1.5); rand_conn.print_rand_seq();
+	rand_conn.gen_uniform_rand(90, -1.5, 1.5); //rand_conn.print_rand_seq();
 
-	rand_prehis.gen_uniform_rand(30, -.5, .5); rand_prehis.print_rand_seq();
+	rand_prehis.gen_uniform_rand(30, -.5, .5); //rand_prehis.print_rand_seq();
 
-	rand_input.gen_uniform_rand(20, -1, 1); rand_input.print_rand_seq();
+	rand_input.gen_uniform_rand(20, -1, 1); //rand_input.print_rand_seq();
 
-	rand_target.gen_uniform_rand(40, -1, 1); rand_target.print_rand_seq();
+	rand_target.gen_uniform_rand(40, -1, 1); //rand_target.print_rand_seq();
 
 	const int HISTORY = 5;
 	const int INPUT_DIM = 2;
@@ -93,7 +93,6 @@ int main(int argc, char **argv)
 	net->add_layer(lossLayer);
 
 	LearningSession<RecurrentNetwork> session(net);
-	LearningSession<ForwardNetwork> session2(net);
 
 /*	net.upload("initialize");
 	net.upload("forward");

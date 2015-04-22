@@ -475,14 +475,14 @@ public:
 		template<int ...S>
 		CommandFuncType adapt_context_helper(OpContextBase::Ptr contextBase, unpack_seq<S...>)
 		{
-			assert_throw_nullptr<EngineException>(contextBase,
-				"\""+ Command::opName + "\" is registered as a ContextCommand\n"
-						"the OpContext in Instruction must be specified (now it's nullptr)");
+			LMN_ASSERT_NULLPTR(contextBase,
+				EngineException("\""+ Command::opName + "\" is registered as a ContextCommand\n"
+						"OpContext in Instruction must be specified (now it's nullptr)"));
 
 			auto context = OpContextBase::cast<ContextArgT...>(contextBase);
 
-			assert_throw_nullptr<EngineException>(context,
-				"OpContext fails to supply the correct number/types of extra context parameters");
+			LMN_ASSERT_NULLPTR(context,
+				EngineException("OpContext fails to supply the correct number/types of extra context parameters"));
 
 			auto contextArgPack = context->get_context_arg_pack();
 
@@ -542,9 +542,9 @@ public:
 
 			if (instr.opcode == "create")
 			{
-				assert_throw_nullptr<EngineException>(instr.context,
-					"context variable (Dimension) is not supplied as part of "
-							"the instruction for create command.");
+				LMN_ASSERT_NULLPTR(instr.context,
+					EngineException("context variable (Dimension) is not supplied as part of "
+							"the instruction for create command."));
 
 				// Get the context directly
 				std::tuple<Dimension> dim =
