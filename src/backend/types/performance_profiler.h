@@ -2,8 +2,8 @@
  * Eona Studio (c)2015
  */
 
-#ifndef GPU_PROFILER_H_
-#define GPU_PROFILER_H_
+#ifndef PERFORMANCE_PROFILER_H_
+#define PERFORMANCE_PROFILER_H_
 
 
 #include <chrono>
