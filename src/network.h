@@ -132,19 +132,6 @@ public:
 	}
 
 	/**************************************
-	******* Training data management *********
-	**************************************/
-	/**
-	 * forward() loads input every time
-	 */
-	virtual void load_input() = 0;
-
-	/**
-	 * backward() loads target every time
-	 */
-	virtual void load_target() = 0;
-
-	/**************************************
 	******* Upload & exec instructions *********
 	**************************************/
 	/**
@@ -156,6 +143,9 @@ public:
 	 */
 	void execute(string methodName)
 	{
+		if (methodName != "initialize")
+			Network::check_initialized("execute " + methodName);
+
 		LMN_ASSERT_THROW(key_exists(networkMethodMap, methodName),
 			NetworkException("no Network member method is associated with \"" + methodName + "\""));
 
@@ -179,10 +169,10 @@ public:
 		LMN_ASSERT_THROW(key_exists(routineMap, methodName),
 			NetworkException(methodName + " has never been compiled."));
 
+		Network::check_initialized("recompile " + methodName);
+
 		this->compile_helper(methodName);
 	}
-
-	virtual void zero_clear() = 0;
 
 	// WISHLIST
 	virtual void topological_sort()
@@ -243,26 +233,33 @@ protected:
 		this->routineMap[methodName] = routine;
 	}
 
+	/**************************************
+	******* Training logic *********
+	**************************************/
 	/**
-	 * Request DataManager to fill in input and target
+	 * Asks dataManager to fill in input
 	 */
-	void forward()
-	{
-		check_initialized("forward");
-		load_input();
-		load_target();
-		forward_impl();
-	}
+	virtual void load_input() = 0;
 
-	virtual void forward_impl() = 0;
+	/**
+	 * Asks dataManager to fill in target
+	 */
+	virtual void load_target() = 0;
 
-	void backward()
-	{
-		check_initialized("backward");
-		backward_impl();
-	}
+	/**
+	 * Main forward propagation logic
+	 */
+	virtual void forward() = 0;
 
-	virtual void backward_impl() = 0;
+	/**
+	 * Main backward propagation logic
+	 */
+	virtual void backward() = 0;
+
+	/**
+	 * Clears all layer in/out values/gradients and parameter gradients
+	 */
+	virtual void zero_clear() = 0;
 
 	void initialize()
 	{
@@ -367,16 +364,6 @@ public:
 //	using Network::set_input;
 //	using Network::set_target;
 
-	virtual void load_input()
-	{
-		dataManager->upload_input(layers[0]->in_value(0));
-	}
-
-	virtual void load_target()
-	{
-		dataManager->upload_target(lossLayer->target_value(0));
-	}
-
 	/************************************/
 	TYPEDEF_PTR(ForwardNetwork);
 
@@ -392,13 +379,23 @@ protected:
 		Network::initialize_impl();
 	}
 
-	virtual void forward_impl()
+	virtual void load_input()
+	{
+		dataManager->upload_input(layers[0]->in_value(0));
+	}
+
+	virtual void load_target()
+	{
+		dataManager->upload_target(lossLayer->target_value(0));
+	}
+
+	virtual void forward()
 	{
 		for (Component::Ptr compon : this->components)
 			compon->forward();
 	}
 
-	virtual void backward_impl()
+	virtual void backward()
 	{
 		for (int i = components.size() - 1; i >= 0; --i)
 			components[i]->backward();

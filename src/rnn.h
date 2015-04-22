@@ -110,12 +110,20 @@ public:
 			temporalSkip);
 	}
 
+	/*********** Ptr ***********/
+	TYPEDEF_PTR(RecurrentNetwork);
+
+	template<typename ...ArgT>
+	static RecurrentNetwork::Ptr make(ArgT&& ... args)
+	{
+		return std::make_shared<RecurrentNetwork>(
+						std::forward<ArgT>(args) ...);
+	}
+
+protected:
 	/**************************************
-	******* Training data management *********
+	******* Training logic *********
 	**************************************/
-	/**
-	 * Loads a sequence of input
-	 */
 	virtual void load_input()
 	{
 		dataManager->start_new_sequence();
@@ -123,9 +131,6 @@ public:
 			dataManager->upload_input(layers[0]->in_value(frame));
 	}
 
-	/**
-	 * Loads a sequence of target
-	 */
 	virtual void load_target()
 	{
 		dataManager->start_new_sequence();
@@ -144,37 +149,11 @@ public:
 //		frame = 0;
 	}
 
-	/*********** Ptr ***********/
-	TYPEDEF_PTR(RecurrentNetwork);
-
-	template<typename ...ArgT>
-	static RecurrentNetwork::Ptr make(ArgT&& ... args)
-	{
-		return std::make_shared<RecurrentNetwork>(
-						std::forward<ArgT>(args) ...);
-	}
-
-protected:
-	/*********** Network operations ***********/
-	virtual void initialize_impl()
-	{
-		// initialize prehistory ParamContainers
-		this->init_prehistory_params();
-
-		for (Layer::Ptr l : this->layers)
-			l->init_history_length(this->historyLength);
-
-		for (Layer::Ptr layer : layers)
-			layer->init_max_temporal_skip(this->maxTemporalSkip);
-
-		Network::initialize_impl();
-	}
-
 	/**
 	 * First feeds forward in current time frame,
 	 * then props to the next time frame
 	 */
-	virtual void forward_impl()
+	virtual void forward()
 	{
 		for (int frame = 0; frame < this->historyLength; ++ frame)
 		{
@@ -202,7 +181,7 @@ protected:
 	 * First back-props to the previous time point,
 	 * then pass the gradient backward in current time.
 	 */
-	virtual void backward_impl()
+	virtual void backward()
 	{
 		for (int frame = this->historyLength - 1; frame >= 0; --frame)
 		{
@@ -227,6 +206,20 @@ protected:
 			for (Layer::Ptr layer : layers)
 				layer->shift_back_gradient_window();
 		}
+	}
+
+	virtual void initialize_impl()
+	{
+		// initialize prehistory ParamContainers
+		this->init_prehistory_params();
+
+		for (Layer::Ptr l : this->layers)
+			l->init_history_length(this->historyLength);
+
+		for (Layer::Ptr layer : layers)
+			layer->init_max_temporal_skip(this->maxTemporalSkip);
+
+		Network::initialize_impl();
 	}
 
 	/**

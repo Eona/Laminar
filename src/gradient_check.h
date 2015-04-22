@@ -37,6 +37,7 @@ inline void gradient_check(Network& net,
 	catch (std::bad_cast& err) { }
 
 	net.execute("initialize");
+	net.execute("load_input"); net.execute("load_target");
 	net.execute("forward");
 	net.execute("backward");
 
@@ -45,6 +46,7 @@ inline void gradient_check(Network& net,
 	{
 		net.execute("zero_clear");
 		dataman->start_new_epoch();
+		net.execute("load_input"); net.execute("load_target");
 	};
 
 	// helper
@@ -155,12 +157,13 @@ inline void gradient_check(Network& net,
 			DimIndexEnumerator idxEnumer(totalInputDim);
 			while (idxEnumer.has_next())
 			{
-
 				DimIndex perturbDimIdx = idxEnumer.next();
 
 				reset_net();
 				datamanGradCheck->gradient_check_perturb(inp, perturbDimIdx, -perturb);
 
+				// reload input data after perturbation
+				dataman->start_new_epoch(); net.execute("load_input"); net.execute("load_target");
 				net.execute("forward");
 
 				FloatT lossMinus = read_loss();
@@ -170,6 +173,8 @@ inline void gradient_check(Network& net,
 
 				datamanGradCheck->gradient_check_perturb(inp, perturbDimIdx, +perturb);
 
+				// reload input data after perturbation
+				dataman->start_new_epoch(); net.execute("load_input"); net.execute("load_target");
 				net.execute("forward");
 
 				FloatT lossPlus = read_loss();

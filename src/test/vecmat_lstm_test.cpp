@@ -151,6 +151,7 @@ TEST(VecmatLSTM, Agreement)
 	net.add_layer(lossLayer);
 
 	net.execute("initialize");
+	net.execute("load_input"); net.execute("load_target");
 	net.execute("forward");
 
 	/*********** hand-coded debug layer ***********/
@@ -177,6 +178,7 @@ TEST(VecmatLSTM, Agreement)
 	rand_conn.reset_seq();
 	rand_prehis.reset_seq();
 	lstmDebugNet.execute("initialize");
+	lstmDebugNet.execute("load_input"); lstmDebugNet.execute("load_target");
 	lstmDebugNet.execute("forward");
 
 	/********* Output check against lstmDebugNet *********/
