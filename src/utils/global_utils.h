@@ -157,7 +157,25 @@ bool is_convertible(std::shared_ptr<TestClass> ptr)
 	return bool(p);
 }
 
-// enclose x as "x" in macro expansion
+/*********** A few typedefs ***********/
+/**
+ * Define shared_ptr<Xclass> as ::Ptr
+ * Use inside a class definition
+ */
+#define TYPEDEF_PTR(Xclass) \
+	typedef std::shared_ptr<Xclass> Ptr
+
+/**
+ * Define shared_ptr<Xclass> as XclassPtr
+ * Use outside a class definition
+ */
+#define TYPEDEF_PTR_EXTERNAL(Xclass) \
+	typedef std::shared_ptr<Xclass> Xclass##Ptr
+
+/**
+ * Double-macro trick:
+ * enclose x as "x" in macro expansion
+ */
 #define STRINGFY_(x) #x
 #define STRINGFY(x) STRINGFY_(x)
 

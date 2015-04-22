@@ -10,22 +10,9 @@
 #include <vector>
 #include <memory>
 #include <stdexcept>
+#include "debug_utils.h"
 
 /*********** A few typedefs ***********/
-/**
- * Define shared_ptr<Xclass> as ::Ptr
- * Use inside a class definition
- */
-#define TYPEDEF_PTR(Xclass) \
-	typedef std::shared_ptr<Xclass> Ptr
-
-/**
- * Define shared_ptr<Xclass> as XclassPtr
- * Use outside a class definition
- */
-#define TYPEDEF_PTR_EXTERNAL(Xclass) \
-	typedef std::shared_ptr<Xclass> Xclass##Ptr
-
 /**
  * Type alias for vector<int>
  */
@@ -146,11 +133,105 @@ private:
 	DimIndex last;
 };
 
+/**
+ * Initialization guard:
+ * Some classes should be initialized only once, unless explicitly reset
+ * some class methods should be called before initialization, while
+ * others should be called after.
+ */
+template<typename InitGuardExceptionT>
+class InitializeGuard
+{
+public:
+	InitializeGuard(string className_) :
+		className(className_)
+	{}
+
+	~InitializeGuard() {}
+
+	/**
+	 * Use in initialize() method of your class
+	 *
+	 * @param disallowReinitialize if true,
+	 * we will check if initialize() is called twice
+	 */
+	template<typename ExceptionT = InitGuardExceptionT>
+	void initialize(bool disallowReinitialize = true)
+	{
+		if (disallowReinitialize)
+			LMN_ASSERT_THROW(!isInited,
+				ExceptionT(className + " should not be reinitialized."));
+
+		this->isInited = true;
+	}
+
+	void reset()
+	{
+		this->isInited = false;
+	}
+
+	/**
+	 * Use in a method that must be called before initialization
+	 * Throw an exception if already initialized
+	 * @param methodName for error message
+	 * @param className to override the className given in ctor
+	 */
+	template<typename ExceptionT = InitGuardExceptionT>
+	void assert_before_initialize(string methodName, string className)
+	{
+		LMN_STATIC_ASSERT((std::is_base_of<std::exception, ExceptionT>::value),
+			"assert_before_initialize template arg must be a subclass of std::exception");
+
+		LMN_ASSERT_THROW(!isInited,
+			ExceptionT(methodName + " must be called before " + className + " initialization."));
+	}
+
+	/**
+	 * @param methodName
+	 * @param className use the one provided in ctor
+	 */
+	template<typename ExceptionT = InitGuardExceptionT>
+	void assert_before_initialize(string methodName)
+	{
+		assert_before_initialize<ExceptionT>(methodName, this->className);
+	}
+
+	/**
+	 * Use in a method that must be called after initialization
+	 * Throw an exception if not yet initialized
+	 * @param methodName for error message
+	 * @param className to override the className given in ctor
+	 */
+	template<typename ExceptionT = InitGuardExceptionT>
+	void assert_after_initialize(string methodName, string className)
+	{
+		LMN_STATIC_ASSERT((std::is_base_of<std::exception, ExceptionT>::value),
+			"assert_after_initialize template arg must be a subclass of std::exception");
+
+		LMN_ASSERT_THROW(isInited,
+			ExceptionT(methodName + " must be called after " + className + " initialization."));
+	}
+
+	/**
+	 * @param methodName
+	 * @param className use the one provided in ctor
+	 */
+	template<typename ExceptionT = InitGuardExceptionT>
+	void assert_after_initialize(string methodName)
+	{
+		assert_after_initialize<ExceptionT>(methodName, this->className);
+	}
+
+private:
+	bool isInited = false;
+	string className;
+};
 
 /**************************************
 ******* Laminar specific exceptions *********
 **************************************/
-class LaminarException: public std::exception {
+class LaminarException: public std::exception
+{
 protected:
     std::string msg;
 public:
@@ -169,7 +250,8 @@ public:
     }
 };
 
-class NetworkException: public LaminarException {
+class NetworkException: public LaminarException
+{
 public:
     NetworkException(const std::string& msg):
     	LaminarException(msg)
@@ -181,7 +263,8 @@ public:
     }
 };
 
-class ComponentException: public NetworkException {
+class ComponentException: public NetworkException
+{
 public:
     ComponentException(const std::string& msg):
     	NetworkException(msg)
@@ -193,7 +276,8 @@ public:
     }
 };
 
-class EngineException: public LaminarException {
+class EngineException: public LaminarException
+{
 public:
     EngineException(const std::string& msg):
     	LaminarException(msg)
@@ -205,7 +289,8 @@ public:
     }
 };
 
-class TensorException: public LaminarException {
+class TensorException: public LaminarException
+{
 public:
     TensorException(const std::string& msg):
     	LaminarException(msg)
@@ -217,7 +302,8 @@ public:
     }
 };
 
-class LearningException: public LaminarException {
+class LearningException: public LaminarException
+{
 public:
     LearningException(const std::string& msg):
     	LaminarException(msg)
@@ -229,7 +315,8 @@ public:
     }
 };
 
-class UnimplementedException: public LaminarException {
+class UnimplementedException: public LaminarException
+{
 public:
     UnimplementedException(const std::string& msg):
     	LaminarException(msg)
