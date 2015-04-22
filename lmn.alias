@@ -1,0 +1,33 @@
+#!/bin/bash
+# A few useful bash aliases
+# Assume you are inside 'build' dir
+alias t='make gtest'
+alias x='make && ./laminar'
+alias db='gdb ./laminar'
+alias val='valgrind ./laminar'
+
+alias gvec='
+read -p "Generate and overwrite standard?"
+python ../lmncheck.py gen vecmat_forward &&
+python ../lmncheck.py gen vecmat_rnn &&
+python ../lmncheck.py gen vecmat_lstm
+'
+
+alias cvec='
+python ../lmncheck.py check vecmat_forward &&
+python ../lmncheck.py check vecmat_rnn &&
+python ../lmncheck.py check vecmat_lstm
+'
+
+alias gdum='
+read -p "Generate and overwrite standard?"
+python ../lmncheck.py gen dummy_forward &&
+python ../lmncheck.py gen dummy_rnn &&
+python ../lmncheck.py gen dummy_lstm
+'
+
+alias cdum='
+python ../lmncheck.py check dummy_forward &&
+python ../lmncheck.py check dummy_rnn &&
+python ../lmncheck.py check dummy_lstm
+'
