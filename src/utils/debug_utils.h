@@ -95,7 +95,7 @@ assert_throw_nullptr(const std::shared_ptr<T>& ptr, string errmsg)
 /**
  * Macro equivalent to delay errmsg evaluation
  */
-#define ASSERT_THROW_NULLPTR(ptr, exc) \
+#define LMN_ASSERT_NULLPTR(ptr, exc) \
 	{if (ptr == nullptr) \
 	{ \
 		std::cerr << __FILE__ << " @ line " << __LINE__ << " nullptr error\n"; \

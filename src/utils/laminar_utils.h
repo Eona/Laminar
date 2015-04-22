@@ -181,27 +181,15 @@ public:
     }
 };
 
-class ComponentException: public LaminarException {
+class ComponentException: public NetworkException {
 public:
     ComponentException(const std::string& msg):
-    	LaminarException(msg)
+    	NetworkException(msg)
 	{}
 
     virtual std::string error_header() const
     {
     	return "Network component error";
-    }
-};
-
-class UnimplementedException: public LaminarException {
-public:
-    UnimplementedException(const std::string& msg):
-    	LaminarException(msg)
-	{}
-
-    virtual std::string error_header() const
-    {
-    	return "Feature unimplemented";
     }
 };
 
@@ -226,6 +214,30 @@ public:
     virtual std::string error_header() const
     {
     	return "Tensor error";
+    }
+};
+
+class LearningException: public LaminarException {
+public:
+    LearningException(const std::string& msg):
+    	LaminarException(msg)
+	{}
+
+    virtual std::string error_header() const
+    {
+    	return "Learning session error";
+    }
+};
+
+class UnimplementedException: public LaminarException {
+public:
+    UnimplementedException(const std::string& msg):
+    	LaminarException(msg)
+	{}
+
+    virtual std::string error_header() const
+    {
+    	return "Feature unimplemented";
     }
 };
 
