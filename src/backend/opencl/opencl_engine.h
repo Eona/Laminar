@@ -20,7 +20,7 @@
 
 #include "ocl_util.h"
 #include "../types/opencl_float_mat.h"
-#include "../types/gpu_profiler.h"
+#include "../types/performance_profiler.h"
 
 #include "../../engine/engine.h"
 #include "../../engine/tensor.h"
