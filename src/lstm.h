@@ -8,7 +8,7 @@
 #include "layer.h"
 #include "parameter.h"
 #include "composite.h"
-#include "network.h"
+#include "rnn.h"
 #include "engine/tensor.h"
 #include "engine/tensor_ops.h"
 
