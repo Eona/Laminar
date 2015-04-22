@@ -188,6 +188,32 @@ public:
 		throw UnimplementedException("topological sort");
 	}
 
+	/************************************/
+	TYPEDEF_PTR(Network);
+
+	template<typename NetworkT, typename ...ArgT>
+	static Network::Ptr make(ArgT&& ... args)
+	{
+		LMN_STATIC_ASSERT((std::is_base_of<Network, NetworkT>::value),
+				"make() failed: type parameter must be a subclass of Network");
+
+		return std::static_pointer_cast<Network>(
+				std::make_shared<NetworkT>(
+						std::forward<ArgT>(args) ...));
+	}
+
+	/**
+	 * Down cast NetworkPtr to a specific network type
+	 */
+	template<typename NetworkT>
+	static std::shared_ptr<NetworkT> cast(Network::Ptr layer)
+	{
+		LMN_STATIC_ASSERT((std::is_base_of<Network, NetworkT>::value),
+				"cast() failed: type parameter must be a subclass of Network");
+
+		return std::dynamic_pointer_cast<NetworkT>(layer);
+	}
+
 
 	// FIXME shouldn't be public
 	vector<Layer::Ptr> layers;
@@ -347,6 +373,16 @@ public:
 	virtual void load_target()
 	{
 		dataManager->upload_target(lossLayer->target_value(0));
+	}
+
+	/************************************/
+	TYPEDEF_PTR(ForwardNetwork);
+
+	template<typename ...ArgT>
+	static ForwardNetwork::Ptr make(ArgT&& ... args)
+	{
+		return std::make_shared<ForwardNetwork>(
+						std::forward<ArgT>(args) ...);
 	}
 
 protected:

@@ -145,6 +145,16 @@ public:
 //		frame = 0;
 	}
 
+	/*********** Ptr ***********/
+	TYPEDEF_PTR(RecurrentNetwork);
+
+	template<typename ...ArgT>
+	static RecurrentNetwork::Ptr make(ArgT&& ... args)
+	{
+		return std::make_shared<RecurrentNetwork>(
+						std::forward<ArgT>(args) ...);
+	}
+
 protected:
 	/*********** Network operations ***********/
 	virtual void initialize_impl()

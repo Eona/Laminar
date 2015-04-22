@@ -29,6 +29,7 @@ exepath = os.path.join('test', argv[2] + '_test')
 exeoutpath = os.path.join('../test_out/', argv[2]+'.tmp')
 stdpath = os.path.join('../test_out/', argv[2] + '.out')
 
+print '*' * 50
 if cmd == 'check' or cmd == 'check_val':
     precmd = ' valgrind ' if cmd.endswith('val') else ' '
     print 'Running' + precmd + exepath, '...\n'
