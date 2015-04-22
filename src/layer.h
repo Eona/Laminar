@@ -306,13 +306,6 @@ private:
 				inGradients,
 				outValues,
 				outGradients;
-
-	/**
-	 * Normally [in/out][Values/Gradients] fields should not be visible to
-	 * subclasses, but ConstantLayer is special because it needs to create an
-	 * alias of outValues=>inValues and outGradients=>inGradients
-	 */
-	friend class ConstantLayer;
 };
 
 /**
@@ -343,21 +336,22 @@ public:
 	// trick the callers so that they are agnostic of the alias
 	virtual Tensor& out_value(int t) const
 	{
-		return *this->inValues[t];
+		return in_value(t);
 	}
 	virtual Tensor::Ptr out_value_ptr(int t) const
 	{
-		return this->inValues[t];
+		return in_value_ptr(t);
 	}
 
 	virtual Tensor& out_gradient(int t) const
 	{
-		return *this->inGradients[t];
+		return in_gradient(t);
 	}
 	virtual Tensor::Ptr out_gradient_ptr(int t) const
 	{
-		return this->inGradients[t];
+		return in_gradient_ptr(t);
 	}
+
 
 	virtual void zero_clear()
 	{
