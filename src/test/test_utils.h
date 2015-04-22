@@ -11,6 +11,7 @@
 #include "../full_connection.h"
 #include "../gated_connection.h"
 #include "../activation_layer.h"
+#include "../bias_layer.h"
 #include "../loss_layer.h"
 #include "../parameter.h"
 #include "../network.h"

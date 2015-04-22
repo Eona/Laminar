@@ -30,25 +30,26 @@ TEST(VecmatRNN, Simple)
 //	rand_prehis.gen_uniform_rand(30, -.5, .5);
 //	rand_prehis.print_rand_seq();
 
+
+	const int HISTORY = 5;
+	const int INPUT_DIM = 3;
+	const int TARGET_DIM = 2;
+	const int BATCH = 2;
+
 	rand_input.set_rand_seq(vector<float> {
 		0.397, 0.572, 0.99, -0.131, -0.45, -0.322, -0.115, 0.448, 0.705, -0.799,
 		-0.583, -0.527, 0.206, 0.963, 0.0171, -0.661, -0.367, 0.967, -0.0181,
 		0.144, -0.0365, 0.942, -0.0321, 0.106, -0.541, -0.701, 0.0964, 0.951, 0.213, -0.00518
 	});
-//	rand_input.gen_uniform_rand(30, -1, 1);
+//	rand_input.gen_uniform_rand(INPUT_DIM * BATCH * HISTORY, -1, 1);
 //	rand_input.print_rand_seq();
 
 	rand_target.set_rand_seq(vector<float> {
 		-0.998, -0.559, -0.00601, 0.953, 0.703, -0.456, 0.221, 0.488, 0.131, 0.48,
 		0.701, 0.0961, -0.596, 0.701, 0.633, -0.707, 0.984, 0.33, 0.582, -0.411
 	});
-//	rand_target.gen_uniform_rand(20, -1, 1);
+//	rand_target.gen_uniform_rand(TARGET_DIM * BATCH * HISTORY, -1, 1);
 //	rand_target.print_rand_seq();
-
-	const int HISTORY = 5;
-	const int INPUT_DIM = 3;
-	const int TARGET_DIM = 2;
-	const int BATCH = 2;
 
 	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
 	auto l2 = Layer::make<SigmoidLayer>(2);
@@ -112,11 +113,17 @@ TEST(VecmatRNN, TemporalSkip)
 //	rand_prehis.gen_uniform_rand(30, -.5, .5);
 //	rand_prehis.print_rand_seq();
 
+
+	const int HISTORY = 5;
+	const int INPUT_DIM = 2;
+	const int TARGET_DIM = 4;
+	const int BATCH = 2;
+
 	rand_input.set_rand_seq(vector<float> {
 		-0.557, -0.218, 0.567, -0.806, 0.86, -0.942, -0.678, 0.0253, -0.35, -0.749,
 		-0.0705, -0.179, 0.674, 0.974, -0.0647, 0.717, -0.167, 0.585, -0.888, 0.874
 	});
-//	rand_input.gen_uniform_rand(20, -1, 1);
+//	rand_input.gen_uniform_rand(INPUT_DIM * BATCH * HISTORY, -1, 1);
 //	rand_input.print_rand_seq();
 
 	rand_target.set_rand_seq(vector<float> {
@@ -125,13 +132,8 @@ TEST(VecmatRNN, TemporalSkip)
 		-0.811, -0.891, -0.0717, -0.881, -0.24, -0.359, -0.401, 0.0343, -0.262,
 		-0.963, -0.13, -0.282, -0.133, -0.728, 0.42, -0.046, -0.34, 0.536, 0.988, -0.282, 0.893
 	});
-//	rand_target.gen_uniform_rand(40, -1, 1);
+//	rand_target.gen_uniform_rand(TARGET_DIM * BATCH * HISTORY, -1, 1);
 //	rand_target.print_rand_seq();
-
-	const int HISTORY = 5;
-	const int INPUT_DIM = 2;
-	const int TARGET_DIM = 4;
-	const int BATCH = 2;
 
 	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
 	auto l2 = Layer::make<SigmoidLayer>(3);
@@ -206,6 +208,12 @@ TEST(VecmatRNN, GatedTanhConnection)
 //	rand_prehis.gen_uniform_rand(20, -.5, .5);
 //	rand_prehis.print_rand_seq();
 
+
+	const int HISTORY = 5;
+	const int INPUT_DIM = 3;
+	const int TARGET_DIM = 4;
+	const int BATCH = 3;
+
 	rand_input.set_rand_seq(vector<float> {
 		0.55, -0.489, -0.678, -0.946, 0.952, 0.84, 0.704, 0.596, -0.698, 0.987,
 		-0.071, 0.509, -0.14, 0.201, 0.143, 0.981, 0.297, 0.196, -0.0144,
@@ -213,7 +221,7 @@ TEST(VecmatRNN, GatedTanhConnection)
 		0.249, 0.794, -0.812, 0.634, 0.127, 0.113, -0.335, 0.786, 0.621,
 		0.316, -0.509, -0.906, 0.632, 0.996, -0.827, 0.173, 0.445, 0.252, 0.545, 0.688, -0.171, -0.809
 	});
-//	rand_input.gen_uniform_rand(50, -1, 1);
+//	rand_input.gen_uniform_rand(INPUT_DIM * BATCH * HISTORY, -1, 1);
 //	rand_input.print_rand_seq();
 
 	rand_target.set_rand_seq(vector<float> {
@@ -224,13 +232,8 @@ TEST(VecmatRNN, GatedTanhConnection)
 		-0.104, 0.986, -0.32, -0.605, -0.261, 0.989, -0.231, -0.447, 0.07,
 		-0.152, -0.339, 0.855, -0.128, 0.622, -0.736, 0.255, -0.424, 0.335, -0.634, -0.579, 0.606, 0.998, -0.361
 	});
-//	rand_target.gen_uniform_rand(60, -1, 1);
+//	rand_target.gen_uniform_rand(TARGET_DIM * BATCH * HISTORY, -1, 1);
 //	rand_target.print_rand_seq();
-
-	const int HISTORY = 5;
-	const int INPUT_DIM = 3;
-	const int TARGET_DIM = 4;
-	const int BATCH = 3;
 
 	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
 
