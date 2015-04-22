@@ -14,20 +14,30 @@
 # ./lmncheck.py gen <testsuite>
 # will run test/vecmat_lstm_test and store the output in
 # ../test_out/<testsuite>.out for future comparison
+#
+# if gen_val, will also run valgrind
+# valgrind will not print stuff to stdout, so doesn't affect the generated standard.out
 
 from sys import argv, stderr, exit
 import os
 
 assert len(argv) == 3
 
+cmd = argv[1]
+precmd = '' 
+
+if cmd.endswith('_val'):
+    cmd = cmd[:-len('_val')]
+    precmd = 'valgrind '
+
 exepath = os.path.join('test', argv[2] + '_test')
 exeoutpath = os.path.join('../test_out/', argv[2]+'.tmp')
 stdpath = os.path.join('../test_out/', argv[2] + '.out')
 
-if argv[1] == 'check':
+if cmd == 'check':
     print 'Running', exepath, '...\n'
     # run the test first, store the output
-    os.system(exepath + ' > ' + exeoutpath)
+    os.system(precmd + exepath + ' > ' + exeoutpath)
     # check against a stored standard
     for tmpline, stdline in zip(open(exeoutpath, 'r'), open(stdpath, 'r')):
         if tmpline.startswith('[==========]') or \
@@ -47,7 +57,7 @@ if argv[1] == 'check':
     print 'PYTHON LAMINAR CHECK SUCCESS'
     
 # generate a standard 
-elif argv[1] == 'gen':
+elif cmd == 'gen':
     print 'Running', exepath, '...\n'
-    os.system(exepath + ' > ' + stdpath)
+    os.system(precmd + exepath + ' > ' + stdpath)
     print 'Standard generated to', stdpath
