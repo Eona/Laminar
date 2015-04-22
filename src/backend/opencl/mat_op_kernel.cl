@@ -53,7 +53,7 @@ __kernel void mat_square_loss_kernel (__global float * C, __global float * A, __
     int idx = get_global_id(0);
     if (idx < DATA_SIZE) {
 		float diff =  A[idx] - B[idx];
-		C[idx] = 0.5*(diff*diff);
+		C[idx] = 0.5f*(diff*diff);
     }
 }
 

@@ -20,11 +20,11 @@
 
 #include "ocl_util.h"
 #include "../types/opencl_float_mat.h"
+#include "../types/gpu_profiler.h"
 
 #include "../../engine/engine.h"
 #include "../../engine/tensor.h"
 #include "../../rand_utils.h"
-
 using namespace std;
 
 typedef std::shared_ptr<OpenclFloatMat> OpenclFloatMatPtr;
@@ -39,6 +39,7 @@ public:
 	OpenclEngine() :
 		Engine<OpenclFloatMat>()
 	{
+		timed = true;
 		cl = new OclUtilContext(true);
 		cout<<"Initialized context"<<endl;
 		/*Build program from source*/
@@ -112,6 +113,9 @@ public:
 	    if (!is_initialized) {
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
+
+		if(timed) ScopeTimer("Add takes ");
+
 	    //Register parameters and execute kernel
 //		write->print_matrix("write");
 	    cl->setup_kernel("mat_add_kernel", 0, sizeof(cl_mem), &write->device_data); // C
@@ -137,6 +141,7 @@ public:
 	    if (!is_initialized) {
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
+		if(timed) ScopeTimer("Mult takes ");
 
 	    //Need to re-compute number of workers
 	    int NUM_LOCAL_WORKER = write->NUM_LOCAL_WORKER;
@@ -162,6 +167,7 @@ public:
 	    if (!is_initialized) {
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
+		if(timed) ScopeTimer("Scale takes ");
 
 	    cl->setup_kernel("mat_scale_kernel", 0, sizeof(cl_mem), &write->device_data); // Y
 	    cl->setup_kernel("mat_scale_kernel", 1, sizeof(cl_mem), &reads[0]->device_data); // X
@@ -180,6 +186,8 @@ public:
 	    if (!is_initialized) {
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
+		if(timed) ScopeTimer("Assign takes ");
+
 	    //y = x
 	    cl->copy(write->device_data, reads[0]->device_data, reads[0]->MEM_SIZE);
 	}
@@ -190,6 +198,7 @@ public:
 	    if (!is_initialized) {
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
+		if(timed) ScopeTimer(kernel_name + " takes ");
 	    //y = x
 	    cl->setup_kernel(kernel_name, 0, sizeof(cl_mem), &write->device_data); // Y
 	    cl->setup_kernel(kernel_name, 1, sizeof(cl_mem), &reads[0]->device_data); // X
@@ -354,7 +363,7 @@ public:
 	OclUtilContext* cl;
 
 private:
-
+	bool timed;
 };
 
 #endif /* OPENCL_ENGINE_H_ */
