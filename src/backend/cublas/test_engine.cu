@@ -68,11 +68,11 @@ int main(int argc, char **argv)
 //	out->print_matrix("-m1");
 
 	engine.mult(v, out, true);
-//	float buffer[10];
-//	out->take_at(buffer, dim[0]*dim[1]-10, 10);
-//	for (int i = 0; i < 10; ++i){
-//		cout<<buffer[i]<<" ";
-//	}
+	float buffer[10];
+	out->take_at(buffer, dim[0]*dim[1]-10, 10);
+	for (int i = 0; i < 10; ++i){
+		cout<<buffer[i]<<" ";
+	}
 //	cout<<"\n";
 //	out->print_matrix("m1 * m2");
 //

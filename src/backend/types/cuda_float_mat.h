@@ -102,6 +102,22 @@ public:
 		);
 	}
 
+	void to_host(float * d) {
+		GPU_CHECKERROR(
+		cudaMemcpy( d, device_data, MEM_SIZE, cudaMemcpyDeviceToHost )
+		);
+	}
+
+
+	void take_at(float * d, size_t offset, size_t num_float) {
+		float *r = new float[MEM_SIZE];
+		to_host(r);
+		int j;
+		for (int i = offset, j = 0; j < num_float; ++i, ++j) {
+			d[j] = r[i];
+		}
+	}
+
 	void fill_rand(int seed) {
 		float *r = new float[MEM_SIZE];
 		srand (seed);
@@ -123,15 +139,17 @@ public:
 
 
     void print_matrix(std::string msg) {
-    	to_host();
+		float *r = new float[MEM_SIZE];
+    	to_host(r);
         std::cout <<  msg << "\n";
         for (int i = 0; i < DIM_ROW; ++i) {
             for (int j = 0; j < DIM_COL; ++j) {
-                std::cout << host_data[j*DIM_ROW+i] << '\t';
+                std::cout << r[j*DIM_ROW+i] << '\t';
             }
             std::cout<<"\n";
         }
         std::cout << std::endl;
+		delete [] r;
     }
 
     cublasOperation_t getOp() {
