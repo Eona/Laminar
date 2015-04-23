@@ -29,6 +29,10 @@ struct LearningState
 	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(LearningState)
 };
 
+
+/**************************************
+******* StopCriteria *********
+**************************************/
 /**
  * When to stop learning
  */
@@ -54,6 +58,9 @@ struct EpochStopCriteria : public StopCriteria
 	}
 };
 
+/**************************************
+******* Serializer *********
+**************************************/
 // forward decl
 class Network;
 /**
@@ -66,7 +73,7 @@ LMN_STATIC_ASSERT_IS_BASE(Network, NetworkT, "Serializer template arg");
 
 	virtual ~Serializer() {}
 
-	virtual void serialize(std::shared_ptr<NetworkT>, LearningState::Ptr) = 0;
+	virtual void save(std::shared_ptr<NetworkT>, LearningState::Ptr) = 0;
 
 	TYPEDEF_PTR(Serializer<NetworkT>);
 
@@ -79,7 +86,7 @@ LMN_STATIC_ASSERT_IS_BASE(Network, NetworkT, "Serializer template arg");
 template<typename NetworkT>
 struct NullSerializer : public Serializer<NetworkT>
 {
-	void serialize(std::shared_ptr<NetworkT>, LearningState::Ptr) { }
+	void save(std::shared_ptr<NetworkT>, LearningState::Ptr) { }
 
 	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(NullSerializer<NetworkT>)
 };

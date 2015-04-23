@@ -154,6 +154,11 @@ public:
 		return this->paramContainers;
 	}
 
+	Scalor::Ptr get_total_loss() const
+	{
+		return lossLayer->total_loss();
+	}
+
 	/**************************************
 	******* Upload & exec instructions *********
 	**************************************/

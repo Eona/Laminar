@@ -9,6 +9,7 @@
 #include "rnn.h"
 #include "optimizer.h"
 #include "learning_listener.h"
+#include "evaluator.h"
 
 template<typename NetworkT>
 class LearningSessionBase
@@ -23,6 +24,7 @@ typedef typename Serializer<NetworkT>::Ptr SerializerPtr;
 public:
 	LearningSessionBase(Network::Ptr net,
 						Optimizer::Ptr optimizer,
+						EvaluatorBase<>::Ptr evaluator,
 						StopCriteria::Ptr stopper,
 						SerializerPtr serializer) :
 		net(Network::cast<NetworkT>(net)),
@@ -30,6 +32,7 @@ public:
 		engine(net->get_engine()),
 		state(LearningState::make()),
 		optimizer(optimizer),
+		evaluator(evaluator),
 		stopper(stopper),
 		serializer(serializer),
 		initGuard("LearningSession")
@@ -61,19 +64,23 @@ public:
 		initGuard.assert_after_initialize("train");
 
 		// Monitor dataManager batch size change
-		ChangeMonitor<int> dataBatchSizeMon([this]() {
+		ChangeMonitor<int> batchSizeMon([this]() {
 			return dataManager->batch_size();
 		});
 
+		// Monitor dataManager current_epoch change
+		ChangeMonitor<int> currentEpochMon([this]() {
+			return dataManager->current_epoch();
+		});
+
 		do {
-			LMN_ASSERT_THROW(!dataBatchSizeMon.monitor(),
+			LMN_ASSERT_THROW(!batchSizeMon.monitor(),
 				UnimplementedException(
 					"LearningSession doesn't support changing batch size for now.\n"
-					"batch_size has changed from " + to_str(dataBatchSizeMon.previous()) +
-					" to " + to_str(dataBatchSizeMon.current())));
+					"batch_size has changed from " + to_str(batchSizeMon.previous()) +
+					" to " + to_str(batchSizeMon.current())));
 
 			state->batchSize = dataManager->batch_size();
-
 
 			net->execute("load_input");
 			net->execute("load_target");
@@ -86,6 +93,15 @@ public:
 			engine->flush_execute();
 
 
+			state->currentEpoch = dataManager->current_epoch();
+			// If we finish another epoch
+			if (currentEpochMon.monitor())
+			{
+				state->trainingLoss = evaluator->loss_value();
+
+				// Save parameters to disk
+				serializer->save(net, state);
+			}
 		}
 		while (!stopper->stop_learning(state));
 	}
@@ -113,6 +129,7 @@ protected:
 
 	LearningState::Ptr state;
 	Optimizer::Ptr optimizer;
+	EvaluatorBase<>::Ptr evaluator;
 	StopCriteria::Ptr stopper;
 	SerializerPtr serializer;
 
@@ -129,10 +146,11 @@ typedef typename Serializer<NetworkT>::Ptr SerializerPtr;
 public:
 	LearningSession(Network::Ptr net,
 					Optimizer::Ptr optimizer,
+					EvaluatorBase<>::Ptr evaluator,
 					StopCriteria::Ptr stopper,
 					SerializerPtr serializer) :
 		LearningSessionBase<NetworkT>(
-				net, optimizer, stopper, serializer)
+				net, optimizer, evaluator, stopper, serializer)
 	{ }
 };
 
@@ -148,10 +166,11 @@ typedef typename Serializer<RecurrentNetwork>::Ptr SerializerPtr;
 public:
 	LearningSession(Network::Ptr net,
 					Optimizer::Ptr optimizer,
+					EvaluatorBase<>::Ptr evaluator,
 					StopCriteria::Ptr stopper,
 					SerializerPtr serializer) :
 		LearningSessionBase<RecurrentNetwork>(
-				net, optimizer, stopper, serializer)
+				net, optimizer, evaluator, stopper, serializer)
 	{ }
 
 };
