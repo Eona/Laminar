@@ -46,7 +46,7 @@ public:
 	/************************************/
 	TYPEDEF_PTR(Optimizer);
 
-	GEN_MAKE_STATIC_MEMBER(Optimizer)
+	GEN_GENERIC_MAKEPTR_STATIC_MEMBER(Optimizer)
 
 	GEN_DOWN_CAST_STATIC_MEMBER(Optimizer)
 

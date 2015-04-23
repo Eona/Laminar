@@ -182,12 +182,7 @@ struct Routine
 	/************************************/
 	TYPEDEF_PTR(Routine);
 
-	template<typename ...ArgT>
-	static Routine::Ptr make(ArgT&& ... args)
-	{
-		return std::make_shared<Routine>(
-						std::forward<ArgT>(args) ...);
-	}
+	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(Routine)
 };
 
 #endif /* INSTRUCTIONS_H_ */

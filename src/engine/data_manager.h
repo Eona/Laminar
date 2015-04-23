@@ -85,14 +85,7 @@ public:
 	/**
 	 * Downcast
 	 */
-	template<typename ManagerT>
-	static std::shared_ptr<ManagerT> cast(DataManagerBase::Ptr manager)
-	{
-		LMN_STATIC_ASSERT((std::is_base_of<DataManagerBase, ManagerT>::value),
-			"cast() failed: DataManager type parameter must be a subclass of DataManagerBase");
-
-		return std::dynamic_pointer_cast<ManagerT>(manager);
-	}
+	GEN_DOWN_CAST_STATIC_MEMBER(DataManagerBase)
 
 protected:
 	EngineBase::Ptr engine;

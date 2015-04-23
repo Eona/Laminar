@@ -104,7 +104,7 @@ public:
 	/************************************/
 	TYPEDEF_PTR(Connection);
 
-	GEN_MAKE_STATIC_MEMBER(Connection)
+	GEN_GENERIC_MAKEPTR_STATIC_MEMBER(Connection)
 
 	GEN_DOWN_CAST_STATIC_MEMBER(Connection)
 

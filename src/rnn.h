@@ -113,12 +113,7 @@ public:
 	/*********** Ptr ***********/
 	TYPEDEF_PTR(RecurrentNetwork);
 
-	template<typename ...ArgT>
-	static RecurrentNetwork::Ptr make(ArgT&& ... args)
-	{
-		return std::make_shared<RecurrentNetwork>(
-						std::forward<ArgT>(args) ...);
-	}
+	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(RecurrentNetwork)
 
 protected:
 	/**************************************

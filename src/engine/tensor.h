@@ -149,12 +149,7 @@ public:
 	/************************************/
 	TYPEDEF_PTR(Scalor);
 
-	template<typename ...ArgT>
-	static Scalor::Ptr make(ArgT&& ... args)
-	{
-		return std::make_shared<Scalor>(
-						std::forward<ArgT>(args) ...);
-	}
+	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(Scalor)
 };
 
 class Tensor : public TensorBase
@@ -244,12 +239,7 @@ public:
 
 	TYPEDEF_PTR(Tensor);
 
-	template<typename ...ArgT>
-	static Tensor::Ptr make(ArgT&& ... args)
-	{
-		return std::make_shared<Tensor>(
-                    std::forward<ArgT>(args) ...);
-	}
+	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(Tensor)
 
 private:
 	Dimension dim_;

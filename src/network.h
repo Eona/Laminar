@@ -209,7 +209,7 @@ public:
 	/************************************/
 	TYPEDEF_PTR(Network);
 
-	GEN_MAKE_STATIC_MEMBER(Network)
+	GEN_GENERIC_MAKEPTR_STATIC_MEMBER(Network)
 
 	/**
 	 * Down cast NetworkPtr to a specific network type
@@ -344,11 +344,7 @@ public:
 	/************************************/
 	TYPEDEF_PTR(ForwardNetwork);
 
-	template<typename ...ArgT>
-	static ForwardNetwork::Ptr make(ArgT&& ... args)
-	{
-		return std::make_shared<ForwardNetwork>(std::forward<ArgT>(args) ...);
-	}
+	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(ForwardNetwork)
 
 protected:
 	virtual void initialize()

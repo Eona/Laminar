@@ -59,8 +59,7 @@ public:
 	static Composite<NetworkT>::Ptr make(ArgT&& ... args)
 	{
 		auto compPtr = std::static_pointer_cast<Composite<NetworkT>>(
-				std::make_shared<CompositeT>(
-						std::forward<ArgT>(args) ...));
+			std::make_shared<CompositeT>( std::forward<ArgT>(args) ...));
 
 		compPtr->outLayer = compPtr->initialize_outlayer();
 		compPtr->initialize_layers(compPtr->layerMap);

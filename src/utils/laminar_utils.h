@@ -359,7 +359,7 @@ static std::shared_ptr<Subclass> cast(std::shared_ptr<Superclass> superPtr) \
  * shared_ptr<Super> Super::make<Sub>(ArgT ... args)
  * will be statically upcast to Super's shared ptr.
  */
-#define GEN_MAKE_STATIC_MEMBER(Superclass) \
+#define GEN_GENERIC_MAKEPTR_STATIC_MEMBER(Superclass) \
 template<typename Subclass, typename ...ArgT> \
 static std::shared_ptr<Superclass> make(ArgT&& ... args) \
 { \
@@ -367,6 +367,19 @@ static std::shared_ptr<Superclass> make(ArgT&& ... args) \
 			"make() failure: type parameter must be a subclass of " #Superclass); \
 	return std::static_pointer_cast<Superclass>( \
 		std::make_shared<Subclass>(std::forward<ArgT>(args) ...)); \
+}
+
+/**
+ * Generate static 'make' member method for a concrete class
+ * The signature will be:
+ * shared_ptr<Class> Class::make(ArgT ... args)
+ * simply a shared_ptr version of the constructor, doesn't do any casting
+ */
+#define GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(Myclass) \
+template<typename ...ArgT> \
+static std::shared_ptr<Myclass> make(ArgT&& ... args) \
+{ \
+	return std::make_shared<Myclass>(std::forward<ArgT>(args) ...); \
 }
 
 #endif /* UTILS_LAMINAR_UTILS_H_ */

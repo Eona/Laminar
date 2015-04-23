@@ -190,7 +190,7 @@ public:
 	/************************************/
 	TYPEDEF_PTR(Layer);
 
-	GEN_MAKE_STATIC_MEMBER(Layer)
+	GEN_GENERIC_MAKEPTR_STATIC_MEMBER(Layer)
 
 	/**
 	 * Down cast LayerPtr to a specific layer type
