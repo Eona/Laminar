@@ -218,11 +218,10 @@ public:
 			}\
 			op_func_t h_func;\
 			cudaMemcpyFromSymbol( &h_func, device_func, sizeof( op_func_t ) );\
-			GPU_CHECKERROR(\
 			mat_op_kernel<<<write->GRID_DIM, write->BLOCK_DIM>>>( write->device_data, \
 																  reads[0]->device_data, \
 																  write->LEN, \
-																  h_func )); \
+																  h_func ); \
 	}
 
 
@@ -233,12 +232,11 @@ public:
 			}\
 			op_func_dual_t h_func;\
 			cudaMemcpyFromSymbol( &h_func, device_func, sizeof( op_func_t ) );\
-			GPU_CHECKERROR(\
 			mat_op_kernel<<<write->GRID_DIM, write->BLOCK_DIM>>>( write->device_data, \
 																  reads[0]->device_data, \
 																  reads[1]->device_data, \
 																  write->LEN, \
-																  h_func )); \
+																  h_func ); \
 	}
 
 
