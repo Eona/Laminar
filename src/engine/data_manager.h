@@ -6,13 +6,15 @@
 #define DATA_MANAGER_H_
 
 #include "../utils/global_utils.h"
+#include "../learning_listener.h"
 #include "engine.h"
 
 class DataManagerBase
 {
 public:
 	DataManagerBase(EngineBase::Ptr engine_) :
-		engine(engine_)
+		engine(engine_),
+		learnStage(LearningStage::Training)
 	{ }
 
 	virtual ~DataManagerBase()
@@ -38,6 +40,16 @@ public:
 	void upload_target(const TensorBase& tensor)
 	{
 		engine->upload(Instruction(OP_LOAD_TARGET, {}, tensor.addr));
+	}
+
+	LearningStage learning_stage() const
+	{
+		return this->learnStage;
+	}
+
+	void set_learning_stage(LearningStage newStage)
+	{
+		this->learnStage = newStage;
 	}
 
 	/**
@@ -81,6 +93,9 @@ public:
 
 protected:
 	EngineBase::Ptr engine;
+
+private:
+	LearningStage learnStage;
 };
 
 template<typename DataT>
@@ -96,20 +111,20 @@ public:
 
 		specificEngine->register_normal_op(DataManagerBase::OP_LOAD_INPUT,
 			[=](vector<DataPtr>, DataPtr write, bool is_initialized) {
-				this->load_input(write, is_initialized);
+				this->load_input(write, is_initialized, this->learning_stage());
 			}
 		);
 
 		specificEngine->register_normal_op(DataManagerBase::OP_LOAD_TARGET,
 			[=](vector<DataPtr>, DataPtr write, bool is_initialized) {
-				this->load_target(write, is_initialized);
+				this->load_target(write, is_initialized, this->learning_stage());
 			}
 		);
 	}
 
-	virtual void load_input(DataPtr write, bool is_initialized) = 0;
+	virtual void load_input(DataPtr write, bool is_initialized, LearningStage stage) = 0;
 
-	virtual void load_target(DataPtr write, bool is_initialized) = 0;
+	virtual void load_target(DataPtr write, bool is_initialized, LearningStage stage) = 0;
 };
 
 #endif /* DATA_MANAGER_H_ */

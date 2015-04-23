@@ -20,12 +20,12 @@ public:
 		DataManager<float>(engine)
 	{}
 
-	void load_input(DataPtr write, bool is_initialized)
+	void load_input(DataPtr write, bool is_initialized, LearningStage)
 	{
 		*write = input_rand();
 	}
 
-	void load_target(DataPtr write, bool is_initialized)
+	void load_target(DataPtr write, bool is_initialized, LearningStage)
 	{
 		*write = target_rand();
 	}

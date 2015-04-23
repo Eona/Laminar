@@ -22,7 +22,7 @@ public:
 		indexer(Dimension { inputDim, batchSize }) // for gradient check debugging
 	{}
 
-	void load_input(DataPtr write, bool is_initialized)
+	void load_input(DataPtr write, bool is_initialized, LearningStage)
 	{
 		if (!is_initialized)
 			write->new_zeros(inputDim, batchSize);
@@ -32,7 +32,7 @@ public:
 		});
 	}
 
-	void load_target(DataPtr write, bool is_initialized)
+	void load_target(DataPtr write, bool is_initialized, LearningStage)
 	{
 		if (!is_initialized)
 			write->new_zeros(targetDim, batchSize);
