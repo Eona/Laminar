@@ -168,8 +168,8 @@ public:
     }
 
     /*register kernel to the map*/
-    void register_kernel(std::string kernel_name, std::string program_name) {
-        kernel_list[kernel_name] = clCreateKernel(program_list[program_name], kernel_name.c_str(), &ret);
+    void register_kernel(std::string kernel_name, std::string program_name, std::string kernel_alias) {
+        kernel_list[kernel_alias] = clCreateKernel(program_list[program_name], kernel_name.c_str(), &ret);
         OCL_CHECKERROR(ret);
     }
 

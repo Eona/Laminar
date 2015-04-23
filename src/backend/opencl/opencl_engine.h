@@ -57,20 +57,19 @@ public:
 		/*Build program from source*/
 		cl->build_program("./mat_op_kernel.cl", "matop_prog");
 		/*Register kernel functions*/
-		cl->register_kernel("mat_add_kernel", "matop_prog");
-		cl->register_kernel("mat_scale_kernel", "matop_prog");
-		cl->register_kernel("mat_elem_mult_kernel", "matop_prog");
-		cl->register_kernel("mat_sigmoid_kernel", "matop_prog");
-		cl->register_kernel("mat_sigmoid_gradient_kernel", "matop_prog");
-		cl->register_kernel("mat_sin_kernel", "matop_prog");
-		cl->register_kernel("mat_cos_kernel", "matop_prog");
-		cl->register_kernel("mat_tanh_kernel", "matop_prog");
-		cl->register_kernel("mat_tanh_gradient_kernel", "matop_prog");
-		cl->register_kernel("mat_square_loss_kernel", "matop_prog");
-		cl->register_kernel("mat_mult_NN_kernel", "matop_prog");
-		cl->register_kernel("mat_mult_NT_kernel", "matop_prog");
-		cl->register_kernel("mat_mult_TN_kernel", "matop_prog");
-
+		cl->register_kernel("mat_add_kernel", "matop_prog", "add");
+		cl->register_kernel("mat_scale_kernel", "matop_prog", "scale");
+		cl->register_kernel("mat_elem_mult_kernel", "matop_prog", "element_mult");
+		cl->register_kernel("mat_sigmoid_kernel", "matop_prog", "sigmoid");
+		cl->register_kernel("mat_sigmoid_gradient_kernel", "matop_prog", "sigmoid_gradient");
+		cl->register_kernel("mat_sin_kernel", "matop_prog", "sin");
+		cl->register_kernel("mat_cos_kernel", "matop_prog", "cos");
+		cl->register_kernel("mat_tanh_kernel", "matop_prog", "tanh");
+		cl->register_kernel("mat_tanh_gradient_kernel", "matop_prog", "tanh_gradient");
+		cl->register_kernel("mat_square_loss_kernel", "matop_prog", "square_loss");
+		cl->register_kernel("mat_mult_NN_kernel", "matop_prog", "mult_NN");
+		cl->register_kernel("mat_mult_NT_kernel", "matop_prog", "mult_NT");
+		cl->register_kernel("mat_mult_TN_kernel", "matop_prog", "mult_TN");
 //		register_create(CudaEngine::create);
 //		register_opcode("t+t", CudaEngine::add);
 ////		register_opcode("s+s", Impl::add<S>);
@@ -131,13 +130,13 @@ public:
 
 	    //Register parameters and execute kernel
 //		write->print_matrix("write");
-	    cl->setup_kernel("mat_add_kernel", 0, sizeof(cl_mem), &write->device_data); // C
-	    cl->setup_kernel("mat_add_kernel", 1, sizeof(cl_mem), &reads[0]->device_data); //A
-	    cl->setup_kernel("mat_add_kernel", 2, sizeof(cl_mem), &reads[1]->device_data); //B
-	    cl->setup_kernel("mat_add_kernel", 3, sizeof(float), &alpha); //a
-	    cl->setup_kernel("mat_add_kernel", 4, sizeof(float), &beta); //b
-	    cl->setup_kernel("mat_add_kernel", 5, sizeof(int), &(write->LEN)); //DATA_SIZE
-	    cl_ulong duration = cl->exec_kernel("mat_add_kernel", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
+	    cl->setup_kernel("add", 0, sizeof(cl_mem), &write->device_data); // C
+	    cl->setup_kernel("add", 1, sizeof(cl_mem), &reads[0]->device_data); //A
+	    cl->setup_kernel("add", 2, sizeof(cl_mem), &reads[1]->device_data); //B
+	    cl->setup_kernel("add", 3, sizeof(float), &alpha); //a
+	    cl->setup_kernel("add", 4, sizeof(float), &beta); //b
+	    cl->setup_kernel("add", 5, sizeof(int), &(write->LEN)); //DATA_SIZE
+	    cl_ulong duration = cl->exec_kernel("add", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
 
 		if(timed) gt->record_named_timer("add", duration, m*n*2);
 
@@ -156,7 +155,7 @@ public:
 	    int l = reads[1]->DIM_ROW;
 	    int k = reads[1]->DIM_COL;
 
-	    std::string kernel_name = "mat_mult_" + opA + opB +"_kernel";
+	    std::string kernel_name = "mult_" + opA + opB;
 	    if (!is_initialized) {
 		    if (opA == "N" && opB == "N") write->reset(m, n, cl); // A * B
 		    if (opA == "N" && opB == "T") write->reset(m, l, cl); // A * B^T
@@ -177,7 +176,7 @@ public:
 	    cl->setup_kernel(kernel_name, 6, sizeof(int), &k); //DATA_SIZE
 	    cl_ulong duration = cl->exec_kernel(kernel_name, NUM_GLOBAL_WORKER, NUM_LOCAL_WORKER);
 
-		if(timed) gt->record_named_timer("multiplication", duration, m*n + l*k);
+		if(timed) gt->record_named_timer("mult_"+opA+opB, duration, m*n + l*k);
 
 	}
 
@@ -192,11 +191,11 @@ public:
 	    }
 		if(timed) ScopeTimer("scale", gt, m*n);
 
-	    cl->setup_kernel("mat_scale_kernel", 0, sizeof(cl_mem), &write->device_data); // Y
-	    cl->setup_kernel("mat_scale_kernel", 1, sizeof(cl_mem), &reads[0]->device_data); // X
-	    cl->setup_kernel("mat_scale_kernel", 2, sizeof(float), &alpha); //a
-	    cl->setup_kernel("mat_scale_kernel", 3, sizeof(int), &(write->LEN)); //DATA_SIZE
-	    cl_ulong duration = cl->exec_kernel("mat_scale_kernel", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
+	    cl->setup_kernel("scale", 0, sizeof(cl_mem), &write->device_data); // Y
+	    cl->setup_kernel("scale", 1, sizeof(cl_mem), &reads[0]->device_data); // X
+	    cl->setup_kernel("scale", 2, sizeof(float), &alpha); //a
+	    cl->setup_kernel("scale", 3, sizeof(int), &(write->LEN)); //DATA_SIZE
+	    cl_ulong duration = cl->exec_kernel("scale", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
 
 		if(timed) gt->record_named_timer("scale", duration, m*n);
 	}
@@ -301,37 +300,37 @@ public:
 	inline void sigmoid(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("sigmoid", is_initialized);
-		elementOp("mat_sigmoid_kernel", reads, write, is_initialized);
+		elementOp("sigmoid", reads, write, is_initialized);
 	}
 
 	inline void sigmoid_gradient(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("sigmoid_gradient", is_initialized);
-		elementOp("mat_sigmoid_gradient_kernel", reads, write, is_initialized);
+		elementOp("sigmoid_gradient", reads, write, is_initialized);
 	}
 
 	inline void sin(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("sin", is_initialized);
-		elementOp("mat_sin_kernel", reads, write, is_initialized);
+		elementOp("sin", reads, write, is_initialized);
 	}
 
 	inline void cos(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("cos", is_initialized);
-		elementOp("mat_cos_kernel", reads, write, is_initialized);
+		elementOp("cos", reads, write, is_initialized);
 	}
 
 	inline void tanh(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("tanh", is_initialized);
-		elementOp("mat_tanh_kernel", reads, write, is_initialized);
+		elementOp("tanh", reads, write, is_initialized);
 	}
 
 	inline void tanh_gradient(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("tanh_gradient", is_initialized);
-		elementOp("mat_tanh_gradient_kernel", reads, write, is_initialized);
+		elementOp("tanh_gradient", reads, write, is_initialized);
 	}
 
 	inline void element_mult(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
@@ -344,11 +343,11 @@ public:
 	    }
 
 	    //y = x
-	    cl->setup_kernel("mat_elem_mult_kernel", 0, sizeof(cl_mem), &write->device_data); // Y
-	    cl->setup_kernel("mat_elem_mult_kernel", 1, sizeof(cl_mem), &reads[0]->device_data); // X
-	    cl->setup_kernel("mat_elem_mult_kernel", 2, sizeof(cl_mem), &reads[1]->device_data); // X
-	    cl->setup_kernel("mat_elem_mult_kernel", 3, sizeof(int), &(write->LEN)); //DATA_SIZE
-	    cl_ulong duration = cl->exec_kernel("mat_elem_mult_kernel", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
+	    cl->setup_kernel("element_mult", 0, sizeof(cl_mem), &write->device_data); // Y
+	    cl->setup_kernel("element_mult", 1, sizeof(cl_mem), &reads[0]->device_data); // X
+	    cl->setup_kernel("element_mult", 2, sizeof(cl_mem), &reads[1]->device_data); // X
+	    cl->setup_kernel("element_mult", 3, sizeof(int), &(write->LEN)); //DATA_SIZE
+	    cl_ulong duration = cl->exec_kernel("element_mult", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
 	    if(timed) gt->record_named_timer("element_mult", duration, m*n*2);
 	}
 
@@ -359,11 +358,11 @@ public:
 	    int n = reads[0]->DIM_COL;
 	    OpenclFloatMat aux(m, n, cl);
 	    //y = x
-	    cl->setup_kernel("mat_square_loss_kernel", 0, sizeof(cl_mem), &aux.device_data); // Y
-	    cl->setup_kernel("mat_square_loss_kernel", 1, sizeof(cl_mem), &reads[0]->device_data); // X
-	    cl->setup_kernel("mat_square_loss_kernel", 2, sizeof(cl_mem), &reads[1]->device_data); // X
-	    cl->setup_kernel("mat_square_loss_kernel", 3, sizeof(int), &(aux.LEN)); //DATA_SIZE
-	    cl_ulong duration = cl->exec_kernel("mat_square_loss_kernel", aux.NUM_GLOBAL_WORKER, aux.NUM_LOCAL_WORKER);
+	    cl->setup_kernel("square_loss", 0, sizeof(cl_mem), &aux.device_data); // Y
+	    cl->setup_kernel("square_loss", 1, sizeof(cl_mem), &reads[0]->device_data); // X
+	    cl->setup_kernel("square_loss", 2, sizeof(cl_mem), &reads[1]->device_data); // X
+	    cl->setup_kernel("square_loss", 3, sizeof(int), &(aux.LEN)); //DATA_SIZE
+	    cl_ulong duration = cl->exec_kernel("square_loss", aux.NUM_GLOBAL_WORKER, aux.NUM_LOCAL_WORKER);
 	    if(timed) gt->record_named_timer("square_loss", duration, m*n*2);
 
 	    float t[aux.MEM_SIZE];
