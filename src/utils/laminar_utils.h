@@ -228,6 +228,52 @@ private:
 };
 
 
+/**
+ * Monitors change from last call
+ */
+template<typename ReturnT, typename ... ArgT>
+struct ChangeMonitor
+{
+	typedef std::function<ReturnT(ArgT...)> FuncT;
+
+	ChangeMonitor(FuncT func) :
+		func(func)
+	{}
+
+	/**
+	 * @return true if something has changed since the last monitor
+	 * NOTE we use a different ArgT_ due to forwarding issues
+	 */
+	template<typename ... ArgT_>
+	bool monitor(ArgT_&& ... args)
+	{
+		ReturnT now = func(std::forward<ArgT_>(args) ...);
+
+		if (isFirst)
+		{
+			isFirst = false;
+			cur = now;
+			prev = now;
+			return false;
+		}
+
+		bool isChanged = cur != now;
+		prev = cur;
+		cur = now;
+		return isChanged;
+	}
+
+	ReturnT current() { return this->cur; }
+
+	ReturnT previous() { return this->prev; }
+
+private:
+	FuncT func;
+	ReturnT cur;
+	ReturnT prev;
+	bool isFirst = true;
+};
+
 /**************************************
 ******* Laminar specific exceptions *********
 **************************************/
