@@ -25,6 +25,7 @@ public:
 		Engine<CudaFloatMat>()
 	{
 		gt = g;
+		timed = true;
 	    cublasCreate(&handle);
 //		register_create(CudaEngine::create);
 //		register_opcode("t+t", CudaEngine::add);

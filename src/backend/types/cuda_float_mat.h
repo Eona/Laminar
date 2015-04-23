@@ -103,20 +103,22 @@ public:
 	}
 
 	void fill_rand(int seed) {
-		float r[MEM_SIZE];
+		float *r = new float[MEM_SIZE];
 		srand (seed);
 		for (int i = 0; i < LEN; ++i) {
 			r[i] = (double) rand() / (RAND_MAX);
 		}
 		to_device(r);
+		delete [] r;
 	}
 
 	void fill(float num) {
-		float r[MEM_SIZE];
+		float *r = new float[MEM_SIZE];
 		for (int i = 0; i < LEN; ++i) {
 			r[i] = num;
 		}
 		to_device(r);
+		delete [] r;
 	}
 
 
