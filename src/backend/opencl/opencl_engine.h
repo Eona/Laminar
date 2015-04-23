@@ -36,12 +36,23 @@ class OpenclEngine : public Engine<OpenclFloatMat>
 {
 public:
 
+	OpenclEngine() :
+		Engine<OpenclFloatMat>()
+	{
+		timed = false; //if profile time performance
+		init(); //must call as the last line
+	}
+
 	OpenclEngine(GlobalTimer * g) :
 		Engine<OpenclFloatMat>()
 	{
-		gt = g;
-		timed = true;
-		cl = new OclUtilContext(true);
+		timed = true; //if profile time performance
+		gt = g; //global timer
+		init(); //must call as the last line
+	}
+
+	void init() {
+		cl = new OclUtilContext(true, timed);
 		cout<<"Initialized context"<<endl;
 		/*Build program from source*/
 		cl->build_program("./mat_op_kernel.cl", "matop_prog");
@@ -117,7 +128,6 @@ public:
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
 
-		if(timed) ScopeTimer("add", gt, m*n);
 
 	    //Register parameters and execute kernel
 //		write->print_matrix("write");
@@ -127,7 +137,10 @@ public:
 	    cl->setup_kernel("mat_add_kernel", 3, sizeof(float), &alpha); //a
 	    cl->setup_kernel("mat_add_kernel", 4, sizeof(float), &beta); //b
 	    cl->setup_kernel("mat_add_kernel", 5, sizeof(int), &(write->LEN)); //DATA_SIZE
-	    cl->exec_kernel("mat_add_kernel", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
+	    cl_ulong duration = cl->exec_kernel("mat_add_kernel", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
+
+		if(timed) gt->record_named_timer("add", duration, m*n*2);
+
 	}
 
 
@@ -149,7 +162,6 @@ public:
 		    if (opA == "N" && opB == "T") write->reset(m, l, cl); // A * B^T
 		    if (opA == "T" && opB == "N") write->reset(n, k, cl); // A^T * B
 	    }
-		if(timed) ScopeTimer(kernel_name, gt, m*k);
 
 	    //C = a Op(A)* Op(B) + b C  -- A [mxn] B [lxk]
 	    //Need to re-compute number of workers
@@ -163,7 +175,10 @@ public:
 	    cl->setup_kernel(kernel_name, 4, sizeof(int), &n); //DATA_SIZE
 	    cl->setup_kernel(kernel_name, 5, sizeof(int), &l); //DATA_SIZE
 	    cl->setup_kernel(kernel_name, 6, sizeof(int), &k); //DATA_SIZE
-	    cl->exec_kernel(kernel_name, NUM_GLOBAL_WORKER, NUM_LOCAL_WORKER);
+	    cl_ulong duration = cl->exec_kernel(kernel_name, NUM_GLOBAL_WORKER, NUM_LOCAL_WORKER);
+
+		if(timed) gt->record_named_timer("multiplication", duration, m*n + l*k);
+
 	}
 
 	void scaleMat(vector<OpenclFloatMatPtr> reads,
@@ -181,7 +196,9 @@ public:
 	    cl->setup_kernel("mat_scale_kernel", 1, sizeof(cl_mem), &reads[0]->device_data); // X
 	    cl->setup_kernel("mat_scale_kernel", 2, sizeof(float), &alpha); //a
 	    cl->setup_kernel("mat_scale_kernel", 3, sizeof(int), &(write->LEN)); //DATA_SIZE
-	    cl->exec_kernel("mat_scale_kernel", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
+	    cl_ulong duration = cl->exec_kernel("mat_scale_kernel", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
+
+		if(timed) gt->record_named_timer("scale", duration, m*n);
 	}
 
 	/*
@@ -194,8 +211,6 @@ public:
 	    if (!is_initialized) {
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
-		if(timed) ScopeTimer("assign", gt, m*n);
-
 	    //y = x
 	    cl->copy(write->device_data, reads[0]->device_data, reads[0]->MEM_SIZE);
 	}
@@ -206,12 +221,12 @@ public:
 	    if (!is_initialized) {
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
-		if(timed) ScopeTimer(kernel_name, gt, m*n);
 	    //y = x
 	    cl->setup_kernel(kernel_name, 0, sizeof(cl_mem), &write->device_data); // Y
 	    cl->setup_kernel(kernel_name, 1, sizeof(cl_mem), &reads[0]->device_data); // X
 	    cl->setup_kernel(kernel_name, 2, sizeof(int), &(write->LEN)); //DATA_SIZE
-	    cl->exec_kernel(kernel_name, write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
+	    cl_ulong duration = cl->exec_kernel(kernel_name, write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
+	    if(timed) gt->record_named_timer(kernel_name, duration, m*n);
 	}
 
 
@@ -328,13 +343,13 @@ public:
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
 
-		if(timed) ScopeTimer("elem_mult", gt, m*n);
 	    //y = x
 	    cl->setup_kernel("mat_elem_mult_kernel", 0, sizeof(cl_mem), &write->device_data); // Y
 	    cl->setup_kernel("mat_elem_mult_kernel", 1, sizeof(cl_mem), &reads[0]->device_data); // X
 	    cl->setup_kernel("mat_elem_mult_kernel", 2, sizeof(cl_mem), &reads[1]->device_data); // X
 	    cl->setup_kernel("mat_elem_mult_kernel", 3, sizeof(int), &(write->LEN)); //DATA_SIZE
-	    cl->exec_kernel("mat_elem_mult_kernel", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
+	    cl_ulong duration = cl->exec_kernel("mat_elem_mult_kernel", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
+	    if(timed) gt->record_named_timer("element_mult", duration, m*n*2);
 	}
 
 	inline void square_loss(vector<OpenclFloatMatPtr> reads, float* write, bool is_initialized)
@@ -344,12 +359,12 @@ public:
 	    int n = reads[0]->DIM_COL;
 	    OpenclFloatMat aux(m, n, cl);
 	    //y = x
-		if(timed) ScopeTimer("square_loss", gt, m*n);
 	    cl->setup_kernel("mat_square_loss_kernel", 0, sizeof(cl_mem), &aux.device_data); // Y
 	    cl->setup_kernel("mat_square_loss_kernel", 1, sizeof(cl_mem), &reads[0]->device_data); // X
 	    cl->setup_kernel("mat_square_loss_kernel", 2, sizeof(cl_mem), &reads[1]->device_data); // X
 	    cl->setup_kernel("mat_square_loss_kernel", 3, sizeof(int), &(aux.LEN)); //DATA_SIZE
-	    cl->exec_kernel("mat_square_loss_kernel", aux.NUM_GLOBAL_WORKER, aux.NUM_LOCAL_WORKER);
+	    cl_ulong duration = cl->exec_kernel("mat_square_loss_kernel", aux.NUM_GLOBAL_WORKER, aux.NUM_LOCAL_WORKER);
+	    if(timed) gt->record_named_timer("square_loss", duration, m*n*2);
 
 	    float t[aux.MEM_SIZE];
 	    aux.to_host(t);

@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 //	vector<int> dim = {3,3};
 //	engine.create(out, dim);
 
-	vector<int> dim = {2000, 2000};
+	vector<int> dim = {1000, 1000};
 
 	OpenclFloatMatPtr m1 (new OpenclFloatMat());
 	OpenclFloatMatPtr m2 (new OpenclFloatMat());
@@ -135,6 +135,6 @@ int main(int argc, char **argv)
 //	out->print_matrix("0.66337");
 	}
 
-//	gt.print_stats(1000000);
+	gt.print_stats(GlobalTimer::Nanosec);
 	out->free_data();
 }

@@ -139,19 +139,27 @@ public:
 	cl_int ret;
 	cl_program program;
 
+	bool do_profile;
 
 	std::unordered_map<std::string, cl_kernel> kernel_list; //pre-compiled kernels
 	std::unordered_map<std::string, cl_program> program_list; //pre-compiled kernels
 
-    OclUtilContext(bool use_gpu){
+    OclUtilContext(bool use_gpu, bool do_profile){
+        this->do_profile = do_profile;
     	OCL_CHECKERROR(clGetPlatformIDs(1, &platform_id, NULL));
     	OCL_CHECKERROR(clGetDeviceIDs(platform_id, use_gpu?CL_DEVICE_TYPE_GPU:CL_DEVICE_TYPE_CPU, 1, &device_id, NULL));
         /* Create OpenCL context */
         context = clCreateContext(NULL, 1, &device_id, NULL, NULL, &ret);
         OCL_CHECKERROR(ret);
+
+    	if (do_profile) { // if do time profile
+            command_queue = clCreateCommandQueue(context, device_id, CL_QUEUE_PROFILING_ENABLE, &ret);
+    	} else {
+            command_queue = clCreateCommandQueue(context, device_id, 0, &ret);
+    	}
         /* Create Command Queue */
-        command_queue = clCreateCommandQueue(context, device_id, 0, &ret);
         OCL_CHECKERROR(ret);
+
     }
 
     /*build a program from file*/
@@ -171,15 +179,33 @@ public:
     }
 
     /*Execute a kernel specified by kernel_name*/
-    void exec_kernel(cl_kernel kernel, size_t global_ws, size_t local_ws){
-    	OCL_CHECKERROR(clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_ws, &local_ws, 0, NULL, NULL));
-    	clFinish(command_queue);
+    cl_ulong exec_kernel(cl_kernel kernel, size_t global_ws, size_t local_ws){
+    	cl_event event;
+    	cl_ulong elapsed = 0;
+    	OCL_CHECKERROR(clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_ws, &local_ws, 0, NULL, &event));
+    	if (do_profile) {
+    		cl_ulong time_start, time_end; //record time in nanoseconds
+        	OCL_CHECKERROR(clWaitForEvents(1, &event));
+        	OCL_CHECKERROR(clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(time_start), &time_start, NULL));
+        	OCL_CHECKERROR(clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(time_end), &time_end, NULL));
+        	elapsed = time_end - time_start;
+    	}
+    	return elapsed;
 	}
 
     /*Execute a kernel specified by kernel_name*/
-    void exec_kernel(std::string kernel_name, size_t global_ws, size_t local_ws){
-    	OCL_CHECKERROR(clEnqueueNDRangeKernel(command_queue, kernel_list[kernel_name], 1, NULL, &global_ws, &local_ws, 0, NULL, NULL));
-    	clFinish(command_queue);
+    cl_ulong exec_kernel(std::string kernel_name, size_t global_ws, size_t local_ws){
+    	cl_event event;
+    	cl_ulong elapsed = 0;
+    	OCL_CHECKERROR(clEnqueueNDRangeKernel(command_queue, kernel_list[kernel_name], 1, NULL, &global_ws, &local_ws, 0, NULL, &event));
+    	if (do_profile) {
+    		cl_ulong time_start, time_end; //record time in nanoseconds
+        	OCL_CHECKERROR(clWaitForEvents(1, &event));
+        	OCL_CHECKERROR(clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(time_start), &time_start, NULL));
+        	OCL_CHECKERROR(clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(time_end), &time_end, NULL));
+        	elapsed = time_end - time_start;
+    	}
+    	return elapsed;
     }
 
     /*flush the command queue*/
@@ -225,7 +251,6 @@ public:
 
     void to_device_write(cl_mem buffer, float* d, size_t MEM_SIZE){
     	OCL_CHECKERROR(clEnqueueWriteBuffer(command_queue, buffer, CL_TRUE, 0, MEM_SIZE, d, 0, NULL, NULL));
-    	clFinish(command_queue);
     }
 
     void to_host(float* out, cl_mem memobj, size_t MEM_SIZE) {
@@ -240,7 +265,6 @@ public:
 
     void copy(cl_mem dest, cl_mem src, size_t MEM_SIZE) {
     	OCL_CHECKERROR(clEnqueueCopyBuffer(command_queue, src, dest, 0, 0, MEM_SIZE, 0, NULL, NULL));
-    	clFinish(command_queue);
     }
 
     /*Clean up*/
