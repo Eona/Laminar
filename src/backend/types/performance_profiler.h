@@ -19,19 +19,29 @@
 
 #include <cuda.h>
 #include "cuda_runtime.h"
+
 #include "device_launch_parameters.h"
+//#include "../../gpu_utils.h"
 
 using namespace std;
 typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::nanoseconds nanoseconds;
+typedef std::chrono::microseconds microseconds;
 
-
-struct TimeEntry{
+struct TimerEntry{
 	uint64_t time;//time in nanoseconds
 	size_t data_size;
-	TimeEntry() {
+	Clock::time_point time_stamp;
+
+	TimerEntry() {
 		time = 0;
 		data_size = 0;
+		time_stamp = Clock::now();
+	}
+	TimerEntry(uint64_t t, size_t d) {
+		time = t;
+		data_size = d;
+		time_stamp = Clock::now();
 	}
 };
 
@@ -44,20 +54,21 @@ public:
 		Sec, Millisec, Microsec, Nanosec
 	};
 
-	Clock::time_point t0; //unused
+	Clock::time_point t0;
 	uint64_t global_duration;
-	std::unordered_map<std::string, TimeEntry> named_timers;
+	std::unordered_map<std::string, vector<TimerEntry>> named_timers;
 
 	GlobalTimer() {
 		global_duration = 0; //unused
+		t0 = Clock::now();
 	}
 
 	void record_named_timer (std::string timer_name, uint64_t time_incre_ns, size_t data_size){
 		if ( named_timers.find (timer_name) == named_timers.end()) {
-			named_timers[timer_name] = TimeEntry();
+			named_timers[timer_name] = vector<TimerEntry>();
 		}
-		named_timers[timer_name].time += time_incre_ns;
-		named_timers[timer_name].data_size += data_size;
+		TimerEntry e(time_incre_ns, data_size);
+		named_timers[timer_name].push_back(e);
 	}
 
 	uint64_t to_time_scale(Resolution res, uint64_t duration) {
@@ -74,10 +85,18 @@ public:
 //		named_timers["global"].time += global_duration;
 //		named_timers["global"].data_size = 1;
 
-
     	for ( auto it = named_timers.begin(); it != named_timers.end(); ++it ) {
-    		uint64_t time = to_time_scale(res, it->second.time);
-    		cout<<it->first << ": " << time << ", " << it->second.data_size << ", " <<(double)it->second.data_size/(double)time<<endl;
+    		int sum_data = 0;
+    		uint64_t sum_time = 0;
+			cout<<it->first << ": "<<endl;
+    		for (auto entry: it->second) {
+        		uint64_t t = to_time_scale(res, entry.time); //task duration
+        		uint64_t stamp = to_time_scale(Millisec, std::chrono::duration_cast<nanoseconds>(entry.time_stamp - t0).count());
+        		sum_time += t;
+        		sum_data += entry.data_size;
+        		cout << t << ", " << entry.data_size<< " at "<< stamp << endl;
+    		}
+    		cout << "Computation through put" <<(double)sum_data/(double)sum_time<<"\n\n";
     	}
 	}
 
@@ -166,7 +185,7 @@ public:
 
 	float stop()
 	{
-    	GPU_CHECKERROR(cudaDeviceSynchronize());
+    	cudaDeviceSynchronize();
 		cudaEventRecord(stopTime, 0);
 		float elapsed;
 		cudaEventSynchronize(stopTime);
