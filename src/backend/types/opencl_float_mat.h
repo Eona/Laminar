@@ -150,7 +150,7 @@ public:
 private:
 
 	void init_device_mem() {
-		device_data = cl->to_device_create_zero<float>(MEM_SIZE);
+		device_data = cl->to_device_create_zero(MEM_SIZE);
 		device_data_initialized = true;
 	}
 

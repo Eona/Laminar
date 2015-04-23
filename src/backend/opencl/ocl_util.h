@@ -200,19 +200,27 @@ public:
     	return memobj;
     }
 
-    template<typename T>
     cl_mem to_device_create_zero(size_t MEM_SIZE){
     	cl_mem memobj = clCreateBuffer(context, CL_MEM_READ_WRITE, MEM_SIZE, NULL, &ret);
     	OCL_CHECKERROR(ret);
-    	T pattern = 0;
-    	to_device_fill<T>(memobj, MEM_SIZE, pattern);
+//    	T pattern = 0;
+    	to_device_fill(memobj, MEM_SIZE, 0);
     	return memobj;
     }
-
+    /* Only in OpenCL 1.2+
     template<typename T>
     void to_device_fill(cl_mem memobj, size_t MEM_SIZE, T pattern){
     	OCL_CHECKERROR(clEnqueueFillBuffer(command_queue, memobj, &pattern, sizeof(T), 0, MEM_SIZE, 0, NULL, NULL));
     	clFinish(command_queue);
+    }
+    */
+
+    void to_device_fill(cl_mem memobj, size_t MEM_SIZE, float num){
+    	float * r = new float[MEM_SIZE/sizeof(float)];
+    	for (int i = 0; i < MEM_SIZE/sizeof(float); ++i) {
+    		r[i] = num;
+    	}
+    	to_device_write(memobj, r, MEM_SIZE);
     }
 
     void to_device_write(cl_mem buffer, float* d, size_t MEM_SIZE){
