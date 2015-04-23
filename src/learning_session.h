@@ -17,13 +17,21 @@ LMN_STATIC_ASSERT_IS_BASE(Network, NetworkT, "LearningSession template arg");
 
 typedef std::shared_ptr<NetworkT> NetworkTPtr;
 
+// otherwise we have to add 'typename' every time:
+typedef typename Serializer<NetworkT>::Ptr SerializerPtr;
+
 public:
-	LearningSessionBase(Network::Ptr net, Optimizer::Ptr optimizer) :
+	LearningSessionBase(Network::Ptr net,
+						Optimizer::Ptr optimizer,
+						StopCriteria::Ptr stopper,
+						SerializerPtr serializer) :
 		net(Network::cast<NetworkT>(net)),
 		dataManager(net->get_data_manager()),
 		engine(net->get_engine()),
 		state(LearningState::make()),
 		optimizer(optimizer),
+		stopper(stopper),
+		serializer(serializer),
 		initGuard("LearningSession")
 	{
 		LMN_ASSERT_NULLPTR(this->net,
@@ -39,7 +47,16 @@ public:
 		initGuard.initialize();
 	}
 
-	virtual void train(int totalEpoch)
+	void init_total_epoch(int totalEpoch)
+	{
+		initGuard.assert_before_initialize("init_total_epoch");
+		state->totalEpoch = totalEpoch;
+	}
+
+	/**
+	 * Main training entry function
+	 */
+	virtual void train()
 	{
 		initGuard.assert_after_initialize("train");
 
@@ -81,6 +98,8 @@ protected:
 
 	LearningState::Ptr state;
 	Optimizer::Ptr optimizer;
+	StopCriteria::Ptr stopper;
+	SerializerPtr serializer;
 
 	InitializeGuard<LearningException> initGuard;
 
@@ -91,9 +110,14 @@ template<typename NetworkT>
 class LearningSession :
 		public LearningSessionBase<NetworkT>
 {
+typedef typename Serializer<NetworkT>::Ptr SerializerPtr;
 public:
-	LearningSession(Network::Ptr net, Optimizer::Ptr optimizer) :
-		LearningSessionBase<NetworkT>(net, optimizer)
+	LearningSession(Network::Ptr net,
+					Optimizer::Ptr optimizer,
+					StopCriteria::Ptr stopper,
+					SerializerPtr serializer) :
+		LearningSessionBase<NetworkT>(
+				net, optimizer, stopper, serializer)
 	{ }
 };
 
@@ -104,9 +128,15 @@ template<>
 class LearningSession<RecurrentNetwork> :
 		public LearningSessionBase<RecurrentNetwork>
 {
+typedef typename Serializer<RecurrentNetwork>::Ptr SerializerPtr;
+
 public:
-	LearningSession(Network::Ptr net, Optimizer::Ptr optimizer) :
-		LearningSessionBase<RecurrentNetwork>(net, optimizer)
+	LearningSession(Network::Ptr net,
+					Optimizer::Ptr optimizer,
+					StopCriteria::Ptr stopper,
+					SerializerPtr serializer) :
+		LearningSessionBase<RecurrentNetwork>(
+				net, optimizer, stopper, serializer)
 	{ }
 
 };

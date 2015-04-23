@@ -99,15 +99,10 @@ int main(int argc, char **argv)
 						engine, INPUT_DIM, TARGET_DIM, BATCH);
 
 	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
-
 	auto l2 = Layer::make<SigmoidLayer>(5);
-
 	auto l3 = Layer::make<SquareLossLayer>(TARGET_DIM);
 
 	auto net = ForwardNetwork::make(engine, dataman);
-
-	auto opm = Optimizer::make<SGD>(2);
-
 	net->add_layer(l1);
 	net->new_connection<FullConnection>(l1, l2);
 	net->new_bias_layer(l2);
@@ -115,14 +110,19 @@ int main(int argc, char **argv)
 	net->new_connection<FullConnection>(l2, l3);
 	net->add_layer(l3);
 
-	LearningSession<ForwardNetwork> session(net, opm);
+
+	auto opm = Optimizer::make<SGD>(2.f);
+	auto stopper = StopCriteria::make<EpochStopCriteria>();
+	auto ser = NullSerializer<ForwardNetwork>::make();
+
+	LearningSession<ForwardNetwork> session(net, opm, stopper, ser);
 
 	session.initialize();
 
 	auto params = net->get_param_containers();
 	DEBUG_MSG(*engine->read_memory(params[0]->param_value_ptr(0)));
 
-	session.train(1);
+	session.train();
 
 	DEBUG_TITLE("After SGD");
 	DEBUG_MSG("its gradient:");
