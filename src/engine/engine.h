@@ -306,7 +306,7 @@ public:
 	/**
 	 * Downcast
 	 */
-	GEN_DOWN_CAST_STATIC_MEMBER(EngineBase);
+	GEN_DOWN_CAST_STATIC_MEMBER(EngineBase)
 
 protected:
 	Routine::Ptr currentRoutine;

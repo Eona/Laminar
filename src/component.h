@@ -56,7 +56,7 @@ public:
 		return std::static_pointer_cast<Component>(compon);
 	}
 
-	GEN_DOWN_CAST_STATIC_MEMBER(Component);
+	GEN_DOWN_CAST_STATIC_MEMBER(Component)
 
 protected:
 	EngineBase::Ptr engine;

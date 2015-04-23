@@ -223,7 +223,7 @@ public:
 	/**
 	 * Down cast NetworkPtr to a specific network type
 	 */
-	GEN_DOWN_CAST_STATIC_MEMBER(Network);
+	GEN_DOWN_CAST_STATIC_MEMBER(Network)
 
 
 	// FIXME shouldn't be public

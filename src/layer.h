@@ -204,7 +204,7 @@ public:
 	/**
 	 * Down cast LayerPtr to a specific layer type
 	 */
-	GEN_DOWN_CAST_STATIC_MEMBER(Layer);
+	GEN_DOWN_CAST_STATIC_MEMBER(Layer)
 
 protected:
 	/**
