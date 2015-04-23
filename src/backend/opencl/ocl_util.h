@@ -139,6 +139,7 @@ public:
 	cl_int ret;
 	cl_program program;
 
+
 	bool do_profile;
 
 	std::unordered_map<std::string, cl_kernel> kernel_list; //pre-compiled kernels
@@ -160,6 +161,16 @@ public:
         /* Create Command Queue */
         OCL_CHECKERROR(ret);
 
+    }
+
+    size_t get_global_size(size_t LEN, size_t NUM_LOCAL_WORKER) {
+    	return ceil(double(LEN)/double(NUM_LOCAL_WORKER))*NUM_LOCAL_WORKER;
+    }
+
+    size_t query_group_size() {
+    	size_t group_size;
+    	OCL_CHECKERROR(clGetKernelWorkGroupInfo(kernel_list["dummy"], device_id, CL_KERNEL_WORK_GROUP_SIZE, sizeof(group_size), &group_size, NULL));
+    	return group_size;
     }
 
     /*build a program from file*/

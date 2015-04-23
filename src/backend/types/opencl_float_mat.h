@@ -169,7 +169,7 @@ private:
 
 	void init_dim(std::vector<int> dim){
 		GPUFloatMat::init_dim(dim);
-		NUM_LOCAL_WORKER = NUM_WORKER_LOCAL; // number of workers per block
+		NUM_LOCAL_WORKER = NUM_WORKER_LOCAL;// number of workers per block
 		NUM_GLOBAL_WORKER = ceil(double(LEN)/double(NUM_LOCAL_WORKER))*NUM_LOCAL_WORKER;
 	}
 };

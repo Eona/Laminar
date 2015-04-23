@@ -27,6 +27,7 @@
 #include "../../rand_utils.h"
 using namespace std;
 
+
 typedef std::shared_ptr<OpenclFloatMat> OpenclFloatMatPtr;
 //typedef OpenclFloatMat* OpenclFloatMatPtr;
 
@@ -57,6 +58,7 @@ public:
 		/*Build program from source*/
 		cl->build_program("./mat_op_kernel.cl", "matop_prog");
 		/*Register kernel functions*/
+		cl->register_kernel("dummy", "matop_prog", "dummy");
 		cl->register_kernel("mat_add_kernel", "matop_prog", "add");
 		cl->register_kernel("mat_scale_kernel", "matop_prog", "scale");
 		cl->register_kernel("mat_elem_mult_kernel", "matop_prog", "element_mult");
@@ -70,6 +72,8 @@ public:
 		cl->register_kernel("mat_mult_NN_kernel", "matop_prog", "mult_NN");
 		cl->register_kernel("mat_mult_NT_kernel", "matop_prog", "mult_NT");
 		cl->register_kernel("mat_mult_TN_kernel", "matop_prog", "mult_TN");
+		NUM_LOCAL_WORKER = cl->query_group_size();
+
 //		register_create(CudaEngine::create);
 //		register_opcode("t+t", CudaEngine::add);
 ////		register_opcode("s+s", Impl::add<S>);
@@ -136,7 +140,7 @@ public:
 	    cl->setup_kernel("add", 3, sizeof(float), &alpha); //a
 	    cl->setup_kernel("add", 4, sizeof(float), &beta); //b
 	    cl->setup_kernel("add", 5, sizeof(int), &(write->LEN)); //DATA_SIZE
-	    cl_ulong duration = cl->exec_kernel("add", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
+	    cl_ulong duration = cl->exec_kernel("add", cl->get_global_size(write->LEN, NUM_LOCAL_WORKER), NUM_LOCAL_WORKER);
 
 		if(timed) gt->record_named_timer("add", duration, m*n*2);
 
@@ -164,7 +168,6 @@ public:
 
 	    //C = a Op(A)* Op(B) + b C  -- A [mxn] B [lxk]
 	    //Need to re-compute number of workers
-	    int NUM_LOCAL_WORKER = write->NUM_LOCAL_WORKER;
 		int NUM_GLOBAL_WORKER = ceil(double(write->LEN)/double(NUM_LOCAL_WORKER))*NUM_LOCAL_WORKER;
 
 	    cl->setup_kernel(kernel_name, 0, sizeof(cl_mem), &write->device_data); // C
@@ -195,7 +198,7 @@ public:
 	    cl->setup_kernel("scale", 1, sizeof(cl_mem), &reads[0]->device_data); // X
 	    cl->setup_kernel("scale", 2, sizeof(float), &alpha); //a
 	    cl->setup_kernel("scale", 3, sizeof(int), &(write->LEN)); //DATA_SIZE
-	    cl_ulong duration = cl->exec_kernel("scale", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
+	    cl_ulong duration = cl->exec_kernel("scale", cl->get_global_size(write->LEN, NUM_LOCAL_WORKER), NUM_LOCAL_WORKER);
 
 		if(timed) gt->record_named_timer("scale", duration, m*n);
 	}
@@ -224,7 +227,7 @@ public:
 	    cl->setup_kernel(kernel_name, 0, sizeof(cl_mem), &write->device_data); // Y
 	    cl->setup_kernel(kernel_name, 1, sizeof(cl_mem), &reads[0]->device_data); // X
 	    cl->setup_kernel(kernel_name, 2, sizeof(int), &(write->LEN)); //DATA_SIZE
-	    cl_ulong duration = cl->exec_kernel(kernel_name, write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
+	    cl_ulong duration = cl->exec_kernel(kernel_name, cl->get_global_size(write->LEN, NUM_LOCAL_WORKER), NUM_LOCAL_WORKER);
 	    if(timed) gt->record_named_timer(kernel_name, duration, m*n);
 	}
 
@@ -347,7 +350,7 @@ public:
 	    cl->setup_kernel("element_mult", 1, sizeof(cl_mem), &reads[0]->device_data); // X
 	    cl->setup_kernel("element_mult", 2, sizeof(cl_mem), &reads[1]->device_data); // X
 	    cl->setup_kernel("element_mult", 3, sizeof(int), &(write->LEN)); //DATA_SIZE
-	    cl_ulong duration = cl->exec_kernel("element_mult", write->NUM_GLOBAL_WORKER, write->NUM_LOCAL_WORKER);
+	    cl_ulong duration = cl->exec_kernel("element_mult", cl->get_global_size(write->LEN, NUM_LOCAL_WORKER), NUM_LOCAL_WORKER);
 	    if(timed) gt->record_named_timer("element_mult", duration, m*n*2);
 	}
 
@@ -362,7 +365,7 @@ public:
 	    cl->setup_kernel("square_loss", 1, sizeof(cl_mem), &reads[0]->device_data); // X
 	    cl->setup_kernel("square_loss", 2, sizeof(cl_mem), &reads[1]->device_data); // X
 	    cl->setup_kernel("square_loss", 3, sizeof(int), &(aux.LEN)); //DATA_SIZE
-	    cl_ulong duration = cl->exec_kernel("square_loss", aux.NUM_GLOBAL_WORKER, aux.NUM_LOCAL_WORKER);
+	    cl_ulong duration = cl->exec_kernel("square_loss", cl->get_global_size(aux.LEN, NUM_LOCAL_WORKER), NUM_LOCAL_WORKER);
 	    if(timed) gt->record_named_timer("square_loss", duration, m*n*2);
 
 	    float t[aux.MEM_SIZE];
@@ -401,6 +404,7 @@ public:
 private:
 	bool timed;
 	GlobalTimer * gt;
+	size_t NUM_LOCAL_WORKER;
 };
 
 #endif /* OPENCL_ENGINE_H_ */
