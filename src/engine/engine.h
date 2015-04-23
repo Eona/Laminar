@@ -293,19 +293,8 @@ public:
 	/************************************/
 	typedef std::shared_ptr<EngineBase> Ptr;
 
-	template<typename EngineT, typename ...ArgT>
-	static std::shared_ptr<EngineT> make(ArgT&& ... args)
-	{
-		LMN_STATIC_ASSERT((std::is_base_of<EngineBase, EngineT>::value),
-				"make() failed: Engine type parameter must be a subclass of EngineBase");
+	GEN_GENERIC_MAKEPTR_STATIC_MEMBER(EngineBase)
 
-		return std::make_shared<EngineT>(
-						std::forward<ArgT>(args) ...);
-	}
-
-	/**
-	 * Downcast
-	 */
 	GEN_DOWN_CAST_STATIC_MEMBER(EngineBase)
 
 protected:

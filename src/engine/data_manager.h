@@ -72,15 +72,7 @@ public:
 	/************************************/
 	TYPEDEF_PTR(DataManagerBase);
 
-	template<typename ManagerT, typename ...ArgT>
-	static std::shared_ptr<ManagerT> make(ArgT&& ... args)
-	{
-		LMN_STATIC_ASSERT((std::is_base_of<DataManagerBase, ManagerT>::value),
-			"make() failed: DataManager type parameter must be a subclass of DataManagerBase");
-
-		return std::make_shared<ManagerT>(
-						std::forward<ArgT>(args) ...);
-	}
+	GEN_GENERIC_MAKEPTR_STATIC_MEMBER(DataManagerBase)
 
 	/**
 	 * Downcast
