@@ -47,6 +47,16 @@ public:
 		return this->paramGradients[idx];
 	}
 
+	Tensor& param_value(int idx)
+	{
+		return *this->paramValues[idx];
+	}
+
+	Tensor& param_gradient(int idx)
+	{
+		return *this->paramGradients[idx];
+	}
+
 	int size() const
 	{
 		return paramValues.size();

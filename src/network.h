@@ -119,6 +119,9 @@ public:
 					std::forward<ArgT>(args)...));
 	}
 
+	/**************************************
+	******* Getter methods *********
+	**************************************/
 	/**
 	 * If template unspecified, return EngineBase::Ptr
 	 */
@@ -143,6 +146,12 @@ public:
 		LMN_ASSERT_NULLPTR(dataManager_,
 			NetworkException("get_data_manager()'s template type is incompatible"));
 		return dataManager_;
+	}
+
+	vector<ParamContainer::Ptr> get_param_containers()
+	{
+		initGuard.assert_after_initialize("get_param_containers");
+		return this->paramContainers;
 	}
 
 	/**************************************
@@ -215,12 +224,16 @@ public:
 	 * Down cast NetworkPtr to a specific network type
 	 */
 	template<typename NetworkT>
-	static std::shared_ptr<NetworkT> cast(Network::Ptr layer)
+	static std::shared_ptr<NetworkT> cast(Network::Ptr net)
 	{
 		LMN_STATIC_ASSERT((std::is_base_of<Network, NetworkT>::value),
 				"cast() failed: type parameter must be a subclass of Network");
 
-		return std::dynamic_pointer_cast<NetworkT>(layer);
+		auto ptr = std::dynamic_pointer_cast<NetworkT>(net);
+		LMN_ASSERT_NULLPTR(ptr,
+			NetworkException("Network down cast failure"));
+
+		return ptr;
 	}
 
 
