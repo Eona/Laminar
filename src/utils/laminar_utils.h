@@ -227,6 +227,7 @@ private:
 	string className;
 };
 
+
 /**************************************
 ******* Laminar specific exceptions *********
 **************************************/
@@ -327,5 +328,30 @@ public:
     	return "Feature unimplemented";
     }
 };
+
+/**************************************
+******* Misc *********
+**************************************/
+/**
+ * Generate static downcast member method for an abstract super class
+ * The signature will be:
+ * shared_ptr<Mysub> Mysuper::cast<Mysub>(shared_ptr<Mysuper> ptr)
+ * will return nullptr if the cast fails
+ */
+#define GEN_DOWN_CAST_STATIC_MEMBER(Superclass) \
+template<typename Subclass> \
+static std::shared_ptr<Subclass> cast(std::shared_ptr<Superclass> superPtr) \
+{ \
+	LMN_STATIC_ASSERT((std::is_base_of<Superclass, Subclass>::value), \
+			"cast() failure: type parameter must be a subclass of " #Superclass); \
+	return std::dynamic_pointer_cast<Subclass>(superPtr); \
+	/* \
+	auto subPtr = std::dynamic_pointer_cast<Subclass>(superPtr); \
+	LMN_ASSERT_NULLPTR(subPtr, \
+		ExceptionType(#Superclass " down cast failure")); \
+	return subPtr; \
+	*/ \
+}
+
 
 #endif /* UTILS_LAMINAR_UTILS_H_ */

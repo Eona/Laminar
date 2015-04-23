@@ -306,14 +306,7 @@ public:
 	/**
 	 * Downcast
 	 */
-	template<typename EngineT>
-	static std::shared_ptr<EngineT> cast(EngineBase::Ptr engine)
-	{
-		LMN_STATIC_ASSERT((std::is_base_of<EngineBase, EngineT>::value),
-				"cast() failed: Engine type parameter must be a subclass of EngineBase");
-
-		return std::dynamic_pointer_cast<EngineT>(engine);
-	}
+	GEN_DOWN_CAST_STATIC_MEMBER(EngineBase);
 
 protected:
 	Routine::Ptr currentRoutine;

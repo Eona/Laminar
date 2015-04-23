@@ -204,14 +204,7 @@ public:
 	/**
 	 * Down cast LayerPtr to a specific layer type
 	 */
-	template<typename LayerT>
-	static std::shared_ptr<LayerT> cast(Layer::Ptr layer)
-	{
-		LMN_STATIC_ASSERT((std::is_base_of<Layer, LayerT>::value),
-				"cast() failed: type parameter must be a subclass of Layer");
-
-		return std::dynamic_pointer_cast<LayerT>(layer);
-	}
+	GEN_DOWN_CAST_STATIC_MEMBER(Layer);
 
 protected:
 	/**

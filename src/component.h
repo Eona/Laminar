@@ -56,13 +56,7 @@ public:
 		return std::static_pointer_cast<Component>(compon);
 	}
 
-	template<typename ComponentT>
-	static std::shared_ptr<ComponentT> cast(Component::Ptr compon)
-	{
-		LMN_STATIC_ASSERT((std::is_base_of<Component, ComponentT>::value),
-				"cast() failed: type parameter must be a subclass of Component");
-		return std::dynamic_pointer_cast<ComponentT>(compon);
-	}
+	GEN_DOWN_CAST_STATIC_MEMBER(Component);
 
 protected:
 	EngineBase::Ptr engine;

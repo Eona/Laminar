@@ -223,18 +223,7 @@ public:
 	/**
 	 * Down cast NetworkPtr to a specific network type
 	 */
-	template<typename NetworkT>
-	static std::shared_ptr<NetworkT> cast(Network::Ptr net)
-	{
-		LMN_STATIC_ASSERT((std::is_base_of<Network, NetworkT>::value),
-				"cast() failed: type parameter must be a subclass of Network");
-
-		auto ptr = std::dynamic_pointer_cast<NetworkT>(net);
-		LMN_ASSERT_NULLPTR(ptr,
-			NetworkException("Network down cast failure"));
-
-		return ptr;
-	}
+	GEN_DOWN_CAST_STATIC_MEMBER(Network);
 
 
 	// FIXME shouldn't be public
