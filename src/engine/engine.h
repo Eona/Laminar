@@ -311,11 +311,12 @@ protected:
 TYPEDEF_PTR_EXTERNAL(EngineBase);
 
 
-// Forward decl
+/*********** Forward decl ***********/
+// actual impl will be defined in tensor.h to avoid mutual header inclusion
 class TensorBase;
-typedef std::shared_ptr<TensorBase> TensorBasePtr;
+class Scalor;
 
-template<typename DataT>
+template<typename DataT, typename FloatT = float>
 class Engine : public EngineBase
 {
 public:
@@ -338,14 +339,49 @@ public:
 		this->memoryPool.reset();
 	}
 
+	/**************************************
+	******* Retrieve actual data from MemoryPool *********
+	**************************************/
 	/**
 	 * Return ref to actual data
-	 * Will be defined in tensor.h to avoid mutual header inclusion
+	 * NOTE will be defined in tensor.h to avoid mutual header inclusion
 	 * @param tensorPtr
 	 * @return
 	 */
-	DataPtr read_memory(TensorBasePtr tensorPtr);
-	DataPtr read_memory(const TensorBase& tensorPtr);
+	DataPtr read_memory(std::shared_ptr<TensorBase>);
+	DataPtr read_memory(const TensorBase&);
+
+	/**
+	 * Get a float element entry from the actual Tensor data
+	 */
+	virtual FloatT tensor_data_at(DataPtr, DimIndex) = 0;
+	/**
+	 * Get a float from Scalor
+	 */
+	virtual FloatT scalor_data_at(DataPtr) = 0;
+
+	/**
+	 * @return a float element entry from tensor
+	 */
+	FloatT tensor_at(std::shared_ptr<TensorBase> tensor, DimIndex idx)
+	{
+		return tensor_data_at(read_memory(tensor), idx);
+	}
+	FloatT tensor_at(const TensorBase& tensor, DimIndex idx)
+	{
+		return tensor_data_at(read_memory(tensor), idx);
+	}
+
+	FloatT scalor_at(std::shared_ptr<Scalor> scalor)
+	{
+		return scalor_data_at(
+			read_memory(std::static_pointer_cast<TensorBase>(scalor)));
+	}
+	FloatT scalor_at(const Scalor& scalor)
+	{
+		// ugly cast workaround for forward decl
+		return scalor_data_at(read_memory((TensorBase&) scalor));
+	}
 
 	/**************************************
 	******* Register "assembly" commands ******
@@ -564,21 +600,6 @@ protected:
 	 */
 	std::unordered_map<Opcode, CommandPtr> commandMap;
 	CreateFuncType command_create;
-};
-
-
-// Internal use
-struct ElementInspectionBase {};
-/**
- * Get a specific element from the tensor matrix
- * Implement this interface to have your engine work with gradient checking
- */
-template<typename DataT, typename FloatT = float>
-struct ElementInspection : public ElementInspectionBase
-{
-	virtual ~ElementInspection() {}
-
-	virtual FloatT element_at(std::shared_ptr<DataT>, DimIndex) = 0;
 };
 
 #endif /* ENGINE_H_ */

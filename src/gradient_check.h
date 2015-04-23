@@ -21,9 +21,6 @@ template<typename EngineT, typename DataManagerT, typename FloatT = float>
 inline void gradient_check(Network& net,
 		FloatT perturb = 1e-2f, FloatT percentTol = 1.0f)
 {
-	LMN_STATIC_ASSERT((std::is_base_of<ElementInspectionBase, EngineT>::value),
-		"Engine must implement ElementInspection<> interface to work with gradient_check");
-
 	auto engine = net.get_engine<EngineT>();
 	auto dataman = net.get_data_manager<DataManagerT>();
 
@@ -53,8 +50,7 @@ inline void gradient_check(Network& net,
 	// loss "tensor" is always a 1x1 Scalor
 	auto read_loss = [&]() -> FloatT
 	{
-		return engine->element_at(
-			engine->read_memory(net.lossLayer->total_loss()), {0, 0});
+		return engine->scalor_at(net.lossLayer->total_loss());
 	};
 
 	vector<Tensor::Ptr> analyticGrads;
@@ -114,8 +110,7 @@ inline void gradient_check(Network& net,
 
 				FloatT numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 
-				FloatT analyticGrad = engine->element_at(
-						engine->read_memory(analyticGrads[agpt]), perturbDimIdx);
+				FloatT analyticGrad = engine->tensor_at(analyticGrads[agpt], perturbDimIdx);
 
 				assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
 						"param analytic != numeric", "param gradcheck pass");
@@ -183,8 +178,7 @@ inline void gradient_check(Network& net,
 
 				FloatT numericGrad = (lossPlus - lossMinus) / (2.0 * perturb);
 
-				FloatT analyticGrad = engine->element_at(
-						engine->read_memory(analyticGrads[inp]), perturbDimIdx);
+				FloatT analyticGrad = engine->tensor_at(analyticGrads[inp], perturbDimIdx);
 
 				assert_float_percent_eq(analyticGrad, numericGrad, percentTol,
 						"input analytic != numeric", "input gradcheck pass");

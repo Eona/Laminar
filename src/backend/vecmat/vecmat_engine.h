@@ -402,8 +402,7 @@ inline void perturb(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initiali
 
 
 class VecmatEngine :
-	public Engine<lmn::Vecmatf>,
-	public ElementInspection<lmn::Vecmatf, float>
+	public Engine<lmn::Vecmatf, float>
 {
 public:
 	VecmatEngine() :
@@ -452,12 +451,27 @@ public:
 		register_context_op<float>("scale", Impl::scale);
 	}
 
-	float element_at(lmn::VecmatfPtr vecmat, DimIndex idx)
+	/**
+	 * Implements element retrieval
+	 */
+	float tensor_data_at(lmn::VecmatfPtr vecmat, DimIndex idx)
 	{
 		LMN_ASSERT_THROW(!vecmat->is_empty(),
-			EngineException("VecmatEngine: element_at() called on null matrix"));
+			EngineException("VecmatEngine: scalor_at() called on null matrix"));
 
 		return vecmat->at(idx);
+	}
+
+	float scalor_data_at(lmn::VecmatfPtr vecmat)
+	{
+		LMN_ASSERT_THROW(!vecmat->is_empty(),
+			EngineException("VecmatEngine: scalor_at() called on null matrix"));
+
+		LMN_ASSERT_THROW(vecmat->dim() == (Dimension {1, 1}),
+			EngineException("VecmatEngine: scalor_at() called on wrong dimension:\n"
+					+ container2str(vecmat->dim()) + " while [1, 1] expected."));
+
+		return vecmat->at({0, 0});
 	}
 };
 

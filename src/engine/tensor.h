@@ -249,9 +249,9 @@ private:
  * WARNING: Define Engine<DataT> member function here to
  * avoid mutual header inclusion with tensor.h
  */
-template<typename DataT>
-inline typename Engine<DataT>::DataPtr
-	Engine<DataT>::read_memory(TensorBase::Ptr tensorPtr)
+template<typename DataT, typename FloatT>
+inline typename Engine<DataT, FloatT>::DataPtr
+	Engine<DataT, FloatT>::read_memory(TensorBase::Ptr tensorPtr)
 {
 	int addr = tensorPtr->addr;
 	LMN_ASSERT_THROW(this->memoryPool.is_initialized(addr),
@@ -259,9 +259,9 @@ inline typename Engine<DataT>::DataPtr
 	return this->memoryPool[addr];
 }
 
-template<typename DataT>
-inline typename Engine<DataT>::DataPtr
-	Engine<DataT>::read_memory(const TensorBase& tensorPtr)
+template<typename DataT, typename FloatT>
+inline typename Engine<DataT, FloatT>::DataPtr
+	Engine<DataT, FloatT>::read_memory(const TensorBase& tensorPtr)
 {
 	int addr = tensorPtr.addr;
 	LMN_ASSERT_THROW(this->memoryPool.is_initialized(addr),

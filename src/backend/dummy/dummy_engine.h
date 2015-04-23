@@ -242,8 +242,7 @@ inline void debug_context_tmp(vector<FloatPtr> reads, FloatPtr write, bool is_in
 } // end of lmn::
 
 class DummyEngine :
-	public Engine<float>,
-	public ElementInspection<float, float>
+	public Engine<float>
 {
 public:
 	DummyEngine() :
@@ -296,9 +295,14 @@ public:
 	}
 
 	/**
-	 * Implements ElementInspection abstract interface
+	 * Implements element retrieval
 	 */
-	float element_at(lmn::FloatPtr f, DimIndex)
+	float tensor_data_at(lmn::FloatPtr f, DimIndex)
+	{
+		return *f;
+	}
+
+	float scalor_data_at(lmn::FloatPtr f)
 	{
 		return *f;
 	}
