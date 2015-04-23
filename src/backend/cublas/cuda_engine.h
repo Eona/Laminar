@@ -126,9 +126,10 @@ public:
 		    if (opA == "N" && opB == "T") write->reset(m, l); // A * B^T
 		    if (opA == "T" && opB == "N") write->reset(n, k); // A^T * B
 		}
+	    std::string name = "mult_"+opA+opB;
 	    //C = a Op(A)* Op(B) + b C  -- A [mxn] B [nxk] C[mxk]
 	    //handle, A_len, x, incx, y, incy
-	    TIME("multiplication", m*n+l*k,
+	    TIME(name, m*n+l*k,
 		cublasSgemm(handle,
 					reads[0]->getOp(opA), reads[1]->getOp(opB),
 					m, n, k,
