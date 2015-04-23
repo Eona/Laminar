@@ -100,6 +100,16 @@ void assign(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 	*write = *reads[0];
 }
 
+/**
+ * Assign a constant float to a Scalor
+ * OpContext<float>
+ */
+void assign_const(vector<FloatPtr> reads, FloatPtr write, bool is_initialized, float constant)
+{
+	debug_msg("s=const", is_initialized);
+	*write = constant;
+}
+
 inline void destroy(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 {
 	debug_msg("destroy", is_initialized);
@@ -257,6 +267,7 @@ public:
 		register_normal_op("s*s", Impl::mult<S, S>);
 		register_normal_op("t=t", Impl::assign<T>);
 		register_normal_op("s=s", Impl::assign<S>);
+		register_context_op<float>("s=const", Impl::assign_const);
 
 		register_normal_op("sin", Impl::sin);
 		register_normal_op("cos", Impl::cos);

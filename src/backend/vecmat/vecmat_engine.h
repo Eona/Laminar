@@ -112,17 +112,42 @@ void negate(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
 	*write = - (*reads[0]);
 }
 
-template<int TensorT1, int TensorT2>
-void mult(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
+void mult_t_t(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
 {
-	string op1 = tensor_op<TensorT1>::operand;
-	string op2 = tensor_op<TensorT2>::operand;
-	debug_msg(op1 + "*" + op2, is_initialized);
+	debug_msg("t*t", is_initialized);
 
 	if (!is_initialized)
 		write->new_zeros(reads[0]->row(), reads[1]->col());
 
 	*write = (*reads[0]) * (*reads[1]);
+}
+
+void mult_t_s(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
+{
+	debug_msg("t*s", is_initialized);
+
+	if (!is_initialized)
+		write->new_zeros(reads[0]);
+
+	LMN_ASSERT_THROW(reads[1]->dim() == (Dimension {1, 1}),
+		VecmatEngineException("t*s Scalor reads[1] should have dimension [1, 1]\n"
+				"But now it's " + container2str(reads[1]->dim())));
+
+	*write = reads[0]->scale(reads[1]->at({0, 0}));
+}
+
+void mult_s_t(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
+{
+	debug_msg("s*t", is_initialized);
+
+	if (!is_initialized)
+		write->new_zeros(reads[1]);
+
+	LMN_ASSERT_THROW(reads[0]->dim() == (Dimension {1, 1}),
+		VecmatEngineException("s*t Scalor reads[0] should have dimension [1, 1]\n"
+				"But now it's " + container2str(reads[0]->dim())));
+
+	*write = reads[1]->scale(reads[0]->at({0, 0}));
 }
 
 void scale(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized, float scalorContext)
@@ -148,6 +173,19 @@ void assign(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
 		write->new_zeros(reads[0]);
 
 	*write = *reads[0];
+}
+
+/**
+ * Assign a float constant to Scalor
+ */
+void assign_const(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized, float constant)
+{
+	debug_msg("s=const", is_initialized);
+
+	if (!is_initialized)
+		write->new_zeros(1, 1);
+
+	write->at({0, 0}) = constant;
 }
 
 inline void destroy(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
@@ -383,12 +421,13 @@ public:
 		register_normal_op("s-s", Impl::sub<S>);
 		register_normal_op("-t", Impl::negate<T>);
 		register_normal_op("-s", Impl::negate<S>);
-		register_normal_op("t*t", Impl::mult<T, T>);
-//		register_normal_op("t*s", Impl::mult<T, S>);
-//		register_normal_op("s*t", Impl::mult<S, T>);
+		register_normal_op("t*t", Impl::mult_t_t);
+		register_normal_op("t*s", Impl::mult_t_s);
+		register_normal_op("s*t", Impl::mult_s_t);
 //		register_normal_op("s*s", Impl::mult<S, S>);
 		register_normal_op("t=t", Impl::assign<T>);
 		register_normal_op("s=s", Impl::assign<S>);
+		register_context_op<float>("s=const", Impl::assign_const);
 
 		register_normal_op("sin", Impl::sin);
 		register_normal_op("cos", Impl::cos);
