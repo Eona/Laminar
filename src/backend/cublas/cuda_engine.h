@@ -160,7 +160,7 @@ public:
 
 	    //y = -y
 	    const float alpha = -1.0f;
-		if(timed) ScopeTimer("negate", gt, m*n);
+		if(timed) ScopeTimer("negate", gt, write->LEN);
 	    cublasSscal(handle, write->LEN, &alpha, write->device_data, 1);
 
 	}
@@ -184,7 +184,7 @@ public:
 	    //y = x
 	    assignMat(reads, write, is_initialized);
 	    //y = ay
-		if(timed) ScopeTimer("scale", gt, m*n);
+		if(timed) ScopeTimer("scale", gt, write->LEN);
 	    cublasSscal(handle, write->LEN, scaler, write->device_data, 1);
 	}
 
