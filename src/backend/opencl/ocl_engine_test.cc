@@ -94,16 +94,16 @@ int main(int argc, char **argv)
 //	engine.multNN(v, out, false);
 //	out->print_matrix("m3 * m1");
 
-	engine.multNT(v, out, false);
+	engine.multNT(v, out, true);
 //	out->print_matrix("m1 * T(m3)");
 
-	engine.multTN(v, out, false);
+	engine.multTN(v, out, true);
 //	out->print_matrix("T(m4) * m5");
 
-	engine.assign(v1, out, false);
+	engine.assign(v1, out, true);
 //	out->print_matrix("m3 -> out");
 
-	engine.sigmoid(v, out, false);
+	engine.sigmoid(v, out, true);
 //	out->print_matrix("sigmod(m1)");
 
 	engine.sigmoid_gradient(v, out, true);
@@ -135,6 +135,6 @@ int main(int argc, char **argv)
 //	out->print_matrix("0.66337");
 	}
 
-	gt.print_stats(GlobalTimer::Nanosec);
+	gt.print_stats(GlobalTimer::Nanosec, "test");
 	out->free_data();
 }

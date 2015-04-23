@@ -157,7 +157,6 @@ public:
 
 	}
 
-
 	void add(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 	    debug_msg("c=a+b", is_initialized);
