@@ -18,18 +18,15 @@ LMN_STATIC_ASSERT((std::is_base_of<Network, NetworkT>::value),
 typedef std::shared_ptr<NetworkT> NetworkTPtr;
 
 public:
-	LearningSessionBase(Network::Ptr net, Optimizer::Ptr optimizer)
-	try :  // syntax for catching exception in ctor
+	LearningSessionBase(Network::Ptr net, Optimizer::Ptr optimizer) :
 		net(Network::cast<NetworkT>(net)),
 		dataManager(net->get_data_manager()),
 		engine(net->get_engine()),
 		optimizer(optimizer),
 		initGuard("LearningSession")
-	{ }
-	catch (NetworkException& e)
 	{
-		// rethrow a clearer exception
-		throw LearningException("LearningSession network type mismatch");
+		LMN_ASSERT_NULLPTR(this->net,
+			LearningException("LearningSession network type mismatch"));
 	}
 
 	virtual ~LearningSessionBase() {}
