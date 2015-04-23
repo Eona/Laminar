@@ -173,12 +173,14 @@ public:
     /*Execute a kernel specified by kernel_name*/
     void exec_kernel(cl_kernel kernel, size_t global_ws, size_t local_ws){
     	OCL_CHECKERROR(clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_ws, &local_ws, 0, NULL, NULL));
+    	clFinish(command_queue);
 	}
 
     /*Execute a kernel specified by kernel_name*/
     void exec_kernel(std::string kernel_name, size_t global_ws, size_t local_ws){
     	OCL_CHECKERROR(clEnqueueNDRangeKernel(command_queue, kernel_list[kernel_name], 1, NULL, &global_ws, &local_ws, 0, NULL, NULL));
-	}
+    	clFinish(command_queue);
+    }
 
     /*flush the command queue*/
     void flush_queue(){
@@ -210,18 +212,27 @@ public:
     template<typename T>
     void to_device_fill(cl_mem memobj, size_t MEM_SIZE, T pattern){
     	OCL_CHECKERROR(clEnqueueFillBuffer(command_queue, memobj, &pattern, sizeof(T), 0, MEM_SIZE, 0, NULL, NULL));
+    	clFinish(command_queue);
     }
 
     void to_device_write(cl_mem buffer, float* d, size_t MEM_SIZE){
     	OCL_CHECKERROR(clEnqueueWriteBuffer(command_queue, buffer, CL_TRUE, 0, MEM_SIZE, d, 0, NULL, NULL));
+    	clFinish(command_queue);
     }
 
     void to_host(float* out, cl_mem memobj, size_t MEM_SIZE) {
     	OCL_CHECKERROR(clEnqueueReadBuffer(command_queue, memobj, CL_TRUE, 0, MEM_SIZE, out, 0, NULL, NULL));
+    	clFinish(command_queue);
+    }
+
+    void to_host_at(float* out, cl_mem memobj, size_t offset, size_t MEM_SIZE) {
+    	OCL_CHECKERROR(clEnqueueReadBuffer(command_queue, memobj, CL_TRUE, offset, MEM_SIZE, out, 0, NULL, NULL));
+    	clFinish(command_queue);
     }
 
     void copy(cl_mem dest, cl_mem src, size_t MEM_SIZE) {
     	OCL_CHECKERROR(clEnqueueCopyBuffer(command_queue, src, dest, 0, 0, MEM_SIZE, 0, NULL, NULL));
+    	clFinish(command_queue);
     }
 
     /*Clean up*/

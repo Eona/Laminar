@@ -36,9 +36,10 @@ class OpenclEngine : public Engine<OpenclFloatMat>
 {
 public:
 
-	OpenclEngine() :
+	OpenclEngine(GlobalTimer * g) :
 		Engine<OpenclFloatMat>()
 	{
+		gt = g;
 		timed = true;
 		cl = new OclUtilContext(true);
 		cout<<"Initialized context"<<endl;
@@ -114,7 +115,7 @@ public:
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
 
-		if(timed) ScopeTimer("Add takes ");
+		if(timed) ScopeTimer("add", gt, m*n);
 
 	    //Register parameters and execute kernel
 //		write->print_matrix("write");
@@ -141,7 +142,7 @@ public:
 	    if (!is_initialized) {
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
-		if(timed) ScopeTimer("Mult takes ");
+		if(timed) ScopeTimer(kernel_name, gt, m*k);
 
 	    //Need to re-compute number of workers
 	    int NUM_LOCAL_WORKER = write->NUM_LOCAL_WORKER;
@@ -163,11 +164,10 @@ public:
 	{
 	    int m = reads[0]->DIM_ROW;
 	    int n = reads[0]->DIM_COL;
-	    int k = reads[1]->DIM_COL;
 	    if (!is_initialized) {
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
-		if(timed) ScopeTimer("Scale takes ");
+		if(timed) ScopeTimer("scale", gt, m*n);
 
 	    cl->setup_kernel("mat_scale_kernel", 0, sizeof(cl_mem), &write->device_data); // Y
 	    cl->setup_kernel("mat_scale_kernel", 1, sizeof(cl_mem), &reads[0]->device_data); // X
@@ -186,7 +186,7 @@ public:
 	    if (!is_initialized) {
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
-		if(timed) ScopeTimer("Assign takes ");
+		if(timed) ScopeTimer("assign", gt, m*n);
 
 	    //y = x
 	    cl->copy(write->device_data, reads[0]->device_data, reads[0]->MEM_SIZE);
@@ -198,7 +198,7 @@ public:
 	    if (!is_initialized) {
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
-		if(timed) ScopeTimer(kernel_name + " takes ");
+		if(timed) ScopeTimer(kernel_name, gt, m*n);
 	    //y = x
 	    cl->setup_kernel(kernel_name, 0, sizeof(cl_mem), &write->device_data); // Y
 	    cl->setup_kernel(kernel_name, 1, sizeof(cl_mem), &reads[0]->device_data); // X
@@ -308,6 +308,8 @@ public:
 	    if (!is_initialized) {
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
+
+		if(timed) ScopeTimer("elem_mult", gt, m*n);
 	    //y = x
 	    cl->setup_kernel("mat_elem_mult_kernel", 0, sizeof(cl_mem), &write->device_data); // Y
 	    cl->setup_kernel("mat_elem_mult_kernel", 1, sizeof(cl_mem), &reads[0]->device_data); // X
@@ -323,6 +325,7 @@ public:
 	    int n = reads[0]->DIM_COL;
 	    OpenclFloatMat aux(m, n, cl);
 	    //y = x
+		if(timed) ScopeTimer("square_loss", gt, m*n);
 	    cl->setup_kernel("mat_square_loss_kernel", 0, sizeof(cl_mem), &aux.device_data); // Y
 	    cl->setup_kernel("mat_square_loss_kernel", 1, sizeof(cl_mem), &reads[0]->device_data); // X
 	    cl->setup_kernel("mat_square_loss_kernel", 2, sizeof(cl_mem), &reads[1]->device_data); // X
@@ -364,6 +367,7 @@ public:
 
 private:
 	bool timed;
+	GlobalTimer * gt;
 };
 
 #endif /* OPENCL_ENGINE_H_ */

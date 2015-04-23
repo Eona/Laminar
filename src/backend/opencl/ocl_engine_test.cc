@@ -8,7 +8,8 @@
 using namespace std;
 int main(int argc, char **argv)
 {
-	OpenclEngine engine;
+	GlobalTimer gt;
+	OpenclEngine engine(&gt);
 
 	//create testcases
 	/*
@@ -35,14 +36,18 @@ int main(int argc, char **argv)
 	engine.create(out, dim);
 
 	std::vector<OpenclFloatMatPtr> rv;
-	engine.fill_rand(rv, m1, true);
-	engine.fill_rand(rv, m2, true);
-	engine.fill_rand(rv, m3, true);
+//	engine.fill_rand(rv, m1, true);
+//	engine.fill_rand(rv, m2, true);
+//	engine.fill_rand(rv, m3, true);
 
+	engine.debug_fill(rv, m1, true);
+	engine.debug_fill(rv, m2, true);
+	engine.debug_fill(rv, m3, true);
 //    m1->print_matrix("m1");
 //    m2->print_matrix("m2");
 //    m3->print_matrix("m3");
 //
+
 	std::vector<OpenclFloatMatPtr> v;
 	v.push_back(m1);
 	v.push_back(m2);
@@ -51,19 +56,24 @@ int main(int argc, char **argv)
 	v1.push_back(m3);
 	v1.push_back(m1);
 //
-
+	for (int i = 0; i < 10; ++i){
 	engine.sub(v, out, true);
 //	out->print_matrix("m1 - m2");
 
 	engine.add(v, out, true);
 //	out->print_matrix("m1 + m2");
 
-	engine.negate(v, out, true);
 //	out->print_matrix("-m1");
 	engine.negate(v, out, true);
 //	out->print_matrix("-m1");
 
 	engine.mult(v, out, true);
+//	float buffer[10];
+//	out->take_at(buffer, dim[0]*dim[1]-10, 10);
+//	for (int i = 0; i < 10; ++i){
+//		cout<<buffer[i]<<" ";
+//	}
+//	cout<<"\n";
 //	out->print_matrix("m1 * m2");
 //
 	engine.mult(v1, out, false);
@@ -93,15 +103,17 @@ int main(int argc, char **argv)
 	engine.element_mult(v, out, true);
 //	out->print_matrix("m1 .* m2");
 
-	float loss;
+//	float loss;
 //	engine.square_loss(v, &loss, true);
 //	cout<<"loss: "<<loss<<endl;
 
-	engine.fill_rand(v, out, true);
+//	engine.fill_rand(v, out, true);
 //	out->print_matrix("rand");
-
-	engine.debug_fill(v, out, true);
+//
+//	engine.debug_fill(v, out, true);
 //	out->print_matrix("0.66337");
+	}
 
+	gt.print_stats(1000000);
 	out->free_data();
 }

@@ -130,6 +130,9 @@ public:
         std::cout << std::endl;
     }
 
+    void take_at(float * d, size_t offset, size_t num_float) {
+    	cl->to_host_at(d, device_data, offset*sizeof(float), num_float*sizeof(float));
+    }
 
 	~OpenclFloatMat(){
 		free_data();
