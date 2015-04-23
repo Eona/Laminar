@@ -12,6 +12,7 @@
 #include "lstm.h"
 #include "rnn.h"
 #include "learning_session.h"
+#include "optimizer.h"
 #include "gradient_check.h"
 
 #include "engine/engine.h"
@@ -78,12 +79,12 @@ int main(int argc, char **argv)
 		{-2, -6, 1, 7}
 	};
 
-	Dudu dud;
-	dud.before_init();
-	dud.after_init();
-	dud.initialize();
 
-	exit(0);
+	const int HISTORY = 5;
+	const int INPUT_DIM = 2;
+	const int TARGET_DIM = 4;
+	const int BATCH = 2;
+
 
 	rand_conn.gen_uniform_rand(90, -1.5, 1.5); //rand_conn.print_rand_seq();
 
@@ -93,30 +94,41 @@ int main(int argc, char **argv)
 
 	rand_target.gen_uniform_rand(40, -1, 1); //rand_target.print_rand_seq();
 
-	const int HISTORY = 5;
-	const int INPUT_DIM = 2;
-	const int TARGET_DIM = 4;
-	const int BATCH = 2;
-
-	auto inLayer = Layer::make<ConstantLayer>(INPUT_DIM);
-	auto lossLayer = Layer::make<SquareLossLayer>(TARGET_DIM);
-
 	auto engine = EngineBase::make<VecmatEngine>();
 	auto dataman = DataManagerBase::make<VecmatRandDataManager>(
-					engine, INPUT_DIM, TARGET_DIM, BATCH);
+						engine, INPUT_DIM, TARGET_DIM, BATCH);
 
-	auto net = Network::make<RecurrentNetwork>(engine, dataman, HISTORY);
+	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
 
-	net->add_layer(inLayer);
+	auto l2 = Layer::make<SigmoidLayer>(5);
 
-	auto lstmComposite =
-			Composite<RecurrentNetwork>::create<LstmComposite>(inLayer, 3);
+	auto l3 = Layer::make<SquareLossLayer>(TARGET_DIM);
 
-	net->add_composite(lstmComposite);
-	net->new_connection<FullConnection>(lstmComposite.out_layer(), lossLayer);
-	net->add_layer(lossLayer);
+	auto net = ForwardNetwork::make(engine, dataman);
 
-	LearningSession<RecurrentNetwork> session(net);
+	auto opm = Optimizer::make<SGD>(2);
+
+	net->add_layer(l1);
+	net->new_connection<FullConnection>(l1, l2);
+	net->new_bias_layer(l2);
+	net->add_layer(l2);
+	net->new_connection<FullConnection>(l2, l3);
+	net->add_layer(l3);
+
+	LearningSession<ForwardNetwork> session(net, opm);
+
+	session.initialize();
+
+	auto params = net->get_param_containers();
+	DEBUG_MSG(*engine->read_memory(params[0]->param_value_ptr(0)));
+
+	session.train(1);
+
+	DEBUG_TITLE("After SGD");
+	DEBUG_MSG("its gradient:");
+	DEBUG_MSG(*engine->read_memory(params[0]->param_gradient_ptr(0)));
+	DEBUG_MSG("its new value:");
+	DEBUG_MSG(*engine->read_memory(params[0]->param_value_ptr(0)));
 
 /*	net.upload("initialize");
 	net.upload("forward");

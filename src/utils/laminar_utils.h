@@ -311,7 +311,7 @@ public:
 
     virtual std::string error_header() const
     {
-    	return "Learning session error";
+    	return "Learning error";
     }
 };
 
