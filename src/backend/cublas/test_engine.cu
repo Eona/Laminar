@@ -114,5 +114,5 @@ int main(int argc, char **argv)
 //	out->print_matrix("0.66337");
 	}
 
-	gt.print_stats(1000000);
+	gt.print_stats(GlobalTimer::Nanosec);
 }

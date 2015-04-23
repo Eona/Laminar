@@ -77,7 +77,7 @@ public:
 
     	for ( auto it = named_timers.begin(); it != named_timers.end(); ++it ) {
     		uint64_t time = to_time_scale(res, it->second.time);
-    		cout<<it->first << ": " << time << ", " << it->second.data_size << ", " <<endl;
+    		cout<<it->first << ": " << time << ", " << it->second.data_size << ", " <<(double)it->second.data_size/(double)time<<endl;
     	}
 	}
 
@@ -166,6 +166,7 @@ public:
 
 	float stop()
 	{
+    	GPU_CHECKERROR(cudaDeviceSynchronize());
 		cudaEventRecord(stopTime, 0);
 		float elapsed;
 		cudaEventSynchronize(stopTime);

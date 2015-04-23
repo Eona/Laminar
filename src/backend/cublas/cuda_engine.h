@@ -16,6 +16,17 @@
 #include "cuda_func.h"
 using namespace std;
 
+#define TIME(name, size, func_call) {\
+		CudaTimer t(name, gt, size);\
+		if(timed) {\
+			t.start();\
+		}\
+		func_call;\
+		if(timed) {\
+			t.stop();\
+		}\
+}
+
 
 class CudaEngine : public Engine<CudaFloatMat>
 {
@@ -28,7 +39,7 @@ public:
 		timed = true;
 	    cublasCreate(&handle);
 
-	    if (timed) GPU_CHECKERROR(cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync));//for accurate timing
+//	    if (timed) GPU_CHECKERROR(cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync));//for accurate timing
 //		register_create(CudaEngine::create);
 //		register_opcode("t+t", CudaEngine::add);
 ////		register_opcode("s+s", Impl::add<S>);
@@ -87,14 +98,14 @@ public:
 	    if (!is_initialized) {
 	    	write->reset(m, n);
 	    }
-		if(timed) ScopeTimer("add", gt, m*n);
-	    cublasSgeam(handle,
+		TIME("add", m*n*2,
+		cublasSgeam(handle,
 	                reads[0]->getOp(), reads[1]->getOp(),
 	                m, n,
 	                &alpha, reads[0]->device_data, reads[0]->LDIM,
 	                &beta, reads[1]->device_data, reads[1]->LDIM,
-	                write->device_data, write->LDIM);
-	    GPU_CHECKERROR(cudaDeviceSynchronize());
+	                write->device_data, write->LDIM)
+	    );
 	}
 
 
@@ -108,21 +119,23 @@ public:
 	{
 	    int m = reads[0]->DIM_ROW;
 	    int n = reads[0]->DIM_COL;
+	    int l = reads[1]->DIM_ROW;
 	    int k = reads[1]->DIM_COL;
 	    if (!is_initialized) {
-	    	write->reset(m, n);
-	    }
-		if(timed) ScopeTimer("mult", gt, m*k);
-
+		    if (opA == "N" && opB == "N") write->reset(m, n); // A * B
+		    if (opA == "N" && opB == "T") write->reset(m, l); // A * B^T
+		    if (opA == "T" && opB == "N") write->reset(n, k); // A^T * B
+		}
 	    //C = a Op(A)* Op(B) + b C  -- A [mxn] B [nxk] C[mxk]
 	    //handle, A_len, x, incx, y, incy
-	    cublasSgemm(handle,
-	                reads[0]->getOp(opA), reads[1]->getOp(opB),
-	                m, n, k,
-	                &alpha, reads[0]->device_data, reads[0]->LDIM,
-	                reads[1]->device_data, reads[1]->LDIM, &beta,
-	                write->device_data, write->LDIM);
-	    GPU_CHECKERROR(cudaDeviceSynchronize());
+	    TIME("multiplication", m*n+l*k,
+		cublasSgemm(handle,
+					reads[0]->getOp(opA), reads[1]->getOp(opB),
+					m, n, k,
+					&alpha, reads[0]->device_data, reads[0]->LDIM,
+					reads[1]->device_data, reads[1]->LDIM, &beta,
+					write->device_data, write->LDIM)
+	    );
 	}
 
 	/*
@@ -137,9 +150,10 @@ public:
 	    }
 	    //y = x
 	    //handle, x_len, x, incx, y, incy
-		if(timed) ScopeTimer("assign", gt, m*n);
-	    cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);
-	    GPU_CHECKERROR(cudaDeviceSynchronize());
+	    TIME("assign", m*n,
+	    cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1)
+	    );
+
 	}
 
 
@@ -166,9 +180,9 @@ public:
 
 	    //y = -y
 	    const float alpha = -1.0f;
-		if(timed) ScopeTimer("negate", gt, write->LEN);
+	    TIME("scale", write->LEN,
 	    cublasSscal(handle, write->LEN, &alpha, write->device_data, 1);
-
+	    )
 	}
 
 	void mult(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
@@ -190,9 +204,9 @@ public:
 	    //y = x
 	    assignMat(reads, write, is_initialized);
 	    //y = ay
-		if(timed) ScopeTimer("scale", gt, write->LEN);
+	    TIME("scale", write->LEN,
 	    cublasSscal(handle, write->LEN, scaler, write->device_data, 1);
-	    GPU_CHECKERROR(cudaDeviceSynchronize());
+	    )
 	}
 
 	inline void destroy(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
@@ -211,94 +225,93 @@ public:
 
 
 
-	#define MATOP(device_func) {\
+	#define MATOP(name, device_func) {\
 			if (!is_initialized) {\
 		    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
 			    cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);\
 			}\
 			op_func_t h_func;\
 			cudaMemcpyFromSymbol( &h_func, device_func, sizeof( op_func_t ) );\
+			CudaTimer t(name, gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);\
+			if(timed) {\
+				t.start();\
+			}\
 			mat_op_kernel<<<write->GRID_DIM, write->BLOCK_DIM>>>( write->device_data, \
 																  reads[0]->device_data, \
 																  write->LEN, \
 																  h_func ); \
+		    if(timed) {\
+		    	t.stop();\
+		    }\
 	}
 
 
-	#define MATOP_DUAL(device_func) {\
+	#define MATOP_DUAL(name, device_func) {\
 			if (!is_initialized) {\
 		    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
 			    cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);\
 			}\
 			op_func_dual_t h_func;\
 			cudaMemcpyFromSymbol( &h_func, device_func, sizeof( op_func_t ) );\
+			CudaTimer t(name, gt, reads[0]->DIM_ROW * reads[0]->DIM_COL * 2);\
+			if(timed) {\
+				t.start();\
+			}\
 			mat_op_kernel<<<write->GRID_DIM, write->BLOCK_DIM>>>( write->device_data, \
 																  reads[0]->device_data, \
 																  reads[1]->device_data, \
 																  write->LEN, \
 																  h_func ); \
+			if(timed) {\
+				t.stop();\
+			}\
 	}
 
 	inline void sigmoid(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("sigmoid", is_initialized);
-		if(timed) ScopeTimer("sigmoid", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
-		MATOP(cu_sigmoid_func);
-	    GPU_CHECKERROR(cudaDeviceSynchronize());
+		MATOP("sigmoid", cu_sigmoid_func);
 	}
 
 	inline void sigmoid_gradient(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("sigmoid_gradient", is_initialized);
-		if(timed) ScopeTimer("sigmoid_gradient", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
-		MATOP(cu_sigmoid_gradient_func);
-	    GPU_CHECKERROR(cudaDeviceSynchronize());
+		MATOP("sigmoid_gradient", cu_sigmoid_gradient_func);
 	}
 
 	inline void sin(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("sin", is_initialized);
-		if(timed) ScopeTimer("sin", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
-		MATOP(cu_sin_func);
-	    GPU_CHECKERROR(cudaDeviceSynchronize());
+		MATOP("sin", cu_sin_func);
 	}
 
 	inline void cos(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("cos", is_initialized);
-		if(timed) ScopeTimer("cos", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
-		MATOP(cu_cos_func);
-	    GPU_CHECKERROR(cudaDeviceSynchronize());
+		MATOP("cos", cu_cos_func);
 	}
 
 	inline void tanh(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("tanh", is_initialized);
-		if(timed) ScopeTimer("tanh", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
-		MATOP(cu_tanh_func);
-	    GPU_CHECKERROR(cudaDeviceSynchronize());
+		MATOP("tanh", cu_tanh_func);
 	}
 
 	inline void tanh_gradient(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("tanh_gradient", is_initialized);
-		if(timed) ScopeTimer("tanh_gradient", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
-		MATOP(cu_tanh_gradient_func);
-	    GPU_CHECKERROR(cudaDeviceSynchronize());
+		MATOP("tanh_gradient", cu_tanh_gradient_func);
 	}
 
 	inline void element_mult(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("element_mult", is_initialized);
-		if(timed) ScopeTimer("element_mult", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
-	    MATOP_DUAL(cu_element_mult_func);
-	    GPU_CHECKERROR(cudaDeviceSynchronize());
+	    MATOP_DUAL("element_mult", cu_element_mult_func);
 	}
 
 	inline void square_loss(vector<CudaFloatMatPtr> reads, float* write, bool is_initialized)
 	{
 		debug_msg("square_loss", is_initialized);
-		if(timed) ScopeTimer("square_loss", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
 		CudaFloatMat aux(reads[0]->DIM_ROW, reads[0]->DIM_COL);
 
 		cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, aux.device_data, 1);
@@ -311,7 +324,6 @@ public:
 														h_func );
 
 	    cublasSasum(handle, aux.LEN, aux.device_data, 1, write);
-	    GPU_CHECKERROR(cudaDeviceSynchronize());
 	}
 
 	// FIXME add contextual rand engine
