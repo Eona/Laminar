@@ -209,16 +209,7 @@ public:
 	/************************************/
 	TYPEDEF_PTR(Network);
 
-	template<typename NetworkT, typename ...ArgT>
-	static Network::Ptr make(ArgT&& ... args)
-	{
-		LMN_STATIC_ASSERT((std::is_base_of<Network, NetworkT>::value),
-				"make() failed: type parameter must be a subclass of Network");
-
-		return std::static_pointer_cast<Network>(
-				std::make_shared<NetworkT>(
-						std::forward<ArgT>(args) ...));
-	}
+	GEN_MAKE_STATIC_MEMBER(Network)
 
 	/**
 	 * Down cast NetworkPtr to a specific network type

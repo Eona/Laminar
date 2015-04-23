@@ -104,31 +104,9 @@ public:
 	/************************************/
 	TYPEDEF_PTR(Connection);
 
-	/**
-	 * Make a polymorphic shared pointer
-	 */
-	template<typename ConnectionT, typename ...ArgT>
-	static Connection::Ptr make(ArgT&& ... args)
-	{
-		LMN_STATIC_ASSERT((std::is_base_of<Connection, ConnectionT>::value),
-				"make() failed: type parameter must be a subclass of Connection");
+	GEN_MAKE_STATIC_MEMBER(Connection)
 
-		return std::static_pointer_cast<Connection>(
-				std::make_shared<ConnectionT>(
-						std::forward<ArgT>(args) ...));
-	}
-
-	/**
-	 * Down cast ConnectionPtr to a specific connection type
-	 */
-	template<typename ConnectionT>
-	static std::shared_ptr<ConnectionT> cast(Connection::Ptr conn)
-	{
-		LMN_STATIC_ASSERT((std::is_base_of<Connection, ConnectionT>::value),
-				"cast() failed: type parameter must be a subclass of Connection");
-
-		return std::dynamic_pointer_cast<ConnectionT>(conn);
-	}
+	GEN_DOWN_CAST_STATIC_MEMBER(Connection)
 
 	Layer::Ptr inLayer;
 	Layer::Ptr outLayer;

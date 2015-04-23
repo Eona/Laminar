@@ -46,16 +46,9 @@ public:
 	/************************************/
 	TYPEDEF_PTR(Optimizer);
 
-	template<typename OptimizerT, typename ...ArgT>
-	static Optimizer::Ptr make(ArgT&& ... args)
-	{
-		LMN_STATIC_ASSERT((std::is_base_of<Optimizer, OptimizerT>::value),
-				"make() failed: type parameter must be a subclass of Optimizer");
+	GEN_MAKE_STATIC_MEMBER(Optimizer)
 
-		return std::static_pointer_cast<Optimizer>(
-					std::make_shared<OptimizerT>(
-							std::forward<ArgT>(args) ...));
-	}
+	GEN_DOWN_CAST_STATIC_MEMBER(Optimizer)
 
 protected:
 	InitializeGuard<LearningException> initGuard;

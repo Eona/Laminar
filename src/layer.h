@@ -190,16 +190,7 @@ public:
 	/************************************/
 	TYPEDEF_PTR(Layer);
 
-	template<typename LayerT, typename ...ArgT>
-	static Layer::Ptr make(ArgT&& ... args)
-	{
-		LMN_STATIC_ASSERT((std::is_base_of<Layer, LayerT>::value),
-				"make() failed: type parameter must be a subclass of Layer");
-
-		return std::static_pointer_cast<Layer>(
-				std::make_shared<LayerT>(
-						std::forward<ArgT>(args) ...));
-	}
+	GEN_MAKE_STATIC_MEMBER(Layer)
 
 	/**
 	 * Down cast LayerPtr to a specific layer type

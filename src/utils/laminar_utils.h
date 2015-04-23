@@ -335,7 +335,7 @@ public:
 /**
  * Generate static downcast member method for an abstract super class
  * The signature will be:
- * shared_ptr<Mysub> Mysuper::cast<Mysub>(shared_ptr<Mysuper> ptr)
+ * shared_ptr<Sub> Super::cast<Sub>(shared_ptr<Super> ptr)
  * will return nullptr if the cast fails
  */
 #define GEN_DOWN_CAST_STATIC_MEMBER(Superclass) \
@@ -353,5 +353,20 @@ static std::shared_ptr<Subclass> cast(std::shared_ptr<Superclass> superPtr) \
 	*/ \
 }
 
+/**
+ * Generate static 'make' member method for an abstract super class
+ * The signature will be:
+ * shared_ptr<Super> Super::make<Sub>(ArgT ... args)
+ * will be statically upcast to Super's shared ptr.
+ */
+#define GEN_MAKE_STATIC_MEMBER(Superclass) \
+template<typename Subclass, typename ...ArgT> \
+static std::shared_ptr<Superclass> make(ArgT&& ... args) \
+{ \
+	LMN_STATIC_ASSERT((std::is_base_of<Superclass, Subclass>::value), \
+			"make() failure: type parameter must be a subclass of " #Superclass); \
+	return std::static_pointer_cast<Superclass>( \
+		std::make_shared<Subclass>(std::forward<ArgT>(args) ...)); \
+}
 
 #endif /* UTILS_LAMINAR_UTILS_H_ */
