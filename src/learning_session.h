@@ -60,8 +60,21 @@ public:
 	{
 		initGuard.assert_after_initialize("train");
 
-//		for (int epoch = 0; epoch < totalEpoch; ++epoch)
-		{
+		// Monitor dataManager batch size change
+		ChangeMonitor<int> dataBatchSizeMon([this]() {
+			return dataManager->batch_size();
+		});
+
+		do {
+			LMN_ASSERT_THROW(!dataBatchSizeMon.monitor(),
+				UnimplementedException(
+					"LearningSession doesn't support changing batch size for now.\n"
+					"batch_size has changed from " + to_str(dataBatchSizeMon.previous()) +
+					" to " + to_str(dataBatchSizeMon.current())));
+
+			state->batchSize = dataManager->batch_size();
+
+
 			net->execute("load_input");
 			net->execute("load_target");
 
@@ -71,8 +84,10 @@ public:
 			for (auto pc : paramContainers)
 				optimizer->update(pc, state);
 			engine->flush_execute();
-		}
 
+
+		}
+		while (!stopper->stop_learning(state));
 	}
 
 protected:

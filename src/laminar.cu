@@ -79,34 +79,6 @@ int main(int argc, char **argv)
 		{-2, -6, 1, 7}
 	};
 
-	auto pred = [](string s, double d)
-	{
-		if (d == 6)
-			return 100;
-		else if (d == 7)
-			return 101;
-		else if (d < 15)
-			return 102;
-		else
-			return 106;
-	};
-
-	ChangeMonitor<int, string, double> mon(pred);
-
-	for (double var = 6; var < 20; ++var)
-	{
-		if (mon.monitor("shit", var))
-		{
-			DEBUG_MSG("Change at", var);
-			DEBUG_MSG(mon.current());
-			DEBUG_MSG(mon.previous());
-		}
-	}
-
-
-	exit(0);
-
-
 //	const int HISTORY = 5;
 	const int INPUT_DIM = 2;
 	const int TARGET_DIM = 4;

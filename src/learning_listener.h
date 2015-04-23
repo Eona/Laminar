@@ -9,14 +9,20 @@
 
 struct LearningState
 {
-	int currentEpoch;
+	virtual ~LearningState() {}
+
+	int currentEpoch = 0;
 	int totalEpoch;
 
-	int currentBatch;
+	int currentBatch = 0;
 	int batchSize;
 
-	float trainingLoss;
-	float validationLoss;
+	// from network's loss function
+	float trainingLoss = 0;
+	float validationLoss = 0;
+
+	// percentage accuracy, perplexity, etc.
+	float validationMetric = 0;
 
 	TYPEDEF_PTR(LearningState);
 
