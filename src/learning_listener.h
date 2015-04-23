@@ -7,6 +7,13 @@
 
 #include "utils/laminar_utils.h"
 
+enum class LearningStage
+{
+	Training,
+	Validation,
+	Testing
+};
+
 struct LearningState
 {
 	virtual ~LearningState() {}
@@ -19,16 +26,19 @@ struct LearningState
 
 	// from network's loss function
 	float trainingLoss = 0;
-	float validationLoss = 0;
 
+	float validationLoss = 0;
 	// percentage accuracy, perplexity, etc.
 	float validationMetric = 0;
+
+	float testingLoss = 0;
+	// percentage accuracy, perplexity, etc.
+	float testingMetric = 0;
 
 	TYPEDEF_PTR(LearningState);
 
 	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(LearningState)
 };
-
 
 /**************************************
 ******* StopCriteria *********
@@ -57,6 +67,14 @@ struct EpochStopCriteria : public StopCriteria
 		return state->currentEpoch >= state->totalEpoch;
 	}
 };
+
+/**************************************
+******* Evalution Schedule *********
+**************************************/
+/**
+ * How often do we do testing/validation
+ */
+
 
 /**************************************
 ******* Serializer *********

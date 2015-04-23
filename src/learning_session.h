@@ -74,6 +74,8 @@ public:
 		});
 
 		do {
+			evaluator->set_learning_stage(LearningStage::Training);
+
 			LMN_ASSERT_THROW(!batchSizeMon.monitor(),
 				UnimplementedException(
 					"LearningSession doesn't support changing batch size for now.\n"
@@ -92,12 +94,27 @@ public:
 				optimizer->update(pc, state);
 			engine->flush_execute();
 
-
+			++ state->currentBatch;
 			state->currentEpoch = dataManager->current_epoch();
+
 			// If we finish another epoch
 			if (currentEpochMon.monitor())
 			{
-				state->trainingLoss = evaluator->loss_value();
+				state->currentBatch = 0; // new epoch reset batch count
+				state->trainingLoss = evaluator->net_loss();
+
+				// We do optional validation/testing at the end of each epoch
+				/*********** Validation ***********/
+				evaluator->set_learning_stage(LearningStage::Validation);
+				evaluator->validation();
+				state->validationLoss = evaluator->validation_loss();
+				state->validationMetric = evaluator->validation_metric();
+
+				/*********** Testing ***********/
+				evaluator->set_learning_stage(LearningStage::Testing);
+				evaluator->testing();
+				state->testingLoss = evaluator->testing_loss();
+				state->testingMetric = evaluator->testing_metric();
 
 				// Save parameters to disk
 				serializer->save(net, state);
