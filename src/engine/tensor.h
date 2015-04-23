@@ -7,6 +7,7 @@
 #define TENSOR_H_
 
 #include "engine.h"
+#include "instructions.h"
 
 class TensorBase
 {
@@ -105,6 +106,27 @@ public:
 		TensorBase::operator=(std::move(other));
 		return *this;
 	}*/
+
+	/**
+	 * This only works with floats
+	 * If you want to work with other FloatT, use .assign
+	 */
+	Scalor& operator=(float val)
+	{
+		this->assign<float>(val);
+		return *this;
+	}
+
+	/**
+	 * Assign a constant to the scalor
+	 * @param val
+	 */
+	template<typename FloatT = float>
+	void assign(FloatT val)
+	{
+		engine->upload(Instruction("s=const", {}, this->addr,
+						OpContext<FloatT>::make(val)));
+	}
 
 	Scalor& operator+=(const Scalor& other)
 	{
