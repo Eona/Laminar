@@ -12,6 +12,7 @@
 #include <cuda.h>
 #include "cublas_v2.h"
 #include "../types/cuda_float_mat.h"
+#include "../types/performance_profiler.h"
 #include "cuda_func.h"
 using namespace std;
 
@@ -20,9 +21,10 @@ class CudaEngine : public Engine<CudaFloatMat>
 {
 public:
 
-	CudaEngine() :
+	CudaEngine(GlobalTimer * g) :
 		Engine<CudaFloatMat>()
 	{
+		gt = g;
 	    cublasCreate(&handle);
 //		register_create(CudaEngine::create);
 //		register_opcode("t+t", CudaEngine::add);
@@ -82,7 +84,7 @@ public:
 	    if (!is_initialized) {
 	    	write->reset(m, n);
 	    }
-
+		if(timed) ScopeTimer("add", gt, m*n);
 	    cublasSgeam(handle,
 	                reads[0]->getOp(), reads[1]->getOp(),
 	                m, n,
@@ -106,6 +108,7 @@ public:
 	    if (!is_initialized) {
 	    	write->reset(m, n);
 	    }
+		if(timed) ScopeTimer("mult", gt, m*k);
 
 	    //C = a Op(A)* Op(B) + b C  -- A [mxn] B [nxk] C[mxk]
 	    //handle, A_len, x, incx, y, incy
@@ -129,6 +132,7 @@ public:
 	    }
 	    //y = x
 	    //handle, x_len, x, incx, y, incy
+		if(timed) ScopeTimer("assign", gt, m*n);
 	    cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);
 	}
 
@@ -156,6 +160,7 @@ public:
 
 	    //y = -y
 	    const float alpha = -1.0f;
+		if(timed) ScopeTimer("negate", gt, m*n);
 	    cublasSscal(handle, write->LEN, &alpha, write->device_data, 1);
 
 	}
@@ -179,6 +184,7 @@ public:
 	    //y = x
 	    assignMat(reads, write, is_initialized);
 	    //y = ay
+		if(timed) ScopeTimer("scale", gt, m*n);
 	    cublasSscal(handle, write->LEN, scaler, write->device_data, 1);
 	}
 
@@ -231,49 +237,58 @@ public:
 	inline void sigmoid(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("sigmoid", is_initialized);
+		if(timed) ScopeTimer("sigmoid", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
 		MATOP(cu_sigmoid_func);
 	}
 
 	inline void sigmoid_gradient(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("sigmoid_gradient", is_initialized);
+		if(timed) ScopeTimer("sigmoid_gradient", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
 		MATOP(cu_sigmoid_gradient_func);
 	}
 
 	inline void sin(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("sin", is_initialized);
+		if(timed) ScopeTimer("sin", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
 		MATOP(cu_sin_func);
 	}
 
 	inline void cos(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("cos", is_initialized);
+		if(timed) ScopeTimer("cos", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
 		MATOP(cu_cos_func);
 	}
 
 	inline void tanh(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("tanh", is_initialized);
+		if(timed) ScopeTimer("tanh", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
 		MATOP(cu_tanh_func);
 	}
 
 	inline void tanh_gradient(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("tanh_gradient", is_initialized);
+		if(timed) ScopeTimer("tanh_gradient", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
 		MATOP(cu_tanh_gradient_func);
 	}
 
 	inline void element_mult(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("element_mult", is_initialized);
+		if(timed) ScopeTimer("element_mult", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
 	    MATOP_DUAL(cu_element_mult_func);
 	}
 
 	inline void square_loss(vector<CudaFloatMatPtr> reads, float* write, bool is_initialized)
 	{
 		debug_msg("square_loss", is_initialized);
+		if(timed) ScopeTimer("square_loss", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
 		CudaFloatMat aux(reads[0]->DIM_ROW, reads[0]->DIM_COL);
+
 		cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, aux.device_data, 1);
 		op_func_dual_t h_func;
 		cudaMemcpyFromSymbol( &h_func, cu_square_loss_func, sizeof( op_func_t ) );
@@ -308,6 +323,8 @@ public:
 
 private:
 	cublasHandle_t handle;
+	bool timed;
+	GlobalTimer * gt;
 
 };
 
