@@ -24,19 +24,54 @@ __kernel void
 mat_mult_NN_kernel(__global float* C, 
                    __global float* A,
                    __global float* B,
-                   int m, int n, int k)
+                   int m, int n, int l, int k)
 {
 	int idx = get_global_id(0); 
    	if (idx >= m * k) return;
 	size_t b_col = (idx / m) * n;//start index in B
 	size_t a_row = (idx % m); //start index in A
 	float sum = 0;
-	for (int i = 0; i < n; ++i) { //a column of B
+	for (int i = 0; i < n; ++i) { //a column of A
 		sum += B[b_col + i] * A[a_row + i * m];
 	} 
 	C[idx] = sum;	 
 }
 
+/*COLUMN MAJOR matrix multiplication*/
+__kernel void
+mat_mult_NT_kernel(__global float* C, 
+                   __global float* A,
+                   __global float* B,
+                   int m, int n, int l, int k)
+{
+	int idx = get_global_id(0); 
+   	if (idx >= m * l) return;
+	size_t b_row = (idx / m); //start index in B
+	size_t a_row = (idx % m); //start index in A
+	float sum = 0;
+	for (int i = 0; i < n; ++i) { //a row of A
+		sum += B[b_row + i * l] * A[a_row + i * m];
+	} 
+	C[idx] = sum;	 
+}
+
+/*COLUMN MAJOR matrix multiplication*/
+__kernel void
+mat_mult_TN_kernel(__global float* C, 
+                   __global float* A,
+                   __global float* B,
+                   int m, int n, int l, int k)
+{
+	int idx = get_global_id(0); 
+   	if (idx >= n * k) return;
+	size_t b_col = (idx / n) * l; //start index in B
+	size_t a_col = (idx % n) * m; //start index in A
+	float sum = 0;
+	for (int i = 0; i < m; ++i) { //a column of A
+		sum += B[b_col + i] * A[a_col + i];
+	} 
+	C[idx] = sum;	 
+}
 
 /*Element wise multiplicatipn, C = A .* B */
 __kernel void mat_elem_mult_kernel(__global float * C, __global float * A, __global float * B, int DATA_SIZE)

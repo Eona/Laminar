@@ -57,6 +57,8 @@ public:
 		cl->register_kernel("mat_tanh_gradient_kernel", "matop_prog");
 		cl->register_kernel("mat_square_loss_kernel", "matop_prog");
 		cl->register_kernel("mat_mult_NN_kernel", "matop_prog");
+		cl->register_kernel("mat_mult_NT_kernel", "matop_prog");
+		cl->register_kernel("mat_mult_TN_kernel", "matop_prog");
 
 //		register_create(CudaEngine::create);
 //		register_opcode("t+t", CudaEngine::add);
@@ -134,28 +136,34 @@ public:
 	 */
 	void multMat(vector<OpenclFloatMatPtr> reads,
 				OpenclFloatMatPtr write, bool is_initialized,
-				std::string kernel_name)
+				std::string opA, std::string opB)
 	{
 	    int m = reads[0]->DIM_ROW;
 	    int n = reads[0]->DIM_COL;
+	    int l = reads[1]->DIM_ROW;
 	    int k = reads[1]->DIM_COL;
+
+	    std::string kernel_name = "mat_mult_" + opA + opB +"_kernel";
 	    if (!is_initialized) {
-	        write->reset(m, n, cl); //initialize LHS if not already
+		    if (opA == "N" && opB == "N") write->reset(m, n, cl); // A * B
+		    if (opA == "N" && opB == "T") write->reset(m, l, cl); // A * B^T
+		    if (opA == "T" && opB == "N") write->reset(n, k, cl); // A^T * B
 	    }
 		if(timed) ScopeTimer(kernel_name, gt, m*k);
 
+	    //C = a Op(A)* Op(B) + b C  -- A [mxn] B [lxk]
 	    //Need to re-compute number of workers
 	    int NUM_LOCAL_WORKER = write->NUM_LOCAL_WORKER;
-		int NUM_GLOBAL_WORKER = ceil(double(m * k)/double(NUM_LOCAL_WORKER))*NUM_LOCAL_WORKER;
+		int NUM_GLOBAL_WORKER = ceil(double(write->LEN)/double(NUM_LOCAL_WORKER))*NUM_LOCAL_WORKER;
 
 	    cl->setup_kernel(kernel_name, 0, sizeof(cl_mem), &write->device_data); // C
 	    cl->setup_kernel(kernel_name, 1, sizeof(cl_mem), &reads[0]->device_data); //A
 	    cl->setup_kernel(kernel_name, 2, sizeof(cl_mem), &reads[1]->device_data); //B
 	    cl->setup_kernel(kernel_name, 3, sizeof(int), &m); //DATA_SIZE
 	    cl->setup_kernel(kernel_name, 4, sizeof(int), &n); //DATA_SIZE
-	    cl->setup_kernel(kernel_name, 5, sizeof(int), &k); //DATA_SIZE
+	    cl->setup_kernel(kernel_name, 5, sizeof(int), &l); //DATA_SIZE
+	    cl->setup_kernel(kernel_name, 6, sizeof(int), &k); //DATA_SIZE
 	    cl->exec_kernel(kernel_name, NUM_GLOBAL_WORKER, NUM_LOCAL_WORKER);
-	    //C = a Op(A)* Op(B) + b C  -- A [mxn] B [nxk] C[mxk]
 	}
 
 	void scaleMat(vector<OpenclFloatMatPtr> reads,
@@ -229,11 +237,22 @@ public:
 	    scaleMat(reads, write, is_initialized, -1);
 	}
 
-	void mult(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	void multNN(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 	    debug_msg("c=a*b", is_initialized);
-		float alpha = 1.0f;
-		multMat(reads, write, is_initialized, "mat_mult_NN_kernel");
+		multMat(reads, write, is_initialized, "N", "N");
+	}
+
+	void multNT(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+	    debug_msg("c=a*b", is_initialized);
+		multMat(reads, write, is_initialized, "N", "T");
+	}
+
+	void multTN(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+	    debug_msg("c=a*b", is_initialized);
+		multMat(reads, write, is_initialized, "T", "N");
 	}
 
 	void assign(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)

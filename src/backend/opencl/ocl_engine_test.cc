@@ -12,40 +12,47 @@ int main(int argc, char **argv)
 	OpenclEngine engine(&gt);
 
 	//create testcases
-	/*
+
 	float t1[9] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10, 5};
 	float t2[9] = {0.1, 6.8, 4.9, 2.0, 1, 4, 5, 9, 4};
 	float t3[6] = {1.1, 7.8, 5.9, 3.0, 2, 5};
+	float t4[8] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10};
+	float t5[8] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10};
+
 
 	OpenclFloatMatPtr m1 (new OpenclFloatMat(t1, 3, 3, engine.cl));
 	OpenclFloatMatPtr m2 (new OpenclFloatMat(t2, 3, 3, engine.cl));
 	OpenclFloatMatPtr m3 (new OpenclFloatMat(t3, 2, 3, engine.cl));
+	OpenclFloatMatPtr m4 (new OpenclFloatMat(t4, 4, 2, engine.cl));
+	OpenclFloatMatPtr m5 (new OpenclFloatMat(t5, 4, 2, engine.cl));
 	OpenclFloatMatPtr out(new OpenclFloatMat());
 	vector<int> dim = {3,3};
-	engine.create(out, dim);*/
-
-	vector<int> dim = {1000, 1000};
-
-	OpenclFloatMatPtr m1 (new OpenclFloatMat());
-	OpenclFloatMatPtr m2 (new OpenclFloatMat());
-	OpenclFloatMatPtr m3 (new OpenclFloatMat());
-	OpenclFloatMatPtr out(new OpenclFloatMat());
-	engine.create(m1, dim);
-	engine.create(m2, dim);
-	engine.create(m3, dim);
 	engine.create(out, dim);
 
-	std::vector<OpenclFloatMatPtr> rv;
+//	vector<int> dim = {1000, 1000};
+//
+//	OpenclFloatMatPtr m1 (new OpenclFloatMat());
+//	OpenclFloatMatPtr m2 (new OpenclFloatMat());
+//	OpenclFloatMatPtr m3 (new OpenclFloatMat());
+//	OpenclFloatMatPtr out(new OpenclFloatMat());
+//	engine.create(m1, dim);
+//	engine.create(m2, dim);
+//	engine.create(m3, dim);
+//	engine.create(out, dim);
+//
+//	std::vector<OpenclFloatMatPtr> rv;
 //	engine.fill_rand(rv, m1, true);
 //	engine.fill_rand(rv, m2, true);
 //	engine.fill_rand(rv, m3, true);
 
-	engine.debug_fill(rv, m1, true);
-	engine.debug_fill(rv, m2, true);
-	engine.debug_fill(rv, m3, true);
-//    m1->print_matrix("m1");
-//    m2->print_matrix("m2");
-//    m3->print_matrix("m3");
+//	engine.debug_fill(rv, m1, true);
+//	engine.debug_fill(rv, m2, true);
+//	engine.debug_fill(rv, m3, true);
+    m1->print_matrix("m1");
+    m2->print_matrix("m2");
+    m3->print_matrix("m3");
+    m4->print_matrix("m4");
+
 //
 
 	std::vector<OpenclFloatMatPtr> v;
@@ -55,8 +62,16 @@ int main(int argc, char **argv)
 	std::vector<OpenclFloatMatPtr> v1;
 	v1.push_back(m3);
 	v1.push_back(m1);
+
+	std::vector<OpenclFloatMatPtr> v2;
+	v2.push_back(m1);
+	v2.push_back(m3);
+
+	std::vector<OpenclFloatMatPtr> v3;
+	v3.push_back(m4);
+	v3.push_back(m5);
 //
-	for (int i = 0; i < 10; ++i){
+//	for (int i = 0; i < 10; ++i){
 	engine.sub(v, out, true);
 //	out->print_matrix("m1 - m2");
 
@@ -67,17 +82,23 @@ int main(int argc, char **argv)
 	engine.negate(v, out, true);
 //	out->print_matrix("-m1");
 
-	engine.mult(v, out, true);
+	engine.multNN(v, out, true);
+	out->print_matrix("m1 * m2");
 //	float buffer[10];
 //	out->take_at(buffer, dim[0]*dim[1]-10, 10);
 //	for (int i = 0; i < 10; ++i){
 //		cout<<buffer[i]<<" ";
 //	}
 //	cout<<"\n";
-//	out->print_matrix("m1 * m2");
 //
-	engine.mult(v1, out, false);
-//	out->print_matrix("m3 * m1");
+	engine.multNN(v1, out, false);
+	out->print_matrix("m3 * m1");
+
+	engine.multNT(v2, out, false);
+	out->print_matrix("m1 * T(m3)");
+
+	engine.multTN(v3, out, false);
+	out->print_matrix("T(m4) * m5");
 
 	engine.assign(v1, out, false);
 //	out->print_matrix("m3 -> out");
@@ -112,8 +133,8 @@ int main(int argc, char **argv)
 //
 //	engine.debug_fill(v, out, true);
 //	out->print_matrix("0.66337");
-	}
+//	}
 
-	gt.print_stats(1000000);
+//	gt.print_stats(1000000);
 	out->free_data();
 }
