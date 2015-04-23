@@ -36,9 +36,16 @@ struct StopCriteria
 	virtual bool stop_learning(LearningState::Ptr) = 0;
 };
 
+struct EpochStopCriteria : public StopCriteria
+{
+	virtual bool stop_learning(LearningState::Ptr state)
+	{
+		return state->currentEpoch >= state->totalEpoch;
+	}
+};
+
 // forward decl
 class Network;
-
 /**
  * Save parameters to disk periodically
  */
@@ -51,8 +58,5 @@ LMN_STATIC_ASSERT_IS_BASE(Network, NetworkT, "Serializer template arg");
 
 	virtual void serialize(std::shared_ptr<NetworkT>, LearningState::Ptr) = 0;
 };
-
-
-
 
 #endif /* LEARNING_LISTENER_H_ */

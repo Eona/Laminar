@@ -11,6 +11,7 @@
 #include "parameter.h"
 #include "engine/tensor.h"
 #include "engine/tensor_ops.h"
+#include "learning_listener.h"
 
 class Optimizer
 {
@@ -33,13 +34,13 @@ public:
 		initGuard.initialize();
 	}
 
-	virtual void update(ParamContainer::Ptr param)
+	virtual void update(ParamContainer::Ptr param, LearningState::Ptr state)
 	{
 		initGuard.assert_after_initialize("update");
 
 		for (int p = 0; p < param->size(); ++p)
 		{
-			this->update_impl(param->param_value(p), param->param_gradient(p));
+			this->update_impl(param->param_value(p), param->param_gradient(p), state);
 		}
 	}
 
@@ -56,7 +57,8 @@ protected:
 
 	virtual void initialize_impl() = 0;
 
-	virtual void update_impl(Tensor& paramValue, Tensor& paramGradient) = 0;
+	virtual void update_impl(
+		Tensor& paramValue, Tensor& paramGradient, LearningState::Ptr state) = 0;
 };
 
 /**
@@ -84,7 +86,8 @@ protected:
 		*learningRate = initLearningRate;
 	}
 
-	virtual void update_impl(Tensor& paramValue, Tensor& paramGradient)
+	virtual void update_impl(
+			Tensor& paramValue, Tensor& paramGradient, LearningState::Ptr state)
 	{
 		paramValue -= *learningRate * paramGradient;
 	}

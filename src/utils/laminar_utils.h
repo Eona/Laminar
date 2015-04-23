@@ -44,7 +44,7 @@ public:
 
 protected:
 	/**
-	 * Subclass needs to implement the following
+	 * Derived classes need to implement the following
 	 */
 	virtual void gradient_check_perturb_impl(
 			int changeItem, DimIndex dimIdx, FloatT eps) = 0;
@@ -335,19 +335,19 @@ public:
 /**
  * Generate static downcast member method for an abstract super class
  * The signature will be:
- * shared_ptr<Sub> Super::cast<Sub>(shared_ptr<Super> ptr)
+ * shared_ptr<Derived> Super::cast<Derived>(shared_ptr<Base> ptr)
  * will return nullptr if the cast fails
  */
-#define GEN_DOWN_CAST_STATIC_MEMBER(Superclass) \
-template<typename Subclass> \
-static std::shared_ptr<Subclass> cast(std::shared_ptr<Superclass> superPtr) \
+#define GEN_DOWN_CAST_STATIC_MEMBER(Base) \
+template<typename Derived> \
+static std::shared_ptr<Derived> cast(std::shared_ptr<Base> superPtr) \
 { \
-	LMN_STATIC_ASSERT_IS_BASE(Superclass, Subclass, "cast() failure: type parameter"); \
-	return std::dynamic_pointer_cast<Subclass>(superPtr); \
+	LMN_STATIC_ASSERT_IS_BASE(Base, Derived, "cast() failure: type parameter"); \
+	return std::dynamic_pointer_cast<Derived>(superPtr); \
 	/* \
-	auto subPtr = std::dynamic_pointer_cast<Subclass>(superPtr); \
+	auto subPtr = std::dynamic_pointer_cast<Derived>(superPtr); \
 	LMN_ASSERT_NULLPTR(subPtr, \
-		ExceptionType(#Superclass " down cast failure")); \
+		ExceptionType(#Base " down cast failure")); \
 	return subPtr; \
 	*/ \
 }
@@ -355,14 +355,14 @@ static std::shared_ptr<Subclass> cast(std::shared_ptr<Superclass> superPtr) \
 /**
  * Generate static 'make' member method for an abstract base class
  * The signature will be:
- * shared_ptr<Sub> Base::make<Sub>(ArgT ... args)
+ * shared_ptr<Derived> Base::make<Derived>(ArgT ... args)
  */
-#define GEN_GENERIC_MAKEPTR_STATIC_MEMBER(Superclass) \
-template<typename Subclass, typename ...ArgT> \
-static std::shared_ptr<Subclass> make(ArgT&& ... args) \
+#define GEN_GENERIC_MAKEPTR_STATIC_MEMBER(Base) \
+template<typename Derived, typename ...ArgT> \
+static std::shared_ptr<Derived> make(ArgT&& ... args) \
 { \
-	LMN_STATIC_ASSERT_IS_BASE(Superclass, Subclass, "make() failure: type parameter"); \
-	return std::make_shared<Subclass>(std::forward<ArgT>(args) ...); \
+	LMN_STATIC_ASSERT_IS_BASE(Base, Derived, "make() failure: type parameter"); \
+	return std::make_shared<Derived>(std::forward<ArgT>(args) ...); \
 }
 
 /**

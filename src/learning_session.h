@@ -8,12 +8,12 @@
 #include "network.h"
 #include "rnn.h"
 #include "optimizer.h"
+#include "learning_listener.h"
 
 template<typename NetworkT>
 class LearningSessionBase
 {
-LMN_STATIC_ASSERT((std::is_base_of<Network, NetworkT>::value),
-		"LearningSession type paramater must be a subclass of Network");
+LMN_STATIC_ASSERT_IS_BASE(Network, NetworkT, "LearningSession template arg");
 
 typedef std::shared_ptr<NetworkT> NetworkTPtr;
 
@@ -22,6 +22,7 @@ public:
 		net(Network::cast<NetworkT>(net)),
 		dataManager(net->get_data_manager()),
 		engine(net->get_engine()),
+		state(LearningState::make()),
 		optimizer(optimizer),
 		initGuard("LearningSession")
 	{
@@ -51,7 +52,7 @@ public:
 			net->execute("backward");
 
 			for (auto pc : paramContainers)
-				optimizer->update(pc);
+				optimizer->update(pc, state);
 			engine->flush_execute();
 		}
 
@@ -77,11 +78,12 @@ protected:
 	NetworkTPtr net;
 	DataManagerBase::Ptr dataManager;
 	EngineBase::Ptr engine;
+
+	LearningState::Ptr state;
 	Optimizer::Ptr optimizer;
 
 	InitializeGuard<LearningException> initGuard;
 
-	int totalEpoch;
 	vector<ParamContainer::Ptr> paramContainers;
 };
 
