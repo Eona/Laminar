@@ -239,8 +239,6 @@ public:
 																  h_func ); \
 	}
 
-
-
 	inline void sigmoid(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("sigmoid", is_initialized);
