@@ -179,8 +179,8 @@ public:
 	template<typename ExceptionT = InitGuardExceptionT>
 	void assert_before_initialize(string methodName, string className)
 	{
-		LMN_STATIC_ASSERT((std::is_base_of<std::exception, ExceptionT>::value),
-			"assert_before_initialize template arg must be a subclass of std::exception");
+		LMN_STATIC_ASSERT_IS_BASE(std::exception, ExceptionT,
+						"assert_before_initialize template arg");
 
 		LMN_ASSERT_THROW(!isInited,
 			ExceptionT(methodName + " must be called before " + className + " initialization."));
@@ -205,8 +205,8 @@ public:
 	template<typename ExceptionT = InitGuardExceptionT>
 	void assert_after_initialize(string methodName, string className)
 	{
-		LMN_STATIC_ASSERT((std::is_base_of<std::exception, ExceptionT>::value),
-			"assert_after_initialize template arg must be a subclass of std::exception");
+		LMN_STATIC_ASSERT_IS_BASE(std::exception, ExceptionT,
+						"assert_after_initialize template arg");
 
 		LMN_ASSERT_THROW(isInited,
 			ExceptionT(methodName + " must be called after " + className + " initialization."));
@@ -342,8 +342,7 @@ public:
 template<typename Subclass> \
 static std::shared_ptr<Subclass> cast(std::shared_ptr<Superclass> superPtr) \
 { \
-	LMN_STATIC_ASSERT((std::is_base_of<Superclass, Subclass>::value), \
-			"cast() failure: type parameter must be a subclass of " #Superclass); \
+	LMN_STATIC_ASSERT_IS_BASE(Superclass, Subclass, "cast() failure: type parameter"); \
 	return std::dynamic_pointer_cast<Subclass>(superPtr); \
 	/* \
 	auto subPtr = std::dynamic_pointer_cast<Subclass>(superPtr); \
@@ -354,16 +353,15 @@ static std::shared_ptr<Subclass> cast(std::shared_ptr<Superclass> superPtr) \
 }
 
 /**
- * Generate static 'make' member method for an abstract super class
+ * Generate static 'make' member method for an abstract base class
  * The signature will be:
- * shared_ptr<Sub> Super::make<Sub>(ArgT ... args)
+ * shared_ptr<Sub> Base::make<Sub>(ArgT ... args)
  */
 #define GEN_GENERIC_MAKEPTR_STATIC_MEMBER(Superclass) \
 template<typename Subclass, typename ...ArgT> \
 static std::shared_ptr<Subclass> make(ArgT&& ... args) \
 { \
-	LMN_STATIC_ASSERT((std::is_base_of<Superclass, Subclass>::value), \
-			"make() failure: type parameter must be a subclass of " #Superclass); \
+	LMN_STATIC_ASSERT_IS_BASE(Superclass, Subclass, "make() failure: type parameter"); \
 	return std::make_shared<Subclass>(std::forward<ArgT>(args) ...); \
 }
 

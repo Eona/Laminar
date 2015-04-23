@@ -34,6 +34,13 @@ void input_halt()
 #define LMN_STATIC_ASSERT(cond, errmsg) \
 	static_assert(cond, "\n\n\n\n\nLaminar static assert failure:\n" errmsg "\n\n\n\n\n")
 
+/**
+ * @param varname the generated errmsg will be "<varname> must be a subclass of <Baseclass>"
+ */
+#define LMN_STATIC_ASSERT_IS_BASE(Baseclass, Subclass, varname) \
+	static_assert(std::is_base_of<Baseclass, Subclass>::value, \
+		"\n\n\n\n\nLaminar static assert: incompatible inheritance\n" varname " must be a subclass of " #Baseclass "\n\n\n\n\n")
+
 class AssertFailure: public std::exception {
 protected:
     std::string msg;

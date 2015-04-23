@@ -17,8 +17,7 @@ class Network;
 template<typename NetworkT>
 class Composite
 {
-LMN_STATIC_ASSERT((std::is_base_of<Network, NetworkT>::value),
-		"Composite<> template argument must be a subclass of Network type");
+LMN_STATIC_ASSERT_IS_BASE(Network, NetworkT, "Composite template arg");
 
 public:
 	Composite(Layer::Ptr inLayer_) :
