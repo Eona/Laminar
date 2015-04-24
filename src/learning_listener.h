@@ -76,37 +76,4 @@ struct EpochStopCriteria : public StopCriteria
  */
 
 
-/**************************************
-******* Serializer *********
-**************************************/
-// forward decl
-class Network;
-/**
- * Save parameters to disk periodically
- */
-template<typename NetworkT>
-struct Serializer
-{
-LMN_STATIC_ASSERT_IS_BASE(Network, NetworkT, "Serializer template arg");
-
-	virtual ~Serializer() {}
-
-	virtual void save(std::shared_ptr<NetworkT>, LearningState::Ptr) = 0;
-
-	TYPEDEF_PTR(Serializer<NetworkT>);
-
-	GEN_GENERIC_MAKEPTR_STATIC_MEMBER(Serializer<NetworkT>)
-};
-
-/**
- * Doesn't save anything
- */
-template<typename NetworkT>
-struct NullSerializer : public Serializer<NetworkT>
-{
-	void save(std::shared_ptr<NetworkT>, LearningState::Ptr) { }
-
-	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(NullSerializer<NetworkT>)
-};
-
 #endif /* LEARNING_LISTENER_H_ */
