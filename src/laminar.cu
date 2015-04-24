@@ -79,14 +79,6 @@ int main(int argc, char **argv)
 		{-2, -6, 1, 7}
 	};
 
-	EpochIntervalSchedule sch(3, 7);
-	auto state = LearningState::make();
-	state->currentEpoch = 20;
-	DEBUG_MSG(sch.run_validation(state));
-	DEBUG_MSG(sch.run_testing(state));
-
-	exit(0);
-
 //	const int HISTORY = 5;
 	const int INPUT_DIM = 2;
 	const int TARGET_DIM = 4;
@@ -120,10 +112,11 @@ int main(int argc, char **argv)
 
 	auto opm = Optimizer::make<SGD>(2.f);
 	auto eval = Evaluator<VecmatEngine>::make(net);
-	auto stopper = StopCriteria::make<EpochStopCriteria>();
+	auto stopper = StopCriteria::make<MaxEpochStopper>(2, 10);
 	auto ser = NullSerializer::make();
+	auto sched = EpochIntervalSchedule::make(3, 7);
 
-	LearningSession session(net, opm, eval, stopper, ser);
+	LearningSession session(net, opm, eval, sched, stopper, ser);
 
 	session.initialize();
 

@@ -18,10 +18,11 @@ struct LearningState
 {
 	virtual ~LearningState() {}
 
-	int currentEpoch = 0;
-	int totalEpoch;
+	int epoch = 0;
 
-	int currentBatch = 0;
+	int batchInEpoch = 0;
+	int batchAll = 0;
+
 	int batchSize;
 
 	// from network's loss function
@@ -34,6 +35,15 @@ struct LearningState
 	float testingLoss = 0;
 	// percentage accuracy, perplexity, etc.
 	float testingMetric = 0;
+
+	void clear_loss()
+	{
+		trainingLoss = 0;
+		validationLoss = 0;
+		validationMetric = 0;
+		testingLoss = 0;
+		testingMetric = 0;
+	}
 
 	TYPEDEF_PTR(LearningState);
 
@@ -60,12 +70,28 @@ struct StopCriteria
 	GEN_GENERIC_MAKEPTR_STATIC_MEMBER(StopCriteria)
 };
 
-struct EpochStopCriteria : public StopCriteria
+/**
+ * Stop when max number of epochs reached
+ */
+struct MaxEpochStopper : public StopCriteria
 {
+	/**
+	 * Optionally stop when max number of processed batches reached
+	 * Set to 0 to ignore maxBatch
+	 */
+	MaxEpochStopper(int maxEpoch, int maxBatch = 0) :
+		maxEpoch(maxEpoch),
+		maxBatch(maxBatch)
+	{ }
+
 	virtual bool stop_learning(LearningState::Ptr state)
 	{
-		return state->currentEpoch >= state->totalEpoch;
+		return state->epoch >= maxEpoch
+			|| (maxBatch > 0 && state->batchAll >= maxBatch);
 	}
+
+	int maxEpoch;
+	int maxBatch;
 };
 
 /**************************************
@@ -143,15 +169,17 @@ struct EpochIntervalSchedule : public EvalSchedule
 	{
 		if (validationInterval <= 0)
 			return false;
-		return (state->currentEpoch + 1) % validationInterval == 0;
+		return (state->epoch + 1) % validationInterval == 0;
 	}
 
 	virtual bool run_testing(LearningState::Ptr state)
 	{
 		if (testInterval <= 0)
 			return false;
-		return (state->currentEpoch + 1) % testInterval == 0;
+		return (state->epoch + 1) % testInterval == 0;
 	}
+
+	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(EpochIntervalSchedule)
 
 protected:
 	int validationInterval;

@@ -21,6 +21,7 @@ public:
 	LearningSession(Network::Ptr net,
 					Optimizer::Ptr optimizer,
 					EvaluatorBase<>::Ptr evaluator,
+					EvalSchedule::Ptr schedule,
 					StopCriteria::Ptr stopper,
 					SerializerBase::Ptr serializer) :
 		net(net),
@@ -29,6 +30,7 @@ public:
 		state(LearningState::make()),
 		optimizer(optimizer),
 		evaluator(evaluator),
+		schedule(schedule),
 		stopper(stopper),
 		serializer(serializer),
 		initGuard("LearningSession")
@@ -41,12 +43,6 @@ public:
 		this->initialize_impl();
 
 		initGuard.initialize();
-	}
-
-	void init_total_epoch(int totalEpoch)
-	{
-		initGuard.assert_before_initialize("init_total_epoch");
-		state->totalEpoch = totalEpoch;
 	}
 
 	/**
@@ -62,6 +58,8 @@ public:
 		});
 
 		do {
+			DEBUG_MSG("Training loop");
+
 			dataManager->set_learning_stage(LearningStage::Training);
 
 			LMN_ASSERT_THROW(!batchSizeMon.monitor(),
@@ -82,6 +80,12 @@ public:
 				optimizer->update(pc, state);
 			engine->flush_execute();
 
+			// all batches processed so far
+			++ state->batchAll;
+
+			// current batch in the current epoch
+			++ state->batchInEpoch;
+
 			// If we finish another epoch
 			if (dataManager->is_input_eof())
 			{
@@ -89,22 +93,33 @@ public:
 
 				// We do optional validation/testing at the end of each epoch
 				/*********** Validation ***********/
-				evaluator->validation();
-				state->validationLoss = evaluator->validation_loss();
-				state->validationMetric = evaluator->validation_metric();
+				if (schedule->run_validation(state))
+				{
+					evaluator->validation();
+					state->validationLoss = evaluator->validation_loss();
+					state->validationMetric = evaluator->validation_metric();
+				}
 
 				/*********** Testing ***********/
-				evaluator->testing();
-				state->testingLoss = evaluator->testing_loss();
-				state->testingMetric = evaluator->testing_metric();
+				if (schedule->run_testing(state))
+				{
+					evaluator->testing();
+					state->testingLoss = evaluator->testing_loss();
+					state->testingMetric = evaluator->testing_metric();
+				}
 
 				/*********** Save to disk ***********/
 				serializer->save(net, state);
 
+				/*********** Record learning history ***********/
+				// copy and store to history vector
+				learningHistory.push_back(*state);
+
 				/*********** Prepare for the next epoch ***********/
 				dataManager->reset_epoch(LearningStage::Training);
-				++ state->currentEpoch;
-				state->currentBatch = 0; // new epoch reset batch count
+				++ state->epoch;
+				state->batchInEpoch = 0; // new epoch reset batch count
+				state->clear_loss();
 			}
 		}
 		while (!stopper->stop_learning(state));
@@ -134,12 +149,15 @@ protected:
 	LearningState::Ptr state;
 	Optimizer::Ptr optimizer;
 	EvaluatorBase<>::Ptr evaluator;
+	EvalSchedule::Ptr schedule;
 	StopCriteria::Ptr stopper;
 	SerializerBase::Ptr serializer;
 
 	InitializeGuard<LearningException> initGuard;
 
 	vector<ParamContainer::Ptr> paramContainers;
+
+	vector<LearningState> learningHistory;
 };
 
 #endif /* LEARNING_SESSION_H_ */
