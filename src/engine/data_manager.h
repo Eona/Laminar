@@ -21,10 +21,12 @@ public:
 	{}
 
 	/**
-	 * DataManager adds the following two opcodes to your engine
+	 * DataManager adds the following three opcodes to your engine
 	 */
 	static constexpr const char *OP_LOAD_INPUT = "load_input";
 	static constexpr const char *OP_LOAD_TARGET = "load_target";
+	// Increment stream pointer and prepare next batch
+	static constexpr const char *OP_PREPARE_NEXT_BATCH = "prepare_next_batch";
 
 	/**
 	 * Network calls the request to fill in input Tensor
@@ -40,6 +42,15 @@ public:
 	void upload_target(const TensorBase& tensor)
 	{
 		engine->upload(Instruction(OP_LOAD_TARGET, {}, tensor.addr));
+	}
+
+	/**
+	 * Network calls the request to fill in target Tensor
+	 */
+	void upload_prepare_next_batch()
+	{
+		// -1 write addr for null instruction
+		engine->upload(Instruction(OP_PREPARE_NEXT_BATCH, {}, -1));
 	}
 
 	LearningStage learning_stage() const
@@ -115,32 +126,38 @@ public:
 	DataManager(EngineBase::Ptr engine) :
 		DataManagerBase(engine)
 	{
-		auto specificEngine = EngineBase::cast<Engine<DataT>>(this->engine);
+		auto engine_ = EngineBase::cast<Engine<DataT>>(this->engine);
 
-		specificEngine->register_normal_op(DataManagerBase::OP_LOAD_INPUT,
-			[=](vector<DataPtr>, DataPtr write, bool is_initialized) {
-				this->isEpochEnd =
-					this->load_input(write, is_initialized, this->learning_stage());
+		engine_->register_normal_op(DataManagerBase::OP_LOAD_INPUT,
+			[this](vector<DataPtr>, DataPtr write, bool is_initialized) {
+				this->load_input(write, is_initialized, this->learning_stage());
 			}
 		);
 
-		specificEngine->register_normal_op(DataManagerBase::OP_LOAD_TARGET,
-			[=](vector<DataPtr>, DataPtr write, bool is_initialized) {
+		engine_->register_normal_op(DataManagerBase::OP_LOAD_TARGET,
+			[this](vector<DataPtr>, DataPtr write, bool is_initialized) {
 				this->load_target(write, is_initialized, this->learning_stage());
+			}
+		);
+
+		engine_->register_normal_op(DataManagerBase::OP_PREPARE_NEXT_BATCH,
+			[this](vector<DataPtr>, DataPtr write, bool is_initialized) {
+				// update data manager state to be queried in LearningSession
+				this->isEpochEnd =
+						this->prepare_next_batch(this->learning_stage());
 			}
 		);
 	}
 
-	/**
-	 * @param write
-	 * @param is_initialized
-	 * @param stage
-	 * @return isEpochEnd whether we have reached the end of epoch *after* this load
-	 */
-	virtual bool load_input(DataPtr write, bool is_initialized, LearningStage) = 0;
+	virtual void load_input(DataPtr write, bool is_initialized, LearningStage) = 0;
 
 	// A load_target is always followed by a load_input
 	virtual void load_target(DataPtr write, bool is_initialized, LearningStage) = 0;
+
+	/**
+	 * @return isEpochEnd whether we have reached the end of epoch *after* this load
+	 */
+	virtual bool prepare_next_batch(LearningStage) = 0;
 };
 
 #endif /* DATA_MANAGER_H_ */
