@@ -126,7 +126,7 @@ public:
 	 * If template unspecified, return EngineBase::Ptr
 	 */
 	template<typename EngineT = EngineBase>
-	std::shared_ptr<EngineT> get_engine()
+	std::shared_ptr<EngineT> get_engine() const
 	{
 		auto engine_ =
 				std::dynamic_pointer_cast<EngineT>(this->engine);
@@ -139,7 +139,7 @@ public:
 	 * If template unspecified, return DataManagerBase::Ptr
 	 */
 	template<typename DataManagerT = DataManagerBase>
-	std::shared_ptr<DataManagerT> get_data_manager()
+	std::shared_ptr<DataManagerT> get_data_manager() const
 	{
 		auto dataManager_ =
 				std::dynamic_pointer_cast<DataManagerT>(this->dataManager);
@@ -148,7 +148,7 @@ public:
 		return dataManager_;
 	}
 
-	vector<ParamContainer::Ptr> param_containers()
+	vector<ParamContainer::Ptr> param_containers() const
 	{
 		initGuard.assert_after_initialize("get_param_containers");
 		return this->paramContainers;

@@ -177,7 +177,7 @@ public:
 	 * @param className to override the className given in ctor
 	 */
 	template<typename ExceptionT = InitGuardExceptionT>
-	void assert_before_initialize(string methodName, string className)
+	void assert_before_initialize(string methodName, string className) const
 	{
 		LMN_STATIC_ASSERT_IS_BASE(std::exception, ExceptionT,
 						"assert_before_initialize template arg");
@@ -191,7 +191,7 @@ public:
 	 * @param className use the one provided in ctor
 	 */
 	template<typename ExceptionT = InitGuardExceptionT>
-	void assert_before_initialize(string methodName)
+	void assert_before_initialize(string methodName) const
 	{
 		assert_before_initialize<ExceptionT>(methodName, this->className);
 	}
@@ -203,7 +203,7 @@ public:
 	 * @param className to override the className given in ctor
 	 */
 	template<typename ExceptionT = InitGuardExceptionT>
-	void assert_after_initialize(string methodName, string className)
+	void assert_after_initialize(string methodName, string className) const
 	{
 		LMN_STATIC_ASSERT_IS_BASE(std::exception, ExceptionT,
 						"assert_after_initialize template arg");
@@ -217,7 +217,7 @@ public:
 	 * @param className use the one provided in ctor
 	 */
 	template<typename ExceptionT = InitGuardExceptionT>
-	void assert_after_initialize(string methodName)
+	void assert_after_initialize(string methodName) const
 	{
 		assert_after_initialize<ExceptionT>(methodName, this->className);
 	}
