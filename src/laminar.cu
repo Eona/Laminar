@@ -36,29 +36,19 @@ FakeRand& rand_target = FakeRand::instance_target();
 #define conn_const Connection::make<ConstantConnection>
 #define conn_gated Connection::make<GatedConnection>
 
-struct Dudu
+template<typename EngineT>
+struct PrintGradient : public Observer
 {
-	Dudu() :
-		initGuard("Dudu")
-	{ }
-
-	void initialize()
+	void observe(Network::Ptr net, LearningState::Ptr state)
 	{
-		initGuard.initialize(false);
+		if (state->batchInEpoch == 0)
+		{
+			auto params = net->param_containers();
+			DEBUG_TITLE("param gradient");
+			for (int i = 0; i < params.size(); ++i)
+				DEBUG_MSG(*net->get_engine<EngineT>()->read_memory(params[i]->param_gradient(0)));
+		}
 	}
-
-	void before_init()
-	{
-		initGuard.assert_before_initialize<ComponentException>("before_dudu");
-	}
-
-	void after_init()
-	{
-		initGuard.assert_after_initialize<EngineException>("after_dudu");
-	}
-
-private:
-	InitializeGuard<LaminarException> initGuard;
 };
 
 int main(int argc, char **argv)
@@ -126,13 +116,14 @@ int main(int argc, char **argv)
 	net->new_connection<FullConnection>(l3, lloss);
 	net->add_layer(lloss);
 
-	auto opm = Optimizer::make<SGD>(0.8);
+	auto opm = Optimizer::make<SGD>(0.3);
 	auto eval = Evaluator<VecmatEngine>::make(net);
 	auto stopper = StopCriteria::make<MaxEpochStopper>(100);
 	auto ser = NullSerializer::make();
 	auto sched = EpochIntervalSchedule::make(1, 1);
 
-	LearningSession session(net, opm, eval, sched, stopper, ser);
+	LearningSession session(net, opm, eval, sched, stopper, ser,
+			std::make_shared<PrintGradient<VecmatEngine>>());
 
 	session.initialize();
 

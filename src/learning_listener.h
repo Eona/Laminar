@@ -197,4 +197,33 @@ protected:
 	int testInterval;
 };
 
+/**************************************
+******* Observer *********
+**************************************/
+/**
+ * Observe the network at every minibatch update
+ */
+// forward decl
+class Network;
+struct Observer
+{
+	virtual ~Observer() {}
+
+	virtual void observe(std::shared_ptr<Network>, LearningState::Ptr) = 0;
+
+	TYPEDEF_PTR(Observer);
+
+	GEN_GENERIC_MAKEPTR_STATIC_MEMBER(Observer)
+};
+
+/**
+ * Do-nothing observor
+ */
+struct NullObserver : public Observer
+{
+	void observe(std::shared_ptr<Network>, LearningState::Ptr) { }
+
+	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(NullObserver)
+};
+
 #endif /* LEARNING_LISTENER_H_ */

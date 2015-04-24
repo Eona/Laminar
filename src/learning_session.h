@@ -23,7 +23,8 @@ public:
 					EvaluatorBase<>::Ptr evaluator,
 					EvalSchedule::Ptr schedule,
 					StopCriteria::Ptr stopper,
-					SerializerBase::Ptr serializer) :
+					SerializerBase::Ptr serializer,
+					Observer::Ptr observer) :
 		net(net),
 		dataManager(net->get_data_manager()),
 		engine(net->get_engine()),
@@ -33,6 +34,7 @@ public:
 		schedule(schedule),
 		stopper(stopper),
 		serializer(serializer),
+		observer(observer),
 		initGuard("LearningSession")
 	{ }
 
@@ -75,6 +77,9 @@ public:
 
 			net->execute("forward");
 			net->execute("backward");
+
+			/********* optionally observe network at every minibatch ********/
+			observer->observe(net, state);
 
 			/*********** Update state after this minibatch ***********/
 			// all batches processed so far
@@ -169,6 +174,7 @@ protected:
 	EvalSchedule::Ptr schedule;
 	StopCriteria::Ptr stopper;
 	SerializerBase::Ptr serializer;
+	Observer::Ptr observer;
 
 	InitializeGuard<LearningException> initGuard;
 
