@@ -146,7 +146,7 @@ protected:
 	{
 		net->execute("initialize");
 
-		this->paramContainers = net->get_param_containers();
+		this->paramContainers = net->param_containers();
 
 		optimizer->init_engine(engine);
 		optimizer->initialize();

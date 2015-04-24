@@ -148,7 +148,7 @@ public:
 		return dataManager_;
 	}
 
-	vector<ParamContainer::Ptr> get_param_containers()
+	vector<ParamContainer::Ptr> param_containers()
 	{
 		initGuard.assert_after_initialize("get_param_containers");
 		return this->paramContainers;

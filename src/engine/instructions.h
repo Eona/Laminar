@@ -92,7 +92,7 @@ struct OpContext : OpContextBase
 		contextArgPack(std::make_tuple(args...))
 	{ }
 
-	std::tuple<ContextArgT...>& get_context_arg_pack()
+	std::tuple<ContextArgT...>& context_arg_pack()
 	{
 		return this->contextArgPack;
 	}

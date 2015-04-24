@@ -136,7 +136,7 @@ int main(int argc, char **argv)
 
 	session.initialize();
 
-	auto params = net->get_param_containers();
+	auto params = net->param_containers();
 	DEBUG_MSG(*engine->read_memory(params[0]->param_value_ptr(0)));
 
 	session.train();

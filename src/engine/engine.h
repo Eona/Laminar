@@ -529,7 +529,7 @@ public:
 			LMN_ASSERT_NULLPTR(context,
 				EngineException("OpContext fails to supply the correct number/types of extra context parameters"));
 
-			auto contextArgPack = context->get_context_arg_pack();
+			auto contextArgPack = context->context_arg_pack();
 
 			return [=](vector<DataPtr> reads, DataPtr write, bool is_initialized)
 			{
@@ -593,7 +593,7 @@ public:
 
 				// Get the context directly
 				std::tuple<Dimension> dim =
-					OpContextBase::cast<Dimension>(instr.context)->get_context_arg_pack();
+					OpContextBase::cast<Dimension>(instr.context)->context_arg_pack();
 
 				routine->executables.push_back([=]() {
 					if (!this->memoryPool.is_initialized(writeAddr))
