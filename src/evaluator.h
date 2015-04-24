@@ -122,7 +122,7 @@ public:
 
 	FloatT network_loss()
 	{
-		return engine->scalor_at(net->get_total_loss());
+		return engine->scalor_at(net->loss_value());
 	}
 
 	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(Evaluator)

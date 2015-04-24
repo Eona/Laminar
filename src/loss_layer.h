@@ -23,14 +23,19 @@ public:
 
 	virtual ~LossLayer() {};
 
-	virtual Scalor::Ptr total_loss()
+	virtual Scalor& loss_value() const
 	{
-		return this->totalLoss;
+		return *this->lossValue;
+	}
+
+	virtual Scalor::Ptr loss_value_ptr() const
+	{
+		return this->lossValue;
 	}
 
 	virtual void forward_impl(Tensor& inValue, Tensor& outValue)
 	{
-		*totalLoss += loss_forward_impl(inValue, *targetValues[frame()]);
+		*lossValue += loss_forward_impl(inValue, *targetValues[frame()]);
 	}
 
 	virtual void backward_impl(Tensor& outValue, Tensor& outGradient, Tensor& inValue, Tensor& inGradient)
@@ -44,7 +49,7 @@ public:
 		Layer::zero_clear_invalue();
 		Layer::zero_clear_ingradient();
 
-		lmn::zero_clear(*totalLoss);
+		lmn::zero_clear(*lossValue);
 	}
 
 	TensorBase& target_value(int t)
@@ -72,7 +77,7 @@ public:
 	}
 
 protected:
-	Scalor::Ptr totalLoss;
+	Scalor::Ptr lossValue;
 	/**
 	 * Here TensorBase::Ptr, not Tensor::Ptr because the targetValue might be Scalor:
 	 * for one-hot encoding, we encapsulate 'int' class label in a Scalor (hackish)
@@ -99,7 +104,7 @@ protected:
 		Layer::initialize_impl_invalue();
 		Layer::initialize_impl_ingradient();
 
-		this->totalLoss = Scalor::make(engine);
+		this->lossValue = Scalor::make(engine);
 	}
 
 	/**

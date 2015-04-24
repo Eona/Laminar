@@ -52,7 +52,7 @@ inline void gradient_check(Network& net,
 	// loss "tensor" is always a 1x1 Scalor
 	auto read_loss = [&]() -> FloatT
 	{
-		return engine->scalor_at(net.lossLayer->total_loss());
+		return engine->scalor_at(net.loss_value());
 	};
 
 	vector<Tensor::Ptr> analyticGrads;
