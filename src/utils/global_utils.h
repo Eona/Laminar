@@ -279,5 +279,15 @@ private:
 		return func(std::get<UnpackS>(args) ...);
 	}
 };
+
+/**
+ * Enum class to its underlying integral type
+ */
+template<typename E>
+constexpr auto enum2integral(E e) -> typename std::underlying_type<E>::type
+{
+   return static_cast<typename std::underlying_type<E>::type>(e);
+}
+
 } // end of anonymous namespace
 #endif /* UTILS_H_ */

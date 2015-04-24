@@ -13,19 +13,19 @@ using std::default_random_engine;
 using std::uniform_real_distribution;
 
 // Set the same seed for reproducibility
-#define DEBUG_SEED 388011773L
+static constexpr const ulong DEBUG_SEED = 388011773L;
 
 template<typename FloatT>
 class UniformRand
 {
 public:
-	UniformRand(float low, float high, ulong initialSeed)
+	UniformRand(FloatT low, FloatT high, ulong initialSeed)
 	: seed(initialSeed),
 	  generator(seed),
 	  distribution(uniform_real_distribution<FloatT>{low, high})
 	{}
 
-	UniformRand(float low, float high)
+	UniformRand(FloatT low, FloatT high)
 	: UniformRand(low, high, generate_seed()) {}
 
 	FloatT operator() ()

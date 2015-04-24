@@ -362,6 +362,20 @@ public:
     }
 };
 
+class DataException: public LaminarException
+{
+public:
+    DataException(const std::string& msg):
+    	LaminarException(msg)
+	{}
+
+    virtual std::string error_header() const
+    {
+    	return "Data error";
+    }
+};
+
+
 class UnimplementedException: public LaminarException
 {
 public:
