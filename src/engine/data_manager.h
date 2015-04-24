@@ -59,11 +59,11 @@ public:
 
 	/**
 	 * Set by load_input()
-	 * @return true if input reaches EOF (signals end of epoch).
+	 * @return true if this epoch ends after this batch.
 	 */
-	bool is_input_eof() const
+	bool is_epoch_end() const
 	{
-		return this->inputEOF;
+		return this->isEpochEnd;
 	}
 
 	virtual Dimension input_dim() const = 0;
@@ -100,7 +100,7 @@ protected:
 	/**
 	 * If input/target stream has ended (current epoch finishes)
 	 */
-	bool inputEOF = false;
+	bool isEpochEnd = false;
 
 private:
 	LearningStage learnStage;
@@ -119,7 +119,7 @@ public:
 
 		specificEngine->register_normal_op(DataManagerBase::OP_LOAD_INPUT,
 			[=](vector<DataPtr>, DataPtr write, bool is_initialized) {
-				this->inputEOF =
+				this->isEpochEnd =
 					this->load_input(write, is_initialized, this->learning_stage());
 			}
 		);
@@ -135,7 +135,7 @@ public:
 	 * @param write
 	 * @param is_initialized
 	 * @param stage
-	 * @return inputEOF whether we have reached the end of epoch *after* this load
+	 * @return isEpochEnd whether we have reached the end of epoch *after* this load
 	 */
 	virtual bool load_input(DataPtr write, bool is_initialized, LearningStage) = 0;
 

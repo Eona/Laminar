@@ -87,7 +87,7 @@ public:
 			++ state->batchInEpoch;
 
 			// If we finish another epoch
-			if (dataManager->is_input_eof())
+			if (dataManager->is_epoch_end())
 			{
 				state->trainingLoss = evaluator->network_loss();
 
