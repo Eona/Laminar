@@ -55,13 +55,16 @@ public:
 	/**
 	 * Reset the data stream to the beginning for a new epoch
 	 */
-	virtual void start_new_epoch() = 0;
+	virtual void reset_epoch(LearningStage) = 0;
 
 	/**
-	 * Return current epoch number.
-	 * Should update at the start of every new epoch
+	 * Set by load_input()
+	 * @return true if input reaches EOF (signals end of epoch).
 	 */
-	virtual int current_epoch() = 0;
+	bool is_input_eof() const
+	{
+		return this->inputEOF;
+	}
 
 	virtual Dimension input_dim() const = 0;
 
@@ -94,6 +97,11 @@ public:
 protected:
 	EngineBase::Ptr engine;
 
+	/**
+	 * If input/target stream has ended (current epoch finishes)
+	 */
+	bool inputEOF = false;
+
 private:
 	LearningStage learnStage;
 };
@@ -111,7 +119,8 @@ public:
 
 		specificEngine->register_normal_op(DataManagerBase::OP_LOAD_INPUT,
 			[=](vector<DataPtr>, DataPtr write, bool is_initialized) {
-				this->load_input(write, is_initialized, this->learning_stage());
+				this->inputEOF =
+					this->load_input(write, is_initialized, this->learning_stage());
 			}
 		);
 
@@ -122,9 +131,16 @@ public:
 		);
 	}
 
-	virtual void load_input(DataPtr write, bool is_initialized, LearningStage stage) = 0;
+	/**
+	 * @param write
+	 * @param is_initialized
+	 * @param stage
+	 * @return inputEOF whether we have reached the end of epoch *after* this load
+	 */
+	virtual bool load_input(DataPtr write, bool is_initialized, LearningStage) = 0;
 
-	virtual void load_target(DataPtr write, bool is_initialized, LearningStage stage) = 0;
+	// A load_target is always followed by a load_input
+	virtual void load_target(DataPtr write, bool is_initialized, LearningStage) = 0;
 };
 
 #endif /* DATA_MANAGER_H_ */

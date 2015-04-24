@@ -16,13 +16,15 @@ class EvaluatorBase
 {
 public:
 	EvaluatorBase(Network::Ptr net) :
-		net(net)
+		net(net),
+		dataManager(net->get_data_manager())
 	{}
 
 	virtual ~EvaluatorBase() {}
 
-	virtual FloatT net_loss() = 0;
+	virtual FloatT network_loss() = 0;
 
+/*
 	void set_learning_stage(LearningStage dataStage)
 	{
 		net->get_data_manager()->set_learning_stage(dataStage);
@@ -33,14 +35,19 @@ public:
 		return net->get_data_manager()->learning_stage();
 	}
 
+*/
 	void validation()
 	{
-		LMN_ASSERT_THROW(learning_stage() == LearningStage::Validation,
-			LearningException("LearningStage must be 'Validation' "
-				"for Evaluator::validation(). Use set_learning_stage() to switch."));
+//		LMN_ASSERT_THROW(learning_stage() == LearningStage::Validation,
+//			LearningException("LearningStage must be 'Validation' "
+//				"for Evaluator::validation(). Use set_learning_stage() to switch."));
+		dataManager->set_learning_stage(LearningStage::Validation);
 
-		this->validationMetric = this->validation_impl();
-		this->validationLoss = this->net_loss();
+		this->validationMetric = this->validation_impl(net);
+		this->validationLoss = this->network_loss();
+
+		// Reset the validation stream
+		dataManager->reset_epoch(LearningStage::Validation);
 	}
 
 	FloatT validation_loss() const
@@ -55,12 +62,16 @@ public:
 
 	void testing()
 	{
-		LMN_ASSERT_THROW(learning_stage() == LearningStage::Testing,
-			LearningException("LearningStage must be 'Testing' "
-				"for Evaluator::testing(). Use set_learning_stage() to switch."));
+//		LMN_ASSERT_THROW(learning_stage() == LearningStage::Testing,
+//			LearningException("LearningStage must be 'Testing' "
+//				"for Evaluator::testing(). Use set_learning_stage() to switch."));
+		dataManager->set_learning_stage(LearningStage::Testing);
 
-		this->testingMetric = this->testing_impl();
-		this->testingLoss = this->net_loss();
+		this->testingMetric = this->testing_impl(net);
+		this->testingLoss = this->network_loss();
+
+		// Reset the testing stream
+		dataManager->reset_epoch(LearningStage::Testing);
 	}
 
 	FloatT testing_loss() const
@@ -76,21 +87,23 @@ public:
 	TYPEDEF_PTR(EvaluatorBase);
 
 protected:
-	Network::Ptr net;
-
 	/**
 	 * Return a validation metric
 	 * NOTE not necessary the same as validation loss.
 	 * E.g. a metric can be percentage accuracy.
 	 */
-	virtual FloatT validation_impl() = 0;
+	virtual FloatT validation_impl(Network::Ptr) = 0;
 
 	/**
 	 * Return a testing metric
 	 * NOTE not necessary the same as testing loss.
 	 * E.g. a metric can be percentage accuracy.
 	 */
-	virtual FloatT testing_impl() = 0;
+	virtual FloatT testing_impl(Network::Ptr) = 0;
+
+protected:
+	Network::Ptr net;
+	DataManagerBase::Ptr dataManager;
 
 private:
 	FloatT validationLoss;
@@ -117,7 +130,7 @@ public:
 
 	virtual ~Evaluator() {}
 
-	FloatT net_loss()
+	FloatT network_loss()
 	{
 		return engine->scalor_at(net->get_total_loss());
 	}
@@ -130,12 +143,12 @@ protected:
 	/**
 	 * Overridable default implementation
 	 */
-	virtual FloatT validation_impl()
+	virtual FloatT validation_impl(Network::Ptr net)
 	{
 		return 0; // FIXME
 	}
 
-	virtual FloatT testing_impl()
+	virtual FloatT testing_impl(Network::Ptr net)
 	{
 		return 0;
 	}

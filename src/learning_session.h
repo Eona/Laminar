@@ -68,13 +68,8 @@ public:
 			return dataManager->batch_size();
 		});
 
-		// Monitor dataManager current_epoch change
-		ChangeMonitor<int> currentEpochMon([this]() {
-			return dataManager->current_epoch();
-		});
-
 		do {
-			evaluator->set_learning_stage(LearningStage::Training);
+			dataManager->set_learning_stage(LearningStage::Training);
 
 			LMN_ASSERT_THROW(!batchSizeMon.monitor(),
 				UnimplementedException(
@@ -94,30 +89,29 @@ public:
 				optimizer->update(pc, state);
 			engine->flush_execute();
 
-			++ state->currentBatch;
-			state->currentEpoch = dataManager->current_epoch();
-
 			// If we finish another epoch
-			if (currentEpochMon.monitor())
+			if (dataManager->is_input_eof())
 			{
+				++ state->currentEpoch;
 				state->currentBatch = 0; // new epoch reset batch count
-				state->trainingLoss = evaluator->net_loss();
+				state->trainingLoss = evaluator->network_loss();
 
 				// We do optional validation/testing at the end of each epoch
 				/*********** Validation ***********/
-				evaluator->set_learning_stage(LearningStage::Validation);
 				evaluator->validation();
 				state->validationLoss = evaluator->validation_loss();
 				state->validationMetric = evaluator->validation_metric();
 
 				/*********** Testing ***********/
-				evaluator->set_learning_stage(LearningStage::Testing);
 				evaluator->testing();
 				state->testingLoss = evaluator->testing_loss();
 				state->testingMetric = evaluator->testing_metric();
 
-				// Save parameters to disk
+				/*********** Save to disk ***********/
 				serializer->save(net, state);
+
+				/*********** Prepare for the next epoch ***********/
+				dataManager->reset_epoch(LearningStage::Training);
 			}
 		}
 		while (!stopper->stop_learning(state));
