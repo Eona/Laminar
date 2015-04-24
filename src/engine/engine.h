@@ -31,16 +31,43 @@ public:
 
 	DataPtr operator[](int i)
 	{
+		if (i < 0)
+		{
+			if (i == Instruction::NULL_ADDR)
+				return DataPtr();
+			else
+				throw EngineException(
+					"Invalid negative memory pool address in 'operator[]': " + to_str(i));
+		}
+
 		return memory[i];
 	}
 
-	bool is_initialized(int i)
+	bool is_initialized(int i) const
 	{
+		if (i < 0)
+		{
+			if (i == Instruction::NULL_ADDR)
+				return false;
+			else
+				throw EngineException(
+					"Invalid negative memory pool address in 'is_initialized': " + to_str(i));
+		}
+
 		return this->initialized[i];
 	}
 
 	void set_initialized(int i, bool val = true)
 	{
+		if (i < 0)
+		{
+			if (i == Instruction::NULL_ADDR)
+				return;
+			else
+				throw EngineException(
+					"Invalid negative memory pool address in 'set_initialized': " + to_str(i));
+		}
+
 		this->initialized[i] = val;
 	}
 

@@ -112,6 +112,9 @@ private:
 
 struct Instruction
 {
+	// writeAddr set to -1 for instruction that doesn't change the memory pool
+	static const constexpr int NULL_ADDR = -1;
+
 	Instruction(Opcode code_, vector<int> readAddrs_, int writeAddr_,
 			OpContextBase::Ptr context_ = nullptr) :
 		opcode(code_), readAddrs(readAddrs_), writeAddr(writeAddr_),
