@@ -79,6 +79,14 @@ int main(int argc, char **argv)
 		{-2, -6, 1, 7}
 	};
 
+	EpochIntervalSchedule sch(3, 7);
+	auto state = LearningState::make();
+	state->currentEpoch = 20;
+	DEBUG_MSG(sch.run_validation(state));
+	DEBUG_MSG(sch.run_testing(state));
+
+	exit(0);
+
 //	const int HISTORY = 5;
 	const int INPUT_DIM = 2;
 	const int TARGET_DIM = 4;

@@ -117,49 +117,44 @@ struct NoValidationSchedule : public virtual EvalSchedule
 {
 	virtual ~NoValidationSchedule() {}
 
-	virtual bool run_valiation(LearningState::Ptr)
+	virtual bool run_validation(LearningState::Ptr)
 	{
 		return false;
 	}
 };
 
 /**
- * Validate once every n epoch
+ * Validate/test once every n epoch
  */
-struct IntervalValidationSchedule : public virtual EvalSchedule
+struct EpochIntervalSchedule : public EvalSchedule
 {
-	IntervalValidationSchedule(int validationInterval) :
-			validationInterval(validationInterval)
-	{}
-
-	virtual ~IntervalValidationSchedule() {}
-
-	virtual bool run_valiation(LearningState::Ptr state)
-	{
-		return (state->currentEpoch + 1) % validationInterval == 0;
-	}
-
-protected:
-	int validationInterval;
-};
-
-/**
- * Test once every n epoch
- */
-struct IntervalTestSchedule : public virtual EvalSchedule
-{
-	IntervalTestSchedule(int testInterval) :
+	/**
+	 * @param validationInterval if 0, never validate
+	 * @param testInterval if 0, never test
+	 */
+	EpochIntervalSchedule(int validationInterval = 0, int testInterval = 0) :
+			validationInterval(validationInterval),
 			testInterval(testInterval)
 	{}
 
-	virtual ~IntervalTestSchedule() {}
+	virtual ~EpochIntervalSchedule() {}
+
+	virtual bool run_validation(LearningState::Ptr state)
+	{
+		if (validationInterval <= 0)
+			return false;
+		return (state->currentEpoch + 1) % validationInterval == 0;
+	}
 
 	virtual bool run_testing(LearningState::Ptr state)
 	{
+		if (testInterval <= 0)
+			return false;
 		return (state->currentEpoch + 1) % testInterval == 0;
 	}
 
 protected:
+	int validationInterval;
 	int testInterval;
 };
 
