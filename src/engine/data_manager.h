@@ -25,8 +25,6 @@ public:
 	 */
 	static constexpr const char *OP_LOAD_INPUT = "load_input";
 	static constexpr const char *OP_LOAD_TARGET = "load_target";
-	// Increment stream pointer and prepare next batch
-	static constexpr const char *OP_PREPARE_NEXT_BATCH = "prepare_next_batch";
 
 	/**
 	 * Network calls the request to fill in input Tensor
@@ -44,15 +42,6 @@ public:
 		engine->upload(Instruction(OP_LOAD_TARGET, {}, tensor.addr));
 	}
 
-	/**
-	 * Network calls the request to fill in target Tensor
-	 */
-	void upload_prepare_next_batch()
-	{
-		// -1 write addr for null instruction
-		engine->upload(Instruction(OP_PREPARE_NEXT_BATCH, {}, -1));
-	}
-
 	LearningStage learning_stage() const
 	{
 		return this->learnStage;
@@ -63,18 +52,28 @@ public:
 		this->learnStage = newStage;
 	}
 
+	void prepare_next_batch()
+	{
+		this->isEndOfEpoch[enum2integral(learnStage)] =
+				this->prepare_next_batch_impl(this->learnStage);
+	}
+
 	/**
 	 * Reset the data stream to the beginning for a new epoch
 	 */
-	virtual void reset_epoch(LearningStage) = 0;
+	void reset_epoch()
+	{
+		this->reset_epoch_impl(learnStage);
+		this->isEndOfEpoch[enum2integral(learnStage)] = false;
+	}
 
 	/**
 	 * Set by load_input()
 	 * @return true if this epoch ends after this batch.
 	 */
-	bool is_epoch_end() const
+	bool is_end_of_epoch() const
 	{
-		return this->isEpochEnd;
+		return this->isEndOfEpoch[enum2integral(learnStage)];
 	}
 
 	virtual Dimension input_dim() const = 0;
@@ -109,12 +108,25 @@ protected:
 	EngineBase::Ptr engine;
 
 	/**
-	 * If input/target stream has ended (current epoch finishes)
+	 * Derived should implement this
+	 * @return isEpochEnd whether we have reached the end of epoch *after* this load
 	 */
-	bool isEpochEnd = false;
+	virtual bool prepare_next_batch_impl(LearningStage) = 0;
+
+	/**
+	 * Derived should implement this
+	 * Reset the data stream to the beginning for a new epoch
+	 */
+	virtual void reset_epoch_impl(LearningStage) = 0;
 
 private:
 	LearningStage learnStage;
+	/**
+	 * If input/target stream has ended (current epoch finishes)
+	 * For three learning stages:
+	 */
+	std::array<bool, 3> isEndOfEpoch;
+
 };
 
 template<typename DataT>
@@ -129,22 +141,22 @@ public:
 		auto engine_ = EngineBase::cast<Engine<DataT>>(this->engine);
 
 		engine_->register_normal_op(DataManagerBase::OP_LOAD_INPUT,
-			[this](vector<DataPtr>, DataPtr write, bool is_initialized) {
+			[this](vector<DataPtr>, DataPtr write, bool is_initialized)
+			{
+				LMN_ASSERT_THROW(!this->is_end_of_epoch(),
+					DataException("load_input failure because end of epoch reached."));
+
 				this->load_input(write, is_initialized, this->learning_stage());
 			}
 		);
 
 		engine_->register_normal_op(DataManagerBase::OP_LOAD_TARGET,
-			[this](vector<DataPtr>, DataPtr write, bool is_initialized) {
-				this->load_target(write, is_initialized, this->learning_stage());
-			}
-		);
+			[this](vector<DataPtr>, DataPtr write, bool is_initialized)
+			{
+				LMN_ASSERT_THROW(!this->is_end_of_epoch(),
+					DataException("load_target failure because end of epoch reached."));
 
-		engine_->register_normal_op(DataManagerBase::OP_PREPARE_NEXT_BATCH,
-			[this](vector<DataPtr>, DataPtr write, bool is_initialized) {
-				// update data manager state to be queried in LearningSession
-				this->isEpochEnd =
-						this->prepare_next_batch(this->learning_stage());
+				this->load_target(write, is_initialized, this->learning_stage());
 			}
 		);
 	}
@@ -153,11 +165,6 @@ public:
 
 	// A load_target is always followed by a load_input
 	virtual void load_target(DataPtr write, bool is_initialized, LearningStage) = 0;
-
-	/**
-	 * @return isEpochEnd whether we have reached the end of epoch *after* this load
-	 */
-	virtual bool prepare_next_batch(LearningStage) = 0;
 };
 
 #endif /* DATA_MANAGER_H_ */

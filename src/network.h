@@ -36,7 +36,6 @@ public:
 		networkMethodMap["zero_clear"] = &Network::zero_clear;
 		networkMethodMap["load_input"] = &Network::load_input;
 		networkMethodMap["load_target"] = &Network::load_target;
-		networkMethodMap["prepare_next_batch"] = &Network::prepare_next_batch;
 	}
 
 	virtual ~Network() {};
@@ -261,14 +260,6 @@ protected:
 	 * Asks dataManager to fill in target
 	 */
 	virtual void load_target() = 0;
-
-	/**
-	 * Should be executed after load_target()
-	 */
-	virtual void prepare_next_batch()
-	{
-		dataManager->upload_prepare_next_batch();
-	}
 
 	/**
 	 * Main forward propagation logic
