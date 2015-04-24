@@ -7,7 +7,7 @@
 
 #include "utils/laminar_utils.h"
 
-enum class LearningStage
+enum class LearningPhase
 {
 	Training,
 	Validation,

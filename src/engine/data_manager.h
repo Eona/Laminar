@@ -14,7 +14,7 @@ class DataManagerBase
 public:
 	DataManagerBase(EngineBase::Ptr engine_) :
 		engine(engine_),
-		learnStage(LearningStage::Training)
+		learnPhase(LearningPhase::Training)
 	{ }
 
 	virtual ~DataManagerBase()
@@ -42,20 +42,20 @@ public:
 		engine->upload(Instruction(OP_LOAD_TARGET, {}, tensor.addr));
 	}
 
-	LearningStage learning_stage() const
+	LearningPhase learning_phase() const
 	{
-		return this->learnStage;
+		return this->learnPhase;
 	}
 
-	void set_learning_stage(LearningStage newStage)
+	void set_learning_phase(LearningPhase newPhase)
 	{
-		this->learnStage = newStage;
+		this->learnPhase = newPhase;
 	}
 
 	void prepare_next_batch()
 	{
-		this->isEndOfEpoch[enum2integral(learnStage)] =
-				this->prepare_next_batch_impl(this->learnStage);
+		this->isEndOfEpoch[enum2integral(learnPhase)] =
+				this->prepare_next_batch_impl(this->learnPhase);
 	}
 
 	/**
@@ -63,8 +63,8 @@ public:
 	 */
 	void reset_epoch()
 	{
-		this->reset_epoch_impl(learnStage);
-		this->isEndOfEpoch[enum2integral(learnStage)] = false;
+		this->reset_epoch_impl(learnPhase);
+		this->isEndOfEpoch[enum2integral(learnPhase)] = false;
 	}
 
 	/**
@@ -73,7 +73,7 @@ public:
 	 */
 	bool is_end_of_epoch() const
 	{
-		return this->isEndOfEpoch[enum2integral(learnStage)];
+		return this->isEndOfEpoch[enum2integral(learnPhase)];
 	}
 
 	virtual Dimension input_dim() const = 0;
@@ -111,19 +111,19 @@ protected:
 	 * Derived should implement this
 	 * @return isEpochEnd whether we have reached the end of epoch *after* this load
 	 */
-	virtual bool prepare_next_batch_impl(LearningStage) = 0;
+	virtual bool prepare_next_batch_impl(LearningPhase) = 0;
 
 	/**
 	 * Derived should implement this
 	 * Reset the data stream to the beginning for a new epoch
 	 */
-	virtual void reset_epoch_impl(LearningStage) = 0;
+	virtual void reset_epoch_impl(LearningPhase) = 0;
 
 private:
-	LearningStage learnStage;
+	LearningPhase learnPhase;
 	/**
 	 * If input/target stream has ended (current epoch finishes)
-	 * For three learning stages:
+	 * For three learning phases:
 	 */
 	std::array<bool, 3> isEndOfEpoch;
 
@@ -146,7 +146,7 @@ public:
 				LMN_ASSERT_THROW(!this->is_end_of_epoch(),
 					DataException("load_input failure because end of epoch reached."));
 
-				this->load_input(write, is_initialized, this->learning_stage());
+				this->load_input(write, is_initialized, this->learning_phase());
 			}
 		);
 
@@ -156,15 +156,15 @@ public:
 				LMN_ASSERT_THROW(!this->is_end_of_epoch(),
 					DataException("load_target failure because end of epoch reached."));
 
-				this->load_target(write, is_initialized, this->learning_stage());
+				this->load_target(write, is_initialized, this->learning_phase());
 			}
 		);
 	}
 
-	virtual void load_input(DataPtr write, bool is_initialized, LearningStage) = 0;
+	virtual void load_input(DataPtr write, bool is_initialized, LearningPhase) = 0;
 
 	// A load_target is always followed by a load_input
-	virtual void load_target(DataPtr write, bool is_initialized, LearningStage) = 0;
+	virtual void load_target(DataPtr write, bool is_initialized, LearningPhase) = 0;
 };
 
 #endif /* DATA_MANAGER_H_ */

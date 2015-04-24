@@ -24,7 +24,7 @@ inline void gradient_check(Network& net,
 {
 	auto engine = net.get_engine<EngineT>();
 	auto dataman = net.get_data_manager<DataManagerT>();
-	dataman->set_learning_stage(LearningStage::Training);
+	dataman->set_learning_phase(LearningPhase::Training);
 
 	int historyLength = 1;
 //	 Save the full gradient history for debugging ONLY

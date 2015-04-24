@@ -20,17 +20,17 @@ public:
 		DataManager<float>(engine)
 	{}
 
-	void load_input(DataPtr write, bool is_initialized, LearningStage)
+	void load_input(DataPtr write, bool is_initialized, LearningPhase)
 	{
 		*write = input_rand();
 	}
 
-	void load_target(DataPtr write, bool is_initialized, LearningStage)
+	void load_target(DataPtr write, bool is_initialized, LearningPhase)
 	{
 		*write = target_rand();
 	}
 
-	bool prepare_next_batch_impl(LearningStage)
+	bool prepare_next_batch_impl(LearningPhase)
 	{
 		throw UnimplementedException("DummyDataManger cannot prepare_next_batch");
 	}
@@ -50,7 +50,7 @@ public:
 		return 1;
 	}
 
-	void reset_epoch_impl(LearningStage)
+	void reset_epoch_impl(LearningPhase)
 	{
 		input_rand.reset_seq();
 		target_rand.reset_seq();

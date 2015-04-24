@@ -38,15 +38,15 @@ public:
 		indexer(Dimension { inputDim, batchSize }) // for gradient check debugging
 	{
 		// Generate training/validation/testing inputs and targets
-		for (int stage = 0; stage < STAGE_N; ++stage)
+		for (int phase = 0; phase < STAGE_N; ++phase)
 		{
-			for (int ssize = 0; ssize < streamSizes[stage]; ++ssize)
+			for (int ssize = 0; ssize < streamSizes[phase]; ++ssize)
 			{
 				Vecmatf inputMat(inputDim, batchSize, [this](int, int) -> float {
 							return this->unirand();
 						});
 
-				inputStreams[stage].push_back(inputMat);
+				inputStreams[phase].push_back(inputMat);
 
 				Vecmatf targetMat(targetDim, batchSize);
 
@@ -58,48 +58,48 @@ public:
 								+ to_str(targetDim) + " x " + to_str(batchSize)));
 */
 
-				targetStreams[stage].push_back(std::move(targetMat));
+				targetStreams[phase].push_back(std::move(targetMat));
 			}
 		}
 	}
 
-	void load_input(DataPtr write, bool is_initialized, LearningStage learningStage)
+	void load_input(DataPtr write, bool is_initialized, LearningPhase learnPhase)
 	{
 		if (!is_initialized)
 			write->new_zeros(inputDim, batchSize);
 
-		int stage = to_int(learningStage);
-		LMN_ASSERT_THROW(streamPos[stage] < streamSizes[stage],
+		int phase = to_int(learnPhase);
+		LMN_ASSERT_THROW(streamPos[phase] < streamSizes[phase],
 				DataException("load_input stream position out of bound"));
 
-		*write = inputStreams[stage][streamPos[stage]];
+		*write = inputStreams[phase][streamPos[phase]];
 	}
 
-	void load_target(DataPtr write, bool is_initialized, LearningStage learningStage)
+	void load_target(DataPtr write, bool is_initialized, LearningPhase learnPhase)
 	{
 		if (!is_initialized)
 			write->new_zeros(targetDim, batchSize);
 
-		int stage = to_int(learningStage);
-		LMN_ASSERT_THROW(streamPos[stage] < streamSizes[stage],
+		int phase = to_int(learnPhase);
+		LMN_ASSERT_THROW(streamPos[phase] < streamSizes[phase],
 				DataException("load_target stream position out of bound"));
 
-		*write = targetStreams[stage][streamPos[stage]];
+		*write = targetStreams[phase][streamPos[phase]];
 	}
 
-	bool prepare_next_batch_impl(LearningStage learningStage)
+	bool prepare_next_batch_impl(LearningPhase learnPhase)
 	{
-		int stage = to_int(learningStage);
+		int phase = to_int(learnPhase);
 		// proceed to the next item in stream
-		++ streamPos[stage];
+		++ streamPos[phase];
 
 		// If point to last in stream, end of epoch = true
-		return streamPos[stage] == streamSizes[stage];
+		return streamPos[phase] == streamSizes[phase];
 	}
 
-	void reset_epoch_impl(LearningStage stage)
+	void reset_epoch_impl(LearningPhase phase)
 	{
-		this->streamPos[to_int(stage)] = 0;
+		this->streamPos[to_int(phase)] = 0;
 	}
 
 	Dimension input_dim() const
@@ -118,10 +118,10 @@ public:
 	}
 
 protected:
-	// Helper: convert LearningStage to int
-	static int to_int(LearningStage stage)
+	// Helper: convert LearningPhase to int
+	static int to_int(LearningPhase phase)
 	{
-		return (int) enum2integral(stage);
+		return (int) enum2integral(phase);
 	}
 
 	/*********** Gradient checking ***********/
@@ -142,7 +142,7 @@ protected:
 	}*/
 
 private:
-	// 3 learning stages
+	// 3 learning phases
 	static constexpr const int STAGE_N = 3;
 
 	int inputDim;

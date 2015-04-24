@@ -61,7 +61,7 @@ public:
 		float tempLoss = 0;
 		do {
 
-			dataManager->set_learning_stage(LearningStage::Training);
+			dataManager->set_learning_phase(LearningPhase::Training);
 
 			LMN_ASSERT_THROW(!batchSizeMon.monitor(),
 				UnimplementedException(
@@ -127,7 +127,7 @@ public:
 				learningHistory.push_back(*state);
 
 				/*********** Prepare for the next epoch ***********/
-				dataManager->set_learning_stage(LearningStage::Training);
+				dataManager->set_learning_phase(LearningPhase::Training);
 				dataManager->reset_epoch();
 				++ state->epoch;
 				state->batchInEpoch = 0; // new epoch reset batch count

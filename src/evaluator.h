@@ -24,24 +24,12 @@ public:
 
 	virtual FloatT network_loss() = 0;
 
-/*
-	void set_learning_stage(LearningStage dataStage)
-	{
-		net->get_data_manager()->set_learning_stage(dataStage);
-	}
-
-	LearningStage learning_stage()
-	{
-		return net->get_data_manager()->learning_stage();
-	}
-
-*/
 	void validation()
 	{
-//		LMN_ASSERT_THROW(learning_stage() == LearningStage::Validation,
-//			LearningException("LearningStage must be 'Validation' "
-//				"for Evaluator::validation(). Use set_learning_stage() to switch."));
-		dataManager->set_learning_stage(LearningStage::Validation);
+//		LMN_ASSERT_THROW(learning_phase() == LearningPhase::Validation,
+//			LearningException("LearningPhase must be 'Validation' "
+//				"for Evaluator::validation(). Use set_learning_phase() to switch."));
+		dataManager->set_learning_phase(LearningPhase::Validation);
 
 		this->validationMetric = this->validation_impl(net);
 		this->validationLoss = this->network_loss();
@@ -63,10 +51,10 @@ public:
 
 	void testing()
 	{
-//		LMN_ASSERT_THROW(learning_stage() == LearningStage::Testing,
-//			LearningException("LearningStage must be 'Testing' "
-//				"for Evaluator::testing(). Use set_learning_stage() to switch."));
-		dataManager->set_learning_stage(LearningStage::Testing);
+//		LMN_ASSERT_THROW(learning_phase() == LearningPhase::Testing,
+//			LearningException("LearningPhase must be 'Testing' "
+//				"for Evaluator::testing(). Use set_learning_phase() to switch."));
+		dataManager->set_learning_phase(LearningPhase::Testing);
 
 		this->testingMetric = this->testing_impl(net);
 		this->testingLoss = this->network_loss();
