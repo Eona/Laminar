@@ -47,7 +47,8 @@ public:
 		this->validationLoss = this->network_loss();
 
 		// Reset the validation stream
-		dataManager->reset_epoch(LearningStage::Validation);
+		// FIXME
+		dataManager->reset_epoch();
 	}
 
 	FloatT validation_loss() const
@@ -71,7 +72,8 @@ public:
 		this->testingLoss = this->network_loss();
 
 		// Reset the testing stream
-		dataManager->reset_epoch(LearningStage::Testing);
+		// FIXME
+		dataManager->reset_epoch();
 	}
 
 	FloatT testing_loss() const

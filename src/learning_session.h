@@ -57,8 +57,9 @@ public:
 			return dataManager->batch_size();
 		});
 
+		// FIXME
+		float tempLoss = 0;
 		do {
-			DEBUG_MSG("Training loop");
 
 			dataManager->set_learning_stage(LearningStage::Training);
 
@@ -86,10 +87,20 @@ public:
 			// current batch in the current epoch
 			++ state->batchInEpoch;
 
+			dataManager->prepare_next_batch();
+			tempLoss += evaluator->network_loss(); // FIXME
+			net->execute("zero_clear");
+
 			// If we finish another epoch
-			if (dataManager->is_epoch_end())
+			if (dataManager->is_end_of_epoch())
 			{
 				state->trainingLoss = evaluator->network_loss();
+				// FIXME
+				state->trainingLoss = tempLoss;
+				tempLoss = 0;
+
+				DEBUG_MSG("Epoch", state->epoch);
+				DEBUG_MSG("Training loss", state->trainingLoss);
 
 				// We do optional validation/testing at the end of each epoch
 				/*********** Validation ***********/
@@ -116,10 +127,12 @@ public:
 				learningHistory.push_back(*state);
 
 				/*********** Prepare for the next epoch ***********/
-				dataManager->reset_epoch(LearningStage::Training);
+				dataManager->set_learning_stage(LearningStage::Training);
+				dataManager->reset_epoch();
 				++ state->epoch;
 				state->batchInEpoch = 0; // new epoch reset batch count
 				state->clear_loss();
+				net->execute("zero_clear");
 			}
 		}
 		while (!stopper->stop_learning(state));
