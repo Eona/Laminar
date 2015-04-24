@@ -23,6 +23,7 @@
 #include "backend/dummy/dummy_dataman.h"
 #include "backend/vecmat/vecmat_engine.h"
 #include "backend/vecmat/vecmat_rand_dataman.h"
+#include "backend/vecmat/vecmat_func_dataman.h"
 #include "utils/global_utils.h"
 #include "utils/timer.h"
 
@@ -80,41 +81,56 @@ int main(int argc, char **argv)
 	};
 
 //	const int HISTORY = 5;
-	const int INPUT_DIM = 2;
-	const int TARGET_DIM = 4;
+	const int INPUT_DIM = 4;
+	const int TARGET_DIM = 3;
 	const int BATCH = 2;
 
+	rand_conn.gen_uniform_rand(90, -0.1, 0.1); //rand_conn.print_rand_seq();
+//
+//	rand_prehis.gen_uniform_rand(30, -.5, .5); //rand_prehis.print_rand_seq();
+//
+//	rand_input.gen_uniform_rand(20, -1, 1); //rand_input.print_rand_seq();
+//
+//	rand_target.gen_uniform_rand(40, -1, 1); //rand_target.print_rand_seq();
 
-	rand_conn.gen_uniform_rand(90, -1.5, 1.5); //rand_conn.print_rand_seq();
-
-	rand_prehis.gen_uniform_rand(30, -.5, .5); //rand_prehis.print_rand_seq();
-
-	rand_input.gen_uniform_rand(20, -1, 1); //rand_input.print_rand_seq();
-
-	rand_target.gen_uniform_rand(40, -1, 1); //rand_target.print_rand_seq();
+	auto learnableFunc = [](const lmn::Vecmatf& in, lmn::Vecmatf& out) {
+		// Each column is a batch
+		for (int c = 0; c < in.col(); ++c)
+		{
+			out(0, c) = in(0, c) + in(1, c);
+			out(1, c) = in(1, c) + in(2, c);
+			out(2, c) = in(2, c) + in(3, c);
+		}
+	};
 
 	auto engine = EngineBase::make<VecmatEngine>();
-	auto dataman = DataManagerBase::make<VecmatRandDataManager>(
-						engine, INPUT_DIM, TARGET_DIM, BATCH);
+	auto dataman = DataManagerBase::make<VecmatFuncDataManager>(
+						engine, INPUT_DIM, TARGET_DIM, BATCH,
+						learnableFunc,
+						100, 20, 10,
+						-0.7, 0.7);
 
-	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
-	auto l2 = Layer::make<SigmoidLayer>(5);
-	auto l3 = Layer::make<SquareLossLayer>(TARGET_DIM);
+	auto linput = Layer::make<ConstantLayer>(INPUT_DIM);
+	auto l2 = Layer::make<SigmoidLayer>(10);
+	auto l3 = Layer::make<SigmoidLayer>(10);
+	auto lloss = Layer::make<SquareLossLayer>(TARGET_DIM);
 
 	auto net = ForwardNetwork::make(engine, dataman);
-	net->add_layer(l1);
-	net->new_connection<FullConnection>(l1, l2);
+	net->add_layer(linput);
+	net->new_connection<FullConnection>(linput, l2);
 	net->new_bias_layer(l2);
 	net->add_layer(l2);
 	net->new_connection<FullConnection>(l2, l3);
+	net->new_bias_layer(l3);
 	net->add_layer(l3);
+	net->new_connection<FullConnection>(l3, lloss);
+	net->add_layer(lloss);
 
-
-	auto opm = Optimizer::make<SGD>(2.f);
+	auto opm = Optimizer::make<SGD>(0.8f);
 	auto eval = Evaluator<VecmatEngine>::make(net);
-	auto stopper = StopCriteria::make<MaxEpochStopper>(2, 10);
+	auto stopper = StopCriteria::make<MaxEpochStopper>(100);
 	auto ser = NullSerializer::make();
-	auto sched = EpochIntervalSchedule::make(3, 7);
+	auto sched = EpochIntervalSchedule::make(0, 0);
 
 	LearningSession session(net, opm, eval, sched, stopper, ser);
 
