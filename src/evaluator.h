@@ -63,9 +63,6 @@ public:
 		this->losses[phase] = totalEvalLoss / totalBatches;
 		this->metrics[phase] = this->summarize_metric(net, learnPhase);
 
-		DEBUG_MSG("Eval phase", phase);
-		DEBUG_MSG("Eval totalBatches", totalBatches);
-
 		// Reset the validation stream
 		dataManager->reset_epoch();
 	}

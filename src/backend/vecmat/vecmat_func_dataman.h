@@ -51,12 +51,6 @@ public:
 				Vecmatf targetMat(targetDim, batchSize);
 
 				learnableFunc(inputMat, targetMat);
-/*
-				LMN_ASSERT_THROW(targetMat.dim() == (Dimension {targetDim, batchSize}),
-						DataException("Target matrix produced by the provided learnable "
-								"function doesn't have the right dimension "
-								+ to_str(targetDim) + " x " + to_str(batchSize)));
-*/
 
 				targetStreams[phase].push_back(std::move(targetMat));
 			}

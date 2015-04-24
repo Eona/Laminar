@@ -140,15 +140,20 @@ public:
 		return randSeq[i];
 	}
 
-	void gen_uniform_rand(int seqLength, float low, float high)
+	void gen_uniform_rand(int seqLength, float low, float high, ulong seed)
 	{
 		i = 0;
-		default_random_engine generator(UniformRand<float>::generate_seed());
+		default_random_engine generator(seed);
 		uniform_real_distribution<float> distribution{low, high};
 
 		this->randSeq.clear();
 		for (int s = 0; s < seqLength; ++s)
 			this->randSeq.push_back(distribution(generator));
+	}
+
+	void gen_uniform_rand(int seqLength, float low, float high)
+	{
+		gen_uniform_rand(seqLength, low, high, UniformRand<float>::generate_seed());
 	}
 
 	// Position of the internal rand seq

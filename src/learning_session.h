@@ -119,8 +119,6 @@ public:
 				}
 
 				DEBUG_MSG("Epoch", state->epoch);
-				DEBUG_MSG("training batches", state->batchInEpoch);
-				DEBUG_MSG("all batches", state->batchAll);
 				DEBUG_MSG("Training loss", state->trainingLoss);
 				DEBUG_MSG("Validation loss", state->validationLoss);
 				DEBUG_MSG("Testing loss", state->testingLoss);

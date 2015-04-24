@@ -85,7 +85,7 @@ int main(int argc, char **argv)
 	const int TARGET_DIM = 3;
 	const int BATCH = 2;
 
-	rand_conn.gen_uniform_rand(90, -0.1, 0.1); //rand_conn.print_rand_seq();
+	rand_conn.gen_uniform_rand(90, -0.1, 0.1, DEBUG_SEED); //rand_conn.print_rand_seq();
 //
 //	rand_prehis.gen_uniform_rand(30, -.5, .5); //rand_prehis.print_rand_seq();
 //
@@ -97,9 +97,9 @@ int main(int argc, char **argv)
 		// Each column is a batch
 		for (int c = 0; c < in.col(); ++c)
 		{
-			out(0, c) = in(0, c) + in(1, c);
-			out(1, c) = in(1, c) + in(2, c);
-			out(2, c) = in(2, c) + in(3, c);
+			out(0, c) = sin(in(0, c)) + cos(in(1, c));
+			out(1, c) = cos(in(1, c)) + sin(in(2, c));
+			out(2, c) = 2 * sin(in(2, c)) - cos(in(3, c));
 		}
 	};
 
@@ -108,11 +108,11 @@ int main(int argc, char **argv)
 						engine, INPUT_DIM, TARGET_DIM, BATCH,
 						learnableFunc,
 						100, 20, 10,
-						-0.7, 0.7);
+						-M_PI, M_PI);
 
 	auto linput = Layer::make<ConstantLayer>(INPUT_DIM);
-	auto l2 = Layer::make<SigmoidLayer>(10);
-	auto l3 = Layer::make<SigmoidLayer>(10);
+	auto l2 = Layer::make<SigmoidLayer>(25);
+	auto l3 = Layer::make<SigmoidLayer>(25);
 	auto lloss = Layer::make<SquareLossLayer>(TARGET_DIM);
 
 	auto net = ForwardNetwork::make(engine, dataman);
@@ -126,7 +126,7 @@ int main(int argc, char **argv)
 	net->new_connection<FullConnection>(l3, lloss);
 	net->add_layer(lloss);
 
-	auto opm = Optimizer::make<SGD>(0.8f);
+	auto opm = Optimizer::make<SGD>(0.8);
 	auto eval = Evaluator<VecmatEngine>::make(net);
 	auto stopper = StopCriteria::make<MaxEpochStopper>(100);
 	auto ser = NullSerializer::make();
@@ -141,11 +141,9 @@ int main(int argc, char **argv)
 
 	session.train();
 
-	DEBUG_TITLE("After SGD");
-	DEBUG_MSG("its gradient:");
-	DEBUG_MSG(*engine->read_memory(params[0]->param_gradient_ptr(0)));
-	DEBUG_MSG("its new value:");
-	DEBUG_MSG(*engine->read_memory(params[0]->param_value_ptr(0)));
+//	DEBUG_TITLE("After SGD");
+//	DEBUG_MSG("its new value:");
+//	DEBUG_MSG(*engine->read_memory(params[0]->param_value_ptr(0)));
 
 /*	net.upload("initialize");
 	net.upload("forward");
