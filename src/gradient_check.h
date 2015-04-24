@@ -6,6 +6,7 @@
 #define GRADIENT_CHECK_H_
 
 #include "network.h"
+#include "learning_listener.h"
 
 /**
  * Check if a given class is a subclass of GradientCheckable<FloatT> for any FloatT
@@ -42,7 +43,7 @@ inline void gradient_check(Network& net,
 	auto reset_net = [&]()
 	{
 		net.execute("zero_clear");
-		dataman->start_new_epoch();
+		dataman->reset_epoch(LearningStage::Training);
 		net.execute("load_input"); net.execute("load_target");
 	};
 
@@ -158,7 +159,7 @@ inline void gradient_check(Network& net,
 				datamanGradCheck->gradient_check_perturb(inp, perturbDimIdx, -perturb);
 
 				// reload input data after perturbation
-				dataman->start_new_epoch(); net.execute("load_input"); net.execute("load_target");
+				dataman->reset_epoch(LearningStage::Training); net.execute("load_input"); net.execute("load_target");
 				net.execute("forward");
 
 				FloatT lossMinus = read_loss();
@@ -169,7 +170,7 @@ inline void gradient_check(Network& net,
 				datamanGradCheck->gradient_check_perturb(inp, perturbDimIdx, +perturb);
 
 				// reload input data after perturbation
-				dataman->start_new_epoch(); net.execute("load_input"); net.execute("load_target");
+				dataman->reset_epoch(LearningStage::Training); net.execute("load_input"); net.execute("load_target");
 				net.execute("forward");
 
 				FloatT lossPlus = read_loss();

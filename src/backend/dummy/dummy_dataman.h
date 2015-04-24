@@ -20,9 +20,10 @@ public:
 		DataManager<float>(engine)
 	{}
 
-	void load_input(DataPtr write, bool is_initialized, LearningStage)
+	bool load_input(DataPtr write, bool is_initialized, LearningStage)
 	{
 		*write = input_rand();
+		return false;
 	}
 
 	void load_target(DataPtr write, bool is_initialized, LearningStage)
@@ -45,15 +46,10 @@ public:
 		return 1;
 	}
 
-	void start_new_epoch()
+	void reset_epoch(LearningStage)
 	{
 		input_rand.reset_seq();
 		target_rand.reset_seq();
-	}
-
-	int current_epoch()
-	{
-		throw UnimplementedException("DummyDataManager doesn't support epoch learning.");
 	}
 
 	/*********** Gradient checking ***********/

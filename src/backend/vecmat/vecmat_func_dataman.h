@@ -26,7 +26,7 @@ public:
 		indexer(Dimension { inputDim, batchSize }) // for gradient check debugging
 	{}
 
-	void load_input(DataPtr write, bool is_initialized, LearningStage stage)
+	bool load_input(DataPtr write, bool is_initialized, LearningStage stage)
 	{
 		if (!is_initialized)
 			write->new_zeros(inputDim, batchSize);
@@ -34,6 +34,8 @@ public:
 		write->fill([&](int i, int j) {
 			return input_rand();
 		});
+
+		return false;
 	}
 
 	void load_target(DataPtr write, bool is_initialized, LearningStage stage)
@@ -43,14 +45,9 @@ public:
 
 	}
 
-	void start_new_epoch()
+	void reset_epoch()
 	{
 		input_rand.reset_seq();
-	}
-
-	int current_epoch()
-	{
-
 	}
 
 	Dimension input_dim() const

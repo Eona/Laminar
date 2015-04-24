@@ -133,7 +133,7 @@ TEST(DummyLSTM, LSTM)
 	/********** Use hard-coded LSTM **********/
 	auto dummyEng2 = EngineBase::make<DummyEngine>();
 	auto dummyData2 = DataManagerBase::make<DummyDataManager>(dummyEng2);
-	dummyData2->start_new_epoch();
+	dummyData2->reset_epoch(LearningStage::Training);
 
 	RecurrentNetwork lstmDebugNet(dummyEng2, dummyData2, inputSeq.size(), 1);
 
