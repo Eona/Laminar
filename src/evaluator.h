@@ -17,89 +17,91 @@ class EvaluatorBase
 public:
 	EvaluatorBase(Network::Ptr net) :
 		net(net),
-		dataManager(net->get_data_manager())
+		dataManager(net->get_data_manager()),
+		losses({ 0, 0, 0 }), // validation/testing losses
+		metrics({ 0, 0, 0 }) // validation/testing metrics
 	{}
 
 	virtual ~EvaluatorBase() {}
 
-	virtual FloatT network_loss() = 0;
+	virtual FloatT read_network_loss() = 0;
 
-	void validation()
+	virtual void evaluate(LearningPhase learnPhase)
 	{
-//		LMN_ASSERT_THROW(learning_phase() == LearningPhase::Validation,
-//			LearningException("LearningPhase must be 'Validation' "
-//				"for Evaluator::validation(). Use set_learning_phase() to switch."));
-		dataManager->set_learning_phase(LearningPhase::Validation);
+		LMN_ASSERT_THROW(learnPhase != LearningPhase::Training,
+			LearningException("Evaluator cannot run 'Training' phase"));
 
-		this->validationMetric = this->validation_impl(net);
-		this->validationLoss = this->network_loss();
+		int phase = enum2integral(learnPhase);
+
+		this->losses[phase] = 0;
+		this->metrics[phase] = 0;
+
+		dataManager->set_learning_phase(learnPhase);
+
+		int totalBatches = 0; // #batches processed
+		float totalEvalLoss = 0; // running total
+
+		while (!dataManager->is_end_of_epoch())
+		{
+			net->execute("load_input");
+			net->execute("load_target");
+
+			// Only does forward prop
+			net->execute("forward");
+
+			/*********** Update validation results ***********/
+			totalBatches += dataManager->batch_size();
+			totalEvalLoss += this->read_network_loss();
+
+			this->update_metric(net, learnPhase);
+
+			/*********** Prepare for next validation epoch ***********/
+			net->execute("zero_clear");
+			dataManager->prepare_next_batch();
+		}
+
+		this->losses[phase] = totalEvalLoss / totalBatches;
+		this->metrics[phase] = this->summarize_metric(net, learnPhase);
+
+		DEBUG_MSG("Eval phase", phase);
+		DEBUG_MSG("Eval totalBatches", totalBatches);
 
 		// Reset the validation stream
-		// FIXME
 		dataManager->reset_epoch();
 	}
 
-	FloatT validation_loss() const
+	FloatT loss(LearningPhase learnPhase) const
 	{
-		return this->validationLoss;
+		return this->losses[enum2integral(learnPhase)];
 	}
 
-	FloatT validation_metric() const
+	FloatT metric(LearningPhase learnPhase) const
 	{
-		return this->validationMetric;
-	}
-
-	void testing()
-	{
-//		LMN_ASSERT_THROW(learning_phase() == LearningPhase::Testing,
-//			LearningException("LearningPhase must be 'Testing' "
-//				"for Evaluator::testing(). Use set_learning_phase() to switch."));
-		dataManager->set_learning_phase(LearningPhase::Testing);
-
-		this->testingMetric = this->testing_impl(net);
-		this->testingLoss = this->network_loss();
-
-		// Reset the testing stream
-		// FIXME
-		dataManager->reset_epoch();
-	}
-
-	FloatT testing_loss() const
-	{
-		return this->testingLoss;
-	}
-
-	FloatT testing_metric() const
-	{
-		return this->testingMetric;
+		return this->metrics[enum2integral(learnPhase)];
 	}
 
 	TYPEDEF_PTR(EvaluatorBase);
 
 protected:
 	/**
-	 * Return a validation metric
-	 * NOTE not necessary the same as validation loss.
-	 * E.g. a metric can be percentage accuracy.
+	 * Derived needs to implement this
+	 * will be called after every minibatch to update whatever metric
+	 * NOTE a metric is not the same as loss value, e.g. percentage accuracy.
 	 */
-	virtual FloatT validation_impl(Network::Ptr) = 0;
+	virtual void update_metric(Network::Ptr, LearningPhase) = 0;
 
 	/**
-	 * Return a testing metric
-	 * NOTE not necessary the same as testing loss.
-	 * E.g. a metric can be percentage accuracy.
+	 * will be called at the end of validation/testing to get a summary metric
 	 */
-	virtual FloatT testing_impl(Network::Ptr) = 0;
+	virtual FloatT summarize_metric(Network::Ptr, LearningPhase) = 0;
 
 protected:
 	Network::Ptr net;
 	DataManagerBase::Ptr dataManager;
 
 private:
-	FloatT validationLoss;
-	FloatT validationMetric;
-	FloatT testingLoss;
-	FloatT testingMetric;
+	std::array<FloatT, LEARNING_PHASE_N> losses;
+	std::array<FloatT, LEARNING_PHASE_N> metrics;
 };
 
 /**
@@ -120,7 +122,7 @@ public:
 
 	virtual ~Evaluator() {}
 
-	FloatT network_loss()
+	FloatT read_network_loss()
 	{
 		return engine->scalor_at(net->loss_value());
 	}
@@ -130,15 +132,11 @@ public:
 protected:
 	std::shared_ptr<EngineT> engine;
 
-	/**
-	 * Overridable default implementation
-	 */
-	virtual FloatT validation_impl(Network::Ptr net)
-	{
-		return 0; // FIXME
-	}
+	/*********** defaults ***********/
+	virtual void update_metric(Network::Ptr, LearningPhase)
+	{}
 
-	virtual FloatT testing_impl(Network::Ptr net)
+	virtual FloatT summarize_metric(Network::Ptr, LearningPhase)
 	{
 		return 0;
 	}

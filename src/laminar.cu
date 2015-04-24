@@ -130,7 +130,7 @@ int main(int argc, char **argv)
 	auto eval = Evaluator<VecmatEngine>::make(net);
 	auto stopper = StopCriteria::make<MaxEpochStopper>(100);
 	auto ser = NullSerializer::make();
-	auto sched = EpochIntervalSchedule::make(0, 0);
+	auto sched = EpochIntervalSchedule::make(1, 1);
 
 	LearningSession session(net, opm, eval, sched, stopper, ser);
 

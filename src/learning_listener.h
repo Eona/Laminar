@@ -28,13 +28,21 @@ struct LearningState
 
 	int batchSize;
 
-	// from network's loss function
+	/**
+	 * Training loss averaged over number of batches in the current epoch
+	 */
 	float trainingLoss = 0;
 
+	/**
+	 * Validation loss averaged over number of batches in the current epoch
+	 */
 	float validationLoss = 0;
 	// percentage accuracy, perplexity, etc.
 	float validationMetric = 0;
 
+	/**
+	 * Testing loss averaged over number of batches in the current epoch
+	 */
 	float testingLoss = 0;
 	// percentage accuracy, perplexity, etc.
 	float testingMetric = 0;
