@@ -9,25 +9,21 @@
 #include "rnn.h"
 #include "optimizer.h"
 #include "learning_listener.h"
+#include "serializer.h"
 #include "evaluator.h"
 
-template<typename NetworkT>
-class LearningSessionBase
+class LearningSession
 {
-LMN_STATIC_ASSERT_IS_BASE(Network, NetworkT, "LearningSession template arg");
-
-typedef std::shared_ptr<NetworkT> NetworkTPtr;
-
 // otherwise we have to add 'typename' every time:
-typedef typename Serializer<NetworkT>::Ptr SerializerPtr;
+//typedef typename Serializer<NetworkT>::Ptr SerializerPtr;
 
 public:
-	LearningSessionBase(Network::Ptr net,
-						Optimizer::Ptr optimizer,
-						EvaluatorBase<>::Ptr evaluator,
-						StopCriteria::Ptr stopper,
-						SerializerPtr serializer) :
-		net(Network::cast<NetworkT>(net)),
+	LearningSession(Network::Ptr net,
+					Optimizer::Ptr optimizer,
+					EvaluatorBase<>::Ptr evaluator,
+					StopCriteria::Ptr stopper,
+					SerializerBase::Ptr serializer) :
+		net(net),
 		dataManager(net->get_data_manager()),
 		engine(net->get_engine()),
 		state(LearningState::make()),
@@ -36,12 +32,9 @@ public:
 		stopper(stopper),
 		serializer(serializer),
 		initGuard("LearningSession")
-	{
-		LMN_ASSERT_NULLPTR(this->net,
-			LearningException("LearningSession network type mismatch"));
-	}
+	{ }
 
-	virtual ~LearningSessionBase() {}
+	virtual ~LearningSession() {}
 
 	virtual void initialize()
 	{
@@ -134,7 +127,7 @@ protected:
 	}
 
 protected:
-	NetworkTPtr net;
+	Network::Ptr net;
 	DataManagerBase::Ptr dataManager;
 	EngineBase::Ptr engine;
 
@@ -142,48 +135,11 @@ protected:
 	Optimizer::Ptr optimizer;
 	EvaluatorBase<>::Ptr evaluator;
 	StopCriteria::Ptr stopper;
-	SerializerPtr serializer;
+	SerializerBase::Ptr serializer;
 
 	InitializeGuard<LearningException> initGuard;
 
 	vector<ParamContainer::Ptr> paramContainers;
-};
-
-template<typename NetworkT>
-class LearningSession :
-		public LearningSessionBase<NetworkT>
-{
-typedef typename Serializer<NetworkT>::Ptr SerializerPtr;
-public:
-	LearningSession(Network::Ptr net,
-					Optimizer::Ptr optimizer,
-					EvaluatorBase<>::Ptr evaluator,
-					StopCriteria::Ptr stopper,
-					SerializerPtr serializer) :
-		LearningSessionBase<NetworkT>(
-				net, optimizer, evaluator, stopper, serializer)
-	{ }
-};
-
-/**
- * Specialization for recurrent net
- */
-template<>
-class LearningSession<RecurrentNetwork> :
-		public LearningSessionBase<RecurrentNetwork>
-{
-typedef typename Serializer<RecurrentNetwork>::Ptr SerializerPtr;
-
-public:
-	LearningSession(Network::Ptr net,
-					Optimizer::Ptr optimizer,
-					EvaluatorBase<>::Ptr evaluator,
-					StopCriteria::Ptr stopper,
-					SerializerPtr serializer) :
-		LearningSessionBase<RecurrentNetwork>(
-				net, optimizer, evaluator, stopper, serializer)
-	{ }
-
 };
 
 #endif /* LEARNING_SESSION_H_ */

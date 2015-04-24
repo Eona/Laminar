@@ -113,9 +113,9 @@ int main(int argc, char **argv)
 	auto opm = Optimizer::make<SGD>(2.f);
 	auto eval = Evaluator<VecmatEngine>::make(net);
 	auto stopper = StopCriteria::make<EpochStopCriteria>();
-	auto ser = NullSerializer<ForwardNetwork>::make();
+	auto ser = NullSerializer::make();
 
-	LearningSession<ForwardNetwork> session(net, opm, eval, stopper, ser);
+	LearningSession session(net, opm, eval, stopper, ser);
 
 	session.initialize();
 
