@@ -20,15 +20,19 @@ public:
 		DataManager<float>(engine)
 	{}
 
-	bool load_input(DataPtr write, bool is_initialized, LearningStage)
+	void load_input(DataPtr write, bool is_initialized, LearningStage)
 	{
 		*write = input_rand();
-		return false;
 	}
 
 	void load_target(DataPtr write, bool is_initialized, LearningStage)
 	{
 		*write = target_rand();
+	}
+
+	bool prepare_next_batch_impl(LearningStage)
+	{
+		throw UnimplementedException("DummyDataManger cannot prepare_next_batch");
 	}
 
 	Dimension input_dim() const
@@ -46,7 +50,7 @@ public:
 		return 1;
 	}
 
-	void reset_epoch(LearningStage)
+	void reset_epoch_impl(LearningStage)
 	{
 		input_rand.reset_seq();
 		target_rand.reset_seq();

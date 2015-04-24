@@ -33,6 +33,15 @@ public:
 			mat[r].resize(col);
 	}
 
+	/**
+	 * Initialize with a generator function
+	 */
+	Vecmat(int row, int col, std::function<FloatT(int, int)> gen) :
+		Vecmat(row, col)
+	{
+		this->fill(gen);
+	}
+
 	Vecmat(std::initializer_list<std::initializer_list<FloatT>> initer)
 	{
 		mat.insert(mat.end(), initer.begin(), initer.end());

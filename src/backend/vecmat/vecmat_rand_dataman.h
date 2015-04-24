@@ -22,7 +22,7 @@ public:
 		indexer(Dimension { inputDim, batchSize }) // for gradient check debugging
 	{}
 
-	bool load_input(DataPtr write, bool is_initialized, LearningStage)
+	void load_input(DataPtr write, bool is_initialized, LearningStage)
 	{
 		if (!is_initialized)
 			write->new_zeros(inputDim, batchSize);
@@ -30,8 +30,6 @@ public:
 		write->fill([&](int i, int j) {
 			return input_rand();
 		});
-
-		return false;
 	}
 
 	void load_target(DataPtr write, bool is_initialized, LearningStage)
@@ -44,7 +42,12 @@ public:
 		});
 	}
 
-	void reset_epoch(LearningStage)
+	bool prepare_next_batch_impl(LearningStage)
+	{
+		throw UnimplementedException("VecmatRandDataManager cannot prepare_next_batch");
+	}
+
+	void reset_epoch_impl(LearningStage)
 	{
 		input_rand.reset_seq();
 		target_rand.reset_seq();

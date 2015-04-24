@@ -159,7 +159,7 @@ TEST(VecmatLSTM, Agreement)
 	auto dataman2 = DataManagerBase::make<VecmatRandDataManager>(
 			engine2, INPUT_DIM, TARGET_DIM, BATCH);
 
-	dataman2->reset_epoch(LearningStage::Training);
+	dataman2->reset_epoch();
 
 	RecurrentNetwork lstmDebugNet(engine2, dataman2, HISTORY, 1);
 

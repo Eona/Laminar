@@ -24,6 +24,7 @@ inline void gradient_check(Network& net,
 {
 	auto engine = net.get_engine<EngineT>();
 	auto dataman = net.get_data_manager<DataManagerT>();
+	dataman->set_learning_stage(LearningStage::Training);
 
 	int historyLength = 1;
 //	 Save the full gradient history for debugging ONLY
@@ -43,7 +44,7 @@ inline void gradient_check(Network& net,
 	auto reset_net = [&]()
 	{
 		net.execute("zero_clear");
-		dataman->reset_epoch(LearningStage::Training);
+		dataman->reset_epoch();
 		net.execute("load_input"); net.execute("load_target");
 	};
 
@@ -159,7 +160,7 @@ inline void gradient_check(Network& net,
 				datamanGradCheck->gradient_check_perturb(inp, perturbDimIdx, -perturb);
 
 				// reload input data after perturbation
-				dataman->reset_epoch(LearningStage::Training); net.execute("load_input"); net.execute("load_target");
+				dataman->reset_epoch(); net.execute("load_input"); net.execute("load_target");
 				net.execute("forward");
 
 				FloatT lossMinus = read_loss();
@@ -170,7 +171,7 @@ inline void gradient_check(Network& net,
 				datamanGradCheck->gradient_check_perturb(inp, perturbDimIdx, +perturb);
 
 				// reload input data after perturbation
-				dataman->reset_epoch(LearningStage::Training); net.execute("load_input"); net.execute("load_target");
+				dataman->reset_epoch(); net.execute("load_input"); net.execute("load_target");
 				net.execute("forward");
 
 				FloatT lossPlus = read_loss();
