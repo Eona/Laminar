@@ -85,8 +85,6 @@ public:
 			// If we finish another epoch
 			if (dataManager->is_input_eof())
 			{
-				++ state->currentEpoch;
-				state->currentBatch = 0; // new epoch reset batch count
 				state->trainingLoss = evaluator->network_loss();
 
 				// We do optional validation/testing at the end of each epoch
@@ -105,6 +103,8 @@ public:
 
 				/*********** Prepare for the next epoch ***********/
 				dataManager->reset_epoch(LearningStage::Training);
+				++ state->currentEpoch;
+				state->currentBatch = 0; // new epoch reset batch count
 			}
 		}
 		while (!stopper->stop_learning(state));

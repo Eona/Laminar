@@ -74,6 +74,93 @@ struct EpochStopCriteria : public StopCriteria
 /**
  * How often do we do testing/validation
  */
+struct EvalSchedule
+{
+	virtual ~EvalSchedule() {}
 
+	/**
+	 * Called at the end of every epoch (epoch not incremented yet)
+	 * @return true if you want to run validation
+	 */
+	virtual bool run_validation(LearningState::Ptr) = 0;
+
+	/**
+	 * Called at the end of every epoch (epoch not incremented yet)
+	 * @return true if you want to run testing
+	 */
+	virtual bool run_testing(LearningState::Ptr) = 0;
+
+	TYPEDEF_PTR(EvalSchedule);
+
+	GEN_GENERIC_MAKEPTR_STATIC_MEMBER(EvalSchedule)
+};
+
+// Support for 'diamond' inheritance: virtual inheritance
+// e.g. ValidationOnceNoTestingSchedule : public ValidationSchedule, NoTestingSchedule
+/**
+ * Doesn't run testing
+ */
+struct NoTestingSchedule : public virtual EvalSchedule
+{
+	virtual ~NoTestingSchedule() {}
+
+	virtual bool run_testing(LearningState::Ptr)
+	{
+		return false;
+	}
+};
+
+/**
+ * Doesn't run validation
+ */
+struct NoValidationSchedule : public virtual EvalSchedule
+{
+	virtual ~NoValidationSchedule() {}
+
+	virtual bool run_valiation(LearningState::Ptr)
+	{
+		return false;
+	}
+};
+
+/**
+ * Validate once every n epoch
+ */
+struct IntervalValidationSchedule : public virtual EvalSchedule
+{
+	IntervalValidationSchedule(int validationInterval) :
+			validationInterval(validationInterval)
+	{}
+
+	virtual ~IntervalValidationSchedule() {}
+
+	virtual bool run_valiation(LearningState::Ptr state)
+	{
+		return (state->currentEpoch + 1) % validationInterval == 0;
+	}
+
+protected:
+	int validationInterval;
+};
+
+/**
+ * Test once every n epoch
+ */
+struct IntervalTestSchedule : public virtual EvalSchedule
+{
+	IntervalTestSchedule(int testInterval) :
+			testInterval(testInterval)
+	{}
+
+	virtual ~IntervalTestSchedule() {}
+
+	virtual bool run_testing(LearningState::Ptr state)
+	{
+		return (state->currentEpoch + 1) % testInterval == 0;
+	}
+
+protected:
+	int testInterval;
+};
 
 #endif /* LEARNING_LISTENER_H_ */
