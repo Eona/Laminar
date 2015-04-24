@@ -123,9 +123,8 @@ private:
 	LearningPhase learnPhase;
 	/**
 	 * If input/target stream has ended (current epoch finishes)
-	 * For three learning phases:
 	 */
-	std::array<bool, 3> isEndOfEpoch;
+	std::array<bool, LEARNING_PHASE_N> isEndOfEpoch;
 
 };
 

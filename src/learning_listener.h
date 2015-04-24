@@ -14,6 +14,9 @@ enum class LearningPhase
 	Testing
 };
 
+// 3 learning phases
+static constexpr const int LEARNING_PHASE_N = 3;
+
 struct LearningState
 {
 	virtual ~LearningState() {}

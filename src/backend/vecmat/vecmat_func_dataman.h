@@ -38,7 +38,7 @@ public:
 		indexer(Dimension { inputDim, batchSize }) // for gradient check debugging
 	{
 		// Generate training/validation/testing inputs and targets
-		for (int phase = 0; phase < STAGE_N; ++phase)
+		for (int phase = 0; phase < LEARNING_PHASE_N; ++phase)
 		{
 			for (int ssize = 0; ssize < streamSizes[phase]; ++ssize)
 			{
@@ -142,21 +142,18 @@ protected:
 	}*/
 
 private:
-	// 3 learning phases
-	static constexpr const int STAGE_N = 3;
-
 	int inputDim;
 	int targetDim;
 	int batchSize;
 
 	// Training/Validation/Testing sample sizes
-	std::array<int, STAGE_N> streamSizes;
+	std::array<int, LEARNING_PHASE_N> streamSizes;
 
 	// current position in input/target stream
-	std::array<int, STAGE_N> streamPos;
+	std::array<int, LEARNING_PHASE_N> streamPos;
 
 	// accessed by enum2integral(Training/Validation/Testing)
-	std::array<vector<Vecmatf>, STAGE_N> inputStreams, targetStreams;
+	std::array<vector<Vecmatf>, LEARNING_PHASE_N> inputStreams, targetStreams;
 
 	UniformRand<float> unirand;
 
