@@ -71,6 +71,7 @@ public:
 		register_normal_op("zero_clear", MEMFUNC_BIND_3(CudaEngine::zero_clear));
 
 		register_normal_op("fill_rand", MEMFUNC_BIND_3(CudaEngine::fill_rand));
+		register_normal_op("soft_max", MEMFUNC_BIND_3(CudaEngine::soft_max));
 
 		register_context_op<float>("scale", MEMFUNC_BIND_4(CudaEngine::scale));
 	}
@@ -365,34 +366,40 @@ public:
 
 		float* rmat = new float(write->LEN);
 		float* wmat = new float(write->LEN);
-
+		int m = write->DIM_ROW;
+		int n = write->DIM_COL;
 		reads[0]->to_host(rmat);
-
-		float* wmat = *write;
 
 		// Each column is a data feature vector
 		// coldim is batch size
-		for (int c = 0; c < rmat.col(); ++c)
+
+
+		for (int c = 0; c < n; ++c) //each col
 		{
 			// find max
 			float mx = -1e20f;
-			for (int r = 0; r < rmat.row(); ++r)
-				if (rmat(r, c) > mx)
-					mx = rmat(r, c);
+			for (int r = 0; r < m; ++r)
+				if (rmat[c*m + r] > mx)
+					mx = rmat[c*m + r];
 
 			// exp(a - mx) for all 'a'
-			for (int r = 0; r < rmat.row(); ++r)
-				wmat(r, c) = std::exp(rmat(r, c) - mx);
+			for (int r = 0; r < m; ++r)
+				wmat[c*m + r] = std::exp(rmat[c*m + r] - mx);
 
 			// sum last step
 			float sum = 0;
-			for (int r = 0; r < wmat.row(); ++r)
-				sum += wmat(r, c);
+			for (int r = 0; r < m; ++r)
+				sum += wmat[c*m + r];
 
 			// divide every wmat col element by sum
-			for (int r = 0; r < wmat.row(); ++r)
-				wmat(r, c) /= sum;
+			for (int r = 0; r < m; ++r)
+				wmat[c*m + r] /= sum;
 		}
+
+		write->to_device(wmat);
+
+		delete [] rmat;
+		delete [] wmat;
 	}
 
 	void zero_clear(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
