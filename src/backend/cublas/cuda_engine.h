@@ -30,14 +30,25 @@ using namespace std;
 class CudaEngine : public Engine<CudaFloatMat>
 {
 public:
+	CudaEngine() :
+		Engine<CudaFloatMat>()
+	{
+		gt = NULL;
+		timed = false;
+		init();
 
+	}
 	CudaEngine(GlobalTimer<cudaEvent_t> * g) :
 		Engine<CudaFloatMat>()
 	{
 		gt = g;
 		timed = true;
-	    cublasCreate(&handle);
+		init();
 
+	}
+
+	void init() {
+	    cublasCreate(&handle);
 		register_create_op(MEMFUNC_BIND_2(CudaEngine::create));
 		register_normal_op("t+t", MEMFUNC_BIND_3(CudaEngine::add));
 		register_normal_op("t-t", MEMFUNC_BIND_3(CudaEngine::sub));
@@ -66,7 +77,6 @@ public:
 
 		register_context_op<float>("scale", MEMFUNC_BIND_4(CudaEngine::scale));
 	}
-
 
 	typedef std::shared_ptr<CudaFloatMat> CudaFloatMatPtr;
 	typedef std::shared_ptr<float> FloatPtr;
