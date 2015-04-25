@@ -134,7 +134,7 @@ public:
 	    std::string name = "mult_"+opA+opB;
 	    //C = a Op(A)* Op(B) + b C  -- A [mxk] B [kxn] C[mxn]
 	    //handle, A_len, x, incx, y, incy
-	    TIME(name, m*n+l*k,
+	    TIME(name, m*k+l*n,
 		cublasSgemm(handle,
 					reads[0]->getOp(opA), reads[1]->getOp(opB),
 					m, n, k,
@@ -431,7 +431,12 @@ public:
 
 
 	float tensor_data_at(CudaFloatMatPtr reads, DimIndex idx) {
-		return 0;
+		int m = reads->DIM_ROW;
+		int n = reads->DIM_COL;
+		int i = m*idx[1] + idx[0];
+		float d;
+		reads->take_at(&d, i, 1);
+		return d;
 	}
 
 	float scalar_data_at(CudaFloatMatPtr reads) {

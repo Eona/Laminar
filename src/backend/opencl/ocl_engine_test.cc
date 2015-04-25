@@ -13,22 +13,31 @@ int main(int argc, char **argv)
 
 	//create testcases
 
-//	float t1[9] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10, 5};
-//	float t2[9] = {0.1, 6.8, 4.9, 2.0, 1, 4, 5, 9, 4};
-//	float t3[6] = {1.1, 7.8, 5.9, 3.0, 2, 5};
-//	float t4[8] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10};
-//	float t5[8] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10};
+#if 1
+	float t1[9] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10, 5};
+	float t2[9] = {0.1, 6.8, 4.9, 2.0, 1, 4, 5, 9, 4};
+	float t3[6] = {1.1, 7.8, 5.9, 3.0, 2, 5};
+	float t4[8] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10};
+	float t5[8] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10};
 //
 //
-//	OpenclFloatMatPtr m1 (new OpenclFloatMat(t1, 3, 3, engine.cl));
-//	OpenclFloatMatPtr m2 (new OpenclFloatMat(t2, 3, 3, engine.cl));
-//	OpenclFloatMatPtr m3 (new OpenclFloatMat(t3, 2, 3, engine.cl));
-//	OpenclFloatMatPtr m4 (new OpenclFloatMat(t4, 4, 2, engine.cl));
-//	OpenclFloatMatPtr m5 (new OpenclFloatMat(t5, 4, 2, engine.cl));
-//	OpenclFloatMatPtr out(new OpenclFloatMat());
-//	vector<int> dim = {3,3};
-//	engine.create(out, dim);
+	OpenclFloatMatPtr m1 (new OpenclFloatMat(t1, 3, 3, engine.cl));
+	OpenclFloatMatPtr m2 (new OpenclFloatMat(t2, 3, 3, engine.cl));
+	OpenclFloatMatPtr m3 (new OpenclFloatMat(t3, 2, 3, engine.cl));
+	OpenclFloatMatPtr m4 (new OpenclFloatMat(t4, 4, 2, engine.cl));
+	OpenclFloatMatPtr m5 (new OpenclFloatMat(t5, 4, 2, engine.cl));
+	OpenclFloatMatPtr out(new OpenclFloatMat());
+	vector<int> dim = {3,3};
+	engine.create(out, dim);
 
+	std::vector<OpenclFloatMatPtr> v2;
+	v2.push_back(m1);
+	v2.push_back(m3);
+
+	std::vector<OpenclFloatMatPtr> v3;
+	v3.push_back(m4);
+	v3.push_back(m5);
+#else
 	vector<int> dim = {1000, 1000};
 
 	OpenclFloatMatPtr m1 (new OpenclFloatMat());
@@ -45,14 +54,16 @@ int main(int argc, char **argv)
 	engine.fill_rand(rv, m2, true);
 	engine.fill_rand(rv, m3, true);
 
-	engine.debug_fill(rv, m1, true);
-	engine.debug_fill(rv, m2, true);
-	engine.debug_fill(rv, m3, true);
+//	engine.debug_fill(rv, m1, true);
+//	engine.debug_fill(rv, m2, true);
+//	engine.debug_fill(rv, m3, true);
+
+
 //    m1->print_matrix("m1");
 //    m2->print_matrix("m2");
 //    m3->print_matrix("m3");
 //    m4->print_matrix("m4");
-
+#endif
 //
 
 	std::vector<OpenclFloatMatPtr> v;
@@ -62,15 +73,10 @@ int main(int argc, char **argv)
 	std::vector<OpenclFloatMatPtr> v1;
 	v1.push_back(m3);
 	v1.push_back(m1);
-
-//	std::vector<OpenclFloatMatPtr> v2;
-//	v2.push_back(m1);
-//	v2.push_back(m3);
-//
-//	std::vector<OpenclFloatMatPtr> v3;
-//	v3.push_back(m4);
-//	v3.push_back(m5);
-
+	m3->print_matrix("m3");
+	cout << engine.tensor_data_at(m3, {1,1})<<endl;
+	cout << engine.tensor_data_at(m3, {1,0})<<endl;
+	return 1;
 	for (int i = 0; i < 10; ++i){
 	engine.sub(v, out, true);
 //	out->print_matrix("m1 - m2");
