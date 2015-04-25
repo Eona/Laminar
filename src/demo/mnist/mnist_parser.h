@@ -21,8 +21,11 @@ inline int reverse_int(int i)
 /**
  * @param filePath
  * @param numberOfImages set to zero to read the entire database
+ * @param normalize true to divide everything by 255
  */
-inline vector<vector<float>> read_mnist_image(string filePath, int numberOfImages)
+template<typename FloatT = float>
+inline vector<vector<FloatT>> read_mnist_image(
+		string filePath, int numberOfImages, bool normalize = true)
 {
     std::ifstream file(filePath, std::ios::binary);
 
@@ -50,15 +53,17 @@ inline vector<vector<float>> read_mnist_image(string filePath, int numberOfImage
 	if (numberOfImages <= 0)
 		numberOfImages = totalNumberOfImages;
 
-    vector<vector<float>> images(numberOfImages,vector<float>(rowdim * coldim));
+    vector<vector<float>> images(numberOfImages,vector<FloatT>(rowdim * coldim));
+
+    FloatT divisor = normalize ? 255.0 : 1.0;
 
 	for(int i=0; i<numberOfImages; ++i)
 		for(int r=0;r<rowdim;++r)
 			for(int c=0;c<coldim;++c)
 			{
 				unsigned char temp=0;
-				file.read((char*)&temp,sizeof(temp));
-				images[i][(rowdim*r)+c]= (float)temp;
+				file.read((char*)&temp, sizeof(temp));
+				images[i][rowdim * r + c]= (FloatT) temp / divisor;
 			}
 
 	return images;
