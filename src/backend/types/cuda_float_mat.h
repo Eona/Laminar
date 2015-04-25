@@ -93,6 +93,9 @@ public:
 	/*
 	 * Copy device data to host
 	 */
+	void zero_clear() {
+		fill(0);
+	}
 
 	void to_host() {
 		if (!host_data) host_data = (float *)malloc(MEM_SIZE);
@@ -112,10 +115,10 @@ public:
 	void take_at(float * d, size_t offset, size_t num_float) {
 		float *r = new float[MEM_SIZE];
 		to_host(r);
-		int j;
-		for (int i = offset, j = 0; j < num_float; ++i, ++j) {
-			d[j] = r[i];
+		for (int i = 0; i < num_float; ++i) {
+			d[i] = r[i+offset];
 		}
+		delete [] r;
 	}
 
 	void fill_rand(int seed) {

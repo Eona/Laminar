@@ -74,36 +74,31 @@ public:
 		cl->register_kernel("mat_mult_TN_kernel", "matop_prog", "mult_TN");
 		NUM_LOCAL_WORKER = cl->query_group_size();
 
-//		register_create(CudaEngine::create);
-//		register_opcode("t+t", CudaEngine::add);
-////		register_opcode("s+s", Impl::add<S>);
-//		register_opcode("t-t", CudaEngine::sub);
-////		register_opcode("s-s", sub);
-//		register_opcode("-t", CudaEngine::negate);
-////		register_opcode("-s", negate<S>);
-//		register_opcode("t*t", CudaEngine::mult);
-////		register_opcode("t*s", mult<T, S>);
-////		register_opcode("s*t", mult<S, T>);
-////		register_opcode("s*s", mult<S, S>);
-//		register_opcode("t=t", CudaEngine::assign);
-////		register_opcode("s=s", assign<S>);
-//
-//		register_opcode("scale", CudaEngine::scale);
-//		register_opcode("sin", CudaEngine::sin);
-//		register_opcode("cos", CudaEngine::cos);
-//		register_opcode("tanh", CudaEngine::tanh);
-//		register_opcode("tanh_gradient", CudaEngine::tanh_gradient);
-//		register_opcode("sigmoid", CudaEngine::sigmoid);
-//		register_opcode("sigmoid_gradient", CudaEngine::sigmoid_gradient);
-//		register_opcode("transpose", CudaEngine::transpose);
-//		register_opcode("element_mult", CudaEngine::element_mult);
-//		register_opcode("square_loss", CudaEngine::square_loss);
-//
-//		register_opcode("destroy", CudaEngine::destroy);
-//		register_opcode("fill_rand", CudaEngine::fill_rand);
-//
-//		/*********** DEBUG ONLY ***********/
-//		register_opcode("debug_fill", CudaEngine::debug_fill);
+		register_create_op(OpenclEngine::create);
+		register_normal_op("t+t", OpenclEngine::add);
+		register_normal_op("t-t", OpenclEngine::sub);
+		register_normal_op("-t", OpenclEngine::negate);
+		register_normal_op("t*t", OpenclEngine::multNN);
+		register_normal_op("t*s", OpenclEngine::multTS);
+		register_normal_op("s*t", OpenclEngine::multST);
+		register_normal_op("t=t", OpenclEngine::assign);
+		register_context_op<float>("s=const", OpenclEngine::assign_const);
+
+		register_normal_op("sin", OpenclEngine::sin);
+		register_normal_op("cos", OpenclEngine::cos);
+		register_normal_op("tanh", OpenclEngine::tanh);
+		register_normal_op("tanh_gradient", OpenclEngine::tanh_gradient);
+		register_normal_op("sigmoid", OpenclEngine::sigmoid);
+		register_normal_op("sigmoid_gradient", OpenclEngine::sigmoid_gradient);
+		register_normal_op("transpose", OpenclEngine::transpose);
+		register_normal_op("element_mult", OpenclEngine::element_mult);
+		register_normal_op("square_loss", OpenclEngine::square_loss);
+
+		register_normal_op("destroy", OpenclEngine::destroy);
+		register_normal_op("zero_clear", OpenclEngine::zero_clear);
+
+		register_normal_op("fill_rand", OpenclEngine::fill_rand);
+		register_context_op<float>("scale", OpenclEngine::scale);
 	}
 
 
@@ -269,24 +264,37 @@ public:
 	    debug_msg("c=a*b", is_initialized);
 		multMat(reads, write, is_initialized, "T", "N");
 	}
+	void assign_const(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized, float constant){
+	    debug_msg("c=constS", is_initialized);
+	    write->scalar = constant;
+	}
 
+	void multST(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		scale(reads, write, is_initialized, reads[0]->scalar);
+	}
+
+	void multTS(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		scale(reads, write, is_initialized, reads[1]->scalar);
+	}
 	void assign(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 	    debug_msg("c=a", is_initialized);
 	    assignMat(reads, write, is_initialized);
 	}
 
-	inline void scale(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized, float* scaler)
+	inline void scale(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized, float scaler)
 	{
 		debug_msg("scale", is_initialized);
 	    //y = ay
-	    scaleMat(reads, write, is_initialized, *scaler);
+	    scaleMat(reads, write, is_initialized, scaler);
 	}
 
 	inline void destroy(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("destroy", is_initialized);
-		reads[0]->free_data();
+//		reads[0]->free_data();
 	}
 
 
@@ -372,6 +380,11 @@ public:
 	    for (int i = 0; i < aux.LEN; ++i) {
 	    	write->scalar += t[i];
 	    }
+	}
+
+	void zero_clear(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		write->zero_clear();
 	}
 
 	// FIXME add contextual rand engine
