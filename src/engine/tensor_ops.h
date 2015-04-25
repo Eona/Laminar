@@ -142,7 +142,7 @@ typedef std::function<Tensor(const Tensor&)> TransferFunction;
 //typedef Tensor (*TransferFunction)(const Tensor&);
 
 // Macro generate single tensor element-wise math operation
-#define GEN_MATH_OPS(fname) \
+#define GEN_UNARY_OP(fname) \
 	template<typename TensorT> \
 	typename std::enable_if<is_tensor_base<TensorT>::value, TensorT>::type \
 	fname(const TensorT& x) \
@@ -152,49 +152,50 @@ typedef std::function<Tensor(const Tensor&)> TransferFunction;
 		return ans; \
 	}
 
-	GEN_MATH_OPS(transpose);
+	GEN_UNARY_OP(transpose);
 
-	GEN_MATH_OPS(sigmoid);
+	GEN_UNARY_OP(sigmoid);
 
-	GEN_MATH_OPS(sigmoid_gradient);
+	GEN_UNARY_OP(sigmoid_gradient);
 
-	GEN_MATH_OPS(tanh);
+	GEN_UNARY_OP(tanh);
 
-	GEN_MATH_OPS(tanh_gradient);
+	GEN_UNARY_OP(tanh_gradient);
 
-	GEN_MATH_OPS(sin);
+	GEN_UNARY_OP(sin);
 
-	GEN_MATH_OPS(cos);
+	GEN_UNARY_OP(cos);
 
-	Tensor element_mult(const Tensor& x1, const Tensor& x2)
-	{
-		Tensor ans(x1.engine);
-		x1.upload(Instruction(
-				"element_mult", {x1.addr, x2.addr}, ans.addr));
-		return ans;
+	GEN_UNARY_OP(softmax);
+
+
+#define GEN_BINARY_OP(fname, ReturnT) \
+	ReturnT fname(const Tensor& x1, const Tensor& x2) \
+	{ \
+		ReturnT ans(x1.engine); \
+		x1.upload(Instruction(STRINGFY(fname), {x1.addr, x2.addr}, ans.addr)); \
+		return ans; \
 	}
+
+	GEN_BINARY_OP(element_mult, Tensor);
 
 	// 0.5f * sum( (x1 - x2)^2 )
-	Scalor square_loss(const Tensor& x1, const Tensor& x2)
-	{
-		Scalor ans(x1.engine);
-		x1.upload(Instruction(
-				"square_loss", {x1.addr, x2.addr}, ans.addr));
-		return ans;
-	}
+	GEN_BINARY_OP(square_loss, Scalor);
 
 	/**
 	 * @param x
 	 * @param labels a 1-by-batchSize tensor of ints
 	 * @return
 	 */
-	Scalor label_softmax_entropy_loss(const Tensor& x, const Tensor& labels)
-	{
-		Scalor ans(x.engine);
-		x.upload(Instruction(
-				"label_softmax_entropy_loss", {x.addr, labels.addr}, ans.addr));
-		return ans;
-	}
+	GEN_BINARY_OP(label_entropy_loss, Scalor);
+
+	/**
+	 * @param x
+	 * @param labels a 1-by-batchSize tensor of ints
+	 * @return y - t, where t is a sparse vector with a single '1' at label
+	 */
+	GEN_BINARY_OP(label_softmax_entropy_gradient, Tensor);
+
 
 	void zero_clear(const TensorBase& x)
 	{
