@@ -41,16 +41,12 @@ public:
 	/*
 	 * Copy data to device
 	 */
-	void to_device(float *d) {
-
-	}
-
+	virtual void to_device(float *d) = 0;
 	/*
 	 * Copy device data to host
 	 */
 
-	void to_host() {
-	}
+	virtual void to_host(float *d) = 0;
 
 
 	void fill_rand(int seed) {
@@ -59,8 +55,29 @@ public:
 	void fill(float num) {
 	}
 
+	void local_transpose() {
+		float * r = new float[MEM_SIZE];
+		float * d = new float[MEM_SIZE];
+		to_host(r);
+		int c = 0;
+		for (int i = 0; i < DIM_ROW; ++i) {
+			for (int j = 0; j < DIM_COL; ++j) {
+				d[c] = r[j*DIM_ROW+i];
+				c++;
+			}
+		}
+		to_device(d);
+		delete[] r;
+		delete[] d;
+		//swap dimension
+		int t = DIM_ROW;
+		DIM_ROW = DIM_COL;
+		DIM_COL = t;
+	}
+
 
     void print_matrix(std::string msg) {
+
     }
 
     void free_data(){

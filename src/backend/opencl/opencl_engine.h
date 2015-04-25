@@ -97,6 +97,7 @@ public:
 
 		register_normal_op("destroy", MEMFUNC_BIND_3(OpenclEngine::destroy));
 		register_normal_op("zero_clear", MEMFUNC_BIND_3(OpenclEngine::zero_clear));
+		register_normal_op("soft_max", MEMFUNC_BIND_3(OpenclEngine::soft_max));
 
 		register_normal_op("fill_rand", MEMFUNC_BIND_3(OpenclEngine::fill_rand));
 		register_context_op<float>("scale", MEMFUNC_BIND_4(OpenclEngine::scale));
@@ -304,6 +305,8 @@ public:
 	{
 		debug_msg("transpose", is_initialized);
 		//TODO
+	    assignMat(reads, write, is_initialized);
+	    write->local_transpose();
 	}
 
 
@@ -396,6 +399,49 @@ public:
 	        write->reset(write->DIM_ROW, write->DIM_COL, cl); //initialize LHS if not already
 		}
 		write->fill_rand(1);
+	}
+
+	inline void soft_max(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized) {
+
+		if (!is_initialized)
+	    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);
+
+		float* rmat = new float[write->LEN];
+		float* wmat = new float[write->LEN];
+		int m = write->DIM_ROW;
+		int n = write->DIM_COL;
+		reads[0]->to_host(rmat);
+
+		// Each column is a data feature vector
+		// coldim is batch size
+
+
+		for (int c = 0; c < n; ++c) //each col
+		{
+			// find max
+			float mx = -1e20f;
+			for (int r = 0; r < m; ++r)
+				if (rmat[c*m + r] > mx)
+					mx = rmat[c*m + r];
+
+			// exp(a - mx) for all 'a'
+			for (int r = 0; r < m; ++r)
+				wmat[c*m + r] = std::exp(rmat[c*m + r] - mx);
+
+			// sum last step
+			float sum = 0;
+			for (int r = 0; r < m; ++r)
+				sum += wmat[c*m + r];
+
+			// divide every wmat col element by sum
+			for (int r = 0; r < m; ++r)
+				wmat[c*m + r] /= sum;
+		}
+
+		write->to_device(wmat);
+
+		delete [] rmat;
+		delete [] wmat;
 	}
 
 
