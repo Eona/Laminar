@@ -341,7 +341,7 @@ TYPEDEF_PTR_EXTERNAL(EngineBase);
 /*********** Forward decl ***********/
 // actual impl will be defined in tensor.h to avoid mutual header inclusion
 class TensorBase;
-class Scalor;
+class Scalar;
 
 template<typename DataT, typename FloatT = float>
 class Engine : public EngineBase
@@ -383,9 +383,9 @@ public:
 	 */
 	virtual FloatT tensor_data_at(DataPtr, DimIndex) = 0;
 	/**
-	 * Get a float from Scalor
+	 * Get a float from Scalar
 	 */
-	virtual FloatT scalor_data_at(DataPtr) = 0;
+	virtual FloatT scalar_data_at(DataPtr) = 0;
 
 	/**
 	 * @return a float element entry from tensor
@@ -399,15 +399,15 @@ public:
 		return tensor_data_at(read_memory(tensor), idx);
 	}
 
-	FloatT scalor_at(std::shared_ptr<Scalor> scalor)
+	FloatT scalar_at(std::shared_ptr<Scalar> scalar)
 	{
-		return scalor_data_at(
-			read_memory(std::static_pointer_cast<TensorBase>(scalor)));
+		return scalar_data_at(
+			read_memory(std::static_pointer_cast<TensorBase>(scalar)));
 	}
-	FloatT scalor_at(const Scalor& scalor)
+	FloatT scalar_at(const Scalar& scalar)
 	{
 		// ugly cast workaround for forward decl
-		return scalor_data_at(read_memory((TensorBase&) scalor));
+		return scalar_data_at(read_memory((TensorBase&) scalar));
 	}
 
 	/**************************************

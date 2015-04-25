@@ -19,7 +19,7 @@
  * Example of a bad recurrent topology:
  *
  	auto linput = Layer::make<ConstantLayer>(INPUT_DIM);
-	auto l2 = Layer::make<ScalorLayer>(TARGET_DIM, 1.3f);
+	auto l2 = Layer::make<ScalarLayer>(TARGET_DIM, 1.3f);
 	auto l3 = Layer::make<CosineLayer>(TARGET_DIM); // gate
 	auto lloss = Layer::make<SquareLossLayer>(TARGET_DIM);
 

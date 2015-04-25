@@ -328,7 +328,7 @@ TEST(VecmatRNN, GatedTanhConnection)
 	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
 
 	// NOTE layers engaged in a gate must have the same dims
-	auto l2 = Layer::make<ScalorLayer>(TARGET_DIM, 1.3f);
+	auto l2 = Layer::make<ScalarLayer>(TARGET_DIM, 1.3f);
 	auto l3 = Layer::make<CosineLayer>(TARGET_DIM); // gate
 
 	auto l4 = Layer::make<SquareLossLayer>(TARGET_DIM);

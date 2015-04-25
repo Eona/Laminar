@@ -37,7 +37,7 @@ public:
 
 	FloatT read_network_loss()
 	{
-		return engine->scalor_at(net->loss_value());
+		return engine->scalar_at(net->loss_value());
 	}
 
 	virtual void evaluate(LearningPhase learnPhase)

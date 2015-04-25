@@ -68,19 +68,19 @@ public:
 	int addr;
 };
 
-class Scalor : public TensorBase
+class Scalar : public TensorBase
 {
 public:
-	Scalor(EngineBase::Ptr _engine) :
+	Scalar(EngineBase::Ptr _engine) :
 		TensorBase(_engine)
 	{
 		engine->upload(Instruction( "create_null_s", {}, addr));
 	}
 
-	virtual ~Scalor() {}
+	virtual ~Scalar() {}
 
 	// Copy ctor
-	Scalor(const Scalor& other) :
+	Scalar(const Scalar& other) :
 		TensorBase(other)
 	{
 		engine->upload(Instruction("create_null_s", {}, this->addr));
@@ -88,7 +88,7 @@ public:
 	}
 
 	// Copy assignment
-	Scalor& operator=(const Scalor& other)
+	Scalar& operator=(const Scalar& other)
 	{
 		TensorBase::operator=(other);
 		engine->upload(Instruction("s=s", {other.addr}, this->addr));
@@ -96,12 +96,12 @@ public:
 	}
 
 	// Move ctor
-	Scalor(Scalor&& other) :
+	Scalar(Scalar&& other) :
 		TensorBase(std::move(other))
 	{ }
 
 	// Move assignment
-/*	Scalor& operator=(Scalor&& other)
+/*	Scalar& operator=(Scalar&& other)
 	{
 		TensorBase::operator=(std::move(other));
 		return *this;
@@ -111,14 +111,14 @@ public:
 	 * This only works with floats
 	 * If you want to work with other FloatT, use .assign
 	 */
-	Scalor& operator=(float val)
+	Scalar& operator=(float val)
 	{
 		this->assign<float>(val);
 		return *this;
 	}
 
 	/**
-	 * Assign a constant to the scalor
+	 * Assign a constant to the scalar
 	 * @param val
 	 */
 	template<typename FloatT = float>
@@ -128,28 +128,28 @@ public:
 						OpContext<FloatT>::make(val)));
 	}
 
-	Scalor& operator+=(const Scalor& other)
+	Scalar& operator+=(const Scalar& other)
 	{
 		engine->upload(Instruction("s+s", {this->addr, other.addr}, this->addr));
 		return *this;
 	}
 
-	Scalor& operator-=(const Scalor& other)
+	Scalar& operator-=(const Scalar& other)
 	{
 		engine->upload(Instruction("s-s", {this->addr, other.addr}, this->addr));
 		return *this;
 	}
 
-	Scalor& operator*=(const Scalor& other)
+	Scalar& operator*=(const Scalar& other)
 	{
 		engine->upload(Instruction("s*s", {this->addr, other.addr}, this->addr));
 		return *this;
 	}
 
 	/************************************/
-	TYPEDEF_PTR(Scalor);
+	TYPEDEF_PTR(Scalar);
 
-	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(Scalor)
+	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(Scalar)
 };
 
 class Tensor : public TensorBase
@@ -224,16 +224,16 @@ public:
 		return *this;
 	}
 
-	Tensor& operator*=(const Scalor& other)
+	Tensor& operator*=(const Scalar& other)
 	{
 		engine->upload(Instruction("t*s", {this->addr, other.addr}, this->addr));
 		return *this;
 	}
 
-	Tensor& operator*=(float scalor)
+	Tensor& operator*=(float scalar)
 	{
 		engine->upload(Instruction("scale", {this->addr}, this->addr,
-				OpContext<float>::make(scalor)));
+				OpContext<float>::make(scalar)));
 		return *this;
 	}
 

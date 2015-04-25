@@ -86,10 +86,10 @@ void mult(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 	*write = (*reads[0]) * (*reads[1]);
 }
 
-void scale(vector<FloatPtr> reads, FloatPtr write, bool is_initialized, float scalorContext)
+void scale(vector<FloatPtr> reads, FloatPtr write, bool is_initialized, float scalarContext)
 {
-	debug_msg("scale * " + to_str(scalorContext), is_initialized);
-	*write = scalorContext * (*reads[0]);
+	debug_msg("scale * " + to_str(scalarContext), is_initialized);
+	*write = scalarContext * (*reads[0]);
 }
 
 template<int TensorT>
@@ -101,7 +101,7 @@ void assign(vector<FloatPtr> reads, FloatPtr write, bool is_initialized)
 }
 
 /**
- * Assign a constant float to a Scalor
+ * Assign a constant float to a Scalar
  * OpContext<float>
  */
 void assign_const(vector<FloatPtr> reads, FloatPtr write, bool is_initialized, float constant)
@@ -302,7 +302,7 @@ public:
 		return *f;
 	}
 
-	float scalor_data_at(lmn::FloatPtr f)
+	float scalar_data_at(lmn::FloatPtr f)
 	{
 		return *f;
 	}

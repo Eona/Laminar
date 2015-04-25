@@ -19,14 +19,14 @@ struct tensor_class_info<Tensor>
 };
 
 template<>
-struct tensor_class_info<Scalor>
+struct tensor_class_info<Scalar>
 {
-	static constexpr const char *name = "Scalor";
+	static constexpr const char *name = "Scalar";
 	static constexpr const char *operand = "s";
 };
 
 /**
- * Only Tensor + Tensor or Scalor + Scalor
+ * Only Tensor + Tensor or Scalar + Scalar
  */
 template<typename TensorT1, typename TensorT2>
 typename std::enable_if<
@@ -38,7 +38,7 @@ operator+(const TensorT1& x1, const TensorT2& x2)
 		throw TensorException(string("operator+ type mismatch: ")
 				+ tensor_class_info<TensorT1>::name + "+"
 				+ tensor_class_info<TensorT2>::name + ". "
-				+ "Only Tensor+Tensor or Scalor+Scalor supported.");
+				+ "Only Tensor+Tensor or Scalar+Scalar supported.");
 
 	using TensorT = TensorT1;
 	TensorT ans(x1.engine);
@@ -49,7 +49,7 @@ operator+(const TensorT1& x1, const TensorT2& x2)
 }
 
 /**
- * Only Tensor - Tensor or Scalor - Scalor
+ * Only Tensor - Tensor or Scalar - Scalar
  */
 template<typename TensorT1, typename TensorT2>
 typename std::enable_if<
@@ -61,7 +61,7 @@ operator-(const TensorT1& x1, const TensorT2& x2)
 		throw TensorException(string("operator- type mismatch: ")
 				+ tensor_class_info<TensorT1>::name + "-"
 				+ tensor_class_info<TensorT2>::name + ". "
-				+ "Only Tensor-Tensor or Scalor-Scalor supported.");
+				+ "Only Tensor-Tensor or Scalar-Scalar supported.");
 
 	using TensorT = TensorT1;
 	TensorT ans(x1.engine);
@@ -86,14 +86,14 @@ operator-(const TensorT& x)
 
 /**
  * Multiply
- * Tensor * Tensor, Tensor * Scalor, Scalor * Tensor -> return Tensor
- * Scalor * Scalor -> Scalor
+ * Tensor * Tensor, Tensor * Scalar, Scalar * Tensor -> return Tensor
+ * Scalar * Scalar -> Scalar
  */
 template<typename TensorT1, typename TensorT2>
 using select_multiply_return =
-	select_type<std::is_same<TensorT1, Scalor>::value
-		&& std::is_same<TensorT2, Scalor>::value,
-		Scalor, Tensor>;
+	select_type<std::is_same<TensorT1, Scalar>::value
+		&& std::is_same<TensorT2, Scalar>::value,
+		Scalar, Tensor>;
 
 template<typename TensorT1, typename TensorT2>
 typename std::enable_if<
@@ -111,25 +111,25 @@ operator*(const TensorT1& x1, const TensorT2& x2)
 }
 
 /**
- * Multiply by a scalor constant (float)
+ * Multiply by a scalar constant (float)
  * @see opcode "s*t" and "t*s"
  * @param x
- * @param scalor
+ * @param scalar
  * @return
  */
-Tensor operator*(const Tensor& x, float scalor)
+Tensor operator*(const Tensor& x, float scalar)
 {
 	Tensor ans(x.engine);
 	ans.upload(Instruction("scale", {x.addr}, ans.addr,
-			OpContext<float>::make(scalor)));
+			OpContext<float>::make(scalar)));
 	return ans;
 }
 
-Tensor operator*(float scalor, const Tensor& x)
+Tensor operator*(float scalar, const Tensor& x)
 {
 	Tensor ans(x.engine);
 	ans.upload(Instruction("scale", {x.addr}, ans.addr,
-			OpContext<float>::make(scalor)));
+			OpContext<float>::make(scalar)));
 	return ans;
 }
 
@@ -180,14 +180,14 @@ typedef std::function<Tensor(const Tensor&)> TransferFunction;
 	GEN_BINARY_OP(element_mult, Tensor);
 
 	// 0.5f * sum( (x1 - x2)^2 )
-	GEN_BINARY_OP(square_loss, Scalor);
+	GEN_BINARY_OP(square_loss, Scalar);
 
 	/**
 	 * @param x
 	 * @param labels a 1-by-batchSize tensor of ints
 	 * @return
 	 */
-	GEN_BINARY_OP(label_entropy_loss, Scalor);
+	GEN_BINARY_OP(label_entropy_loss, Scalar);
 
 	/**
 	 * @param x

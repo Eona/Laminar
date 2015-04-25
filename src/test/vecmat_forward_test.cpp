@@ -41,10 +41,10 @@ TEST(VecmatForward, Diamond)
 
 	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
 
-	auto l2_1 = Layer::make<ScalorLayer>(1, 1.7f);
+	auto l2_1 = Layer::make<ScalarLayer>(1, 1.7f);
 	auto l2_2 = Layer::make<CosineLayer>(3);
 	auto l3_1 = Layer::make<SigmoidLayer>(2);
-	auto l3_2 = Layer::make<ScalorLayer>(2, -2.3f);
+	auto l3_2 = Layer::make<ScalarLayer>(2, -2.3f);
 
 	auto l4 = Layer::make<SquareLossLayer>(TARGET_DIM);
 
@@ -115,7 +115,7 @@ TEST(VecmatForward, Bias)
 
 	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
 
-	auto l2_1 = Layer::make<ScalorLayer>(1, 1.3f);
+	auto l2_1 = Layer::make<ScalarLayer>(1, 1.3f);
 	auto l2_2 = Layer::make<CosineLayer>(3);
 	auto l3_1 = Layer::make<SigmoidLayer>(2);
 	auto l3_2 = Layer::make<TanhLayer>(2);

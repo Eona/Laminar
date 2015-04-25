@@ -242,7 +242,7 @@ TEST(DummyRNN, GatedTanhConnection)
 	rand_target.set_rand_seq(targetSeq);
 
 	auto l1 = Layer::make<ConstantLayer>(DUMMY_DIM);
-	auto l2 = Layer::make<ScalorLayer>(DUMMY_DIM, 1.3f);
+	auto l2 = Layer::make<ScalarLayer>(DUMMY_DIM, 1.3f);
 	auto l3 = Layer::make<CosineLayer>(DUMMY_DIM); // gate
 	auto l4 = Layer::make<SquareLossLayer>(DUMMY_DIM);
 

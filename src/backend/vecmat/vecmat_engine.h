@@ -130,7 +130,7 @@ void mult_t_s(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
 		write->new_zeros(reads[0]);
 
 	LMN_ASSERT_THROW(reads[1]->dim() == (Dimension {1, 1}),
-		VecmatEngineException("t*s Scalor reads[1] should have dimension [1, 1]\n"
+		VecmatEngineException("t*s Scalar reads[1] should have dimension [1, 1]\n"
 				"But now it's " + container2str(reads[1]->dim())));
 
 	*write = reads[0]->scale(reads[1]->at({0, 0}));
@@ -144,15 +144,15 @@ void mult_s_t(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
 		write->new_zeros(reads[1]);
 
 	LMN_ASSERT_THROW(reads[0]->dim() == (Dimension {1, 1}),
-		VecmatEngineException("s*t Scalor reads[0] should have dimension [1, 1]\n"
+		VecmatEngineException("s*t Scalar reads[0] should have dimension [1, 1]\n"
 				"But now it's " + container2str(reads[0]->dim())));
 
 	*write = reads[1]->scale(reads[0]->at({0, 0}));
 }
 
-void scale(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized, float scalorContext)
+void scale(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized, float scalarContext)
 {
-	debug_msg("scale * " + to_str(scalorContext), is_initialized);
+	debug_msg("scale * " + to_str(scalarContext), is_initialized);
 
 	LMN_ASSERT_THROW(!reads[0]->is_empty(),
 		VecmatEngineException("calling scale on unintialized reads[0] addr"));
@@ -160,7 +160,7 @@ void scale(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized, floa
 	if (!is_initialized)
 		write->new_zeros(reads[0]);
 
-	*write = reads[0]->scale(scalorContext);
+	*write = reads[0]->scale(scalarContext);
 }
 
 template<int TensorT>
@@ -176,7 +176,7 @@ void assign(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
 }
 
 /**
- * Assign a float constant to Scalor
+ * Assign a float constant to Scalar
  */
 void assign_const(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized, float constant)
 {
@@ -308,7 +308,7 @@ inline void element_mult(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_ini
 
 /**
  * @param reads
- * @param write a scalor that's the sum of all square differences
+ * @param write a scalar that's the sum of all square differences
  * @param is_initialized
  */
 inline void square_loss(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
@@ -457,18 +457,18 @@ public:
 	float tensor_data_at(lmn::VecmatfPtr vecmat, DimIndex idx)
 	{
 		LMN_ASSERT_THROW(!vecmat->is_empty(),
-			EngineException("VecmatEngine: scalor_at() called on null matrix"));
+			EngineException("VecmatEngine: scalar_at() called on null matrix"));
 
 		return vecmat->at(idx);
 	}
 
-	float scalor_data_at(lmn::VecmatfPtr vecmat)
+	float scalar_data_at(lmn::VecmatfPtr vecmat)
 	{
 		LMN_ASSERT_THROW(!vecmat->is_empty(),
-			EngineException("VecmatEngine: scalor_at() called on null matrix"));
+			EngineException("VecmatEngine: scalar_at() called on null matrix"));
 
 		LMN_ASSERT_THROW(vecmat->dim() == (Dimension {1, 1}),
-			EngineException("VecmatEngine: scalor_at() called on wrong dimension:\n"
+			EngineException("VecmatEngine: scalar_at() called on wrong dimension:\n"
 					+ container2str(vecmat->dim()) + " while [1, 1] expected."));
 
 		return vecmat->at({0, 0});

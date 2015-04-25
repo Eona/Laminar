@@ -149,8 +149,8 @@ int main(int argc, char **argv)
 	/*Tensor t1(dummyEng, { 2, 3 });
 	Tensor t2(dummyEng, {5, 7});
 	Tensor t3 = t1 + t2;
-	Scalor s1(dummyEng);
-	Scalor s2(dummyEng);
+	Scalar s1(dummyEng);
+	Scalar s2(dummyEng);
 
 //	t1 -= t2;
 //	t1 += t2;

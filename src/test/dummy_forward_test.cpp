@@ -23,10 +23,10 @@ TEST(DummyForward, Diamond)
 	auto dummyData = DataManagerBase::make<DummyDataManager>(dummyEng);
 
 	auto l1 = Layer::make<ConstantLayer>(DUMMY_DIM);
-	auto l2_1 = Layer::make<ScalorLayer>(DUMMY_DIM, 1.7f);
+	auto l2_1 = Layer::make<ScalarLayer>(DUMMY_DIM, 1.7f);
 	auto l2_2 = Layer::make<CosineLayer>(DUMMY_DIM);
 	auto l3_1 = Layer::make<SigmoidLayer>(DUMMY_DIM);
-	auto l3_2 = Layer::make<ScalorLayer>(DUMMY_DIM, -2.3f);
+	auto l3_2 = Layer::make<ScalarLayer>(DUMMY_DIM, -2.3f);
 	auto l4 = Layer::make<SquareLossLayer>(DUMMY_DIM);
 
 	ForwardNetwork net(dummyEng, dummyData);

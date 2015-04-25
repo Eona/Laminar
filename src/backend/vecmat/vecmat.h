@@ -189,19 +189,19 @@ public:
 		return ans;
 	}
 
-	Vecmat scale(FloatT scalor)
+	Vecmat scale(FloatT scalar)
 	{
 		Vecmat ans(row(), col());
 		for (int r = 0; r < row(); ++r)
 			for (int c = 0; c < col(); ++c)
-				ans[r][c] = this->mat[r][c] * scalor;
+				ans[r][c] = this->mat[r][c] * scalar;
 
 		return ans;
 	}
 
-	Vecmat operator*(FloatT scalor)
+	Vecmat operator*(FloatT scalar)
 	{
-		return this->scale(scalor);
+		return this->scale(scalar);
 	}
 
 	// Negation

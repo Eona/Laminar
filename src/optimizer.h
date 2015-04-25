@@ -75,14 +75,14 @@ public:
 	virtual ~SGD() {}
 
 protected:
-	Scalor::Ptr learningRate;
+	Scalar::Ptr learningRate;
 
 	float initLearningRate;
 
 	virtual void initialize_impl()
 	{
-		this->learningRate = Scalor::make(engine);
-		// upload float to Scalor
+		this->learningRate = Scalar::make(engine);
+		// upload float to Scalar
 		*learningRate = initLearningRate;
 	}
 

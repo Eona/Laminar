@@ -154,12 +154,12 @@ public:
 		return this->paramContainers;
 	}
 
-	Scalor::Ptr loss_value_ptr() const
+	Scalar::Ptr loss_value_ptr() const
 	{
 		return lossLayer->loss_value_ptr();
 	}
 
-	Scalor& loss_value() const
+	Scalar& loss_value() const
 	{
 		return lossLayer->loss_value();
 	}

@@ -23,12 +23,12 @@ public:
 
 	virtual ~LossLayer() {};
 
-	virtual Scalor& loss_value() const
+	virtual Scalar& loss_value() const
 	{
 		return *this->lossValue;
 	}
 
-	virtual Scalor::Ptr loss_value_ptr() const
+	virtual Scalar::Ptr loss_value_ptr() const
 	{
 		return this->lossValue;
 	}
@@ -77,7 +77,7 @@ public:
 	}
 
 protected:
-	Scalor::Ptr lossValue;
+	Scalar::Ptr lossValue;
 	/**
 	 * int class labels can be faked as a 1-by-batchSize tensor
 	 */
@@ -87,7 +87,7 @@ protected:
 	 * All subclasses must implement the following
 	 * @return loss update
 	 */
-	virtual Scalor loss_forward_impl(Tensor& inValue, Tensor& targetValue) = 0;
+	virtual Scalar loss_forward_impl(Tensor& inValue, Tensor& targetValue) = 0;
 
 	virtual void loss_backward_impl(Tensor& inValue, Tensor& targetValue,
 									// output parameter:
@@ -106,7 +106,7 @@ protected:
 		for (int t = 0; t < history_length(); ++t)
 			this->targetValues.push_back(Tensor::make(engine));
 
-		this->lossValue = Scalor::make(engine);
+		this->lossValue = Scalar::make(engine);
 	}
 };
 
@@ -132,7 +132,7 @@ public:
 	}
 
 protected:
-	virtual Scalor loss_forward_impl(Tensor& inValue, Tensor& targetValue)
+	virtual Scalar loss_forward_impl(Tensor& inValue, Tensor& targetValue)
 	{
 		return lmn::square_loss(inValue, targetValue);
 	}
@@ -168,7 +168,7 @@ public:
 protected:
 	vector<Tensor::Ptr> cachedSoftmax;
 
-	virtual Scalor loss_forward_impl(Tensor& inValue, Tensor& targetValue)
+	virtual Scalar loss_forward_impl(Tensor& inValue, Tensor& targetValue)
 	{
 		*cachedSoftmax[frame()] = lmn::softmax(inValue);
 

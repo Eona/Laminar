@@ -140,21 +140,21 @@ protected:
 };
 
 /**
- * ScalorLayer is special, it overrides backward_impl directly
+ * ScalarLayer is special, it overrides backward_impl directly
  * activation_gradient() will never be called
  */
-class ScalorLayer : public ActivationLayer
+class ScalarLayer : public ActivationLayer
 {
 public:
-	ScalorLayer(Dimension dim, float multiplier_ = 1.0f):
+	ScalarLayer(Dimension dim, float multiplier_ = 1.0f):
 		ActivationLayer(dim), multiplier(multiplier_)
 	{}
 
-	ScalorLayer(int dim, float multiplier_ = 1.0f) :
+	ScalarLayer(int dim, float multiplier_ = 1.0f) :
 		ActivationLayer(dim), multiplier(multiplier_)
 	{ }
 
-	virtual ~ScalorLayer() {};
+	virtual ~ScalarLayer() {};
 
 	virtual void forward_impl(Tensor& inValue, Tensor& outValue)
 	{
@@ -169,7 +169,7 @@ public:
 
 	virtual explicit operator string() const
 	{
-		return string("[ScalorLayer: \n")
+		return string("[ScalarLayer: \n")
 				+ Layer::operator string() + "]";
 	}
 
