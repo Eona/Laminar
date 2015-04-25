@@ -333,6 +333,82 @@ inline void square_loss(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_init
 		}
 }
 
+/**
+ * Max-exp trick for numerical stability
+ * 1) find max in each column vector
+ * 2) subtract max from every element in this column
+ * 3) exp every element
+ * 4) sum step (3)
+ * 5) divide every element by step (4)
+ */
+inline void softmax(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
+{
+	debug_msg("softmax", is_initialized);
+
+	if (!is_initialized)
+		write->new_zeros(reads[0]);
+
+	Vecmatf& rmat = *reads[0];
+	Vecmatf& wmat = *write;
+
+	rmat.assert_same_dim(wmat, "softmax reads[0] VS write addr");
+
+	// Each column is a data feature vector
+	// coldim is batch size
+	for (int c = 0; c < rmat.col(); ++c)
+	{
+		// find max
+		float mx = -1e20f;
+		for (int r = 0; r < rmat.row(); ++r)
+			if (rmat(r, c) > mx)
+				mx = rmat(r, c);
+
+		// exp(a - mx) for all 'a'
+		for (int r = 0; r < rmat.row(); ++r)
+			wmat(r, c) = std::exp(rmat(r, c) - mx);
+
+		// sum last step
+		float sum = 0;
+		for (int r = 0; r < wmat.row(); ++r)
+			sum += wmat(r, c);
+
+		// divide every wmat col element by sum
+		for (int r = 0; r < wmat.row(); ++r)
+			wmat(r, c) /= sum;
+	}
+}
+
+/**
+ * -log(value_at_label)
+ * @param reads a tensor of int class labels (faked as floats)
+ * @param write a scalor loss
+ */
+inline void label_entropy_loss(
+		vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
+{
+	debug_msg("label_entropy_loss", is_initialized);
+
+	if (!is_initialized)
+		write->new_zeros(1, 1);
+
+	Vecmatf& rmat = *reads[0];
+	Vecmatf& labels = *reads[1];
+
+	Vecmatf& loss = *write;
+
+	// FIXME
+	LMN_ASSERT_THROW(rmat.col() == labels.col(),
+			VecmatEngineException("label_entropy_loss input mat col dim "
+					"doesn't match labels col dim:\n" + rmat.dims_errmsg(labels)));
+}
+
+inline void label_softmax_entropy_gradient(
+		vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
+{
+
+}
+
+
 inline void zero_clear(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
 {
 	debug_msg("zero_clear", is_initialized);
@@ -457,7 +533,7 @@ public:
 	float tensor_data_at(lmn::VecmatfPtr vecmat, DimIndex idx)
 	{
 		LMN_ASSERT_THROW(!vecmat->is_empty(),
-			EngineException("VecmatEngine: scalar_at() called on null matrix"));
+			VecmatEngineException("scalar_at() called on null matrix"));
 
 		return vecmat->at(idx);
 	}
@@ -465,10 +541,10 @@ public:
 	float scalar_data_at(lmn::VecmatfPtr vecmat)
 	{
 		LMN_ASSERT_THROW(!vecmat->is_empty(),
-			EngineException("VecmatEngine: scalar_at() called on null matrix"));
+			VecmatEngineException("scalar_at() called on null matrix"));
 
 		LMN_ASSERT_THROW(vecmat->dim() == (Dimension {1, 1}),
-			EngineException("VecmatEngine: scalar_at() called on wrong dimension:\n"
+			VecmatEngineException("scalar_at() called on wrong dimension:\n"
 					+ container2str(vecmat->dim()) + " while [1, 1] expected."));
 
 		return vecmat->at({0, 0});
