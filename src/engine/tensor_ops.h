@@ -183,6 +183,19 @@ typedef std::function<Tensor(const Tensor&)> TransferFunction;
 		return ans;
 	}
 
+	/**
+	 * @param x
+	 * @param labels a 1-by-batchSize tensor of ints
+	 * @return
+	 */
+	Scalor label_softmax_entropy_loss(const Tensor& x, const Tensor& labels)
+	{
+		Scalor ans(x.engine);
+		x.upload(Instruction(
+				"label_softmax_entropy_loss", {x.addr, labels.addr}, ans.addr));
+		return ans;
+	}
+
 	void zero_clear(const TensorBase& x)
 	{
 		x.upload(Instruction("zero_clear", {}, x.addr));

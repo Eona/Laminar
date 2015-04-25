@@ -52,7 +52,7 @@ public:
 		lmn::zero_clear(*lossValue);
 	}
 
-	TensorBase& target_value(int t)
+	Tensor& target_value(int t)
 	{
 		return *this->targetValues[t];
 	}
@@ -79,18 +79,17 @@ public:
 protected:
 	Scalor::Ptr lossValue;
 	/**
-	 * Here TensorBase::Ptr, not Tensor::Ptr because the targetValue might be Scalor:
-	 * for one-hot encoding, we encapsulate 'int' class label in a Scalor (hackish)
+	 * int class labels can be faked as a 1-by-batchSize tensor
 	 */
-	vector<TensorBase::Ptr> targetValues;
+	vector<Tensor::Ptr> targetValues;
 
 	/**
 	 * All subclasses must implement the following
 	 * @return loss update
 	 */
-	virtual Scalor loss_forward_impl(Tensor& inValue, TensorBase& targetValue) = 0;
+	virtual Scalor loss_forward_impl(Tensor& inValue, Tensor& targetValue) = 0;
 
-	virtual void loss_backward_impl(Tensor& inValue, TensorBase& targetValue,
+	virtual void loss_backward_impl(Tensor& inValue, Tensor& targetValue,
 									// output parameter:
 									Tensor& inGradient) = 0;
 
@@ -104,18 +103,10 @@ protected:
 		Layer::initialize_impl_invalue();
 		Layer::initialize_impl_ingradient();
 
-		this->lossValue = Scalor::make(engine);
-	}
-
-	/**
-	 * Used by subclasses to initialize targetValues
-	 * We give a TensorT type because the target might be a Scalor (class label)
-	 */
-	template<typename TensorT>
-	void init_target_value_helper()
-	{
 		for (int t = 0; t < history_length(); ++t)
-			this->targetValues.push_back(TensorT::make(engine));
+			this->targetValues.push_back(Tensor::make(engine));
+
+		this->lossValue = Scalor::make(engine);
 	}
 };
 
@@ -141,23 +132,56 @@ public:
 	}
 
 protected:
-	virtual Scalor loss_forward_impl(Tensor& inValue, TensorBase& targetValue)
+	virtual Scalor loss_forward_impl(Tensor& inValue, Tensor& targetValue)
 	{
-		// we know our target value is Tensor for SquareLoss
-		return lmn::square_loss(inValue, dynamic_cast<Tensor&>(targetValue));
+		return lmn::square_loss(inValue, targetValue);
 	}
 
-	virtual void loss_backward_impl(Tensor& inValue, TensorBase& targetValue, Tensor& inGradient)
+	virtual void loss_backward_impl(Tensor& inValue, Tensor& targetValue, Tensor& inGradient)
 	{
-		inGradient = inValue - dynamic_cast<Tensor&>(targetValue);
+		inGradient = inValue - targetValue;
+	}
+};
+
+/**
+ * With integer labelled classes
+ */
+class LabelSoftmaxEntropyLayer : public LossLayer
+{
+public:
+	LabelSoftmaxEntropyLayer(Dimension dim) :
+		LossLayer(dim)
+	{}
+
+	LabelSoftmaxEntropyLayer(int dim) :
+		LossLayer(dim)
+	{ }
+
+	virtual ~LabelSoftmaxEntropyLayer() {};
+
+	virtual explicit operator string() const
+	{
+		return string("[LabelSoftmaxLayer: \n")
+				+ Layer::operator string() + "]";
+	}
+
+protected:
+	virtual Scalor loss_forward_impl(Tensor& inValue, Tensor& targetValue)
+	{
+		// our target is an integer class label
+		return lmn::label_softmax_entropy_loss(inValue, targetValue);
+	}
+
+	virtual void loss_backward_impl(Tensor& inValue, Tensor& targetValue, Tensor& inGradient)
+	{
+//		inGradient = inValue - dynamic_cast<Scalor&>(targetValue);
 	}
 
 	virtual void initialize_impl()
 	{
 		LossLayer::initialize_impl();
 
-		// For SquareLoss, our target is a Tensor
-		LossLayer::init_target_value_helper<Tensor>();
+		// Our target is an integer class label
 	}
 };
 
