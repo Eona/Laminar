@@ -173,7 +173,7 @@ protected:
 		*cachedSoftmax[frame()] = lmn::softmax(inValue);
 
 		// our target is an integer class label
-		return lmn::label_entropy_loss(inValue, targetValue);
+		return lmn::label_entropy_loss(*cachedSoftmax[frame()], targetValue);
 	}
 
 	virtual void loss_backward_impl(Tensor& inValue, Tensor& targetValue, Tensor& inGradient)
