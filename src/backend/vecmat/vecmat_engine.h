@@ -320,16 +320,16 @@ inline void square_loss(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_init
 
 	Vecmatf& rmat1 = *reads[0];
 	Vecmatf& rmat2 = *reads[1];
-	Vecmatf& wmat = *write;
+	Vecmatf& loss = *write;
 
 	rmat1.assert_same_dim(rmat2, "square_loss reads[0] VS reads[1] addr");
 
-	wmat(0, 0) = 0;
+	loss(0, 0) = 0;
 	for (int r = 0; r < rmat1.row(); ++r)
 		for (int c = 0; c < rmat1.col(); ++c)
 		{
 			float diff = rmat1(r, c) - rmat2(r, c);
-			wmat(0, 0) += 0.5f * diff * diff;
+			loss(0, 0) += 0.5f * diff * diff;
 		}
 }
 
@@ -396,16 +396,49 @@ inline void label_entropy_loss(
 
 	Vecmatf& loss = *write;
 
-	// FIXME
 	LMN_ASSERT_THROW(rmat.col() == labels.col(),
-			VecmatEngineException("label_entropy_loss input mat col dim "
-					"doesn't match labels col dim:\n" + rmat.dims_errmsg(labels)));
+			VecmatEngineException("label_entropy_loss input mat coldim "
+					"doesn't match labels coldim:\n" + rmat.dims_errmsg(labels)));
+
+	loss(0, 0) = 0;
+	for (int c = 0; c < rmat.col(); ++c)
+	{
+		int label = (int) labels(0, c);
+		// value at label:
+		loss(0, 0) += -std::log(rmat(label, c));
+	}
 }
 
+/**
+ *
+ * @param reads y, vector *after* softmax
+ * @param write y - t, where t is a sparse vector with a single '1' at the correct label
+ * @param is_initialized
+ */
 inline void label_softmax_entropy_gradient(
 		vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
 {
+	debug_msg("label_softmax_entropy_gradient", is_initialized);
 
+	if (!is_initialized)
+		write->new_zeros(reads[0]);
+
+	Vecmatf& rmat = *reads[0];
+	Vecmatf& labels = *reads[1];
+
+	Vecmatf& wmat = *write;
+
+	LMN_ASSERT_THROW(rmat.col() == labels.col(),
+			VecmatEngineException("label_softmax_entropy_gradient input mat coldim "
+					"doesn't match labels coldim:\n" + rmat.dims_errmsg(labels)));
+
+	wmat = rmat; // copy most values won't change
+
+	for (int c = 0; c < rmat.col(); ++c)
+	{
+		int label = (int) labels(0, c);
+		wmat(label, c) -= 1.f; // y - t (sparse)
+	}
 }
 
 

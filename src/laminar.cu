@@ -65,6 +65,7 @@ struct PrintGradient : public Observer<Network>
 
 int main(int argc, char **argv)
 {
+/*
 	auto images = read_mnist_image(string("../data/") + MnistTrainImageFile, 100);
 	auto labels = read_mnist_label(string("../data/") + MnistTrainLabelFile, 100);
 
@@ -79,6 +80,41 @@ int main(int argc, char **argv)
 	DEBUG_MSG(mat);
 
 	DEBUG_MSG(labels);
+*/
+
+	using namespace lmn::VecmatImpl;
+	using lmn::Vecmatf;
+
+	Vecmat<float> A = {
+		{2.1, -1.2},
+		{-3.3, .4},
+		{1.65, -.7},
+		{-1.33, .57}
+	};
+
+	Vecmat<float> A2 = {
+			{1.1, 3, 6},
+			{7.8, 2, 10},
+			{5.9, 5, 5}
+	};
+
+	Vecmat<float> B = {
+			{1, 2, 0}
+	};
+
+	auto a = std::make_shared<Vecmatf>(A2);
+	auto ans = std::make_shared<Vecmatf>(A2.row(), A2.col());
+	auto labels = std::make_shared<Vecmatf>(B);
+
+	auto scalar = std::make_shared<Vecmatf>(1, 1);
+
+	softmax({a}, ans, true);
+	label_entropy_loss({ans, labels}, scalar, true);
+	label_softmax_entropy_gradient({ans, labels}, ans, true);
+
+	DEBUG_MSG(*scalar);
+	DEBUG_MSG(*ans);
+
 
 /*
 //	const int HISTORY = 5;
