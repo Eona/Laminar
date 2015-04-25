@@ -366,4 +366,21 @@ protected:
 	}
 };
 
+/**
+ * A tagger ONLY, to bypass certain checks.
+ * e.g. ConstantLayer won't check LstmDebugLayer dimension consistency
+ */
+struct DebugLayer : public Layer
+{
+	DebugLayer(Dimension dim):
+		Layer(dim)
+	{}
+
+	DebugLayer(int dim) :
+		Layer(dim)
+	{ }
+
+	virtual ~DebugLayer() {}
+};
+
 #endif /* LAYER_H_ */

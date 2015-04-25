@@ -15,6 +15,12 @@ public:
 	ConstantConnection(Layer::Ptr _inLayer, Layer::Ptr _outLayer):
 		Connection(_inLayer, _outLayer)
 	{
+		LMN_ASSERT_THROW(_inLayer->dim() == _outLayer->dim()
+				// we disable the check if either in/outLayer is a DebugLayer
+				|| is_convertible<DebugLayer>(_inLayer)
+				|| is_convertible<DebugLayer>(_outLayer),
+			ComponentException("ConstantConnection inLayer and outLayer dim diagrees:\n"
+				+ container2str(_inLayer->dim()) + " <-> " + container2str(_outLayer->dim())));
 	}
 
 	virtual ~ConstantConnection() {};

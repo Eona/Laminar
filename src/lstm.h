@@ -115,13 +115,13 @@ protected:
 /**
  * DEBUG ONLY
  */
-class LstmDebugLayer : public Layer, public ParamContainer
+class LstmDebugLayer : public DebugLayer, public ParamContainer
 {
 public:
 	LstmDebugLayer(Dimension dim,
 			int inLayerDim_,
 			int batchSize_) :
-		Layer(dim),
+		DebugLayer(dim),
 		ParamContainer(LSTM_PARAM_SIZE),
 		inLayerDim(inLayerDim_),
 		batchSize(batchSize_),
