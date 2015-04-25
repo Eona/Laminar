@@ -13,31 +13,20 @@
 /**
  * Save parameters to disk periodically
  */
-struct SerializerBase
-{
-	virtual ~SerializerBase() {};
-
-	virtual void save(Network::Ptr, LearningState::Ptr) = 0;
-
-	TYPEDEF_PTR(SerializerBase);
-
-	GEN_GENERIC_MAKEPTR_STATIC_MEMBER(SerializerBase)
-};
-
 template<typename NetworkT, typename EngineT>
-struct Serializer : public SerializerBase
+struct Serializer
 {
 LMN_STATIC_ASSERT_IS_BASE(Network, NetworkT, "Serializer template arg");
 LMN_STATIC_ASSERT_IS_BASE(EngineBase, EngineT, "Serializer template arg");
 
+	Serializer() {}
+
 	virtual ~Serializer() {}
 
-	virtual void save(Network::Ptr net_, LearningState::Ptr state)
+	virtual void save(std::shared_ptr<NetworkT> net, LearningState::Ptr state)
 	{
-		auto net = Network::cast<NetworkT>(net_);
-		LMN_ASSERT_NULLPTR(net,
-			LearningException("Serializer network type mismatch"));
-
+		// ugly workaround because NetworkT is not known to derive from Network
+		Network::Ptr net_ = Network::cast<Network>(net);
 		auto engine = net_->get_engine<EngineT>();
 		LMN_ASSERT_NULLPTR(engine,
 			LearningException("Serializer engine type mismatch"));
@@ -54,11 +43,19 @@ protected:
 /**
  * Doesn't save anything
  */
-struct NullSerializer : public SerializerBase
+struct NullSerializer : public Serializer<Network, EngineBase>
 {
-	void save(Network::Ptr, LearningState::Ptr) { }
+	NullSerializer() :
+		Serializer<Network, EngineBase>()
+	{}
+
+	virtual ~NullSerializer() {}
 
 	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(NullSerializer)
+
+protected:
+	virtual void save_impl(
+		std::shared_ptr<Network>, std::shared_ptr<EngineBase>, LearningState::Ptr) {}
 };
 
 

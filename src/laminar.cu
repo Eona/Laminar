@@ -37,7 +37,7 @@ FakeRand& rand_target = FakeRand::instance_target();
 #define conn_gated Connection::make<GatedConnection>
 
 template<typename EngineT>
-struct PrintGradient : public Observer
+struct PrintGradient : public Observer<Network>
 {
 	void observe(Network::Ptr net, LearningState::Ptr state)
 	{
@@ -87,9 +87,12 @@ int main(int argc, char **argv)
 		// Each column is a batch
 		for (int c = 0; c < in.col(); ++c)
 		{
-			out(0, c) = sin(in(0, c)) + cos(in(1, c));
-			out(1, c) = cos(in(1, c)) + sin(in(2, c));
-			out(2, c) = 2 * sin(in(2, c)) - cos(in(3, c));
+//			out(0, c) = sin(in(0, c)) + cos(in(1, c));
+//			out(1, c) = cos(in(1, c)) + sin(in(2, c));
+//			out(2, c) = 2 * sin(in(2, c)) - cos(in(3, c));
+			out(0, c) = (in(0, c)) + (in(1, c));
+			out(1, c) = (in(1, c)) + (in(2, c));
+			out(2, c) = (in(2, c)) + (in(3, c));
 		}
 	};
 
@@ -117,20 +120,21 @@ int main(int argc, char **argv)
 	net->add_layer(lloss);
 
 	auto opm = Optimizer::make<SGD>(0.3);
-	auto eval = Evaluator<VecmatEngine>::make(net);
+	auto eval = NoMetricEvaluator<VecmatEngine>::make(net);
+	auto sched = EpochIntervalSchedule::make(1, 1);
 	auto stopper = StopCriteria::make<MaxEpochStopper>(100);
 	auto ser = NullSerializer::make();
-	auto sched = EpochIntervalSchedule::make(1, 1);
 
-	LearningSession session(net, opm, eval, sched, stopper, ser,
+	auto session = new_learning_session(net, opm, eval, sched, stopper, ser,
 			std::make_shared<PrintGradient<VecmatEngine>>());
 
-	session.initialize();
+
+	session->initialize();
 
 	auto params = net->param_containers();
 	DEBUG_MSG(*engine->read_memory(params[0]->param_value_ptr(0)));
 
-	session.train();
+	session->train();
 
 //	DEBUG_TITLE("After SGD");
 //	DEBUG_MSG("its new value:");

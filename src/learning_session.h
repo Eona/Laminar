@@ -12,19 +12,25 @@
 #include "serializer.h"
 #include "evaluator.h"
 
+template<typename OptimizerT,
+		typename EvaluatorT,
+		typename EvalScheduleT,
+		typename StopCriteriaT,
+		typename SerializerT,
+		typename ObserverT>
 class LearningSession
 {
-// otherwise we have to add 'typename' every time:
-//typedef typename Serializer<NetworkT>::Ptr SerializerPtr;
+	template<typename T>
+	using PtrT = std::shared_ptr<T>;
 
 public:
 	LearningSession(Network::Ptr net,
-					Optimizer::Ptr optimizer,
-					EvaluatorBase<>::Ptr evaluator,
-					EvalSchedule::Ptr schedule,
-					StopCriteria::Ptr stopper,
-					SerializerBase::Ptr serializer,
-					Observer::Ptr observer) :
+					PtrT<OptimizerT> optimizer,
+					PtrT<EvaluatorT> evaluator,
+					PtrT<EvalScheduleT> schedule,
+					PtrT<StopCriteriaT> stopper,
+					PtrT<SerializerT> serializer,
+					PtrT<ObserverT> observer) :
 		net(net),
 		dataManager(net->get_data_manager()),
 		engine(net->get_engine()),
@@ -149,6 +155,8 @@ public:
 		while (!stopper->stop_learning(state));
 	}
 
+	TYPEDEF_PTR(LearningSession);
+
 protected:
 	/**
 	 * Subclasses should override this
@@ -169,16 +177,49 @@ protected:
 	EngineBase::Ptr engine;
 
 	LearningState::Ptr state;
-	Optimizer::Ptr optimizer;
-	EvaluatorBase<>::Ptr evaluator;
-	EvalSchedule::Ptr schedule;
-	StopCriteria::Ptr stopper;
-	SerializerBase::Ptr serializer;
-	Observer::Ptr observer;
+	PtrT<OptimizerT> optimizer;
+	PtrT<EvaluatorT> evaluator;
+	PtrT<EvalScheduleT> schedule;
+	PtrT<StopCriteriaT> stopper;
+	PtrT<SerializerT> serializer;
+	PtrT<ObserverT> observer;
 
 	InitializeGuard<LearningException> initGuard;
 
 	vector<LearningState> learningHistory;
 };
+
+/**
+ * In analogy to std::make_shared, we use a factory method
+ * to deduce the class templates
+ */
+#define LEARNING_SESSION_GENERIC_TYPE \
+LearningSession<OptimizerT, EvaluatorT, EvalScheduleT, StopCriteriaT, SerializerT, ObserverT>
+
+template<typename OptimizerT,
+		typename EvaluatorT,
+		typename EvalScheduleT,
+		typename StopCriteriaT,
+		typename SerializerT,
+		typename ObserverT>
+typename LEARNING_SESSION_GENERIC_TYPE::Ptr
+new_learning_session(Network::Ptr net,
+		std::shared_ptr<OptimizerT> optimizer, // actually should be pointer types
+		std::shared_ptr<EvaluatorT> evaluator,
+		std::shared_ptr<EvalScheduleT> schedule,
+		std::shared_ptr<StopCriteriaT> stopper,
+		std::shared_ptr<SerializerT> serializer,
+		std::shared_ptr<ObserverT> observer)
+{
+	return std::make_shared<LEARNING_SESSION_GENERIC_TYPE>(
+				net,
+				optimizer,
+				evaluator,
+				schedule,
+				stopper,
+				serializer,
+				observer);
+}
+
 
 #endif /* LEARNING_SESSION_H_ */

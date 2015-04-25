@@ -10,21 +10,29 @@
 /**************************************
 ******* Cross-validation and testing *********
 **************************************/
-
-template<typename FloatT = float>
-class EvaluatorBase
+/**
+ * Evaluate network performance for validation and testing
+ */
+template<typename EngineT, typename FloatT = float>
+class Evaluator
 {
+LMN_STATIC_ASSERT_IS_BASE(EngineBase, EngineT, "Evaluator template arg");
+
 public:
-	EvaluatorBase(Network::Ptr net) :
+	Evaluator(Network::Ptr net) :
 		net(net),
+		engine(net->get_engine<EngineT>()),
 		dataManager(net->get_data_manager()),
 		losses({ 0, 0, 0 }), // validation/testing losses
 		metrics({ 0, 0, 0 }) // validation/testing metrics
 	{}
 
-	virtual ~EvaluatorBase() {}
+	virtual ~Evaluator() {}
 
-	virtual FloatT read_network_loss() = 0;
+	FloatT read_network_loss()
+	{
+		return engine->scalor_at(net->loss_value());
+	}
 
 	virtual void evaluate(LearningPhase learnPhase)
 	{
@@ -77,8 +85,6 @@ public:
 		return this->metrics[enum2integral(learnPhase)];
 	}
 
-	TYPEDEF_PTR(EvaluatorBase);
-
 protected:
 	/**
 	 * Derived needs to implement this
@@ -94,6 +100,7 @@ protected:
 
 protected:
 	Network::Ptr net;
+	std::shared_ptr<EngineT> engine;
 	DataManagerBase::Ptr dataManager;
 
 private:
@@ -101,33 +108,20 @@ private:
 	std::array<FloatT, LEARNING_PHASE_N> metrics;
 };
 
-/**
- * Evaluate network performance for validation and testing
- */
+
 template<typename EngineT, typename FloatT = float>
-class Evaluator : public EvaluatorBase<FloatT>
+class NoMetricEvaluator : public Evaluator<EngineT, FloatT>
 {
-LMN_STATIC_ASSERT_IS_BASE(EngineBase, EngineT, "Evaluator template arg");
-
-using EvaluatorBase<FloatT>::net;
-
 public:
-	Evaluator(Network::Ptr net) :
-		EvaluatorBase<FloatT>(net),
-		engine(net->get_engine<EngineT>())
-	{}
+	NoMetricEvaluator(Network::Ptr net) :
+		Evaluator<EngineT, FloatT>(net)
+	{ }
 
-	virtual ~Evaluator() {}
+	virtual ~NoMetricEvaluator() {}
 
-	FloatT read_network_loss()
-	{
-		return engine->scalor_at(net->loss_value());
-	}
-
-	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(Evaluator)
+	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(NoMetricEvaluator)
 
 protected:
-	std::shared_ptr<EngineT> engine;
 
 	/*********** defaults ***********/
 	virtual void update_metric(Network::Ptr, LearningPhase)
@@ -138,7 +132,5 @@ protected:
 		return 0;
 	}
 };
-
-
 
 #endif /* EVALUATOR_H_ */

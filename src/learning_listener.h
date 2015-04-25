@@ -205,13 +205,13 @@ protected:
  */
 // forward decl
 class Network;
+
+template<typename NetworkT>
 struct Observer
 {
 	virtual ~Observer() {}
 
-	virtual void observe(std::shared_ptr<Network>, LearningState::Ptr) = 0;
-
-	TYPEDEF_PTR(Observer);
+	virtual void observe(std::shared_ptr<NetworkT>, LearningState::Ptr) = 0;
 
 	GEN_GENERIC_MAKEPTR_STATIC_MEMBER(Observer)
 };
@@ -219,7 +219,7 @@ struct Observer
 /**
  * Do-nothing observor
  */
-struct NullObserver : public Observer
+struct NullObserver : public Observer<Network>
 {
 	void observe(std::shared_ptr<Network>, LearningState::Ptr) { }
 
