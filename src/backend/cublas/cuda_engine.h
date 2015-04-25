@@ -364,8 +364,8 @@ public:
 		if (!is_initialized)
 	    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);
 
-		float* rmat = new float(write->LEN);
-		float* wmat = new float(write->LEN);
+		float* rmat = new float[write->LEN];
+		float* wmat = new float[write->LEN];
 		int m = write->DIM_ROW;
 		int n = write->DIM_COL;
 		reads[0]->to_host(rmat);
