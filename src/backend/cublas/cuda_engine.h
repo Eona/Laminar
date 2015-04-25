@@ -39,6 +39,7 @@ public:
 		timed = true;
 	    cublasCreate(&handle);
 
+
 //	    if (timed) GPU_CHECKERROR(cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync));//for accurate timing
 //		register_create(CudaEngine::create);
 //		register_opcode("t+t", CudaEngine::add);

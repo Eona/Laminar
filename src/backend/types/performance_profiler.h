@@ -36,12 +36,6 @@ struct TimerEntry{
 	Clock::time_point time_stamp;
 	size_t op_index;
 
-//	TimerEntry() {
-//		time = 0;
-//		data_size = 0;
-//		op_index = 0;
-//		time_stamp = Clock::now();
-//	}
 	TimerEntry(uint64_t t, size_t d, size_t index) {
 		time = t;
 		data_size = d;
@@ -49,6 +43,31 @@ struct TimerEntry{
 		time_stamp = Clock::now();
 	}
 };
+
+//template<typename Event>
+//struct TimerEntry{
+//	uint64_t time;//time in nanoseconds
+//	size_t data_size;
+//	Clock::time_point time_stamp;
+//	size_t op_index;
+//	Event begin_event;
+//	Event end_event;
+//
+//	TimerEntry(uint64_t t, size_t d, size_t index) {
+//		time = t;
+//		data_size = d;
+//		op_index = index;
+//		time_stamp = Clock::now();
+//	}
+//
+//	TimerEntry(Event e0, Event e1, size_t d, size_t index) {
+//		begin_event = e0;
+//		end_event = e1;
+//		op_index = index;
+//		data_size = d;
+//	}
+//};
+
 
 //Generic global timer
 class GlobalTimer{
@@ -62,6 +81,7 @@ public:
 	Clock::time_point t0;
 	uint64_t global_duration;
 	std::unordered_map<std::string, vector<TimerEntry>> named_timers;
+
 	size_t op_counter;
 
 	GlobalTimer() {
@@ -77,6 +97,22 @@ public:
 		TimerEntry e(time_incre_ns, data_size, op_counter++);
 		named_timers[timer_name].push_back(e);
 	}
+
+//	void record_named_timer (std::string timer_name, cudaEvent_t begin_event, cudaEvent_t end_event, size_t data_size){
+//		if ( named_timers.find (timer_name) == named_timers.end()) {
+//			named_timers[timer_name] = vector<TimerEntry>();
+//		}
+//		TimerEntry e(time_incre_ns, data_size, op_counter++);
+//		named_timers[timer_name].push_back(e);
+//	}
+//
+//	void record_named_timer (std::string timer_name, cl_event begin_event, cl_event end_event, size_t data_size){
+//		if ( named_timers.find (timer_name) == named_timers.end()) {
+//			named_timers[timer_name] = vector<TimerEntry>();
+//		}
+//		TimerEntry e(time_incre_ns, data_size, op_counter++);
+//		named_timers[timer_name].push_back(e);
+//	}
 
 	uint64_t to_time_scale(Resolution res, uint64_t duration) {
 		if (res == Sec) duration /= 1e9;
@@ -196,7 +232,6 @@ public:
 
 	float stop()
 	{
-    	cudaDeviceSynchronize();
 		cudaEventRecord(stopTime, 0);
 		float elapsed;
 		cudaEventSynchronize(stopTime);
