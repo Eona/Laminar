@@ -74,6 +74,8 @@ public:
 
 		register_normal_op("fill_rand", MEMFUNC_BIND_3(CudaEngine::fill_rand));
 		register_normal_op("soft_max", MEMFUNC_BIND_3(CudaEngine::soft_max));
+		register_normal_op("label_entropy_loss", MEMFUNC_BIND_3(CudaEngine::label_entropy_loss));
+		register_normal_op("label_softmax_entropy_gradient", MEMFUNC_BIND_3(CudaEngine::label_softmax_entropy_gradient));
 
 		register_context_op<float>("scale", MEMFUNC_BIND_4(CudaEngine::scale));
 	}
@@ -85,6 +87,11 @@ public:
 	{
 		DEBUG_MSG("CudaCudaEngine::create dim=" << dim);
 		write->reset(dim);
+	}
+
+	void zero_clear(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
+	{
+		write->zero_clear();
 	}
 
 	void debug_msg(string msg, bool is_initialized)
@@ -404,10 +411,67 @@ public:
 		delete [] wmat;
 	}
 
-	void zero_clear(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
+	/**
+	 * -log(value_at_label)
+	 * @param reads a tensor of int class labels (faked as floats)
+	 * @param write a scalor loss
+	 */
+	inline void label_entropy_loss(
+			vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
-		write->zero_clear();
+		debug_msg("label_entropy_loss", is_initialized);
+
+		if (!is_initialized)
+			write->reset(1, 1);
+
+		float * rmat = new float[reads[0]->LEN];
+		float * labels = new float[reads[1]->LEN];
+		reads[0]->to_host(rmat);
+		reads[1]->to_host(labels);
+
+		write->scalar = 0;
+		for (int c = 0; c < reads[0]->DIM_COL; ++c)
+		{
+			int label = (int) labels[c];
+			// value at label:
+			write->scalar -= std::log(rmat[label + c * reads[0]->DIM_ROW]);
+		}
 	}
+
+	/**
+	 *
+	 * @param reads y, vector *after* softmax
+	 * @param write y - t, where t is a sparse vector with a single '1' at the correct label
+	 * @param is_initialized
+	 */
+	inline void label_softmax_entropy_gradient(
+			vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
+	{
+		debug_msg("label_softmax_entropy_gradient", is_initialized);
+
+		int m = reads[0]->DIM_ROW;
+		int n = reads[0]->DIM_COL;
+		if (!is_initialized)
+			write->reset(m, n);
+
+		float * rmat = new float[reads[0]->LEN];
+		float * labels = new float[reads[1]->LEN];
+		float * wmat = new float[write->LEN];
+
+		reads[0]->to_host(rmat);
+		reads[0]->to_host(wmat);// copy most values won't change
+		reads[1]->to_host(labels);
+
+		for (int c = 0; c < n; ++c)
+		{
+			int label = (int) labels[c];
+			wmat[label + c * reads[0]->DIM_ROW] -= 1.f; // y - t (sparse)
+		}
+		write->to_device(wmat);
+	}
+
+
+
 
 	// FIXME add contextual rand engine
 	inline void fill_rand(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)

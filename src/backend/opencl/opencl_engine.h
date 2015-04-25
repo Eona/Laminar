@@ -75,32 +75,35 @@ public:
 		cl->register_kernel("mat_mult_TN_kernel", "matop_prog", "mult_TN");
 		NUM_LOCAL_WORKER = cl->query_group_size();
 
-//		register_create_op(MEMFUNC_BIND_2(OpenclEngine::create));
-//		register_normal_op("t+t", MEMFUNC_BIND_3(OpenclEngine::add));
-//		register_normal_op("t-t", MEMFUNC_BIND_3(OpenclEngine::sub));
-//		register_normal_op("-t", MEMFUNC_BIND_3(OpenclEngine::negate));
-//		register_normal_op("t*t", MEMFUNC_BIND_3(OpenclEngine::multNN));
-//		register_normal_op("t*s", MEMFUNC_BIND_3(OpenclEngine::multTS));
-//		register_normal_op("s*t", MEMFUNC_BIND_3(OpenclEngine::multST));
-//		register_normal_op("t=t", MEMFUNC_BIND_3(OpenclEngine::assign));
-//		register_context_op<float>("s=const", MEMFUNC_BIND_4(OpenclEngine::assign_const));
-//
-//		register_normal_op("sin", MEMFUNC_BIND_3(OpenclEngine::sin));
-//		register_normal_op("cos", MEMFUNC_BIND_3(OpenclEngine::cos));
-//		register_normal_op("tanh", MEMFUNC_BIND_3(OpenclEngine::tanh));
-//		register_normal_op("tanh_gradient", MEMFUNC_BIND_3(OpenclEngine::tanh_gradient));
-//		register_normal_op("sigmoid", MEMFUNC_BIND_3(OpenclEngine::sigmoid));
-//		register_normal_op("sigmoid_gradient", MEMFUNC_BIND_3(OpenclEngine::sigmoid_gradient));
-//		register_normal_op("transpose", MEMFUNC_BIND_3(OpenclEngine::transpose));
-//		register_normal_op("element_mult", MEMFUNC_BIND_3(OpenclEngine::element_mult));
-//		register_normal_op("square_loss", MEMFUNC_BIND_3(OpenclEngine::square_loss));
-//
-//		register_normal_op("destroy", MEMFUNC_BIND_3(OpenclEngine::destroy));
-//		register_normal_op("zero_clear", MEMFUNC_BIND_3(OpenclEngine::zero_clear));
-//		register_normal_op("soft_max", MEMFUNC_BIND_3(OpenclEngine::soft_max));
-//
-//		register_normal_op("fill_rand", MEMFUNC_BIND_3(OpenclEngine::fill_rand));
-//		register_context_op<float>("scale", MEMFUNC_BIND_4(OpenclEngine::scale));
+		register_create_op(MEMFUNC_BIND_2(OpenclEngine::create));
+		register_normal_op("t+t", MEMFUNC_BIND_3(OpenclEngine::add));
+		register_normal_op("t-t", MEMFUNC_BIND_3(OpenclEngine::sub));
+		register_normal_op("-t", MEMFUNC_BIND_3(OpenclEngine::negate));
+		register_normal_op("t*t", MEMFUNC_BIND_3(OpenclEngine::multNN));
+		register_normal_op("t*s", MEMFUNC_BIND_3(OpenclEngine::multTS));
+		register_normal_op("s*t", MEMFUNC_BIND_3(OpenclEngine::multST));
+		register_normal_op("t=t", MEMFUNC_BIND_3(OpenclEngine::assign));
+		register_context_op<float>("s=const", MEMFUNC_BIND_4(OpenclEngine::assign_const));
+
+		register_normal_op("sin", MEMFUNC_BIND_3(OpenclEngine::sin));
+		register_normal_op("cos", MEMFUNC_BIND_3(OpenclEngine::cos));
+		register_normal_op("tanh", MEMFUNC_BIND_3(OpenclEngine::tanh));
+		register_normal_op("tanh_gradient", MEMFUNC_BIND_3(OpenclEngine::tanh_gradient));
+		register_normal_op("sigmoid", MEMFUNC_BIND_3(OpenclEngine::sigmoid));
+		register_normal_op("sigmoid_gradient", MEMFUNC_BIND_3(OpenclEngine::sigmoid_gradient));
+		register_normal_op("transpose", MEMFUNC_BIND_3(OpenclEngine::transpose));
+		register_normal_op("element_mult", MEMFUNC_BIND_3(OpenclEngine::element_mult));
+		register_normal_op("square_loss", MEMFUNC_BIND_3(OpenclEngine::square_loss));
+
+		register_normal_op("destroy", MEMFUNC_BIND_3(OpenclEngine::destroy));
+		register_normal_op("zero_clear", MEMFUNC_BIND_3(OpenclEngine::zero_clear));
+		register_normal_op("soft_max", MEMFUNC_BIND_3(OpenclEngine::soft_max));
+		register_normal_op("label_entropy_loss", MEMFUNC_BIND_3(OpenclEngine::label_entropy_loss));
+		register_normal_op("label_softmax_entropy_gradient", MEMFUNC_BIND_3(OpenclEngine::label_softmax_entropy_gradient));
+
+
+		register_normal_op("fill_rand", MEMFUNC_BIND_3(OpenclEngine::fill_rand));
+		register_context_op<float>("scale", MEMFUNC_BIND_4(OpenclEngine::scale));
 	}
 
 
@@ -444,6 +447,65 @@ public:
 		delete [] wmat;
 	}
 
+	/**
+	 * -log(value_at_label)
+	 * @param reads a tensor of int class labels (faked as floats)
+	 * @param write a scalor loss
+	 */
+	inline void label_entropy_loss(
+			vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		debug_msg("label_entropy_loss", is_initialized);
+
+		if (!is_initialized)
+			write->reset(1, 1, cl);
+
+		float * rmat = new float[reads[0]->LEN];
+		float * labels = new float[reads[1]->LEN];
+		reads[0]->to_host(rmat);
+		reads[1]->to_host(labels);
+
+		write->scalar = 0;
+		for (int c = 0; c < reads[0]->DIM_COL; ++c)
+		{
+			int label = (int) labels[c];
+			// value at label:
+			write->scalar -= std::log(rmat[label + c * reads[0]->DIM_ROW]);
+		}
+	}
+
+	/**
+	 *
+	 * @param reads y, vector *after* softmax
+	 * @param write y - t, where t is a sparse vector with a single '1' at the correct label
+	 * @param is_initialized
+	 */
+	inline void label_softmax_entropy_gradient(
+			vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		debug_msg("label_softmax_entropy_gradient", is_initialized);
+
+		int m = reads[0]->DIM_ROW;
+		int n = reads[0]->DIM_COL;
+		if (!is_initialized)
+			write->reset(m, n, cl);
+
+		float * rmat = new float[reads[0]->LEN];
+		float * labels = new float[reads[1]->LEN];
+		float * wmat = new float[write->LEN];
+
+		reads[0]->to_host(rmat);
+		reads[0]->to_host(wmat);// copy most values won't change
+		reads[1]->to_host(labels);
+
+		for (int c = 0; c < n; ++c)
+		{
+			int label = (int) labels[c];
+			wmat[label + c * reads[0]->DIM_ROW] -= 1.f; // y - t (sparse)
+		}
+
+		write->to_device(wmat);
+	}
 
 	/*********** DEBUG ONLY ***********/
 	inline void debug_fill(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)

@@ -73,14 +73,10 @@ int main(int argc, char **argv)
 	std::vector<OpenclFloatMatPtr> v1;
 	v1.push_back(m3);
 	v1.push_back(m1);
-	m3->print_matrix("m3");
-	cout << engine.tensor_data_at(m3, {1,1})<<endl;
-	cout << engine.tensor_data_at(m3, {1,0})<<endl;
-	return 1;
+
 	for (int i = 0; i < 10; ++i){
 	engine.sub(v, out, true);
 //	out->print_matrix("m1 - m2");
-
 	engine.add(v, out, true);
 //	out->print_matrix("m1 + m2");
 
