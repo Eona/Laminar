@@ -139,8 +139,6 @@ struct EvalSchedule
  */
 struct NoValidationSchedule : public virtual EvalSchedule
 {
-	NoValidationSchedule() {}
-
 	virtual ~NoValidationSchedule() {}
 
 	virtual bool run_validation(LearningState::Ptr)
@@ -154,8 +152,6 @@ struct NoValidationSchedule : public virtual EvalSchedule
  */
 struct NoTestingSchedule : public virtual EvalSchedule
 {
-	NoTestingSchedule() {}
-
 	virtual ~NoTestingSchedule() {}
 
 	virtual bool run_testing(LearningState::Ptr)
@@ -170,12 +166,6 @@ struct NoTestingSchedule : public virtual EvalSchedule
 struct NullSchedule :
 		public NoValidationSchedule, public NoTestingSchedule
 {
-//	NullSchedule():
-//		EvalSchedule(),
-//		NoValidationSchedule(),
-//		NoTestingSchedule()
-//	{}
-
 	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(NullSchedule)
 };
 
@@ -228,8 +218,6 @@ class Network;
 template<typename NetworkT>
 struct Observer
 {
-//	Observer() {}
-
 	virtual ~Observer() {}
 
 	virtual void observe(std::shared_ptr<NetworkT>, LearningState::Ptr) = 0;
@@ -242,10 +230,6 @@ struct Observer
  */
 struct NullObserver : public Observer<Network>
 {
-//	NullObserver() :
-//		Observer<Network>()
-//	{}
-
 	void observe(std::shared_ptr<Network>, LearningState::Ptr) { }
 
 	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(NullObserver)

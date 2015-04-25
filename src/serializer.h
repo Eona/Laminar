@@ -19,8 +19,6 @@ struct Serializer
 LMN_STATIC_ASSERT_IS_BASE(Network, NetworkT, "Serializer template arg");
 LMN_STATIC_ASSERT_IS_BASE(EngineBase, EngineT, "Serializer template arg");
 
-//	Serializer() {}
-
 	virtual ~Serializer() {}
 
 	virtual void save(std::shared_ptr<NetworkT> net, LearningState::Ptr state)
@@ -45,10 +43,6 @@ protected:
  */
 struct NullSerializer : public Serializer<Network, EngineBase>
 {
-//	NullSerializer() :
-//		Serializer<Network, EngineBase>()
-//	{}
-
 	virtual ~NullSerializer() {}
 
 	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(NullSerializer)

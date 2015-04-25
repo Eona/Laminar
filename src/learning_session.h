@@ -22,12 +22,12 @@ class LearningSession
 {
 public:
 	LearningSession(Network::Ptr net,
-					std::shared_ptr<OptimizerT> optimizer,
-					std::shared_ptr<EvaluatorT> evaluator,
-					std::shared_ptr<StopCriteriaT> stopper,
-					std::shared_ptr<SerializerT> serializer,
-					std::shared_ptr<EvalScheduleT> schedule,
-					std::shared_ptr<ObserverT> observer) :
+				std::shared_ptr<OptimizerT> optimizer,
+				std::shared_ptr<EvaluatorT> evaluator,
+				std::shared_ptr<StopCriteriaT> stopper,
+				std::shared_ptr<SerializerT> serializer,
+				std::shared_ptr<EvalScheduleT> schedule,
+				std::shared_ptr<ObserverT> observer) :
 		net(net),
 		dataManager(net->get_data_manager()),
 		engine(net->get_engine()),
