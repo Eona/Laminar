@@ -97,6 +97,10 @@ public:
 	}
 
 
+	void zero_clear() {
+		cl->to_device_fill(device_data, MEM_SIZE, 0);
+	}
+
 	void fill_rand(int seed) {
 		float * r = new float[MEM_SIZE];
 		srand (seed);
@@ -108,12 +112,7 @@ public:
 	}
 
 	void fill(float num) {
-		float * r = new float[MEM_SIZE];
-		for (int i = 0; i < LEN; ++i) {
-			r[i] = num;
-		}
-		to_device(r);
-		delete[] r;
+		cl->to_device_fill(device_data, MEM_SIZE, num);
 	}
 
 

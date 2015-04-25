@@ -31,45 +31,39 @@ class CudaEngine : public Engine<CudaFloatMat>
 {
 public:
 
-	CudaEngine(GlobalTimer * g) :
+	CudaEngine(GlobalTimer<cudaEvent_t> * g) :
 		Engine<CudaFloatMat>()
 	{
 		gt = g;
 		timed = true;
 	    cublasCreate(&handle);
 
+		register_create_op(CudaEngine::create);
+		register_normal_op("t+t", CudaEngine::add);
+		register_normal_op("t-t", CudaEngine::sub);
+		register_normal_op("-t", CudaEngine::negate);
+		register_normal_op("t*t", CudaEngine::multNN);
+		register_normal_op("t*s", CudaEngine::multTS);
+		register_normal_op("s*t", CudaEngine::multST);
+		register_normal_op("t=t", CudaEngine::assign);
+		register_context_op<float>("s=const", CudaEngine::assign_const);
 
-//	    if (timed) GPU_CHECKERROR(cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync));//for accurate timing
-//		register_create(CudaEngine::create);
-//		register_opcode("t+t", CudaEngine::add);
-////		register_opcode("s+s", Impl::add<S>);
-//		register_opcode("t-t", CudaEngine::sub);
-////		register_opcode("s-s", sub);
-//		register_opcode("-t", CudaEngine::negate);
-////		register_opcode("-s", negate<S>);
-//		register_opcode("t*t", CudaEngine::mult);
-////		register_opcode("t*s", mult<T, S>);
-////		register_opcode("s*t", mult<S, T>);
-////		register_opcode("s*s", mult<S, S>);
-//		register_opcode("t=t", CudaEngine::assign);
-////		register_opcode("s=s", assign<S>);
-//
-//		register_opcode("scale", CudaEngine::scale);
-//		register_opcode("sin", CudaEngine::sin);
-//		register_opcode("cos", CudaEngine::cos);
-//		register_opcode("tanh", CudaEngine::tanh);
-//		register_opcode("tanh_gradient", CudaEngine::tanh_gradient);
-//		register_opcode("sigmoid", CudaEngine::sigmoid);
-//		register_opcode("sigmoid_gradient", CudaEngine::sigmoid_gradient);
-//		register_opcode("transpose", CudaEngine::transpose);
-//		register_opcode("element_mult", CudaEngine::element_mult);
-//		register_opcode("square_loss", CudaEngine::square_loss);
-//
-//		register_opcode("destroy", CudaEngine::destroy);
-//		register_opcode("fill_rand", CudaEngine::fill_rand);
-//
-//		/*********** DEBUG ONLY ***********/
-//		register_opcode("debug_fill", CudaEngine::debug_fill);
+		register_normal_op("sin", CudaEngine::sin);
+		register_normal_op("cos", CudaEngine::cos);
+		register_normal_op("tanh", CudaEngine::tanh);
+		register_normal_op("tanh_gradient", CudaEngine::tanh_gradient);
+		register_normal_op("sigmoid", CudaEngine::sigmoid);
+		register_normal_op("sigmoid_gradient", CudaEngine::sigmoid_gradient);
+		register_normal_op("transpose", CudaEngine::transpose);
+		register_normal_op("element_mult", CudaEngine::element_mult);
+		register_normal_op("square_loss", CudaEngine::square_loss);
+
+		register_normal_op("destroy", CudaEngine::destroy);
+		register_normal_op("zero_clear", CudaEngine::zero_clear);
+
+		register_normal_op("fill_rand", CudaEngine::fill_rand);
+
+		register_context_op<float>("scale", CudaEngine::scale);
 	}
 
 
@@ -78,13 +72,13 @@ public:
 
 	void create(CudaFloatMatPtr write, vector<int> dim)
 	{
-		DEBUG_MSG("CudaImpl::create dim=" << dim);
+		DEBUG_MSG("CudaCudaEngine::create dim=" << dim);
 		write->reset(dim);
 	}
 
 	void debug_msg(string msg, bool is_initialized)
 	{
-		DEBUG_MSG(("CudaImpl::" + msg + " ->init=") << std::boolalpha << is_initialized);
+		DEBUG_MSG(("CudaCudaEngine::" + msg + " ->init=") << std::boolalpha << is_initialized);
 	}
 
 	/*
@@ -185,11 +179,25 @@ public:
 	    )
 	}
 
-	void mult(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
+	void multNN(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 	    debug_msg("c=a*b", is_initialized);
 		float alpha = 1.0f;
 		multMat(reads, write, is_initialized, alpha, 0, "N", "N");
+	}
+
+	void multNT(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
+	{
+	    debug_msg("c=a*b", is_initialized);
+		float alpha = 1.0f;
+		multMat(reads, write, is_initialized, alpha, 0, "N", "T");
+	}
+
+	void multTN(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
+	{
+	    debug_msg("c=a*b", is_initialized);
+		float alpha = 1.0f;
+		multMat(reads, write, is_initialized, alpha, 0, "T", "N");
 	}
 
 	void assign(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
@@ -198,21 +206,36 @@ public:
 	    assignMat(reads, write, is_initialized);
 	}
 
-	inline void scale(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized, float* scaler)
+	void assign_const(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized, float constant){
+	    debug_msg("c=constS", is_initialized);
+	    write->scalar = constant;
+	}
+
+	void multST(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
+	{
+		scale(reads, write, is_initialized, reads[0]->scalar);
+	}
+
+	void multTS(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
+	{
+		scale(reads, write, is_initialized, reads[1]->scalar);
+	}
+
+	inline void scale(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized, float scaler)
 	{
 		debug_msg("scale", is_initialized);
 	    //y = x
 	    assignMat(reads, write, is_initialized);
 	    //y = ay
 	    TIME("scale", write->LEN,
-	    cublasSscal(handle, write->LEN, scaler, write->device_data, 1);
+	    cublasSscal(handle, write->LEN, &scaler, write->device_data, 1);
 	    )
 	}
 
 	inline void destroy(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("destroy", is_initialized);
-		reads[0]->free_data();
+//		reads[0]->free_data();
 	}
 
 
@@ -309,7 +332,7 @@ public:
 	    MATOP_DUAL("element_mult", cu_element_mult_func);
 	}
 
-	inline void square_loss(vector<CudaFloatMatPtr> reads, float* write, bool is_initialized)
+	inline void square_loss(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("square_loss", is_initialized);
 		CudaFloatMat aux(reads[0]->DIM_ROW, reads[0]->DIM_COL);
@@ -323,7 +346,12 @@ public:
 														aux.LEN,
 														h_func );
 
-	    cublasSasum(handle, aux.LEN, aux.device_data, 1, write);
+	    cublasSasum(handle, aux.LEN, aux.device_data, 1, &write->scalar);
+	}
+
+	void zero_clear(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
+	{
+		write->zero_clear();
 	}
 
 	// FIXME add contextual rand engine
@@ -346,10 +374,19 @@ public:
 		write->fill(0.66337);
 	}
 
+
+	float tensor_data_at(CudaFloatMatPtr reads, DimIndex idx) {
+		return 0;
+	}
+
+	float scalar_data_at(CudaFloatMatPtr reads) {
+		return reads->scalar;
+	}
+
 private:
 	cublasHandle_t handle;
 	bool timed;
-	GlobalTimer * gt;
+	GlobalTimer<cudaEvent_t> * gt;
 
 };
 
