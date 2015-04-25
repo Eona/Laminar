@@ -99,14 +99,20 @@ int main(int argc, char **argv)
 	};
 
 	Vecmat<float> B = {
-		{-3, 0, 9, 11},
-		{-2, -6, 1, 7}
+			{1, 2, 0}
 	};
 
 	auto a = std::make_shared<Vecmatf>(A2);
 	auto ans = std::make_shared<Vecmatf>(A2.row(), A2.col());
+	auto labels = std::make_shared<Vecmatf>(B);
+
+	auto scalar = std::make_shared<Vecmatf>(1, 1);
 
 	softmax({a}, ans, true);
+	label_entropy_loss({ans, labels}, scalar, true);
+	label_softmax_entropy_gradient({ans, labels}, ans, true);
+
+	DEBUG_MSG(*scalar);
 	DEBUG_MSG(*ans);
 
 

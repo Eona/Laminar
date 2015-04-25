@@ -403,7 +403,7 @@ inline void label_entropy_loss(
 	loss(0, 0) = 0;
 	for (int c = 0; c < rmat.col(); ++c)
 	{
-		int label = (int) labels(1, c);
+		int label = (int) labels(0, c);
 		// value at label:
 		loss(0, 0) += -std::log(rmat(label, c));
 	}
@@ -436,7 +436,7 @@ inline void label_softmax_entropy_gradient(
 
 	for (int c = 0; c < rmat.col(); ++c)
 	{
-		int label = (int) labels(1, c);
+		int label = (int) labels(0, c);
 		wmat(label, c) -= 1.f; // y - t (sparse)
 	}
 }
