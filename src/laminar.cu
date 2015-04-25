@@ -39,14 +39,23 @@ FakeRand& rand_target = FakeRand::instance_target();
 template<typename EngineT>
 struct PrintGradient : public Observer<Network>
 {
+	int maxEpoch;
+
+	PrintGradient(int maxEpoch) :
+		maxEpoch(maxEpoch)
+	{}
+
 	void observe(Network::Ptr net, LearningState::Ptr state)
 	{
-		if (state->batchInEpoch == 0)
+		if (state->batchInEpoch == 0 && state->epoch == maxEpoch - 1)
 		{
 			auto params = net->param_containers();
 			DEBUG_TITLE("param gradient");
 			for (int i = 0; i < params.size(); ++i)
 				DEBUG_MSG(*net->get_engine<EngineT>()->read_memory(params[i]->param_gradient(0)));
+			DEBUG_TITLE("param values");
+			for (int i = 0; i < params.size(); ++i)
+				DEBUG_MSG(*net->get_engine<EngineT>()->read_memory(params[i]->param_value(0)));
 		}
 	}
 };
@@ -74,6 +83,7 @@ int main(int argc, char **argv)
 	const int INPUT_DIM = 4;
 	const int TARGET_DIM = 3;
 	const int BATCH = 2;
+	const int MAX_EPOCH = 100;
 
 	rand_conn.gen_uniform_rand(90, -0.1, 0.1, DEBUG_SEED); //rand_conn.print_rand_seq();
 //
@@ -90,9 +100,9 @@ int main(int argc, char **argv)
 //			out(0, c) = sin(in(0, c)) + cos(in(1, c));
 //			out(1, c) = cos(in(1, c)) + sin(in(2, c));
 //			out(2, c) = 2 * sin(in(2, c)) - cos(in(3, c));
-			out(0, c) = (in(0, c)) + (in(1, c));
-			out(1, c) = (in(1, c)) + (in(2, c));
-			out(2, c) = (in(2, c)) + (in(3, c));
+			out(0, c) = cos(in(0, c)) * in(1, c) + in(2, c);
+			out(1, c) = in(1, c) * sin(in(2, c)) + in(3, c);
+			out(2, c) = in(2, c) * in(3, c) + sin(in(0, c));
 		}
 	};
 
@@ -101,7 +111,7 @@ int main(int argc, char **argv)
 						engine, INPUT_DIM, TARGET_DIM, BATCH,
 						learnableFunc,
 						100, 20, 10,
-						-M_PI, M_PI);
+						-1.f, 1.f);
 
 	auto linput = Layer::make<ConstantLayer>(INPUT_DIM);
 	auto l2 = Layer::make<SigmoidLayer>(25);
@@ -121,15 +131,12 @@ int main(int argc, char **argv)
 
 	auto opm = Optimizer::make<SGD>(0.3);
 	auto eval = NoMetricEvaluator<VecmatEngine>::make(net);
-	auto stopper = StopCriteria::make<MaxEpochStopper>(100);
+	auto stopper = StopCriteria::make<MaxEpochStopper>(MAX_EPOCH);
 	auto ser = NullSerializer::make();
 	auto sched = EpochIntervalSchedule::make(1, 1);
 
-//	auto session = new_learning_session(net, opm, eval, stopper, ser, sched,
-//			std::make_shared<PrintGradient<VecmatEngine>>());
-
-	auto session = new_learning_session(net, opm, eval, stopper);
-
+	auto session = new_learning_session(net, opm, eval, stopper, ser, sched,
+			std::make_shared<PrintGradient<VecmatEngine>>(MAX_EPOCH));
 
 	session->initialize();
 

@@ -103,6 +103,8 @@ struct MaxEpochStopper : public StopCriteria
 
 	int maxEpoch;
 	int maxBatch;
+
+	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(MaxEpochStopper)
 };
 
 /**************************************
@@ -215,8 +217,14 @@ protected:
 // forward decl
 class Network;
 
+// For static template arg type checking only
+struct ObserverBase
+{
+	virtual ~ObserverBase() {}
+};
+
 template<typename NetworkT>
-struct Observer
+struct Observer : public ObserverBase
 {
 	virtual ~Observer() {}
 

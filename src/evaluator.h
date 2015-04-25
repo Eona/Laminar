@@ -10,11 +10,17 @@
 /**************************************
 ******* Cross-validation and testing *********
 **************************************/
+// For static template arg type checking only
+struct EvaluatorBase
+{
+	virtual ~EvaluatorBase() {}
+};
+
 /**
  * Evaluate network performance for validation and testing
  */
 template<typename EngineT, typename FloatT = float>
-class Evaluator
+class Evaluator : public EvaluatorBase
 {
 LMN_STATIC_ASSERT_IS_BASE(EngineBase, EngineT, "Evaluator template arg");
 

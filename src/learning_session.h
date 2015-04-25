@@ -20,6 +20,13 @@ template<typename OptimizerT,
 		typename ObserverT = NullObserver>
 class LearningSession
 {
+LMN_STATIC_ASSERT_IS_BASE(Optimizer, OptimizerT, "LearningSession template arg #1");
+LMN_STATIC_ASSERT_IS_BASE(EvaluatorBase, EvaluatorT, "LearningSession template arg #2");
+LMN_STATIC_ASSERT_IS_BASE(StopCriteria, StopCriteriaT, "LearningSession template arg #3");
+LMN_STATIC_ASSERT_IS_BASE(SerializerBase, SerializerT, "LearningSession template arg #4");
+LMN_STATIC_ASSERT_IS_BASE(EvalSchedule, EvalScheduleT, "LearningSession template arg #5");
+LMN_STATIC_ASSERT_IS_BASE(ObserverBase, ObserverT, "LearningSession template arg #6");
+
 public:
 	LearningSession(Network::Ptr net,
 				std::shared_ptr<OptimizerT> optimizer,
@@ -221,22 +228,40 @@ new_learning_session(Network::Ptr net,
 {
 	// default options
 	if (!serializer)
-		serializer = std::make_shared<SerializerT>();
+	{
+		// NOTE workaround to get default type to work
+		// serializer must have type SerializerT (can be anything),
+		// so we have to force a cast from NullSerializer
+		serializer = std::dynamic_pointer_cast<SerializerT>(
+							std::make_shared<NullSerializer>());
+		LMN_ASSERT_NULLPTR(serializer,
+			LearningException("Invalid Serializer default arg"));
+	}
 
 	if (!schedule)
-		schedule = std::make_shared<EvalScheduleT>();
+	{
+		schedule = std::dynamic_pointer_cast<EvalScheduleT>(
+							std::make_shared<NullSchedule>());
+		LMN_ASSERT_NULLPTR(schedule,
+			LearningException("Invalid EvalSchedule default arg"));
+	}
 
 	if (!observer)
-		observer = std::make_shared<ObserverT>();
+	{
+		observer = std::dynamic_pointer_cast<ObserverT>(
+							std::make_shared<NullObserver>());
+		LMN_ASSERT_NULLPTR(observer,
+			LearningException("Invalid Observer default arg"));
+	}
 
 	return std::make_shared<LEARNING_SESSION_GENERIC_TYPE>(
-				net,
-				optimizer,
-				evaluator,
-				stopper,
-				serializer,
-				schedule,
-				observer);
+					net,
+					optimizer,
+					evaluator,
+					stopper,
+					serializer,
+					schedule,
+					observer);
 }
 
 

@@ -10,11 +10,17 @@
 /**************************************
 ******* Serializer *********
 **************************************/
+// For static template arg type checking only
+struct SerializerBase
+{
+	virtual ~SerializerBase() {}
+};
+
 /**
  * Save parameters to disk periodically
  */
 template<typename NetworkT, typename EngineT>
-struct Serializer
+struct Serializer : public SerializerBase
 {
 LMN_STATIC_ASSERT_IS_BASE(Network, NetworkT, "Serializer template arg");
 LMN_STATIC_ASSERT_IS_BASE(EngineBase, EngineT, "Serializer template arg");
