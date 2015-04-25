@@ -404,7 +404,7 @@ public:
 	inline void soft_max(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized) {
 
 		if (!is_initialized)
-	    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);
+	    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL, cl);
 
 		float* rmat = new float[write->LEN];
 		float* wmat = new float[write->LEN];
