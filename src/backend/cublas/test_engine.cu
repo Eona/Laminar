@@ -67,7 +67,7 @@ int main(int argc, char **argv)
 	engine.negate(v, out, true);
 //	out->print_matrix("-m1");
 
-	engine.mult(v, out, true);
+	engine.multNN(v, out, true);
 //	float buffer[10];
 //	out->take_at(buffer, dim[0]*dim[1]-10, 10);
 //	for (int i = 0; i < 10; ++i){
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 //	cout<<"\n";
 //	out->print_matrix("m1 * m2");
 //
-	engine.mult(v1, out, false);
+	engine.multNN(v1, out, false);
 //	out->print_matrix("m3 * m1");
 
 	engine.assign(v1, out, false);
