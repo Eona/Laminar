@@ -2,7 +2,6 @@
  * Eona Studio (c) 2015
  */
 
-
 #ifndef CUDA_ENGINE_H_
 #define CUDA_ENGINE_H_
 
@@ -38,32 +37,42 @@ public:
 		timed = true;
 	    cublasCreate(&handle);
 
-		register_create_op(CudaEngine::create);
-		register_normal_op("t+t", CudaEngine::add);
-		register_normal_op("t-t", CudaEngine::sub);
-		register_normal_op("-t", CudaEngine::negate);
-		register_normal_op("t*t", CudaEngine::multNN);
-		register_normal_op("t*s", CudaEngine::multTS);
-		register_normal_op("s*t", CudaEngine::multST);
-		register_normal_op("t=t", CudaEngine::assign);
-		register_context_op<float>("s=const", CudaEngine::assign_const);
+	    // Wrap member function
+		#define MEMFUNC_BIND_2(func) \
+				std::bind(&func, this, std::placeholders::_1, std::placeholders::_2)
 
-		register_normal_op("sin", CudaEngine::sin);
-		register_normal_op("cos", CudaEngine::cos);
-		register_normal_op("tanh", CudaEngine::tanh);
-		register_normal_op("tanh_gradient", CudaEngine::tanh_gradient);
-		register_normal_op("sigmoid", CudaEngine::sigmoid);
-		register_normal_op("sigmoid_gradient", CudaEngine::sigmoid_gradient);
-		register_normal_op("transpose", CudaEngine::transpose);
-		register_normal_op("element_mult", CudaEngine::element_mult);
-		register_normal_op("square_loss", CudaEngine::square_loss);
+		#define MEMFUNC_BIND_3(func) \
+				std::bind(&func, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 
-		register_normal_op("destroy", CudaEngine::destroy);
-		register_normal_op("zero_clear", CudaEngine::zero_clear);
+		#define MEMFUNC_BIND_4(func) \
+				std::bind(&func, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
 
-		register_normal_op("fill_rand", CudaEngine::fill_rand);
+		register_create_op(MEMFUNC_BIND_2(CudaEngine::create));
+		register_normal_op("t+t", MEMFUNC_BIND_3(CudaEngine::add));
+		register_normal_op("t-t", MEMFUNC_BIND_3(CudaEngine::sub));
+		register_normal_op("-t", MEMFUNC_BIND_3(CudaEngine::negate));
+		register_normal_op("t*t", MEMFUNC_BIND_3(CudaEngine::multNN));
+		register_normal_op("t*s", MEMFUNC_BIND_3(CudaEngine::multTS));
+		register_normal_op("s*t", MEMFUNC_BIND_3(CudaEngine::multST));
+		register_normal_op("t=t", MEMFUNC_BIND_3(CudaEngine::assign));
+		register_context_op<float>("s=const", MEMFUNC_BIND_4(CudaEngine::assign_const));
 
-		register_context_op<float>("scale", CudaEngine::scale);
+		register_normal_op("sin", MEMFUNC_BIND_3(CudaEngine::sin));
+		register_normal_op("cos", MEMFUNC_BIND_3(CudaEngine::cos));
+		register_normal_op("tanh", MEMFUNC_BIND_3(CudaEngine::tanh));
+		register_normal_op("tanh_gradient", MEMFUNC_BIND_3(CudaEngine::tanh_gradient));
+		register_normal_op("sigmoid", MEMFUNC_BIND_3(CudaEngine::sigmoid));
+		register_normal_op("sigmoid_gradient", MEMFUNC_BIND_3(CudaEngine::sigmoid_gradient));
+		register_normal_op("transpose", MEMFUNC_BIND_3(CudaEngine::transpose));
+		register_normal_op("element_mult", MEMFUNC_BIND_3(CudaEngine::element_mult));
+		register_normal_op("square_loss", MEMFUNC_BIND_3(CudaEngine::square_loss));
+
+		register_normal_op("destroy", MEMFUNC_BIND_3(CudaEngine::destroy));
+		register_normal_op("zero_clear", MEMFUNC_BIND_3(CudaEngine::zero_clear));
+
+		register_normal_op("fill_rand", MEMFUNC_BIND_3(CudaEngine::fill_rand));
+
+		register_context_op<float>("scale", MEMFUNC_BIND_4(CudaEngine::scale));
 	}
 
 
