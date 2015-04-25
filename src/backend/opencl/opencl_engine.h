@@ -44,7 +44,7 @@ public:
 		init(); //must call as the last line
 	}
 
-	OpenclEngine(GlobalTimer * g) :
+	OpenclEngine(GlobalTimer<cl_event> * g) :
 		Engine<OpenclFloatMat>()
 	{
 		timed = true; //if profile time performance
@@ -192,8 +192,6 @@ public:
 	    if (!is_initialized) {
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
-		if(timed) ScopeTimer("scale", gt, m*n);
-
 	    cl->setup_kernel("scale", 0, sizeof(cl_mem), &write->device_data); // Y
 	    cl->setup_kernel("scale", 1, sizeof(cl_mem), &reads[0]->device_data); // X
 	    cl->setup_kernel("scale", 2, sizeof(float), &alpha); //a
@@ -403,7 +401,7 @@ public:
 
 private:
 	bool timed;
-	GlobalTimer * gt;
+	GlobalTimer<cl_event> * gt;
 	size_t NUM_LOCAL_WORKER;
 };
 

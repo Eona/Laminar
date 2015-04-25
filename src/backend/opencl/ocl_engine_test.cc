@@ -8,7 +8,7 @@
 using namespace std;
 int main(int argc, char **argv)
 {
-	GlobalTimer gt;
+	GlobalTimer<cl_event> gt;
 	OpenclEngine engine(&gt);
 
 	//create testcases
@@ -135,6 +135,6 @@ int main(int argc, char **argv)
 //	out->print_matrix("0.66337");
 	}
 
-	gt.print_stats(GlobalTimer::Nanosec, "test");
+	gt.print_stats(GlobalTimer<cl_event>::Nanosec, "test");
 	out->free_data();
 }
