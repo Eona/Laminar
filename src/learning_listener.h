@@ -135,10 +135,27 @@ struct EvalSchedule
 // Support for 'diamond' inheritance: virtual inheritance
 // e.g. ValidationOnceNoTestingSchedule : public ValidationSchedule, NoTestingSchedule
 /**
+ * Doesn't run validation
+ */
+struct NoValidationSchedule : public virtual EvalSchedule
+{
+	NoValidationSchedule() {}
+
+	virtual ~NoValidationSchedule() {}
+
+	virtual bool run_validation(LearningState::Ptr)
+	{
+		return false;
+	}
+};
+
+/**
  * Doesn't run testing
  */
 struct NoTestingSchedule : public virtual EvalSchedule
 {
+	NoTestingSchedule() {}
+
 	virtual ~NoTestingSchedule() {}
 
 	virtual bool run_testing(LearningState::Ptr)
@@ -148,16 +165,18 @@ struct NoTestingSchedule : public virtual EvalSchedule
 };
 
 /**
- * Doesn't run validation
+ * Doesn't do validation/testing
  */
-struct NoValidationSchedule : public virtual EvalSchedule
+struct NullSchedule :
+		public NoValidationSchedule, public NoTestingSchedule
 {
-	virtual ~NoValidationSchedule() {}
+//	NullSchedule():
+//		EvalSchedule(),
+//		NoValidationSchedule(),
+//		NoTestingSchedule()
+//	{}
 
-	virtual bool run_validation(LearningState::Ptr)
-	{
-		return false;
-	}
+	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(NullSchedule)
 };
 
 /**
@@ -209,6 +228,8 @@ class Network;
 template<typename NetworkT>
 struct Observer
 {
+//	Observer() {}
+
 	virtual ~Observer() {}
 
 	virtual void observe(std::shared_ptr<NetworkT>, LearningState::Ptr) = 0;
@@ -221,6 +242,10 @@ struct Observer
  */
 struct NullObserver : public Observer<Network>
 {
+//	NullObserver() :
+//		Observer<Network>()
+//	{}
+
 	void observe(std::shared_ptr<Network>, LearningState::Ptr) { }
 
 	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(NullObserver)

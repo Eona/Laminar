@@ -121,12 +121,14 @@ int main(int argc, char **argv)
 
 	auto opm = Optimizer::make<SGD>(0.3);
 	auto eval = NoMetricEvaluator<VecmatEngine>::make(net);
-	auto sched = EpochIntervalSchedule::make(1, 1);
 	auto stopper = StopCriteria::make<MaxEpochStopper>(100);
 	auto ser = NullSerializer::make();
+	auto sched = EpochIntervalSchedule::make(1, 1);
 
-	auto session = new_learning_session(net, opm, eval, sched, stopper, ser,
-			std::make_shared<PrintGradient<VecmatEngine>>());
+//	auto session = new_learning_session(net, opm, eval, stopper, ser, sched,
+//			std::make_shared<PrintGradient<VecmatEngine>>());
+
+	auto session = new_learning_session(net, opm, eval, stopper);
 
 
 	session->initialize();

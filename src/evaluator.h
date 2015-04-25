@@ -110,9 +110,8 @@ private:
 
 
 template<typename EngineT, typename FloatT = float>
-class NoMetricEvaluator : public Evaluator<EngineT, FloatT>
+struct NoMetricEvaluator : public Evaluator<EngineT, FloatT>
 {
-public:
 	NoMetricEvaluator(Network::Ptr net) :
 		Evaluator<EngineT, FloatT>(net)
 	{ }

@@ -14,10 +14,10 @@
 
 template<typename OptimizerT,
 		typename EvaluatorT,
-		typename EvalScheduleT,
-		typename StopCriteriaT,
-		typename SerializerT,
-		typename ObserverT>
+		typename StopCriteriaT = MaxEpochStopper,
+		typename SerializerT = NullSerializer,
+		typename EvalScheduleT = NullSchedule,
+		typename ObserverT = NullObserver>
 class LearningSession
 {
 	template<typename T>
@@ -27,9 +27,9 @@ public:
 	LearningSession(Network::Ptr net,
 					PtrT<OptimizerT> optimizer,
 					PtrT<EvaluatorT> evaluator,
-					PtrT<EvalScheduleT> schedule,
 					PtrT<StopCriteriaT> stopper,
 					PtrT<SerializerT> serializer,
+					PtrT<EvalScheduleT> schedule,
 					PtrT<ObserverT> observer) :
 		net(net),
 		dataManager(net->get_data_manager()),
@@ -37,9 +37,9 @@ public:
 		state(LearningState::make()),
 		optimizer(optimizer),
 		evaluator(evaluator),
-		schedule(schedule),
 		stopper(stopper),
 		serializer(serializer),
+		schedule(schedule),
 		observer(observer),
 		initGuard("LearningSession")
 	{ }
@@ -179,9 +179,9 @@ protected:
 	LearningState::Ptr state;
 	PtrT<OptimizerT> optimizer;
 	PtrT<EvaluatorT> evaluator;
-	PtrT<EvalScheduleT> schedule;
 	PtrT<StopCriteriaT> stopper;
 	PtrT<SerializerT> serializer;
+	PtrT<EvalScheduleT> schedule;
 	PtrT<ObserverT> observer;
 
 	InitializeGuard<LearningException> initGuard;
@@ -194,30 +194,51 @@ protected:
  * to deduce the class templates
  */
 #define LEARNING_SESSION_GENERIC_TYPE \
-LearningSession<OptimizerT, EvaluatorT, EvalScheduleT, StopCriteriaT, SerializerT, ObserverT>
+LearningSession<OptimizerT, EvaluatorT, StopCriteriaT, SerializerT, EvalScheduleT, ObserverT>
 
+/**
+ *
+ * @param net
+ * @param optimizer
+ * @param evaluator
+ * @param stopper
+ * @param serializer if omitted, will be NullSerializer
+ * @param schedule if omitted, will be NullSchedule
+ * @param observer if omitted, will be NullObserver
+ * @return
+ */
 template<typename OptimizerT,
 		typename EvaluatorT,
-		typename EvalScheduleT,
 		typename StopCriteriaT,
-		typename SerializerT,
-		typename ObserverT>
+		typename SerializerT = NullSerializer,
+		typename EvalScheduleT = NullSchedule,
+		typename ObserverT = NullObserver>
 typename LEARNING_SESSION_GENERIC_TYPE::Ptr
 new_learning_session(Network::Ptr net,
 		std::shared_ptr<OptimizerT> optimizer, // actually should be pointer types
 		std::shared_ptr<EvaluatorT> evaluator,
-		std::shared_ptr<EvalScheduleT> schedule,
 		std::shared_ptr<StopCriteriaT> stopper,
-		std::shared_ptr<SerializerT> serializer,
-		std::shared_ptr<ObserverT> observer)
+		std::shared_ptr<SerializerT> serializer = nullptr,
+		std::shared_ptr<EvalScheduleT> schedule = nullptr,
+		std::shared_ptr<ObserverT> observer = nullptr)
 {
+	// default options
+	if (!serializer)
+		serializer = std::make_shared<SerializerT>();
+
+	if (!schedule)
+		schedule = std::make_shared<EvalScheduleT>();
+
+	if (!observer)
+		observer = std::make_shared<ObserverT>();
+
 	return std::make_shared<LEARNING_SESSION_GENERIC_TYPE>(
 				net,
 				optimizer,
 				evaluator,
-				schedule,
 				stopper,
 				serializer,
+				schedule,
 				observer);
 }
 

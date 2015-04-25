@@ -19,7 +19,7 @@ struct Serializer
 LMN_STATIC_ASSERT_IS_BASE(Network, NetworkT, "Serializer template arg");
 LMN_STATIC_ASSERT_IS_BASE(EngineBase, EngineT, "Serializer template arg");
 
-	Serializer() {}
+//	Serializer() {}
 
 	virtual ~Serializer() {}
 
@@ -45,9 +45,9 @@ protected:
  */
 struct NullSerializer : public Serializer<Network, EngineBase>
 {
-	NullSerializer() :
-		Serializer<Network, EngineBase>()
-	{}
+//	NullSerializer() :
+//		Serializer<Network, EngineBase>()
+//	{}
 
 	virtual ~NullSerializer() {}
 
@@ -55,7 +55,8 @@ struct NullSerializer : public Serializer<Network, EngineBase>
 
 protected:
 	virtual void save_impl(
-		std::shared_ptr<Network>, std::shared_ptr<EngineBase>, LearningState::Ptr) {}
+		std::shared_ptr<Network>, std::shared_ptr<EngineBase>, LearningState::Ptr)
+	{ }
 };
 
 
