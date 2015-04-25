@@ -18,8 +18,8 @@
 class Connection : public Component
 {
 public:
-	Connection(Layer::Ptr _inLayer, Layer::Ptr _outLayer):
-		inLayer(_inLayer), outLayer(_outLayer)
+	Connection(Layer::Ptr inLayer, Layer::Ptr outLayer):
+		inLayer(inLayer), outLayer(outLayer)
     {
     }
 

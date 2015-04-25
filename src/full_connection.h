@@ -12,15 +12,15 @@
 class ConstantConnection : public Connection
 {
 public:
-	ConstantConnection(Layer::Ptr _inLayer, Layer::Ptr _outLayer):
-		Connection(_inLayer, _outLayer)
+	ConstantConnection(Layer::Ptr inLayer, Layer::Ptr outLayer):
+		Connection(inLayer, outLayer)
 	{
-		LMN_ASSERT_THROW(_inLayer->dim() == _outLayer->dim()
+		LMN_ASSERT_THROW(inLayer->dim() == outLayer->dim()
 				// we disable the check if either in/outLayer is a DebugLayer
-				|| is_convertible<DebugLayer>(_inLayer)
-				|| is_convertible<DebugLayer>(_outLayer),
+				|| is_convertible<DebugLayer>(inLayer)
+				|| is_convertible<DebugLayer>(outLayer),
 			ComponentException("ConstantConnection inLayer and outLayer dim diagrees:\n"
-				+ container2str(_inLayer->dim()) + " <-> " + container2str(_outLayer->dim())));
+				+ container2str(inLayer->dim()) + " <-> " + container2str(outLayer->dim())));
 	}
 
 	virtual ~ConstantConnection() {};
@@ -44,8 +44,8 @@ public:
 class FullConnection : public Connection, public ParamContainer
 {
 public:
-	FullConnection(Layer::Ptr _inLayer, Layer::Ptr _outLayer):
-		Connection(_inLayer, _outLayer),
+	FullConnection(Layer::Ptr inLayer, Layer::Ptr outLayer):
+		Connection(inLayer, outLayer),
 		ParamContainer(1),
 		param(ParamContainer::param_value_ptr(0)),
 		gradient(ParamContainer::param_gradient_ptr(0))
