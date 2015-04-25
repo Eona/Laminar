@@ -1,1 +1,0 @@
-MNIST handwritten digit demo

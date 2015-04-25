@@ -27,6 +27,8 @@
 #include "utils/global_utils.h"
 #include "utils/timer.h"
 
+#include "demo/mnist/mnist_parser.h"
+
 FakeRand& rand_conn = FakeRand::instance_connection();
 FakeRand& rand_prehis = FakeRand::instance_prehistory();
 FakeRand& rand_input = FakeRand::instance_input();
@@ -47,6 +49,7 @@ struct PrintGradient : public Observer<Network>
 
 	void observe(Network::Ptr net, LearningState::Ptr state)
 	{
+		if (false)
 		if (state->batchInEpoch == 0 && state->epoch == maxEpoch - 1)
 		{
 			auto params = net->param_containers();
@@ -62,28 +65,18 @@ struct PrintGradient : public Observer<Network>
 
 int main(int argc, char **argv)
 {
-	Vecmat<float> A = {
-		{9, -2},
-		{-3, 4},
-		{5, -7}
-	};
+	auto images = read_mnist_image("../data/t10k-images-idx3-ubyte", 100);
+	auto labels = read_mnist_label("../data/t10k-labels-idx1-ubyte", 100);
 
-	Vecmat<float> A2 = {
-		{3, 0},
-		{-2, 4},
-		{10, -7}
-	};
+	DEBUG_MSG(images[0]);
+	DEBUG_MSG(labels);
 
-	Vecmat<float> B = {
-		{-3, 0, 9, 11},
-		{-2, -6, 1, 7}
-	};
-
+/*
 //	const int HISTORY = 5;
 	const int INPUT_DIM = 4;
 	const int TARGET_DIM = 3;
 	const int BATCH = 2;
-	const int MAX_EPOCH = 100;
+	const int MAX_EPOCH = 1000;
 
 	rand_conn.gen_uniform_rand(90, -0.1, 0.1, DEBUG_SEED); //rand_conn.print_rand_seq();
 //
@@ -114,8 +107,8 @@ int main(int argc, char **argv)
 						-1.f, 1.f);
 
 	auto linput = Layer::make<ConstantLayer>(INPUT_DIM);
-	auto l2 = Layer::make<SigmoidLayer>(25);
-	auto l3 = Layer::make<SigmoidLayer>(25);
+	auto l2 = Layer::make<SigmoidLayer>(100);
+	auto l3 = Layer::make<SigmoidLayer>(100);
 	auto lloss = Layer::make<SquareLossLayer>(TARGET_DIM);
 
 	auto net = ForwardNetwork::make(engine, dataman);
@@ -140,29 +133,9 @@ int main(int argc, char **argv)
 
 	session->initialize();
 
-	auto params = net->param_containers();
-	DEBUG_MSG(*engine->read_memory(params[0]->param_value_ptr(0)));
-
 	session->train();
+*/
 
-//	DEBUG_TITLE("After SGD");
-//	DEBUG_MSG("its new value:");
-//	DEBUG_MSG(*engine->read_memory(params[0]->param_value_ptr(0)));
-
-/*	net.upload("initialize");
-	net.upload("forward");
-	net.upload("backward");
-
-	net.compile();
-
-	dummyEng->print_routines();
-
-	DEBUG_TITLE("EXECUTE");
-	net.execute("initialize");
-	net.execute("forward");
-	net.execute("backward");
-
-	cout << dummyEng->read_memory(net.lossLayer->total_loss()) << "\n";*/
 
 	/*Tensor t1(dummyEng, { 2, 3 });
 	Tensor t2(dummyEng, {5, 7});
