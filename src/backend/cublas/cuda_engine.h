@@ -244,7 +244,8 @@ public:
 	inline void transpose(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("transpose", is_initialized);
-		//TODO
+	    assignMat(reads, write, is_initialized);
+	    write->local_transpose();
 	}
 
 
