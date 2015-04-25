@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 //	std::vector<OpenclFloatMatPtr> v3;
 //	v3.push_back(m4);
 //	v3.push_back(m5);
-//
+
 	for (int i = 0; i < 10; ++i){
 	engine.sub(v, out, true);
 //	out->print_matrix("m1 - m2");
