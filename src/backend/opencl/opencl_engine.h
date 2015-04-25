@@ -158,7 +158,7 @@ public:
 
 	    std::string kernel_name = "mult_" + opA + opB;
 	    if (!is_initialized) {
-		    if (opA == "N" && opB == "N") write->reset(m, n, cl); // A * B
+		    if (opA == "N" && opB == "N") write->reset(m, k, cl); // A * B
 		    if (opA == "N" && opB == "T") write->reset(m, l, cl); // A * B^T
 		    if (opA == "T" && opB == "N") write->reset(n, k, cl); // A^T * B
 	    }
