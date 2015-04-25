@@ -65,8 +65,8 @@ struct PrintGradient : public Observer<Network>
 
 int main(int argc, char **argv)
 {
-	auto images = read_mnist_image("../data/t10k-images-idx3-ubyte", 100);
-	auto labels = read_mnist_label("../data/t10k-labels-idx1-ubyte", 100);
+	auto images = read_mnist_image(string("../data/") + MnistTrainImageFile, 100);
+	auto labels = read_mnist_label(string("../data/") + MnistTrainLabelFile, 100);
 
 	lmn::Vecmatf mat(28, 28);
 	mat.fill([&](int r, int c) {

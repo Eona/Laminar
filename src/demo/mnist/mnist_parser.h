@@ -8,6 +8,11 @@
 #include "../../utils/global_utils.h"
 #include "../../utils/laminar_utils.h"
 
+static constexpr const char* MnistTrainImageFile = "train-images-idx3-ubyte";
+static constexpr const char* MnistTrainLabelFile = "train-labels-idx1-ubyte";
+static constexpr const char* MnistTestImageFile = "t10k-images-idx3-ubyte";
+static constexpr const char* MnistTestLabelFile = "t10k-labels-idx1-ubyte";
+
 inline int reverse_int(int i)
 {
     unsigned char ch1, ch2, ch3, ch4;
