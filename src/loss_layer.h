@@ -166,22 +166,30 @@ public:
 	}
 
 protected:
+	vector<Tensor::Ptr> cachedSoftmax;
+
 	virtual Scalor loss_forward_impl(Tensor& inValue, Tensor& targetValue)
 	{
+		*cachedSoftmax[frame()] = lmn::softmax(inValue);
+
 		// our target is an integer class label
-		return lmn::label_softmax_entropy_loss(inValue, targetValue);
+		return lmn::label_entropy_loss(inValue, targetValue);
 	}
 
 	virtual void loss_backward_impl(Tensor& inValue, Tensor& targetValue, Tensor& inGradient)
 	{
-//		inGradient = inValue - dynamic_cast<Scalor&>(targetValue);
+		inGradient = lmn::label_softmax_entropy_gradient(
+				// y - t
+				// where t is a sparse vector with a single '1' at the correct label
+				*cachedSoftmax[frame()], targetValue);
 	}
 
 	virtual void initialize_impl()
 	{
 		LossLayer::initialize_impl();
 
-		// Our target is an integer class label
+		for (int t = 0; t < history_length(); ++t)
+			this->cachedSoftmax.push_back(Tensor::make(engine));
 	}
 };
 
