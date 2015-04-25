@@ -7,6 +7,7 @@ project(Laminar CXX)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../cmake)
 include(eona_utils)
 include(eona_cuda)
+include(eona_opencl)
 
 # CMAKE_CURRENT_BINARY_DIR: where generated cmake files go 
 # CMAKE_BINARY_DIR: top level of your build tree
@@ -18,8 +19,8 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/backend/cublas 
     ${CMAKE_CURRENT_BINARY_DIR}/backend/cublas)
 
-#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/backend/opencl 
-#    ${CMAKE_CURRENT_BINARY_DIR}/backend/opencl)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/backend/opencl 
+    ${CMAKE_CURRENT_BINARY_DIR}/backend/opencl)
 
 # ==========================================
 message("Folder src/")

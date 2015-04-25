@@ -1,8 +1,5 @@
 message("Folder backend/cublas")
 
-# ==========================================
-message("Folder src/")
-
 set(CUBLAS_TEST_EXE 
     test_engine)
 

@@ -5,6 +5,7 @@
 #ifndef CUDA_ENGINE_H_
 #define CUDA_ENGINE_H_
 
+#include "../../utils/global_utils.h"
 #include "../../engine/engine.h"
 #include "../../engine/tensor.h"
 #include <cuda.h>
@@ -36,16 +37,6 @@ public:
 		gt = g;
 		timed = true;
 	    cublasCreate(&handle);
-
-	    // Wrap member function
-		#define MEMFUNC_BIND_2(func) \
-				std::bind(&func, this, std::placeholders::_1, std::placeholders::_2)
-
-		#define MEMFUNC_BIND_3(func) \
-				std::bind(&func, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-
-		#define MEMFUNC_BIND_4(func) \
-				std::bind(&func, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
 
 		register_create_op(MEMFUNC_BIND_2(CudaEngine::create));
 		register_normal_op("t+t", MEMFUNC_BIND_3(CudaEngine::add));
