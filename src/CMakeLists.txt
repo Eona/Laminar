@@ -32,7 +32,7 @@ set(SOURCES
     ${MAIN}.cu
     )
 
-cuda_add_executable(${MAIN} ${SOURCES})
+cublas_add_executable(${MAIN} ${SOURCES})
 
 # ==== boost ====
 #   include(eona_boost)

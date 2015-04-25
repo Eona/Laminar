@@ -9,6 +9,11 @@ endif()
 
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11 -O3 -arch=sm_30)
 
+function(cublas_add_executable target)
+    cuda_add_executable(${target} ${ARGN})
+    cuda_add_cublas_to_target(${target})
+endfunction()
+
 #cuda_add_executable(${MAIN} ${SOURCES})
 
 #CUDA_ADD_CUFFT_TO_TARGET( cuda_target )
