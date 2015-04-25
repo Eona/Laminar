@@ -20,17 +20,14 @@ template<typename OptimizerT,
 		typename ObserverT = NullObserver>
 class LearningSession
 {
-	template<typename T>
-	using PtrT = std::shared_ptr<T>;
-
 public:
 	LearningSession(Network::Ptr net,
-					PtrT<OptimizerT> optimizer,
-					PtrT<EvaluatorT> evaluator,
-					PtrT<StopCriteriaT> stopper,
-					PtrT<SerializerT> serializer,
-					PtrT<EvalScheduleT> schedule,
-					PtrT<ObserverT> observer) :
+					std::shared_ptr<OptimizerT> optimizer,
+					std::shared_ptr<EvaluatorT> evaluator,
+					std::shared_ptr<StopCriteriaT> stopper,
+					std::shared_ptr<SerializerT> serializer,
+					std::shared_ptr<EvalScheduleT> schedule,
+					std::shared_ptr<ObserverT> observer) :
 		net(net),
 		dataManager(net->get_data_manager()),
 		engine(net->get_engine()),
@@ -177,12 +174,12 @@ protected:
 	EngineBase::Ptr engine;
 
 	LearningState::Ptr state;
-	PtrT<OptimizerT> optimizer;
-	PtrT<EvaluatorT> evaluator;
-	PtrT<StopCriteriaT> stopper;
-	PtrT<SerializerT> serializer;
-	PtrT<EvalScheduleT> schedule;
-	PtrT<ObserverT> observer;
+	std::shared_ptr<OptimizerT> optimizer;
+	std::shared_ptr<EvaluatorT> evaluator;
+	std::shared_ptr<StopCriteriaT> stopper;
+	std::shared_ptr<SerializerT> serializer;
+	std::shared_ptr<EvalScheduleT> schedule;
+	std::shared_ptr<ObserverT> observer;
 
 	InitializeGuard<LearningException> initGuard;
 
