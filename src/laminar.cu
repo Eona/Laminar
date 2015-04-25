@@ -65,6 +65,7 @@ struct PrintGradient : public Observer<Network>
 
 int main(int argc, char **argv)
 {
+/*
 	auto images = read_mnist_image(string("../data/") + MnistTrainImageFile, 100);
 	auto labels = read_mnist_label(string("../data/") + MnistTrainLabelFile, 100);
 
@@ -79,6 +80,35 @@ int main(int argc, char **argv)
 	DEBUG_MSG(mat);
 
 	DEBUG_MSG(labels);
+*/
+
+	using namespace lmn::VecmatImpl;
+	using lmn::Vecmatf;
+
+	Vecmat<float> A = {
+		{2.1, -1.2},
+		{-3.3, .4},
+		{1.65, -.7},
+		{-1.33, .57}
+	};
+
+	Vecmat<float> A2 = {
+			{1.1, 3, 6},
+			{7.8, 2, 10},
+			{5.9, 5, 5}
+	};
+
+	Vecmat<float> B = {
+		{-3, 0, 9, 11},
+		{-2, -6, 1, 7}
+	};
+
+	auto a = std::make_shared<Vecmatf>(A2);
+	auto ans = std::make_shared<Vecmatf>(A2.row(), A2.col());
+
+	softmax({a}, ans, true);
+	DEBUG_MSG(*ans);
+
 
 /*
 //	const int HISTORY = 5;
