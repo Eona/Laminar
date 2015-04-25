@@ -24,7 +24,7 @@
 
 #include "../../engine/engine.h"
 #include "../../engine/tensor.h"
-#include "../../rand_utils.h"
+#include "../../utils/laminar_utils.h"
 using namespace std;
 
 
@@ -352,7 +352,7 @@ public:
 	    if(timed) gt->record_named_timer("element_mult", duration, m*n*2);
 	}
 
-	inline void square_loss(vector<OpenclFloatMatPtr> reads, float* write, bool is_initialized)
+	inline void square_loss(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("square_loss", is_initialized);
 	    int m = reads[0]->DIM_ROW;
@@ -368,8 +368,9 @@ public:
 
 	    float t[aux.MEM_SIZE];
 	    aux.to_host(t);
+
 	    for (int i = 0; i < aux.LEN; ++i) {
-	    	*write += t[i];
+	    	write->scalar += t[i];
 	    }
 	}
 
@@ -392,6 +393,16 @@ public:
 		}
 		write->fill(0.66337);
 	}
+
+
+	float tensor_data_at(OpenclFloatMatPtr reads, DimIndex idx) {
+		return 0;
+	}
+
+	float scalar_data_at(OpenclFloatMatPtr reads) {
+		return reads->scalar;
+	}
+
 
 	~OpenclEngine()
 	{

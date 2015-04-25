@@ -31,7 +31,7 @@ class CudaEngine : public Engine<CudaFloatMat>
 {
 public:
 
-	CudaEngine(GlobalTimer * g) :
+	CudaEngine(GlobalTimer<cudaEvent_t> * g) :
 		Engine<CudaFloatMat>()
 	{
 		gt = g;
@@ -309,7 +309,7 @@ public:
 	    MATOP_DUAL("element_mult", cu_element_mult_func);
 	}
 
-	inline void square_loss(vector<CudaFloatMatPtr> reads, float* write, bool is_initialized)
+	inline void square_loss(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("square_loss", is_initialized);
 		CudaFloatMat aux(reads[0]->DIM_ROW, reads[0]->DIM_COL);
@@ -323,7 +323,7 @@ public:
 														aux.LEN,
 														h_func );
 
-	    cublasSasum(handle, aux.LEN, aux.device_data, 1, write);
+	    cublasSasum(handle, aux.LEN, aux.device_data, 1, &write->scalar);
 	}
 
 	// FIXME add contextual rand engine
@@ -346,10 +346,19 @@ public:
 		write->fill(0.66337);
 	}
 
+
+	float tensor_data_at(CudaFloatMatPtr reads, DimIndex idx) {
+		return 0;
+	}
+
+	float scalar_data_at(CudaFloatMatPtr reads) {
+		return reads->scalar;
+	}
+
 private:
 	cublasHandle_t handle;
 	bool timed;
-	GlobalTimer * gt;
+	GlobalTimer<cudaEvent_t> * gt;
 
 };
 

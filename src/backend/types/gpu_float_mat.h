@@ -11,6 +11,7 @@ public:
 	int LEN; //number of data element in the buffer
 	int MEM_SIZE; //size of the buffer
 	int NUM_DIM; //number of dimensions
+	float scalar; //only used in square loss
 
 	std::vector<int> DIM_ALL; //all dimensions
 
