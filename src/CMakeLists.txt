@@ -33,6 +33,7 @@ set(SOURCES
     )
 
 cublas_add_executable(${MAIN} ${SOURCES})
+target_link_libraries(${MAIN} ${OPENCL_LIBRARIES})
 
 # ==== boost ====
 #   include(eona_boost)

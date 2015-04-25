@@ -153,3 +153,63 @@ TEST(VecmatForward, Bias)
 }
 
 
+TEST(VecmatForward, SoftmaxEntropyLoss)
+{
+	rand_conn.set_rand_seq(vector<float> {
+		-0.565, -0.00362, -0.901, 0.516, -0.902, 0.299, 0.192, 0.441, 0.683, 0.893,
+		0.718, 0.336, 0.706, 0.564, 0.257, -0.875, -0.163, -0.693, 0.531,
+		0.787, -0.767, 0.0672, 0.997, 0.0552, -0.666, -0.601, -0.12, 0.998,
+		-0.13, -0.441, 0.0686, -0.276, 0.857, -0.942, 0.641, 0.263, -0.839,
+		0.888, -0.669, -0.261, -0.675, -0.271, 0.0758, 0.442, -0.951, 0.417,
+		-0.895, 0.91, -0.241, -0.865, 0.302, -0.697, -0.886, 0.125, 0.14,
+		-0.606, 0.982, 0.0487, 0.0931, 0.638, 0.524, 0.442, -0.803, 0.726,
+		-0.943, -0.58, -0.982, 0.751, 0.235, -0.39, 0.974, -0.29, -0.738,
+		-0.985, 0.00643, 0.0759, 0.0186, -0.718, -0.222, -0.0668, 0.853, -0.345,
+		-0.315, -0.0346, -0.0573, -0.961, 0.123, 0.15, 0.292, 0.571, -0.501,
+		0.088, -0.184, -0.445, -0.973, 0.571, -0.2, 0.0235, 0.434, -0.637,
+		0.456, -0.155, 0.696, 0.567, -0.74, -0.857, 0.456, -0.333, -0.895, -0.831
+	});
+//	rand_conn.gen_uniform_rand(110, -1, 1); rand_conn.print_rand_seq();
+
+	const int INPUT_DIM = 5;
+	const int TARGET_DIM = 7;
+	const int BATCH_SIZE = 4;
+
+	// NOTE out is a label!!!
+	auto learnableFunc = [](const lmn::Vecmatf& in, lmn::Vecmatf& out) {
+		// Each column is a batch
+		for (int c = 0; c < in.col(); ++c)
+		{
+			out(0, c) = rand() % TARGET_DIM;
+		}
+	};
+
+	auto engine = EngineBase::make<VecmatEngine>();
+	auto dataman = DataManagerBase::make<VecmatFuncDataManager>(
+						engine, INPUT_DIM, 1, BATCH_SIZE,
+						learnableFunc,
+						10, 0, 0,
+						-1.f, 1.f);
+
+	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
+
+	auto l2 = Layer::make<SigmoidLayer>(5);
+	auto l3 = Layer::make<TanhLayer>(5);
+
+	auto l4 = Layer::make<LabelSoftmaxEntropyLayer>(TARGET_DIM);
+
+	ForwardNetwork net(engine, dataman);
+
+	net.add_layer(l1);
+	net.new_connection<FullConnection>(l1, l2);
+	net.new_bias_layer(l2);
+	net.add_layer(l2);
+	net.new_connection<FullConnection>(l2, l3);
+	net.new_bias_layer(l3);
+	net.add_layer(l3);
+	net.new_connection<FullConnection>(l3, l4);
+	net.add_layer(l4);
+
+	gradient_check<VecmatEngine, VecmatFuncDataManager>(net, 1e-2f, 0.8f);
+}
+

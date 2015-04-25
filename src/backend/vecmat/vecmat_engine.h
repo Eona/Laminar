@@ -546,6 +546,9 @@ public:
 		register_normal_op("transpose", Impl::transpose);
 		register_normal_op("element_mult", Impl::element_mult);
 		register_normal_op("square_loss", Impl::square_loss);
+		register_normal_op("softmax", Impl::softmax);
+		register_normal_op("label_entropy_loss", Impl::label_entropy_loss);
+		register_normal_op("label_softmax_entropy_gradient", Impl::label_softmax_entropy_gradient);
 
 		register_normal_op("destroy", Impl::destroy);
 		register_normal_op("zero_clear", Impl::zero_clear);
