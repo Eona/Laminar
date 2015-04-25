@@ -211,6 +211,28 @@ struct typeTraitFuncName<className<Ts...> > : std::true_type { };
 GEN_IS_TEMPLATE_TRAIT(is_vector, std::vector);
 
 /**
+ * Wrap member functions to be castable to std::function<>
+ * MEMFUNC_BIND_N where N is number of args
+ */
+#define MEMFUNC_BIND_0(func) \
+	std::bind(&func, this)
+
+#define MEMFUNC_BIND_1(func) \
+	std::bind(&func, this, std::placeholders::_1)
+
+#define MEMFUNC_BIND_2(func) \
+	std::bind(&func, this, std::placeholders::_1, std::placeholders::_2)
+
+#define MEMFUNC_BIND_3(func) \
+	std::bind(&func, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+
+#define MEMFUNC_BIND_4(func) \
+	std::bind(&func, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+
+#define MEMFUNC_BIND_5(func) \
+	std::bind(&func, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5)
+
+/**
  * select_type<bool, TypeTrue, TypeFalse>::type
  * if bool is true, select TypeTrue, else TypeFalse
  */
