@@ -8,7 +8,6 @@
 
 #include "../../engine/engine.h"
 #include "../../engine/tensor.h"
-#include "../../rand_utils.h"
 #include <cuda.h>
 #include "cublas_v2.h"
 #include "../types/cuda_float_mat.h"

@@ -15,6 +15,12 @@ include(eona_cuda)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test 
     ${CMAKE_CURRENT_BINARY_DIR}/test)
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/backend/cublas 
+    ${CMAKE_CURRENT_BINARY_DIR}/backend/cublas)
+
+#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/backend/opencl 
+#    ${CMAKE_CURRENT_BINARY_DIR}/backend/opencl)
+
 # ==========================================
 message("Folder src/")
 
