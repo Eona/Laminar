@@ -90,6 +90,11 @@ public:
 		);
 	}
 
+	void copy_to_device(float *device_d) {
+		GPU_CHECKERROR(
+		cudaMemcpy( device_d, device_data, MEM_SIZE, cudaMemcpyDeviceToDevice )
+		);
+	}
 
 	/*
 	 * Copy device data to host

@@ -106,7 +106,7 @@ __kernel void mat_sigmoid_kernel(__global float * Y, __global float * X, int DAT
 {
     int idx = get_global_id(0);
     if (idx < DATA_SIZE) {
-		Y[idx] = 1.f - (X[idx] * X[idx]);
+		Y[idx] = 1.f / (1.f + exp(-X[idx]));
 	}
 }
 
@@ -151,7 +151,7 @@ __kernel void mat_tanh_gradient_kernel(__global float * Y, __global float * X, i
 {
     int idx = get_global_id(0);
     if (idx < DATA_SIZE) {
-		Y[idx] = 1.f / (1.f + exp(-X[idx]));
+		Y[idx] = 1.f - (X[idx] * X[idx]);
 	}
 }
 

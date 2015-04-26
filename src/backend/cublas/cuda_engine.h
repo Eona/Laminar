@@ -192,7 +192,7 @@ public:
 	    //y = x
 	    //handle, x_len, x, incx, y, incy
 	    TIME("assign", m*n,
-	    cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1)
+	    reads[0]->copy_to_device(write->device_data);
 	    );
 
 	}
@@ -396,7 +396,7 @@ public:
 		debug_msg("square_loss", is_initialized);
 		CudaFloatMat aux(reads[0]->DIM_ROW, reads[0]->DIM_COL);
 
-		cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, aux.device_data, 1);
+	    reads[0]->copy_to_device(write->device_data);
 		op_func_dual_t h_func;
 		cudaMemcpyFromSymbol( &h_func, cu_square_loss_func, sizeof( op_func_t ) );
 		mat_op_kernel<<<aux.GRID_DIM, aux.BLOCK_DIM>>>( aux.device_data,
