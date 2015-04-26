@@ -30,9 +30,6 @@ using namespace std;
 
 
 typedef std::shared_ptr<OpenclFloatMat> OpenclFloatMatPtr;
-//typedef OpenclFloatMat* OpenclFloatMatPtr;
-
-//typedef std::shared_ptr<float> FloatPtr;
 
 class OpenclEngine : public Engine<OpenclFloatMat>
 {

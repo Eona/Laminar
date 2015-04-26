@@ -13,6 +13,7 @@
 #include "../types/cuda_float_mat.h"
 #include "../types/performance_profiler.h"
 #include "cuda_func.h"
+#include <assert.h>
 using namespace std;
 
 #define TIME(name, size, func_call) {\
@@ -134,6 +135,11 @@ public:
 	    int k = reads[0]->DIM_COL;
 	    int l = reads[1]->DIM_ROW;
 	    int n = reads[1]->DIM_COL;
+
+	    if (opA == "N" && opB == "N") assert(k == l);
+	    if (opA == "N" && opB == "T") assert(k == n);
+	    if (opA == "T" && opB == "N") assert(m == l);
+
 	    if (!is_initialized) {
 		    if (opA == "N" && opB == "N") write->reset(m, n); // A * B
 		    if (opA == "N" && opB == "T") write->reset(m, l); // A * B^T
