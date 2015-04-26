@@ -258,6 +258,7 @@ public:
     		r[i] = num;
     	}
     	to_device_write(memobj, r, MEM_SIZE);
+    	delete r;
     }
 
     void to_device_write(cl_mem buffer, float* d, size_t MEM_SIZE){

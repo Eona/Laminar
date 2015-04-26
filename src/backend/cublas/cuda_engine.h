@@ -194,7 +194,10 @@ public:
 	    TIME("assign", m*n,
 	    reads[0]->copy_to_device(write->device_data);
 	    );
-
+	    // FIX: otherwise transpose dimension error
+	    write->DIM_ROW = reads[0]->DIM_ROW;
+	    write->DIM_COL = reads[0]->DIM_COL;
+	    write->LDIM = reads[0]->LDIM;
 	}
 
 	void add(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)

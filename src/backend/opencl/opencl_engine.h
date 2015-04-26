@@ -110,13 +110,13 @@ public:
 
 	void create(OpenclFloatMatPtr write, vector<int> dim)
 	{
-		DEBUG_MSG("OpenclEngine::create dim=" << dim);
+//		DEBUG_MSG("OpenclEngine::create dim=" << dim);
 		write->reset(dim, cl);
 	}
 
 	void debug_msg(string msg, bool is_initialized)
 	{
-		DEBUG_MSG(("OpenclEngine::" + msg + " ->init=") << std::boolalpha << is_initialized);
+//		DEBUG_MSG(("OpenclEngine::" + msg + " ->init=") << std::boolalpha << is_initialized);
 	}
 
 	/*
@@ -213,6 +213,10 @@ public:
 	    }
 	    //y = x
 	    cl->copy(write->device_data, reads[0]->device_data, reads[0]->MEM_SIZE);
+
+	    // FIX otherwise transpose has problems
+	    write->DIM_ROW = m;
+	    write->DIM_COL = n;
 	}
 
 	void elementOp(std::string kernel_name, vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized){
