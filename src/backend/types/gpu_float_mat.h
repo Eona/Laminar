@@ -79,7 +79,7 @@ public:
     }
 
 	void perturb(size_t idx, float val) {
-		float * r = new float[MEM_SIZE];
+		float * r = new float[LEN];
 		to_host(r);
 		r[idx] += val;
 		to_device(r);

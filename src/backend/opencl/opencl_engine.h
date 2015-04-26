@@ -27,7 +27,21 @@
 #include "../../engine/tensor.h"
 #include "../../utils/laminar_utils.h"
 #include "../../utils/global_utils.h"
+#include "../../utils/rand_utils.h"
 using namespace std;
+
+class OpenclEngineException: public EngineException
+{
+public:
+    OpenclEngineException(const std::string& msg):
+    	EngineException(msg)
+	{}
+
+    virtual std::string error_header() const
+    {
+    	return "OpenclEngine error";
+    }
+};
 
 
 typedef std::shared_ptr<OpenclFloatMat> OpenclFloatMatPtr;
@@ -103,6 +117,7 @@ public:
 
 		register_normal_op("fill_rand", MEMFUNC_BIND_3(OpenclEngine::fill_rand));
 		register_context_op<float>("scale", MEMFUNC_BIND_4(OpenclEngine::scale));
+		register_context_op<DimIndex, float>("perturb", MEMFUNC_BIND_5(OpenclEngine::perturb));
 	}
 
 
@@ -157,6 +172,22 @@ public:
 	    int n = reads[0]->DIM_COL;
 	    int l = reads[1]->DIM_ROW;
 	    int k = reads[1]->DIM_COL;
+
+	    if (opA == "N" && opB == "N")
+	    	LMN_ASSERT_THROW(n == l,
+	    		OpenclEngineException("multMat dim mismatch "
+	    				+ container2str(Dimension{m, n}) + " <-> "
+						+ container2str(Dimension{l, k})));
+	    if (opA == "N" && opB == "T")
+	    	LMN_ASSERT_THROW(n == k,
+	    		OpenclEngineException("multMat N T dim mismatch "
+	    				+ container2str(Dimension{m, n}) + " <-> "
+						+ container2str(Dimension{k, l})));
+	    if (opA == "T" && opB == "N")
+	    	LMN_ASSERT_THROW(m == l,
+	    		OpenclEngineException("multMat T N dim mismatch "
+	    				+ container2str(Dimension{n, m}) + " <-> "
+						+ container2str(Dimension{l, k})));
 
 	    std::string kernel_name = "mult_" + opA + opB;
 	    if (!is_initialized) {
@@ -438,7 +469,7 @@ public:
 		if (!is_initialized) {
 	        write->reset(write->DIM_ROW, write->DIM_COL, cl); //initialize LHS if not already
 		}
-		write->fill_rand(1);
+		write->fill_rand(DEBUG_SEED);
 	}
 
 	inline void softmax(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized) {
@@ -568,6 +599,15 @@ public:
 
 	float scalar_data_at(OpenclFloatMatPtr reads) {
 		return reads->scalar;
+	}
+
+	void perturb(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized,
+			DimIndex idx, float eps)
+	{
+		debug_msg("perturb", is_initialized);
+
+		size_t i = idx[1] * write->DIM_ROW + idx[0]; //c*dim_row + r
+		write->perturb(i, eps);
 	}
 
 

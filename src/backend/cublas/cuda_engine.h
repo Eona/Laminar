@@ -7,6 +7,7 @@
 
 #include "../../utils/global_utils.h"
 #include "../../utils/laminar_utils.h"
+#include "../../utils/rand_utils.h"
 #include "../../engine/engine.h"
 #include "../../engine/tensor.h"
 #include "../../engine/tensor_ops.h"
@@ -154,10 +155,14 @@ public:
 						+ container2str(Dimension{l, n})));
 	    if (opA == "N" && opB == "T")
 	    	LMN_ASSERT_THROW(k == n,
-	    		EngineException("multMat dim mismatch " + to_str(k) + " != " + to_str(n)));
+	    		EngineException("multMat dim mismatch "
+	    				+ container2str(Dimension{m, k}) + " <-> "
+						+ container2str(Dimension{n, l})));
 	    if (opA == "T" && opB == "N")
 	    	LMN_ASSERT_THROW(m == l,
-	    		EngineException("multMat dim mismatch " + to_str(m) + " != " + to_str(l)));
+	    		EngineException("multMat dim mismatch "
+	    				+ container2str(Dimension{k, m}) + " <-> "
+						+ container2str(Dimension{l, n})));
 
 	    if (!is_initialized) {
 		    if (opA == "N" && opB == "N") write->reset(m, n); // A * B
@@ -546,7 +551,7 @@ public:
 		if (!is_initialized) {
 	    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
 		}
-		write->fill_rand(1);
+		write->fill_rand(DEBUG_SEED);
 	}
 
 
