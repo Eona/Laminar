@@ -13,7 +13,7 @@ typedef float (*op_func_dual_t) (float, float); // device pointer function (two 
 
 __device__ float sigmoid_func (float x)
 {
-	return 1.f - x * x;
+	return 1.f / (1.f + std::exp(-x));
 }
 
 __device__ float sigmoid_gradient_func (float x)
@@ -38,7 +38,7 @@ __device__ float tanh_func (float x)
 
 __device__ float tanh_gradient_func (float x)
 {
-	return 1.f / (1.f + exp(-x));
+	return 1.f - x * x;
 }
 
 __device__ float square_loss_func (float x, float y)
