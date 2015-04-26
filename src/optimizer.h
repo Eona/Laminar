@@ -62,26 +62,75 @@ protected:
 };
 
 /**
- * Stochastic gradient descent
+ * Stochastic gradient descent with (decaying) learning rate every epoch
  */
 class SimpleSGD : public Optimizer
 {
 public:
-	SimpleSGD(float initLearningRate) :
+	/**
+	 *
+	 * @param initLearningRate
+	 * @param decay defaults to 1.f (no change over each minibatch)
+	 * decay < 1.f to decrease learning, > 1.f to accelerate learning
+	 */
+	SimpleSGD(float initLearningRate, float decayRate = 1.f) :
 		Optimizer(),
-		initLearningRate(initLearningRate)
+		initLearningRate(initLearningRate),
+		decayRate(decayRate)
 	{}
 
 	virtual ~SimpleSGD() {}
 
 protected:
 	Scalar::Ptr learningRate;
+	Scalar::Ptr decay;
+
+	float initLearningRate;
+	float decayRate;
+
+	virtual void initialize_impl()
+	{
+		this->learningRate = Scalar::make(engine);
+		this->decay = Scalar::make(engine);
+		// upload float to Scalar
+		*learningRate = initLearningRate;
+		*decay = decayRate;
+	}
+
+	// FIXME because update() is compiled, we cannot branch on different 'state'
+	// 'decay' has to be per minibatch
+	virtual void update_impl(
+			Tensor& paramValue, Tensor& paramGradient, LearningState::Ptr state)
+	{
+		paramValue -= *learningRate * paramGradient;
+		*learningRate *= *decay;
+	}
+};
+
+
+/**
+ * Learning with momentum
+ */
+class MomentumSGD : public Optimizer
+{
+public:
+	MomentumSGD(float initLearningRate) :
+		Optimizer(),
+		initLearningRate(initLearningRate)
+	{}
+
+	virtual ~MomentumSGD() {}
+
+protected:
+	Scalar::Ptr learningRate;
+	Tensor::Ptr lastUpdate;
 
 	float initLearningRate;
 
 	virtual void initialize_impl()
 	{
 		this->learningRate = Scalar::make(engine);
+		this->lastUpdate = Tensor::make(engine);
 		// upload float to Scalar
 		*learningRate = initLearningRate;
 	}
