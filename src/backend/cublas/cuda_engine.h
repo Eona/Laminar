@@ -522,6 +522,14 @@ public:
 		write->fill(0.66337);
 	}
 
+	inline void perturb(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized,
+			DimIndex idx, float eps)
+	{
+		debug_msg("perturb", is_initialized);
+
+		size_t i = idx[1] * write->DIM_ROW + idx[0]; //c*dim_row + r
+		write->perturb(i, eps);
+	}
 
 	float tensor_data_at(CudaFloatMatPtr reads, DimIndex idx) {
 		int m = reads->DIM_ROW;

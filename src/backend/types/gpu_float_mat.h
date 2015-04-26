@@ -77,6 +77,15 @@ public:
 
     }
 
+	void perturb(size_t idx, float val) {
+		float * r = new float[MEM_SIZE];
+		to_host(r);
+		r[idx] += val;
+		to_device(r);
+		delete[] r;
+	}
+
+
     void free_data(){
 		if (host_data) free(host_data);
     }
