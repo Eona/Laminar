@@ -33,16 +33,16 @@ public:
 		streamPos( {0, 0, 0} )
 	{
 		inputStreams[enum2integral(LearningPhase::Training)] =
-				read_mnist_image(dataDir + "/" + MNIST_TRAIN_IMAGE_FILE, 0, batchSize, true);
+				read_mnist_image(mnistDataDir + "/" + MNIST_TRAIN_IMAGE_FILE, 0, batchSize, true);
 
 		inputStreams[enum2integral(LearningPhase::Testing)] =
-				read_mnist_image(dataDir + "/" + MNIST_TEST_IMAGE_FILE, 0, batchSize, true);
+				read_mnist_image(mnistDataDir + "/" + MNIST_TEST_IMAGE_FILE, 0, batchSize, true);
 
 		targetStreams[enum2integral(LearningPhase::Training)] =
-				read_mnist_label(dataDir + "/" + MNIST_TRAIN_LABEL_FILE, 0, batchSize);
+				read_mnist_label(mnistDataDir + "/" + MNIST_TRAIN_LABEL_FILE, 0, batchSize);
 
 		targetStreams[enum2integral(LearningPhase::Testing)] =
-				read_mnist_label(dataDir + "/" + MNIST_TEST_LABEL_FILE, 0, batchSize);
+				read_mnist_label(mnistDataDir + "/" + MNIST_TEST_LABEL_FILE, 0, batchSize);
 	}
 
 	virtual ~MnistDataManager() {}
@@ -117,6 +117,12 @@ protected:
 	virtual void alloc_zeros(DataPtr write, int rowdim, int coldim) = 0;
 
 	virtual void load_data(DataPtr write, vector<float>&) = 0;
+
+	// Helper: convert LearningPhase to int
+	static int to_int(LearningPhase phase)
+	{
+		return (int) enum2integral(phase);
+	}
 
 private:
 	int batchSize;
