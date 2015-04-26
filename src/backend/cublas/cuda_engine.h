@@ -94,7 +94,10 @@ public:
 
 	void zero_clear(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
-		write->zero_clear();
+		if (write->isScalar)
+			write->scalar = 0;
+		else
+			write->zero_clear();
 	}
 
 	void debug_msg(string msg, bool is_initialized)
@@ -194,6 +197,9 @@ public:
 
 	void add_scalor(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
+		reads[0]->isScalar = true;
+		reads[1]->isScalar = true;
+		write->isScalar = true;
 		write->scalar = reads[0]->scalar + reads[1]->scalar;
 	}
 
@@ -247,6 +253,8 @@ public:
 
 	void assign_const(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized, float constant){
 	    debug_msg("c=constS", is_initialized);
+
+	    write->isScalar = true;
 	    write->scalar = constant;
 	}
 
@@ -386,6 +394,7 @@ public:
 														aux.LEN,
 														h_func );
 
+		write->isScalar = true;
 	    cublasSasum(handle, aux.LEN, aux.device_data, 1, &write->scalar);
 	}
 
@@ -442,8 +451,7 @@ public:
 	{
 		debug_msg("label_entropy_loss", is_initialized);
 
-		if (!is_initialized)
-			write->reset(1, 1);
+		write->isScalar = true;
 
 		float * rmat = new float[reads[0]->LEN];
 		float * labels = new float[reads[1]->LEN];
