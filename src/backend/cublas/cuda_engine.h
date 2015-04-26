@@ -183,8 +183,10 @@ public:
 	    if (!is_initialized) {
 	    	write->reset(m, n);
 	    }
+
 	    //y = x
 	    //handle, x_len, x, incx, y, incy
+	    assert(reads[0]->LEN == write->LEN);
 	    TIME("assign", m*n,
 	    reads[0]->copy_to_device(write->device_data);
 	    );
@@ -384,9 +386,8 @@ public:
 	inline void square_loss(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("square_loss", is_initialized);
-		CudaFloatMat aux(reads[0]->DIM_ROW, reads[0]->DIM_COL);
 
-	    reads[0]->copy_to_device(write->device_data);
+		CudaFloatMat aux(reads[0]->DIM_ROW, reads[0]->DIM_COL);
 		op_func_dual_t h_func;
 		cudaMemcpyFromSymbol( &h_func, cu_square_loss_func, sizeof( op_func_t ) );
 		mat_op_kernel<<<aux.GRID_DIM, aux.BLOCK_DIM>>>( aux.device_data,
