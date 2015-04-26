@@ -122,8 +122,8 @@ public:
 	 */
 	void addMat(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized, float alpha, float beta)
 	{
-	    int m = reads[0]->DIM_ROW;
-	    int n = reads[0]->DIM_COL;
+	    int m = reads[1]->DIM_ROW;
+	    int n = reads[1]->DIM_COL;
 	    if (!is_initialized) {
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }

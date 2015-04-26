@@ -6,6 +6,7 @@
 #define CUDA_ENGINE_H_
 
 #include "../../utils/global_utils.h"
+#include "../../utils/laminar_utils.h"
 #include "../../engine/engine.h"
 #include "../../engine/tensor.h"
 #include <cuda.h>
@@ -107,8 +108,8 @@ public:
 	void addMat(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized, float alpha, float beta)
 	{
 
-	    int m = reads[0]->DIM_ROW;
-	    int n = reads[0]->DIM_COL;
+	    int m = reads[1]->DIM_ROW;
+	    int n = reads[1]->DIM_COL;
 	    if (!is_initialized) {
 	    	write->reset(m, n);
 	    }
@@ -136,9 +137,17 @@ public:
 	    int l = reads[1]->DIM_ROW;
 	    int n = reads[1]->DIM_COL;
 
-	    if (opA == "N" && opB == "N") assert(k == l);
-	    if (opA == "N" && opB == "T") assert(k == n);
-	    if (opA == "T" && opB == "N") assert(m == l);
+	    if (opA == "N" && opB == "N")
+	    	LMN_ASSERT_THROW(k == l,
+	    		EngineException("multMat dim mismatch "
+	    				+ container2str(Dimension{m, k}) + " <-> "
+						+ container2str(Dimension{l, n})));
+	    if (opA == "N" && opB == "T")
+	    	LMN_ASSERT_THROW(k == n,
+	    		EngineException("multMat dim mismatch " + to_str(k) + " != " + to_str(n)));
+	    if (opA == "T" && opB == "N")
+	    	LMN_ASSERT_THROW(m == l,
+	    		EngineException("multMat dim mismatch " + to_str(m) + " != " + to_str(l)));
 
 	    if (!is_initialized) {
 		    if (opA == "N" && opB == "N") write->reset(m, n); // A * B
