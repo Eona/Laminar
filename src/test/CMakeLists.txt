@@ -3,9 +3,10 @@ include(eona_gtest)
 
 # toggle this to avoid recompiling gtests
 set(RUN_CPU_GTEST false)
-set(RUN_GPU_GTEST false)
+set(RUN_GPU_GTEST true)
 # global option from eona_gtest.cmake
 set(RUN_TEST_DURING_BUILD false)
+set(USE_CUBLAS true)
 
 set(CPU_TEST_SUITE 
     dummy_forward_test dummy_rnn_test 
@@ -16,7 +17,7 @@ set(CPU_TEST_SUITE
     )
 
 set(GPU_TEST_SUITE 
-    cuda_test
+    cublas_forward_test
     )
     
 # Initialize to empty list

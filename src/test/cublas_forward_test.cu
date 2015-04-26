@@ -2,19 +2,20 @@
  * Eona Studio (c) 2015
  */
 
-#include "cuda_engine.h"
-#include "../rand_dataman.h"
-#include "../../connection.h"
-#include "../../full_connection.h"
-#include "../../gated_connection.h"
-#include "../../activation_layer.h"
-#include "../../bias_layer.h"
-#include "../../loss_layer.h"
-#include "../../parameter.h"
-#include "../../network.h"
-#include "../../rnn.h"
-#include "../../lstm.h"
-#include "../../gradient_check.h"
+#include "../backend/cublas/cuda_engine.h"
+#include "test_utils.h"
+//#include "../rand_dataman.h"
+//#include "../../connection.h"
+//#include "../../full_connection.h"
+//#include "../../gated_connection.h"
+//#include "../../activation_layer.h"
+//#include "../../bias_layer.h"
+//#include "../../loss_layer.h"
+//#include "../../parameter.h"
+//#include "../../network.h"
+//#include "../../rnn.h"
+//#include "../../lstm.h"
+//#include "../../gradient_check.h"
 
 struct CublasRandDataManager :
 		public RandDataManager<CudaFloatMat>
@@ -38,7 +39,7 @@ protected:
 	}
 };
 
-int main()
+TEST(CublasForward, Simple)
 {
 	const int INPUT_DIM = 3;
 	const int TARGET_DIM = 4;
