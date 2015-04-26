@@ -28,20 +28,27 @@ public:
 		this->engine = engine;
 	}
 
-	void initialize()
+	void initialize(vector<ParamContainer::Ptr> params)
 	{
 		this->initialize_impl();
+		for (auto param : params)
+			for (int p = 0; p < param->size(); ++p)
+			{
+				this->setup_impl(param->param_value(p));
+			}
+
 		initGuard.initialize();
 	}
 
-	virtual void update(ParamContainer::Ptr param, LearningState::Ptr state)
+	virtual void update(vector<ParamContainer::Ptr> params, LearningState::Ptr state)
 	{
 		initGuard.assert_after_initialize("update");
 
-		for (int p = 0; p < param->size(); ++p)
-		{
-			this->update_impl(param->param_value(p), param->param_gradient(p), state);
-		}
+		for (auto param : params)
+			for (int p = 0; p < param->size(); ++p)
+			{
+				this->update_impl(param->param_value(p), param->param_gradient(p), state);
+			}
 	}
 
 	/************************************/
@@ -56,6 +63,13 @@ protected:
 	EngineBase::Ptr engine;
 
 	virtual void initialize_impl() = 0;
+
+	/**
+	 * Set up for momentum/adagrad learning that needs to store history of previous updates
+	 * Create a hashmap to keep track of which history belongs to which param tensor
+	 * Should NOT modify the value, because they are all zeros anyway (just initialized)
+	 */
+	virtual void setup_impl(Tensor& paramValue) = 0;
 
 	virtual void update_impl(
 		Tensor& paramValue, Tensor& paramGradient, LearningState::Ptr state) = 0;
@@ -97,6 +111,8 @@ protected:
 		*decay = decayRate;
 	}
 
+	virtual void setup_impl(Tensor&) {}
+
 	// FIXME because update() is compiled, we cannot branch on different 'state'
 	// 'decay' has to be per minibatch
 	virtual void update_impl(
@@ -134,6 +150,8 @@ protected:
 		// upload float to Scalar
 		*learningRate = initLearningRate;
 	}
+
+	virtual void setup_impl(Tensor&) {}
 
 	virtual void update_impl(
 			Tensor& paramValue, Tensor& paramGradient, LearningState::Ptr state)
