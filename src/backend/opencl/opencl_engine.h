@@ -118,6 +118,8 @@ public:
 		register_normal_op("fill_rand", MEMFUNC_BIND_3(OpenclEngine::fill_rand));
 		register_context_op<float>("scale", MEMFUNC_BIND_4(OpenclEngine::scale));
 		register_context_op<DimIndex, float>("perturb", MEMFUNC_BIND_5(OpenclEngine::perturb));
+		register_context_op<lmn::ElementFillFunc<float>>(
+						"fill_element", MEMFUNC_BIND_4(OpenclEngine::fill_element));
 	}
 
 

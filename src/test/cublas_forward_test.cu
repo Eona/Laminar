@@ -4,18 +4,6 @@
 
 #include "../backend/cublas/cuda_engine.h"
 #include "test_utils.h"
-//#include "../rand_dataman.h"
-//#include "../../connection.h"
-//#include "../../full_connection.h"
-//#include "../../gated_connection.h"
-//#include "../../activation_layer.h"
-//#include "../../bias_layer.h"
-//#include "../../loss_layer.h"
-//#include "../../parameter.h"
-//#include "../../network.h"
-//#include "../../rnn.h"
-//#include "../../lstm.h"
-//#include "../../gradient_check.h"
 
 struct CublasRandDataManager :
 		public RandDataManager<CudaFloatMat>
@@ -64,10 +52,13 @@ TEST(CublasForward, Simple)
 	ForwardNetwork net(engine, dataman);
 
 	net.add_layer(l1);
+	net.new_bias_layer(l2);
 	net.new_connection<FullConnection>(l1, l2);
 	net.add_layer(l2);
+	net.new_bias_layer(l3);
 	net.new_connection<FullConnection>(l2, l3);
 	net.add_layer(l3);
+	net.new_bias_layer(l4);
 	net.new_connection<FullConnection>(l3, l4);
 	net.add_layer(l4);
 

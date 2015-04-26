@@ -85,6 +85,10 @@ public:
 		register_context_op<float>("scale", MEMFUNC_BIND_4(CudaEngine::scale));
 
 		register_context_op<DimIndex, float>("perturb", MEMFUNC_BIND_5(CudaEngine::perturb));
+
+		register_context_op<lmn::ElementFillFunc<float>>(
+						"fill_element", MEMFUNC_BIND_4(CudaEngine::fill_element));
+
 	}
 
 	typedef std::shared_ptr<CudaFloatMat> CudaFloatMatPtr;
