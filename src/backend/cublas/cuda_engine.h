@@ -584,6 +584,8 @@ public:
 		return reads->scalar;
 	}
 
+	TYPEDEF_PTR(CudaEngine);
+
 private:
 	cublasHandle_t handle;
 	bool timed;

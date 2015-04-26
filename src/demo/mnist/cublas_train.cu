@@ -24,15 +24,25 @@ struct MnistAccuracyEvaluator : public Evaluator<CudaEngine, float>
 	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(MnistAccuracyEvaluator)
 
 protected:
-	int total = 0;
-	int correct = 0;
+	int total;
+	int correct;
 
 	/*********** defaults ***********/
-	virtual void update_metric(Network::Ptr net, LearningPhase)
+	virtual void start_metric(Network::Ptr net, CudaEngine::Ptr engine, LearningPhase phase)
+	{
+		LMN_ASSERT_THROW(phase == LearningPhase::Testing,
+			LearningException("MnistAccuracyEvaluator can only evaluate metric in Testing phase"));
+
+		// clear stats and prepare for metric update
+		total = 0;
+		correct = 0;
+	}
+
+	virtual void update_metric(Network::Ptr net, CudaEngine::Ptr engine, LearningPhase)
 	{
 		// 10-x-batch matrix, each column is a distribution
 		Tensor::Ptr outprob = net->lossLayer->in_value_ptr(0);
-		auto distrMat = net->get_engine<CudaEngine>()->read_memory(outprob);
+		auto distrMat = engine->read_memory(outprob);
 
 		int r = distrMat->DIM_ROW;
 		int c = distrMat->DIM_COL;
@@ -40,7 +50,7 @@ protected:
 		distrMat->to_host(&hostcopy[0]);
 
 		auto& labelTensor = net->lossLayer->target_value(0);
-		auto labels = net->get_engine<CudaEngine>()->read_memory(labelTensor);
+		auto labels = engine->read_memory(labelTensor);
 		vector<float> hostlabel(1 * c);
 		labels->to_host(&hostlabel[0]);
 
@@ -67,13 +77,9 @@ protected:
 		}
 	}
 
-	virtual float summarize_metric(Network::Ptr, LearningPhase)
+	virtual float summarize_metric(Network::Ptr, CudaEngine::Ptr, LearningPhase)
 	{
-		// FIXME add prepare_next_epoch
-		float ans = (float) correct / total;
-		correct = 0;
-		total = 0;
-		return ans;
+		return (float) correct / total;
 	}
 };
 

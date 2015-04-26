@@ -52,6 +52,8 @@ public:
 
 		dataManager->set_learning_phase(learnPhase);
 
+		this->start_metric(net, engine, learnPhase);
+
 		int totalBatches = 0; // #batches processed
 		float totalEvalLoss = 0; // running total
 
@@ -67,7 +69,7 @@ public:
 			totalBatches += dataManager->batch_size();
 			totalEvalLoss += this->read_network_loss();
 
-			this->update_metric(net, learnPhase);
+			this->update_metric(net, engine, learnPhase);
 
 			/*********** Prepare for next validation epoch ***********/
 			net->execute("zero_clear");
@@ -75,7 +77,7 @@ public:
 		}
 
 		this->losses[phase] = totalEvalLoss / totalBatches;
-		this->metrics[phase] = this->summarize_metric(net, learnPhase);
+		this->metrics[phase] = this->summarize_metric(net, engine, learnPhase);
 
 		// Reset the validation stream
 		dataManager->reset_epoch();
@@ -93,16 +95,22 @@ public:
 
 protected:
 	/**
+	 * Clean up and start new evaluation
+	 * will be called at the very beginning of an evalution run
+	 */
+	virtual void start_metric(Network::Ptr, std::shared_ptr<EngineT>, LearningPhase) = 0;
+
+	/**
 	 * Derived needs to implement this
 	 * will be called after every minibatch to update whatever metric
 	 * NOTE a metric is not the same as loss value, e.g. percentage accuracy.
 	 */
-	virtual void update_metric(Network::Ptr, LearningPhase) = 0;
+	virtual void update_metric(Network::Ptr, std::shared_ptr<EngineT>, LearningPhase) = 0;
 
 	/**
 	 * will be called at the end of validation/testing to get a summary metric
 	 */
-	virtual FloatT summarize_metric(Network::Ptr, LearningPhase) = 0;
+	virtual FloatT summarize_metric(Network::Ptr, std::shared_ptr<EngineT>, LearningPhase) = 0;
 
 protected:
 	Network::Ptr net;
@@ -129,6 +137,9 @@ struct NoMetricEvaluator : public Evaluator<EngineT, FloatT>
 protected:
 
 	/*********** defaults ***********/
+	virtual void start_metric(Network::Ptr, std::shared_ptr<EngineT>, LearningPhase)
+	{}
+
 	virtual void update_metric(Network::Ptr, LearningPhase)
 	{}
 
