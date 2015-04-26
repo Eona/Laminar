@@ -270,6 +270,7 @@ public:
 	void assign_const(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized, float constant){
 	    debug_msg("c=constS", is_initialized);
 	    write->scalar = constant;
+		write->isScalar = true;
 	}
 
 	void multST(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
@@ -285,6 +286,14 @@ public:
 	{
 	    debug_msg("c=a", is_initialized);
 	    assignMat(reads, write, is_initialized);
+	}
+
+	void add_scalor(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		reads[0]->isScalar = true;
+		reads[1]->isScalar = true;
+		write->isScalar = true;
+		write->scalar = reads[0]->scalar + reads[1]->scalar;
 	}
 
 	inline void scale(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized, float scaler)
@@ -385,11 +394,15 @@ public:
 	    for (int i = 0; i < aux.LEN; ++i) {
 	    	write->scalar += t[i];
 	    }
+		write->isScalar = true;
 	}
 
 	void zero_clear(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
-		write->zero_clear();
+		if (write->isScalar)
+			write->scalar = 0;
+		else
+			write->zero_clear();
 	}
 
 	void fill_element(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized,
@@ -475,7 +488,7 @@ public:
 		debug_msg("label_entropy_loss", is_initialized);
 
 		if (!is_initialized)
-			write->reset(1, 1, cl);
+			write->isScalar = true;
 
 		float * rmat = new float[reads[0]->LEN];
 		float * labels = new float[reads[1]->LEN];
@@ -489,6 +502,9 @@ public:
 			// value at label:
 			write->scalar -= std::log(rmat[label + c * reads[0]->DIM_ROW]);
 		}
+
+		write->isScalar = true;
+
 	}
 
 	/**
