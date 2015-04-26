@@ -184,7 +184,7 @@ public:
 		if (host_data) free(host_data);
     }
 
-	~CudaFloatMat(){
+	virtual ~CudaFloatMat(){
 		free_data();
 	}
 

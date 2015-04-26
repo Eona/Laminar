@@ -2,6 +2,7 @@
 #define GPU_FLOAT_MAT_H_
 
 #include <vector>
+#include "../../utils/laminar_utils.h"
 
 class GPUFloatMat
 {
@@ -14,30 +15,13 @@ public:
 	float scalar = 0; //only used in square loss
 	bool isScalar = false;
 
-	std::vector<int> DIM_ALL; //all dimensions
+	Dimension DIM_ALL; //all dimensions
 
 	float * host_data; //host data
 
-	GPUFloatMat(): host_data(NULL) {
+	GPUFloatMat(): host_data(nullptr) {
 
 	}
-
-	GPUFloatMat(float *d, int m, int n): host_data(NULL) {
-		init_dim(m, n); //initialize matrix dimensions
-		init_device_mem(d); //copy data to device
-	}
-
-	GPUFloatMat(int m, int n): host_data(NULL) {
-		init_dim(m, n); //initialize matrix dimensions
-		init_device_mem();
-	}
-
-
-	GPUFloatMat(std::vector<int> dim): host_data(NULL) {
-		init_dim(dim); //initialize matrix dimensions
-		init_device_mem();
-	}
-
 
 	/*
 	 * Copy data to device
@@ -74,11 +58,9 @@ public:
 	}
 
 
-    void print_matrix(std::string msg) {
+    virtual void print_matrix(std::string msg) = 0;
 
-    }
-
-	void perturb(size_t idx, float val) {
+	virtual void perturb(size_t idx, float val) {
 		float * r = new float[LEN];
 		to_host(r);
 		r[idx] += val;
@@ -86,28 +68,20 @@ public:
 		delete[] r;
 	}
 
+    virtual void free_data() = 0;
 
-    void free_data(){
-		if (host_data) free(host_data);
-    }
-
-	~GPUFloatMat(){
-		free_data();
-	}
+	virtual ~GPUFloatMat(){ }
 
 protected:
 	bool device_data_initialized;
 
-
 	//Initialize device memory and set the memory to zero
-	void init_device_mem() {
-	}
+	virtual void init_device_mem() = 0;
 
 	//Initialize device memory and set the memory to input data
-	void init_device_mem(float *d) {
-	}
+	virtual void init_device_mem(float *d) = 0;
 
-	void init_dim(int m, int n) {
+	virtual void init_dim(int m, int n) {
 		NUM_DIM = 2;
 		DIM_ROW = m;
 		DIM_COL = n;
@@ -115,7 +89,7 @@ protected:
 		MEM_SIZE = LEN * sizeof(float);
 	}
 
-	void init_dim(std::vector<int> dim){
+	virtual void init_dim(Dimension dim){
 		DIM_ALL = dim;
 		NUM_DIM = dim.size();
 		LEN = 1;

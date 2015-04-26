@@ -133,7 +133,7 @@ public:
     	cl->to_host_at(d, device_data, offset*sizeof(float), num_float*sizeof(float));
     }
 
-	~OpenclFloatMat(){
+	virtual ~OpenclFloatMat(){
 		free_data();
 	}
 
