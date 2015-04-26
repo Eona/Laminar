@@ -61,6 +61,7 @@ public:
 		register_normal_op("t*t", MEMFUNC_BIND_3(CudaEngine::multNN));
 		register_normal_op("t*s", MEMFUNC_BIND_3(CudaEngine::multTS));
 		register_normal_op("s*t", MEMFUNC_BIND_3(CudaEngine::multST));
+		register_normal_op("s*s", MEMFUNC_BIND_3(CudaEngine::multSS));
 		register_normal_op("t=t", MEMFUNC_BIND_3(CudaEngine::assign));
 		register_context_op<float>("s=const", MEMFUNC_BIND_4(CudaEngine::assign_const));
 
@@ -292,6 +293,15 @@ public:
 		LMN_ASSERT_THROW(reads[1]->isScalar,
 				EngineException("reads[1] in t*s must be scalar"));
 		scale(reads, write, is_initialized, reads[1]->scalar);
+	}
+
+	void multSS(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
+	{
+		LMN_ASSERT_THROW(reads[0]->isScalar && reads[1]->isScalar,
+				EngineException("reads[0] and [1] in s*s must both be scalar"));
+
+		write->isScalar = true;
+		write->scalar = reads[0]->scalar * reads[1]->scalar;
 	}
 
 	inline void scale(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized, float scaler)

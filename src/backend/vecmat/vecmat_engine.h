@@ -150,6 +150,22 @@ void mult_s_t(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
 	*write = reads[1]->scale(reads[0]->at({0, 0}));
 }
 
+void mult_s_s(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
+{
+	debug_msg("s*s", is_initialized);
+
+	if (!is_initialized)
+		write->new_zeros(1, 1);
+
+	LMN_ASSERT_THROW(reads[0]->dim() == (Dimension {1, 1})
+			&& reads[1]->dim() == (Dimension {1, 1}),
+		VecmatEngineException("s*s Scalar both reads[0] and [1] dim should be [1, 1]\n"
+				"But now they're " + container2str(reads[0]->dim()) +
+				" and " + container2str(reads[1]->dim())));
+
+	write->at({0, 0}) = reads[0]->at({0, 0}) * reads[1]->at({0, 0});
+}
+
 void scale(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized, float scalarContext)
 {
 	debug_msg("scale * " + to_str(scalarContext), is_initialized);
@@ -532,7 +548,7 @@ public:
 		register_normal_op("t*t", Impl::mult_t_t);
 		register_normal_op("t*s", Impl::mult_t_s);
 		register_normal_op("s*t", Impl::mult_s_t);
-//		register_normal_op("s*s", Impl::mult<S, S>);
+		register_normal_op("s*s", Impl::mult_s_s);
 		register_normal_op("t=t", Impl::assign<T>);
 		register_normal_op("s=s", Impl::assign<S>);
 		register_context_op<float>("s=const", Impl::assign_const);
