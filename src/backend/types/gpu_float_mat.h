@@ -48,14 +48,11 @@ public:
 
 	virtual void to_host(float *d) = 0;
 
+	virtual void fill_rand(int seed) = 0;
 
-	void fill_rand(int seed) {
-	}
+	virtual void fill(float num) = 0;
 
-	void fill(float num) {
-	}
-
-	void local_transpose() {
+	virtual void local_transpose() {
 		float * r = new float[MEM_SIZE];
 		float * d = new float[MEM_SIZE];
 		to_host(r);

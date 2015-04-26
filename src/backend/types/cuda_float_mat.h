@@ -140,6 +140,10 @@ public:
 		delete [] r;
 	}
 
+	void local_transpose() {
+		GPUFloatMat::local_transpose();
+		LDIM = DIM_ROW;
+	}
 
     void print_matrix(std::string msg) {
 		float *r = new float[MEM_SIZE];
