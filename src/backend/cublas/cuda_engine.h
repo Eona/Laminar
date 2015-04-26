@@ -9,6 +9,7 @@
 #include "../../utils/laminar_utils.h"
 #include "../../engine/engine.h"
 #include "../../engine/tensor.h"
+#include "../../engine/tensor_ops.h"
 #include <cuda.h>
 #include "cublas_v2.h"
 #include "../types/cuda_float_mat.h"
@@ -500,7 +501,23 @@ public:
 	}
 
 
+	void fill_element(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized,
+			lmn::ElementFillFunc<float> filler)
+	{
+		debug_msg("fill_element", is_initialized);
 
+		assert(is_initialized);
+		int m = write->DIM_ROW;
+		int n = write->DIM_COL;
+		float * t = new float[write->LEN];
+		for (int i = 0; i < m; ++i) { // which row
+			for (int j = 0; j < n; ++j) { //which col
+				t[i + j * m] = filler(DimIndex {i, j});
+			}
+		}
+		write->to_device(t);
+		delete [] t;
+	}
 
 	// FIXME add contextual rand engine
 	inline void fill_rand(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
@@ -522,6 +539,14 @@ public:
 		write->fill(0.66337);
 	}
 
+	inline void perturb(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized,
+			DimIndex idx, float eps)
+	{
+		debug_msg("perturb", is_initialized);
+
+		size_t i = idx[1] * write->DIM_ROW + idx[0]; //c*dim_row + r
+		write->perturb(i, eps);
+	}
 
 	float tensor_data_at(CudaFloatMatPtr reads, DimIndex idx) {
 		int m = reads->DIM_ROW;

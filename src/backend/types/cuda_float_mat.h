@@ -90,6 +90,7 @@ public:
 		);
 	}
 
+
 	/*
 	 * Copy device data to host
 	 */
