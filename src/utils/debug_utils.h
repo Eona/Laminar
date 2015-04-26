@@ -68,17 +68,6 @@ inline void assert(bool cond, std::string errmsg = "", std::string successmsg=""
 }
 
 /**
- * @deprecated should use LMN_ASSERT_THROW
- */
-template<typename ExceptionT>
-typename std::enable_if<std::is_base_of<std::exception, ExceptionT>::value, void>::type
-lmn_assert_throw(bool cond, string errmsg = "")
-{
-	if (!cond)
-		throw ExceptionT(errmsg);
-}
-
-/**
  * Macro equivalent to delay errmsg evaluation
  */
 #define LMN_ASSERT_THROW(cond, exc) \
@@ -88,17 +77,6 @@ lmn_assert_throw(bool cond, string errmsg = "")
 				<< " Laminar assertion failure\n"; \
 		throw exc; \
 	}}
-
-/**
- * @deprecated should use LMN_ASSERT_NULLPTR macro
- */
-template<typename ExceptionT, typename T>
-typename std::enable_if<std::is_base_of<std::exception, ExceptionT>::value, void>::type
-lmn_assert_nullptr(const std::shared_ptr<T>& ptr, string errmsg)
-{
-	if (ptr == nullptr)
-		throw ExceptionT(errmsg);
-}
 
 /**
  * Macro equivalent to delay errmsg evaluation
@@ -166,6 +144,122 @@ void print_title(std::string title = "", int leng = 10)
 
 	std::cout << sep << " " << title << " " << sep << " \n";
 }
+
+/**************************************
+******* Laminar specific exceptions *********
+**************************************/
+class LaminarException: public std::exception
+{
+protected:
+    std::string msg;
+public:
+    LaminarException(const std::string& _msg):
+    	msg(_msg) {}
+
+    // all sub-exceptions need to override this
+    virtual std::string error_header() const
+    {
+    	return "General error";
+    }
+
+    virtual const char* what() const throw()
+	{
+        return (std::string("[") + error_header() + "] " + msg).c_str();
+    }
+};
+
+class NetworkException: public LaminarException
+{
+public:
+    NetworkException(const std::string& msg):
+    	LaminarException(msg)
+	{}
+
+    virtual std::string error_header() const
+    {
+    	return "Network error";
+    }
+};
+
+class ComponentException: public NetworkException
+{
+public:
+    ComponentException(const std::string& msg):
+    	NetworkException(msg)
+	{}
+
+    virtual std::string error_header() const
+    {
+    	return "Network component error";
+    }
+};
+
+class EngineException: public LaminarException
+{
+public:
+    EngineException(const std::string& msg):
+    	LaminarException(msg)
+	{}
+
+    virtual std::string error_header() const
+    {
+    	return "Engine error";
+    }
+};
+
+class TensorException: public LaminarException
+{
+public:
+    TensorException(const std::string& msg):
+    	LaminarException(msg)
+	{}
+
+    virtual std::string error_header() const
+    {
+    	return "Tensor error";
+    }
+};
+
+class LearningException: public LaminarException
+{
+public:
+    LearningException(const std::string& msg):
+    	LaminarException(msg)
+	{}
+
+    virtual std::string error_header() const
+    {
+    	return "Learning error";
+    }
+};
+
+class DataException: public LaminarException
+{
+public:
+    DataException(const std::string& msg):
+    	LaminarException(msg)
+	{}
+
+    virtual std::string error_header() const
+    {
+    	return "Data error";
+    }
+};
+
+
+class UnimplementedException: public LaminarException
+{
+public:
+    UnimplementedException(const std::string& msg):
+    	LaminarException(msg)
+	{}
+
+    virtual std::string error_header() const
+    {
+    	return "Feature unimplemented";
+    }
+};
+
 
 /* *****
  *	Variadic MACRO utilities. Used mainly for debugging
