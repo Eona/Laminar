@@ -93,15 +93,15 @@ template<typename FloatT = float>
 void assert_float_eq(FloatT f1, FloatT f2, FloatT tol = 1e-4f,
 		std::string errmsg = "", std::string successmsg="")
 {
-	FloatT diff = abs(f1 - f2);
+	FloatT diff = fabs(f1 - f2);
 	if (diff >= tol)
 		errmsg += std::string(errmsg=="" ? "" : ":") +
-			"\n(" + to_str(f1) + ") - (" +
-			to_str(f2) + ") = " + to_str(diff);
+			"\n(" + std::to_string(f1) + ") - (" +
+			std::to_string(f2) + ") = " + std::to_string(diff);
 	else if (successmsg != "")
 		successmsg += std::string(": (") +
-			to_str(f1) + ") == (" +
-			to_str(f2) + ")";
+			std::to_string(f1) + ") == (" +
+			std::to_string(f2) + ")";
 
 	assert(diff < tol, errmsg, successmsg);
 }
@@ -115,23 +115,23 @@ void assert_float_percent_eq(FloatT f1, FloatT f2, FloatT percentTol = 1.0f,
 		std::string errmsg = "", std::string successmsg="")
 {
 	const FloatT DEFAULT_ABS_TOL = 1e-3f;
-	if (abs(f1) < DEFAULT_ABS_TOL || abs(f2) < DEFAULT_ABS_TOL)
+	if (fabs(f1) < DEFAULT_ABS_TOL || fabs(f2) < DEFAULT_ABS_TOL)
 	{
 		assert_float_eq(f1, f2, DEFAULT_ABS_TOL, errmsg, successmsg);
 		return;
 	}
 
-	FloatT percentDiff = abs((f1 - f2) / (0.5*(f1 + f2))) * 100;
+	FloatT percentDiff = fabs((f1 - f2) / (0.5*(f1 + f2))) * 100;
 
 	if (percentDiff >= percentTol)
 		errmsg += std::string(errmsg=="" ? "" : ":") +
-			"\n(" + to_str(f1) + ") != (" +
-			to_str(f2) + ") -> " +
-			to_str(percentDiff) + " % diff";
+			"\n(" + std::to_string(f1) + ") != (" +
+			std::to_string(f2) + ") -> " +
+			std::to_string(percentDiff) + " % diff";
 	else if (successmsg != "")
 		successmsg += std::string(": (") +
-			to_str(f1) + ") == (" +
-			to_str(f2) + ")";
+			std::to_string(f1) + ") == (" +
+			std::to_string(f2) + ")";
 
 	assert(percentDiff < percentTol, errmsg, successmsg);
 }
