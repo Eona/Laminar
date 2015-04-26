@@ -59,7 +59,7 @@ inline vector<vector<FloatT>> read_mnist_image(
 	if (batches <= 0)
 		batches = totalNumberOfImages / imagePerBatch;
 
-    vector<vector<float>> images(batches,
+    vector<vector<FloatT>> images(batches,
     		vector<FloatT>(imagePerBatch * rowdim * coldim));
 
     FloatT divisor = normalize ? 255.0 : 1.0;
@@ -79,9 +79,11 @@ inline vector<vector<FloatT>> read_mnist_image(
 
 /**
  * @param filePath
- * @param numberOfLabels set to zero to read the entire database
+ * @param batch set to zero to read the entire database
+ * each vector<float> is a batch of int labels
  */
-inline vector<int> read_mnist_label(string filePath, int numberOfLabels)
+template<typename FloatT = float>
+inline vector<vector<FloatT>> read_mnist_label(string filePath, int batch, int labelPerBatch)
 {
     std::ifstream file(filePath, std::ios::binary);
 
@@ -99,21 +101,21 @@ inline vector<int> read_mnist_label(string filePath, int numberOfLabels)
 	read_reverse_int(magicNumber);
 	read_reverse_int(totalNumberOfLabels);
 
-	LMN_ASSERT_THROW(numberOfLabels <= totalNumberOfLabels,
+	LMN_ASSERT_THROW(batch * labelPerBatch <= totalNumberOfLabels,
 			DataException("MNIST label read exceeds total number of images"));
 
-	if (numberOfLabels <= 0)
-		numberOfLabels = totalNumberOfLabels;
+	if (batch <= 0)
+		batch = totalNumberOfLabels / labelPerBatch;
 
-    vector<int> labels(numberOfLabels);
+    vector<vector<FloatT>> labels(batch, vector<FloatT>(labelPerBatch));
 
-
-	for(int i=0; i < numberOfLabels; ++i)
-	{
-		unsigned char temp=0;
-		file.read((char*)&temp,sizeof(temp));
-		labels[i]= (int) temp;
-	}
+	for(int b=0; b < batch; ++b)
+		for (int i = 0; i < labelPerBatch; ++i)
+		{
+			unsigned char temp=0;
+			file.read((char*)&temp,sizeof(temp));
+			labels[b][i]= (float) temp;
+		}
 
 	return labels;
 }

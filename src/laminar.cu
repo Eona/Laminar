@@ -69,7 +69,7 @@ struct PrintGradient : public Observer<Network>
 int main(int argc, char **argv)
 {
 	auto images = read_mnist_image(string("../data/mnist/") + MnistTrainImageFile, 10, 3, false);
-	auto mnlabels = read_mnist_label(string("../data/mnist/") + MnistTrainLabelFile, 100);
+	auto mnlabels = read_mnist_label(string("../data/mnist/") + MnistTrainLabelFile, 10, 3);
 
 	lmn::Vecmatf mat(28, 28);
 	mat.fill([&](int r, int c) {
@@ -81,7 +81,9 @@ int main(int argc, char **argv)
 	});
 	DEBUG_MSG(mat);
 
-	DEBUG_MSG(mnlabels);
+	DEBUG_MSG(mnlabels[0]);
+	DEBUG_MSG(mnlabels[1]);
+	DEBUG_MSG(mnlabels[2]);
 
 	using namespace lmn::VecmatImpl;
 	using lmn::Vecmatf;
@@ -117,7 +119,7 @@ int main(int argc, char **argv)
 	DEBUG_MSG(*ans);
 
 	/************************************/
-	auto engine = std::make_shared<OpenclEngine>();
+	/*auto engine = std::make_shared<OpenclEngine>();
 	Tensor t1(engine, {4, 7});
 	Tensor t2(engine, {7, 9});
 
@@ -129,13 +131,12 @@ int main(int argc, char **argv)
 	mem1->print_matrix("mem1");
 	mem2->print_matrix("mem2");
 
-
 	Tensor t3 = t1 * t2;
 
 	engine->flush_execute();
 
 	auto mem = engine->read_memory(t3);
-	mem->print_matrix("fei shen");
+	mem->print_matrix("fei shen");*/
 
 /*
 //	const int HISTORY = 5;
