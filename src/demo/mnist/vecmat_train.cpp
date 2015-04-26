@@ -21,7 +21,8 @@ int main(int argc, char **argv)
 	const int BATCH_SIZE = 50;
 	const int MAX_EPOCH = 100;
 
-	FakeRand::instance_connection().gen_uniform_rand(300*300 + 300*764 + 10*300, -0.08f, 0.08f);
+	FakeRand::instance_connection().gen_uniform_rand(
+			300*300 + 300*764 + 10*300, -0.08f, 0.08f, DEBUG_SEED);
 
 	auto engine = EngineBase::make<VecmatEngine>();
 	auto dataman =
@@ -43,7 +44,7 @@ int main(int argc, char **argv)
 	net->new_connection<FullConnection>(lhidden2, lloss);
 	net->add_layer(lloss);
 
-	auto opm = Optimizer::make<SGD>(0.01);
+	auto opm = Optimizer::make<SimpleSGD>(0.01);
 	auto eval = NoMetricEvaluator<VecmatEngine>::make(net);
 	auto stopper = StopCriteria::make<MaxEpochStopper>(MAX_EPOCH);
 	auto ser = NullSerializer::make();

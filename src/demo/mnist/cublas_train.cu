@@ -110,18 +110,7 @@ int main(int argc, char **argv)
 	net->new_connection<FullConnection>(lhidden2, lloss);
 	net->add_layer(lloss);
 
-//	net->execute("initialize");
-//	net->execute("load_input");
-//	net->execute("load_target");
-//	net->execute("forward");
-//	net->execute("backward");
-//	net->execute("zero_clear");
-
-//	DEBUG_MSG(linput->in_value(0).addr);
-//	lmn::zero_clear(linput->in_value(0));
-//	engine->flush_execute();
-
-	auto opm = Optimizer::make<SGD>(0.01);
+	auto opm = Optimizer::make<SimpleSGD>(0.01);
 	auto eval = MnistAccuracyEvaluator::make(net);
 	auto stopper = StopCriteria::make<MaxEpochStopper>(MAX_EPOCH);
 	auto ser = NullSerializer::make();

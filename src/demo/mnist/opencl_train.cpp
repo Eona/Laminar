@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 //	lmn::zero_clear(linput->in_value(0));
 //	engine->flush_execute();
 
-	auto opm = Optimizer::make<SGD>(0.001);
+	auto opm = Optimizer::make<SimpleSGD>(0.01);
 	auto eval = NoMetricEvaluator<OpenclEngine>::make(net);
 	auto stopper = StopCriteria::make<MaxEpochStopper>(MAX_EPOCH);
 	auto ser = NullSerializer::make();

@@ -64,15 +64,15 @@ protected:
 /**
  * Stochastic gradient descent
  */
-class SGD : public Optimizer
+class SimpleSGD : public Optimizer
 {
 public:
-	SGD(float initLearningRate) :
+	SimpleSGD(float initLearningRate) :
 		Optimizer(),
 		initLearningRate(initLearningRate)
 	{}
 
-	virtual ~SGD() {}
+	virtual ~SimpleSGD() {}
 
 protected:
 	Scalar::Ptr learningRate;
