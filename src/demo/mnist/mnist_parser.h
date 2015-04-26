@@ -25,12 +25,13 @@ inline int reverse_int(int i)
 
 /**
  * @param filePath
- * @param numberOfImages set to zero to read the entire database
+ * @param batches set to zero to read the entire database.
+ * each vector<FloatT> will be length imagePerBatch * (28*28)
  * @param normalize true to divide everything by 255
  */
 template<typename FloatT = float>
 inline vector<vector<FloatT>> read_mnist_image(
-		string filePath, int numberOfImages, bool normalize = true)
+		string filePath, int batches, int imagePerBatch, bool normalize = true)
 {
     std::ifstream file(filePath, std::ios::binary);
 
@@ -52,24 +53,26 @@ inline vector<vector<FloatT>> read_mnist_image(
 	read_reverse_int(rowdim);
 	read_reverse_int(coldim);
 
-	LMN_ASSERT_THROW(numberOfImages <= totalNumberOfImages,
+	LMN_ASSERT_THROW(batches * imagePerBatch <= totalNumberOfImages,
 			DataException("MNIST image read exceeds total number of images"));
 
-	if (numberOfImages <= 0)
-		numberOfImages = totalNumberOfImages;
+	if (batches <= 0)
+		batches = totalNumberOfImages / imagePerBatch;
 
-    vector<vector<float>> images(numberOfImages,vector<FloatT>(rowdim * coldim));
+    vector<vector<float>> images(batches,
+    		vector<FloatT>(imagePerBatch * rowdim * coldim));
 
     FloatT divisor = normalize ? 255.0 : 1.0;
 
-	for(int i=0; i<numberOfImages; ++i)
-		for(int r=0;r<rowdim;++r)
-			for(int c=0;c<coldim;++c)
-			{
-				unsigned char temp=0;
-				file.read((char*)&temp, sizeof(temp));
-				images[i][rowdim * r + c]= (FloatT) temp / divisor;
-			}
+	for(int b=0; b<batches; ++b)
+		for (int i = 0; i < imagePerBatch; ++i)
+			for(int r=0; r<rowdim; ++r)
+				for(int c=0; c<coldim; ++c)
+				{
+					unsigned char temp=0;
+					file.read((char*)&temp, sizeof(temp));
+					images[b][i * (rowdim*coldim) + rowdim * r + c]= (FloatT) temp / divisor;
+				}
 
 	return images;
 }

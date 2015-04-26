@@ -24,6 +24,9 @@
 #include "backend/vecmat/vecmat_engine.h"
 #include "backend/vecmat/vecmat_rand_dataman.h"
 #include "backend/vecmat/vecmat_func_dataman.h"
+#include "backend/cublas/cuda_engine.h"
+#include "backend/types/cuda_float_mat.h"
+#include "backend/opencl/opencl_engine.h"
 #include "utils/global_utils.h"
 #include "utils/timer.h"
 
@@ -65,22 +68,20 @@ struct PrintGradient : public Observer<Network>
 
 int main(int argc, char **argv)
 {
-/*
-	auto images = read_mnist_image(string("../data/") + MnistTrainImageFile, 100);
-	auto labels = read_mnist_label(string("../data/") + MnistTrainLabelFile, 100);
+	auto images = read_mnist_image(string("../data/mnist/") + MnistTrainImageFile, 10, 3, false);
+	auto mnlabels = read_mnist_label(string("../data/mnist/") + MnistTrainLabelFile, 100);
 
 	lmn::Vecmatf mat(28, 28);
 	mat.fill([&](int r, int c) {
-		return images[4][28 * r + c];
+		return images[1][28 * r + c];
 	});
 	DEBUG_MSG(mat);
 	mat.fill([&](int r, int c) {
-		return images[7][28 * r + c];
+		return images[1][2*28*28 + 28 * r + c];
 	});
 	DEBUG_MSG(mat);
 
-	DEBUG_MSG(labels);
-*/
+	DEBUG_MSG(mnlabels);
 
 	using namespace lmn::VecmatImpl;
 	using lmn::Vecmatf;
@@ -115,6 +116,26 @@ int main(int argc, char **argv)
 	DEBUG_MSG(*scalar);
 	DEBUG_MSG(*ans);
 
+	/************************************/
+	auto engine = std::make_shared<OpenclEngine>();
+	Tensor t1(engine, {4, 7});
+	Tensor t2(engine, {7, 9});
+
+	lmn::fill_rand(t1);
+	lmn::fill_rand(t2);
+	engine->flush_execute();
+	auto mem1 = engine->read_memory(t1);
+	auto mem2 = engine->read_memory(t2);
+	mem1->print_matrix("mem1");
+	mem2->print_matrix("mem2");
+
+
+	Tensor t3 = t1 * t2;
+
+	engine->flush_execute();
+
+	auto mem = engine->read_memory(t3);
+	mem->print_matrix("fei shen");
 
 /*
 //	const int HISTORY = 5;
