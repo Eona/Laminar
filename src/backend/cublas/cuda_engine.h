@@ -73,7 +73,7 @@ public:
 		register_normal_op("zero_clear", MEMFUNC_BIND_3(CudaEngine::zero_clear));
 
 		register_normal_op("fill_rand", MEMFUNC_BIND_3(CudaEngine::fill_rand));
-		register_normal_op("soft_max", MEMFUNC_BIND_3(CudaEngine::soft_max));
+		register_normal_op("softmax", MEMFUNC_BIND_3(CudaEngine::softmax));
 		register_normal_op("label_entropy_loss", MEMFUNC_BIND_3(CudaEngine::label_entropy_loss));
 		register_normal_op("label_softmax_entropy_gradient", MEMFUNC_BIND_3(CudaEngine::label_softmax_entropy_gradient));
 
@@ -85,7 +85,7 @@ public:
 
 	void create(CudaFloatMatPtr write, vector<int> dim)
 	{
-		DEBUG_MSG("CudaCudaEngine::create dim=" << dim);
+		// DEBUG_MSG("CudaCudaEngine::create dim=" << dim);
 		write->reset(dim);
 	}
 
@@ -96,7 +96,7 @@ public:
 
 	void debug_msg(string msg, bool is_initialized)
 	{
-		DEBUG_MSG(("CudaCudaEngine::" + msg + " ->init=") << std::boolalpha << is_initialized);
+		// DEBUG_MSG(("CudaCudaEngine::" + msg + " ->init=") << std::boolalpha << is_initialized);
 	}
 
 	/*
@@ -368,7 +368,7 @@ public:
 	    cublasSasum(handle, aux.LEN, aux.device_data, 1, &write->scalar);
 	}
 
-	inline void soft_max(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized) {
+	inline void softmax(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized) {
 
 		if (!is_initialized)
 	    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);
