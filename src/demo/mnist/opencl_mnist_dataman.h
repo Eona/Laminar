@@ -14,7 +14,7 @@ struct OpenclMnistDataManager :
 	OpenclMnistDataManager(EngineBase::Ptr engine,
 					int batchSize,
 					string mnistDataDir) :
-		MnistDataManager<CudaFloatMat>(engine, batchSize, mnistDataDir),
+		MnistDataManager<OpenclFloatMat>(engine, batchSize, mnistDataDir),
 		cl(EngineBase::cast<OpenclEngine>(engine)->cl)
 	{}
 

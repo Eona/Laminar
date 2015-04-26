@@ -54,8 +54,8 @@ public:
 	virtual void fill(float num) = 0;
 
 	virtual void local_transpose() {
-		float * r = new float[MEM_SIZE];
-		float * d = new float[MEM_SIZE];
+		float * r = new float[LEN];
+		float * d = new float[LEN];
 		to_host(r);
 		int c = 0;
 		for (int i = 0; i < DIM_ROW; ++i) {

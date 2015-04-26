@@ -479,6 +479,9 @@ public:
 			// value at label:
 			write->scalar -= std::log(rmat[label + c * reads[0]->DIM_ROW]);
 		}
+
+		delete [] rmat;
+		delete [] labels;
 	}
 
 	/**
@@ -511,6 +514,10 @@ public:
 			wmat[label + c * reads[0]->DIM_ROW] -= 1.f; // y - t (sparse)
 		}
 		write->to_device(wmat);
+
+		delete [] rmat;
+		delete [] labels;
+		delete [] wmat;
 	}
 
 
