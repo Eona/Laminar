@@ -18,7 +18,9 @@ class RandDataManager :
 public:
 	typedef std::shared_ptr<DataT> DataPtr;
 
-	RandDataManager(EngineBase::Ptr engine, int inputDim, int targetDim, int batchSize) :
+	RandDataManager(EngineBase::Ptr engine,
+			int inputDim, int targetDim, int batchSize,
+			int targetLabelClasses = 0) :
 		DataManager<DataT>(engine),
 		inputDim(inputDim), targetDim(targetDim), batchSize(batchSize),
 		genRandInput(inputDim * batchSize),
@@ -29,11 +31,16 @@ public:
 		for (float& f : genRandInput)
 			f = unirand();
 
-		for (float& f : genRandTarget)
-			f = unirand();
-
-		DEBUG_MSG(genRandInput);
-		DEBUG_MSG(genRandTarget);
+		if (targetLabelClasses > 0)
+		{
+			for (float& f : genRandTarget)
+				f = rand() % targetLabelClasses;
+		}
+		else
+		{
+			for (float& f : genRandTarget)
+				f = unirand();
+		}
 	}
 
 	virtual ~RandDataManager() {}
