@@ -82,6 +82,8 @@ public:
 		register_normal_op("label_softmax_entropy_gradient", MEMFUNC_BIND_3(CudaEngine::label_softmax_entropy_gradient));
 
 		register_context_op<float>("scale", MEMFUNC_BIND_4(CudaEngine::scale));
+
+		register_context_op<DimIndex, float>("perturb", MEMFUNC_BIND_5(CudaEngine::perturb));
 	}
 
 	typedef std::shared_ptr<CudaFloatMat> CudaFloatMatPtr;
