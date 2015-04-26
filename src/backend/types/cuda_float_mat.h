@@ -95,7 +95,8 @@ public:
 	 * Copy device data to host
 	 */
 	void zero_clear() {
-		fill(0);
+//		fill(0);
+		reset(DIM_ROW, DIM_COL);
 	}
 
 	void to_host() {
@@ -138,7 +139,9 @@ public:
 		for (int i = 0; i < LEN; ++i) {
 			r[i] = num;
 		}
+		DEBUG_MSG(device_data);
 		to_device(r);
+		DEBUG_MSG("AFTER FILL");
 		delete [] r;
 	}
 

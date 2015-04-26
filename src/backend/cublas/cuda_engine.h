@@ -100,7 +100,13 @@ public:
 		if (write->isScalar)
 			write->scalar = 0;
 		else
+		{
+			DEBUG_MSG(write->DIM_ROW << "  " << write->DIM_COL);
+			LMN_ASSERT_THROW(is_initialized,
+				EngineException("CUDA zero_clear must have been inited"));
 			write->zero_clear();
+			DEBUG_MSG("AFTER ZERO CLEAR");
+		}
 	}
 
 	void debug_msg(string msg, bool is_initialized)
@@ -263,11 +269,15 @@ public:
 
 	void multST(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
+		LMN_ASSERT_THROW(reads[0]->isScalar,
+				EngineException("reads[0] in s*t must be scalar"));
 		scale(reads, write, is_initialized, reads[0]->scalar);
 	}
 
 	void multTS(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
+		LMN_ASSERT_THROW(reads[1]->isScalar,
+				EngineException("reads[0] in s*t must be scalar"));
 		scale(reads, write, is_initialized, reads[1]->scalar);
 	}
 
@@ -302,7 +312,6 @@ public:
 	#define MATOP(name, device_func) {\
 			if (!is_initialized) {\
 		    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
-			    cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);\
 			}\
 			op_func_t h_func;\
 			cudaMemcpyFromSymbol( &h_func, device_func, sizeof( op_func_t ) );\
@@ -323,7 +332,6 @@ public:
 	#define MATOP_DUAL(name, device_func) {\
 			if (!is_initialized) {\
 		    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
-			    cublasScopy(handle, reads[0]->LEN, reads[0]->device_data, 1, write->device_data, 1);\
 			}\
 			op_func_dual_t h_func;\
 			cudaMemcpyFromSymbol( &h_func, device_func, sizeof( op_func_t ) );\
@@ -559,7 +567,10 @@ public:
 		return d;
 	}
 
-	float scalar_data_at(CudaFloatMatPtr reads) {
+	float scalar_data_at(CudaFloatMatPtr reads)
+	{
+		LMN_ASSERT_THROW(reads->isScalar,
+				EngineException("read in scalar_data_at must be scalar"));
 		return reads->scalar;
 	}
 
