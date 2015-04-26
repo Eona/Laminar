@@ -14,7 +14,8 @@ class DataManagerBase
 public:
 	DataManagerBase(EngineBase::Ptr engine_) :
 		engine(engine_),
-		learnPhase(LearningPhase::Training)
+		learnPhase(LearningPhase::Training),
+		isEndOfEpoch({ false, false, false })
 	{ }
 
 	virtual ~DataManagerBase()
