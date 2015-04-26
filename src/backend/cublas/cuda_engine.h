@@ -52,6 +52,7 @@ public:
 		register_create_op(MEMFUNC_BIND_2(CudaEngine::create));
 		register_normal_op("t+t", MEMFUNC_BIND_3(CudaEngine::add));
 		register_normal_op("t-t", MEMFUNC_BIND_3(CudaEngine::sub));
+		register_normal_op("s+s", MEMFUNC_BIND_3(CudaEngine::add_scalor));
 		register_normal_op("-t", MEMFUNC_BIND_3(CudaEngine::negate));
 		register_normal_op("t*t", MEMFUNC_BIND_3(CudaEngine::multNN));
 		register_normal_op("t*s", MEMFUNC_BIND_3(CudaEngine::multTS));
@@ -174,6 +175,11 @@ public:
 	    debug_msg("c=a+b", is_initialized);
 	    float alpha = 1.0f;
 	    addMat(reads, write, is_initialized, alpha, alpha);
+	}
+
+	void add_scalor(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
+	{
+		write->scalar = reads[0]->scalar + reads[1]->scalar;
 	}
 
 	void sub(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
