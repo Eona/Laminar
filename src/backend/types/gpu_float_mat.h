@@ -12,6 +12,7 @@ public:
 	int MEM_SIZE; //size of the buffer
 	int NUM_DIM; //number of dimensions
 	float scalar = 0; //only used in square loss
+	bool isScalar = false;
 
 	std::vector<int> DIM_ALL; //all dimensions
 

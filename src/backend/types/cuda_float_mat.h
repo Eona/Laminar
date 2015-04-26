@@ -113,7 +113,7 @@ public:
 
 
 	void take_at(float * d, size_t offset, size_t num_float) {
-		float *r = new float[MEM_SIZE];
+		float *r = new float[LEN];
 		to_host(r);
 		for (int i = 0; i < num_float; ++i) {
 			d[i] = r[i+offset];
@@ -122,7 +122,7 @@ public:
 	}
 
 	void fill_rand(int seed) {
-		float *r = new float[MEM_SIZE];
+		float *r = new float[LEN];
 		srand (seed);
 		for (int i = 0; i < LEN; ++i) {
 			r[i] = (double) rand() / (RAND_MAX);
@@ -132,7 +132,8 @@ public:
 	}
 
 	void fill(float num) {
-		float *r = new float[MEM_SIZE];
+//		DEBUG_MSG("LEN", LEN);
+		float *r = new float[LEN];
 		for (int i = 0; i < LEN; ++i) {
 			r[i] = num;
 		}
