@@ -37,10 +37,18 @@ public:
 
 	virtual void fill(float num) = 0;
 
+	/**
+	 * Host processing
+	 */
+	std::vector<float> alloc_vector()
+	{
+		return std::vector<float>(this->LEN);
+	}
+
 	virtual void local_transpose() {
-		float * r = new float[LEN];
-		float * d = new float[LEN];
-		to_host(r);
+		auto r = alloc_vector();
+		auto d = alloc_vector();
+		to_host(&r[0]);
 		int c = 0;
 		for (int i = 0; i < DIM_ROW; ++i) {
 			for (int j = 0; j < DIM_COL; ++j) {
@@ -48,9 +56,7 @@ public:
 				c++;
 			}
 		}
-		to_device(d);
-		delete[] r;
-		delete[] d;
+		to_device(&d[0]);
 		//swap dimension
 		int t = DIM_ROW;
 		DIM_ROW = DIM_COL;
@@ -61,11 +67,10 @@ public:
     virtual void print_matrix(std::string msg) = 0;
 
 	virtual void perturb(size_t idx, float val) {
-		float * r = new float[LEN];
-		to_host(r);
+		auto r = alloc_vector();
+		to_host(&r[0]);
 		r[idx] += val;
-		to_device(r);
-		delete[] r;
+		to_device(&r[0]);
 	}
 
     virtual void free_data() = 0;

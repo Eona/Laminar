@@ -119,31 +119,28 @@ public:
 
 
 	void take_at(float * d, size_t offset, size_t num_float) {
-		float *r = new float[LEN];
-		to_host(r);
+		auto r = alloc_vector();
+		to_host(&r[0]);
 		for (int i = 0; i < num_float; ++i) {
 			d[i] = r[i+offset];
 		}
-		delete [] r;
 	}
 
 	void fill_rand(int seed) {
-		float *r = new float[LEN];
+		auto r = alloc_vector();
 		srand (seed);
 		for (int i = 0; i < LEN; ++i) {
 			r[i] = 0.16 * ((double) rand() / (RAND_MAX)) - 0.08;
 		}
-		to_device(r);
-		delete [] r;
+		to_device(&r[0]);
 	}
 
 	void fill(float num) {
-		float *r = new float[LEN];
+		auto r = alloc_vector();
 		for (int i = 0; i < LEN; ++i) {
 			r[i] = num;
 		}
-		to_device(r);
-		delete [] r;
+		to_device(&r[0]);
 	}
 
 	void local_transpose() {
@@ -151,9 +148,10 @@ public:
 		LDIM = DIM_ROW;
 	}
 
-    void print_matrix(std::string msg) {
-		float *r = new float[MEM_SIZE];
-    	to_host(r);
+    void print_matrix(std::string msg)
+    {
+		auto r = alloc_vector();
+		to_host(&r[0]);
         std::cout <<  msg << "\n";
         for (int i = 0; i < DIM_ROW; ++i) {
             for (int j = 0; j < DIM_COL; ++j) {
@@ -162,7 +160,6 @@ public:
             std::cout<<"\n";
         }
         std::cout << std::endl;
-		delete [] r;
     }
 
     cublasOperation_t getOp() {

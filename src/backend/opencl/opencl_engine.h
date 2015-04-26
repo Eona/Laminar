@@ -134,6 +134,12 @@ public:
 //		DEBUG_MSG(("OpenclEngine::" + msg + " ->init=") << std::boolalpha << is_initialized);
 	}
 
+	// allocate host vector
+	vector<float> alloc_vec(OpenclFloatMatPtr ptr)
+	{
+		return vector<float>(ptr->LEN);
+	}
+
 	/*
 	 * write = alpha * Op(reads[0]) + beta * Op(reads[1])
 	 */
@@ -451,14 +457,13 @@ public:
 		assert(is_initialized);
 		int m = write->DIM_ROW;
 		int n = write->DIM_COL;
-		float * t = new float[write->LEN];
+		auto t = alloc_vec(write);
 		for (int i = 0; i < m; ++i) { // which row
 			for (int j = 0; j < n; ++j) { //which col
 				t[i + j * m] = filler(DimIndex {i, j});
 			}
 		}
-		write->to_device(t);
-		delete [] t;
+		write->to_device(&t[0]);
 	}
 
 
@@ -477,11 +482,11 @@ public:
 		if (!is_initialized)
 	    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL, cl);
 
-		float* rmat = new float[write->LEN];
-		float* wmat = new float[write->LEN];
+		auto rmat = alloc_vec(write);
+		auto wmat = alloc_vec(write);
 		int m = write->DIM_ROW;
 		int n = write->DIM_COL;
-		reads[0]->to_host(rmat);
+		reads[0]->to_host(&rmat[0]);
 
 		// Each column is a data feature vector
 		// coldim is batch size
@@ -509,10 +514,7 @@ public:
 				wmat[c*m + r] /= sum;
 		}
 
-		write->to_device(wmat);
-
-		delete [] rmat;
-		delete [] wmat;
+		write->to_device(&wmat[0]);
 	}
 
 	/**
@@ -528,10 +530,10 @@ public:
 		if (!is_initialized)
 			write->isScalar = true;
 
-		float * rmat = new float[reads[0]->LEN];
-		float * labels = new float[reads[1]->LEN];
-		reads[0]->to_host(rmat);
-		reads[1]->to_host(labels);
+		auto rmat = alloc_vec(reads[0]);
+		auto labels = alloc_vec(reads[1]);
+		reads[0]->to_host(&rmat[0]);
+		reads[1]->to_host(&labels[0]);
 
 		write->scalar = 0;
 		for (int c = 0; c < reads[0]->DIM_COL; ++c)
@@ -561,13 +563,13 @@ public:
 		if (!is_initialized)
 			write->reset(m, n, cl);
 
-		float * rmat = new float[reads[0]->LEN];
-		float * labels = new float[reads[1]->LEN];
-		float * wmat = new float[write->LEN];
+		auto rmat = alloc_vec(reads[0]);
+		auto labels = alloc_vec(reads[1]);
+		auto wmat = alloc_vec(write);
 
-		reads[0]->to_host(rmat);
-		reads[0]->to_host(wmat);// copy most values won't change
-		reads[1]->to_host(labels);
+		reads[0]->to_host(&rmat[0]);
+		reads[0]->to_host(&wmat[0]);// copy most values won't change
+		reads[1]->to_host(&labels[0]);
 
 		for (int c = 0; c < n; ++c)
 		{
@@ -575,7 +577,7 @@ public:
 			wmat[label + c * reads[0]->DIM_ROW] -= 1.f; // y - t (sparse)
 		}
 
-		write->to_device(wmat);
+		write->to_device(&wmat[0]);
 	}
 
 	/*********** DEBUG ONLY ***********/

@@ -102,13 +102,12 @@ public:
 	}
 
 	void fill_rand(int seed) {
-		float * r = new float[LEN];
+		auto r= alloc_vector();
 		srand (seed);
 		for (int i = 0; i < LEN; ++i) {
 			r[i] = 0.16*( (double) rand() / (RAND_MAX)) - 0.08;
 		}
-		to_device(r);
-		delete[] r;
+		to_device(&r[0]);
 	}
 
 	void fill(float num) {
@@ -117,8 +116,8 @@ public:
 
 
     void print_matrix(std::string msg) {
-    	float d[MEM_SIZE];
-		cl->to_host(d, device_data, MEM_SIZE);
+		auto d= alloc_vector();
+		cl->to_host(&d[0], device_data, MEM_SIZE);
         std::cout <<  msg << "\n";
         for (int i = 0; i < DIM_ROW; ++i) {
             for (int j = 0; j < DIM_COL; ++j) {
