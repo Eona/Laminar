@@ -70,6 +70,8 @@ public:
 		});
 
 		float totalTrainingLoss = 0; // keep a running total
+		// FIXME unify execution map interface
+		Routine::Ptr optimizerRoutine;
 
 		do {
 			dataManager->set_learning_phase(LearningPhase::Training);
@@ -101,10 +103,18 @@ public:
 			// running average
 			state->trainingLoss = totalTrainingLoss / state->batchInEpoch;
 
+			DEBUG_MSG("Minibatch", state->batchInEpoch);
+			DEBUG_MSG("Training loss", state->trainingLoss);
+
 			/*********** Update parameters ***********/
-			for (auto pc : net->param_containers())
-				optimizer->update(pc, state);
-			engine->flush_execute();
+			if (!optimizerRoutine)
+			{
+				for (auto pc : net->param_containers())
+					optimizer->update(pc, state);
+				optimizerRoutine = engine->flush_execute();
+			}
+			else
+				optimizerRoutine->execute();
 
 			/*********** Prepare for next minibatch ***********/
 			// zero clears all in/out values/gradients and loss value
