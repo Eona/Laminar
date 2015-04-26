@@ -3,7 +3,9 @@ include(eona_gtest)
 
 # toggle this to avoid recompiling gtests
 set(RUN_CPU_GTEST false)
-set(RUN_GPU_GTEST true)
+set(RUN_CUDA_GTEST true)
+set(RUN_OPENCL_GTEST true)
+
 # global option from eona_gtest.cmake
 set(RUN_TEST_DURING_BUILD false)
 set(USE_CUBLAS true)
@@ -16,8 +18,12 @@ set(CPU_TEST_SUITE
 #    misc_test
     )
 
-set(GPU_TEST_SUITE 
+set(CUDA_TEST_SUITE 
     cublas_forward_test
+    )
+    
+set(OPENCL_TEST_SUITE
+    opencl_forward_test
     )
     
 # Initialize to empty list
@@ -30,11 +36,18 @@ if (RUN_CPU_GTEST)
     list(APPEND TEST_SUITE ${CPU_TEST_SUITE})
 endif()
 
-if (RUN_GPU_GTEST)
+if (RUN_CUDA_GTEST)
     #> add_gtest_cuda(${TEST_SUITE} ${TEST_SUITE}.cu)
-    add_multiple_gtests_cuda(${GPU_TEST_SUITE})
+    add_multiple_gtests_cuda(${CUDA_TEST_SUITE})
+
+    list(APPEND TEST_SUITE ${CUDA_TEST_SUITE})
+endif()
+
+if (RUN_OPENCL_GTEST)
+    add_multiple_gtests(${OPENCL_TEST_SUITE})
+    link_opencl(${OPENCL_TEST_SUITE})
     
-    list(APPEND TEST_SUITE ${GPU_TEST_SUITE})
+    list(APPEND TEST_SUITE ${OPENCL_TEST_SUITE})
 endif()
 
 # $TEST_SUITE contains all tests desired to run
