@@ -92,10 +92,11 @@ public:
 		register_normal_op("transpose", MEMFUNC_BIND_3(OpenclEngine::transpose));
 		register_normal_op("element_mult", MEMFUNC_BIND_3(OpenclEngine::element_mult));
 		register_normal_op("square_loss", MEMFUNC_BIND_3(OpenclEngine::square_loss));
+		register_normal_op("s+s", MEMFUNC_BIND_3(OpenclEngine::add_scalar));
 
 		register_normal_op("destroy", MEMFUNC_BIND_3(OpenclEngine::destroy));
 		register_normal_op("zero_clear", MEMFUNC_BIND_3(OpenclEngine::zero_clear));
-		register_normal_op("soft_max", MEMFUNC_BIND_3(OpenclEngine::soft_max));
+		register_normal_op("softmax", MEMFUNC_BIND_3(OpenclEngine::softmax));
 		register_normal_op("label_entropy_loss", MEMFUNC_BIND_3(OpenclEngine::label_entropy_loss));
 		register_normal_op("label_softmax_entropy_gradient", MEMFUNC_BIND_3(OpenclEngine::label_softmax_entropy_gradient));
 
@@ -181,17 +182,18 @@ public:
 
 	}
 
-	void scaleMat(vector<OpenclFloatMatPtr> reads,
+	// ENFORCE: reads0 must be a tensor
+	void scaleMat(OpenclFloatMatPtr reads0,
 				OpenclFloatMatPtr write, bool is_initialized,
 				float alpha)
 	{
-	    int m = reads[0]->DIM_ROW;
-	    int n = reads[0]->DIM_COL;
+	    int m = reads0->DIM_ROW;
+	    int n = reads0->DIM_COL;
 	    if (!is_initialized) {
 	        write->reset(m, n, cl); //initialize LHS if not already
 	    }
 	    cl->setup_kernel("scale", 0, sizeof(cl_mem), &write->device_data); // Y
-	    cl->setup_kernel("scale", 1, sizeof(cl_mem), &reads[0]->device_data); // X
+	    cl->setup_kernel("scale", 1, sizeof(cl_mem), &reads0->device_data); // X
 	    cl->setup_kernel("scale", 2, sizeof(float), &alpha); //a
 	    cl->setup_kernel("scale", 3, sizeof(int), &(write->LEN)); //DATA_SIZE
 	    cl_ulong duration = cl->exec_kernel("scale", cl->get_global_size(write->LEN, NUM_LOCAL_WORKER), NUM_LOCAL_WORKER);
@@ -247,7 +249,7 @@ public:
 	{
 	    debug_msg("c=-a", is_initialized);
 	    //y = -y
-	    scaleMat(reads, write, is_initialized, -1);
+	    scaleMat(reads[0], write, is_initialized, -1);
 	}
 
 	void multNN(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
@@ -275,20 +277,21 @@ public:
 
 	void multST(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
-		scale(reads, write, is_initialized, reads[0]->scalar);
+	    scaleMat(reads[1], write, is_initialized, reads[0]->scalar);
 	}
 
 	void multTS(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
-		scale(reads, write, is_initialized, reads[1]->scalar);
+	    scaleMat(reads[0], write, is_initialized, reads[1]->scalar);
 	}
+
 	void assign(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 	    debug_msg("c=a", is_initialized);
 	    assignMat(reads, write, is_initialized);
 	}
 
-	void add_scalor(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	void add_scalar(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 		reads[0]->isScalar = true;
 		reads[1]->isScalar = true;
@@ -296,11 +299,11 @@ public:
 		write->scalar = reads[0]->scalar + reads[1]->scalar;
 	}
 
-	inline void scale(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized, float scaler)
+	inline void scale(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized, float scalar)
 	{
 		debug_msg("scale", is_initialized);
 	    //y = ay
-	    scaleMat(reads, write, is_initialized, scaler);
+	    scaleMat(reads[0], write, is_initialized, scalar);
 	}
 
 	inline void destroy(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
@@ -434,7 +437,7 @@ public:
 		write->fill_rand(1);
 	}
 
-	inline void soft_max(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized) {
+	inline void softmax(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized) {
 
 		if (!is_initialized)
 	    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL, cl);
