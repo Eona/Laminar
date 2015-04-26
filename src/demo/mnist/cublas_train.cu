@@ -13,6 +13,70 @@
 #include "../../backend/cublas/cuda_engine.h"
 #include "cublas_mnist_dataman.h"
 
+struct MnistAccuracyEvaluator : public Evaluator<CudaEngine, float>
+{
+	MnistAccuracyEvaluator(Network::Ptr net) :
+		Evaluator<CudaEngine, float>(net)
+	{ }
+
+	virtual ~MnistAccuracyEvaluator() {}
+
+	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(MnistAccuracyEvaluator)
+
+protected:
+	int total = 0;
+	int correct = 0;
+
+	/*********** defaults ***********/
+	virtual void update_metric(Network::Ptr net, LearningPhase)
+	{
+		// 10-x-batch matrix, each column is a distribution
+		Tensor::Ptr outprob = net->lossLayer->in_value_ptr(0);
+		auto distrMat = net->get_engine<CudaEngine>()->read_memory(outprob);
+
+		int r = distrMat->DIM_ROW;
+		int c = distrMat->DIM_COL;
+		vector<float> hostcopy (r * c);
+		distrMat->to_host(&hostcopy[0]);
+
+		auto& labelTensor = net->lossLayer->target_value(0);
+		auto labels = net->get_engine<CudaEngine>()->read_memory(labelTensor);
+		vector<float> hostlabel(1 * c);
+		labels->to_host(&hostlabel[0]);
+
+		for (int batch = 0; batch < c; ++batch)
+		{
+			// each batch find the largest value index
+			// that's the predicted label
+			float mx = -1e20f;
+			float predictedLabel = 0;
+			auto iter = hostcopy.begin() + batch * 10;
+			for (int i = 0; i < 10; ++i)
+			{
+				if (iter[i] > mx)
+				{
+					mx = iter[i];
+					predictedLabel = i;
+				}
+			}
+
+			// prediction complete, compare with actual
+			if (int(hostlabel[batch]) == predictedLabel)
+				correct += 1;
+			total += 1;
+		}
+	}
+
+	virtual float summarize_metric(Network::Ptr, LearningPhase)
+	{
+		// FIXME add prepare_next_epoch
+		float ans = (float) correct / total;
+		correct = 0;
+		total = 0;
+		return ans;
+	}
+};
+
 int main(int argc, char **argv)
 {
 	const int INPUT_DIM = 28 * 28;
@@ -40,8 +104,19 @@ int main(int argc, char **argv)
 	net->new_connection<FullConnection>(lhidden2, lloss);
 	net->add_layer(lloss);
 
-	auto opm = Optimizer::make<SGD>(0.3);
-	auto eval = NoMetricEvaluator<CudaEngine>::make(net);
+//	net->execute("initialize");
+//	net->execute("load_input");
+//	net->execute("load_target");
+//	net->execute("forward");
+//	net->execute("backward");
+//	net->execute("zero_clear");
+
+//	DEBUG_MSG(linput->in_value(0).addr);
+//	lmn::zero_clear(linput->in_value(0));
+//	engine->flush_execute();
+
+	auto opm = Optimizer::make<SGD>(0.01);
+	auto eval = MnistAccuracyEvaluator::make(net);
 	auto stopper = StopCriteria::make<MaxEpochStopper>(MAX_EPOCH);
 	auto ser = NullSerializer::make();
 	auto evalsched = EpochIntervalSchedule::make(0, 1);
