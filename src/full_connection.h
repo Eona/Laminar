@@ -17,8 +17,8 @@ public:
 	{
 		LMN_ASSERT_THROW(inLayer->dim() == outLayer->dim()
 				// we disable the check if either in/outLayer is a DebugLayer
-				|| is_convertible<DebugLayer>(inLayer)
-				|| is_convertible<DebugLayer>(outLayer),
+				|| is_castable<DebugLayer>(inLayer)
+				|| is_castable<DebugLayer>(outLayer),
 			ComponentException("ConstantConnection inLayer and outLayer dim diagrees:\n"
 				+ container2str(inLayer->dim()) + " <-> " + container2str(outLayer->dim())));
 	}

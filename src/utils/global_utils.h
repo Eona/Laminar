@@ -151,7 +151,7 @@ bool key_exists(std::unordered_map<KeyT, ValueT>& map, KeyT& key)
  * Check if the arg pointer can be converted to template class
  */
 template<typename SuperClass, typename TestClass>
-bool is_convertible(std::shared_ptr<TestClass> ptr)
+bool is_castable(std::shared_ptr<TestClass> ptr)
 {
 	auto p = std::dynamic_pointer_cast<SuperClass>(ptr);
 	return bool(p);
