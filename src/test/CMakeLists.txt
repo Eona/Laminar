@@ -1,4 +1,4 @@
-message("Folder test/ for gtest template")
+message("Eona build test/")
 include(eona_gtest)
 
 # toggle this to avoid recompiling gtests

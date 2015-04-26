@@ -1,4 +1,4 @@
-message("Folder backend/cublas")
+message("Eona build backend/cublas")
 
 set(CUBLAS_TEST_EXE 
     gradcheck)

@@ -28,7 +28,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/demo/mnist
                 ${CMAKE_CURRENT_BINARY_DIR}/mnist)
 
 # ==========================================
-message("Folder src/")
+message("Eona build src/ toplevel")
 
 set(MAIN
     laminar)

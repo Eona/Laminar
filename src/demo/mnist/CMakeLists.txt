@@ -1,4 +1,4 @@
-message("MNIST training demo")
+message("Eona build demo/mnist")
 
 if (true)
 set(MNIST_CUBLAS_EXE 

@@ -1,4 +1,4 @@
-message("Folder backend/opencl")
+message("Eona build backend/opencl")
 
 set(OPENCL_TEST_EXE 
     ocl_engine_test)
