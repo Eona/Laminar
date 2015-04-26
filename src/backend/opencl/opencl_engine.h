@@ -21,6 +21,7 @@
 #include "ocl_util.h"
 #include "../types/opencl_float_mat.h"
 #include "../types/performance_profiler.h"
+#include "../../engine/tensor_ops.h"
 
 #include "../../engine/engine.h"
 #include "../../engine/tensor.h"
@@ -390,6 +391,25 @@ public:
 	{
 		write->zero_clear();
 	}
+
+	void fill_element(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized,
+			lmn::ElementFillFunc<float> filler)
+	{
+		debug_msg("fill_element", is_initialized);
+
+		assert(is_initialized);
+		int m = write->DIM_ROW;
+		int n = write->DIM_COL;
+		float * t = new float[write->LEN];
+		for (int i = 0; i < m; ++i) { // which row
+			for (int j = 0; j < n; ++j) { //which col
+				t[i + j * m] = filler(DimIndex {i, j});
+			}
+		}
+		write->to_device(t);
+		delete [] t;
+	}
+
 
 	// FIXME add contextual rand engine
 	inline void fill_rand(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)

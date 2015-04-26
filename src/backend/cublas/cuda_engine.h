@@ -8,6 +8,7 @@
 #include "../../utils/global_utils.h"
 #include "../../engine/engine.h"
 #include "../../engine/tensor.h"
+#include "../../engine/tensor_ops.h"
 #include <cuda.h>
 #include "cublas_v2.h"
 #include "../types/cuda_float_mat.h"
@@ -483,7 +484,23 @@ public:
 	}
 
 
+	void fill_element(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized,
+			lmn::ElementFillFunc<float> filler)
+	{
+		debug_msg("fill_element", is_initialized);
 
+		assert(is_initialized);
+		int m = write->DIM_ROW;
+		int n = write->DIM_COL;
+		float * t = new float[write->LEN];
+		for (int i = 0; i < m; ++i) { // which row
+			for (int j = 0; j < n; ++j) { //which col
+				t[i + j * m] = filler(DimIndex {i, j});
+			}
+		}
+		write->to_device(t);
+		delete [] t;
+	}
 
 	// FIXME add contextual rand engine
 	inline void fill_rand(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
