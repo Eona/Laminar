@@ -101,11 +101,9 @@ public:
 			write->scalar = 0;
 		else
 		{
-			DEBUG_MSG(write->DIM_ROW << "  " << write->DIM_COL);
 			LMN_ASSERT_THROW(is_initialized,
 				EngineException("CUDA zero_clear must have been inited"));
 			write->zero_clear();
-			DEBUG_MSG("AFTER ZERO CLEAR");
 		}
 	}
 
@@ -273,13 +271,14 @@ public:
 	{
 		LMN_ASSERT_THROW(reads[0]->isScalar,
 				EngineException("reads[0] in s*t must be scalar"));
-		scale(reads, write, is_initialized, reads[0]->scalar);
+		// WARNING tensor is the SECOND arg of reads!!!
+		scale({ reads[1] }, write, is_initialized, reads[0]->scalar);
 	}
 
 	void multTS(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		LMN_ASSERT_THROW(reads[1]->isScalar,
-				EngineException("reads[0] in s*t must be scalar"));
+				EngineException("reads[1] in t*s must be scalar"));
 		scale(reads, write, is_initialized, reads[1]->scalar);
 	}
 
