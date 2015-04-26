@@ -65,8 +65,13 @@ function(add_multiple_gtests target0)
 endfunction()
 
 # ============ CUDA gtest ===============
+option(USE_CUBLAS "Add cuBLAS to gtests")
+
 function(add_gtest_cuda target)
     cuda_add_executable(${target} ${ARGN})
+    if (USE_CUBLAS)
+        cuda_add_cublas_to_target(${target})
+    endif()
     link_gtest(${target})
     add_test(${target} ${target})
 
