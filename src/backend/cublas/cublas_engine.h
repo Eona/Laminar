@@ -2,8 +2,8 @@
  * Eona Studio (c) 2015
  */
 
-#ifndef CUDA_ENGINE_H_
-#define CUDA_ENGINE_H_
+#ifndef CUBLAS_ENGINE_H_
+#define CUBLAS_ENGINE_H_
 
 #include "../../utils/global_utils.h"
 #include "../../utils/laminar_utils.h"
