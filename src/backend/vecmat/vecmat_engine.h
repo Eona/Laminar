@@ -8,6 +8,7 @@
 #include "../../engine/engine.h"
 #include "../../engine/tensor.h"
 #include "../../engine/tensor_ops.h"
+#include "../../utils/rand_utils.h"
 #include "../vecmat/vecmat.h"
 
 #define VECTORMAT_DEBUG false
