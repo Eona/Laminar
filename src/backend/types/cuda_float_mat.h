@@ -5,7 +5,6 @@
 #include <curand.h>
 #include <vector>
 #include "gpu_float_mat.h"
-#include <cuda_func.h>
 
 #define NUM_THREAD_PER_BLOCK 512;
 

@@ -2,14 +2,14 @@
  * Eona Studio (c)2015
  */
 #include <iostream>
-#include "cublas_engine.h"
+#include "cuda_engine.h"
 
 using namespace std;
 typedef std::shared_ptr<CudaFloatMat> CudaFloatMatPtr;
 int main(int argc, char **argv)
 {
 	GlobalTimer<cudaEvent_t> gt;
-	CublasEngine engine(&gt);
+	CudaEngine engine(&gt);
 
 	//create testcases
 	/*
