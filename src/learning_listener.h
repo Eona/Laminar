@@ -228,9 +228,19 @@ struct Observer : public ObserverBase
 {
 	virtual ~Observer() {}
 
-	virtual void observe(std::shared_ptr<NetworkT>, LearningState::Ptr) = 0;
+	void observe(std::shared_ptr<Network> net_, LearningState::Ptr state)
+	{
+		auto net = std::dynamic_pointer_cast<NetworkT>(net_);
+		LMN_ASSERT_NULLPTR(net,
+			LearningException("Observer network type mismatch"));
+
+		this->observe_impl(net, state);
+	}
 
 	GEN_GENERIC_MAKEPTR_STATIC_MEMBER(Observer)
+
+protected:
+	virtual void observe_impl(std::shared_ptr<NetworkT>, LearningState::Ptr) = 0;
 };
 
 /**
@@ -238,9 +248,10 @@ struct Observer : public ObserverBase
  */
 struct NullObserver : public Observer<Network>
 {
-	void observe(std::shared_ptr<Network>, LearningState::Ptr) { }
-
 	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(NullObserver)
+
+protected:
+	void observe_impl(std::shared_ptr<Network>, LearningState::Ptr) { }
 };
 
 #endif /* LEARNING_LISTENER_H_ */
