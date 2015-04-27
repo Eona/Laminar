@@ -33,75 +33,116 @@ public:
 	{
 		// Round the corpus to the nearest thousand
 		int totalSize = corpus.size();
-		totalSize -= totalSize % 1000;
+		const int historyBatchUnit = historyLength * batchSize;
+
+		// discard the last few short sequences
+		totalSize -= totalSize % historyBatchUnit;
+		DEBUG_MSG("total size", totalSize);
+
+		// index to LEARNING_PHASE_N
+		const int TRAIN = enum2integral(LearningPhase::Training);
+		const int VALID = enum2integral(LearningPhase::Validation);
 
 		// Divide training/validation by 3:1
-		int total_1000 = totalSize / 1000;
-		training_1000 = int(0.75 * total_1000);
+		streamSizes[TRAIN] = int(0.75 * (totalSize / historyBatchUnit)) * historyBatchUnit;
+		streamSizes[VALID] = totalSize - streamSizes[TRAIN];
 
-		int trainingSize = training_1000 * 1000;
-		int validationSize = totalSize - trainingSize;
+		DEBUG_MSG("train size", streamSizes[TRAIN]);
+		DEBUG_MSG("valid size", streamSizes[VALID]);
+/*
 
-		vector<vector<float>> = corpus.load_batch(trainingSize)
+		LMN_ASSERT_THROW(streamSizes[TRAIN] % (historyLength * batchSize) == 0,
+				DataException("training size must be divisible by historyLength * batchSize"));
+		LMN_ASSERT_THROW(streamSizes[VALID] % (historyLength * batchSize) == 0,
+				DataException("validation size must be divisible by historyLength * batchSize"));
+*/
 
-		inputStreams[enum2integral(LearningPhase::Training)] =
+		const int SPACE_CODE = CorpusLoader::char2code(' ');
 
-				read_mnist_image(mnistDataDir + "/" + MNIST_TRAIN_IMAGE_FILE, 0, batchSize, true);
+		for (int PHASE : { TRAIN, VALID })
+		{
+			// [[history], [history], [history] ...]
+			// segments.size() == number of history sequences
+			// segments[i].length == historyLength
+			auto segments = corpus.load_segment(streamSizes[PHASE]/historyLength, historyLength);
 
-		inputStreams[enum2integral(LearningPhase::Validation)] =
-				read_mnist_image(mnistDataDir + "/" + MNIST_TEST_IMAGE_FILE, 0, batchSize, true);
+			int numberOfBatch = segments.size() / batchSize;
 
-		targetStreams[enum2integral(LearningPhase::Training)] =
-				read_mnist_label(mnistDataDir + "/" + MNIST_TRAIN_LABEL_FILE, 0, batchSize);
+			// input stream is continuous, no break of history, i.e. no historyLength
+			// each batch is a batch of int labels, will be converted to one-hot matrix later
+			// suppose we have history segments [[seg1], [seg2] ... [seg12]]
+			// if batch size is 3, then stide = 4, the batches in input stream will look like:
+			// [{seg1, seg5, seg9}, {seg2, seg6, seg10}, {seg3, seg7, seg11}, {seg4, seg8, seg12}
+			// this arrangment ensures seg2 'follows' seg1 in the next batch
+			vector<vector<float>> dataStream;
+			int stride = numberOfBatch;
+			DEBUG_MSG("number of batches", numberOfBatch);
 
-		targetStreams[enum2integral(LearningPhase::Testing)] =
-				read_mnist_label(mnistDataDir + "/" + MNIST_TEST_LABEL_FILE, 0, batchSize);
+			for (int batchIdx = 0; batchIdx < numberOfBatch; ++batchIdx)
+			{
+				for (int h = 0; h < historyLength; ++h)
+				{
+					vector<float> oneBatchData(batchSize);
+					for (int b = 0; b < batchSize; ++b)
+					{
+						oneBatchData[b] = segments[batchIdx + b * stride][h];
+					}
+					// push packed batch to inputStreams
+					dataStream.push_back(std::move(oneBatchData));
+				}
+			}
+			inputStreams[PHASE] = std::move(dataStream);
+		}
+
 	}
 
 	virtual ~CorpusDataManager() {}
 
 	void load_input(DataPtr write, bool is_initialized, LearningPhase learnPhase)
 	{
-		LMN_ASSERT_THROW(learnPhase != LearningPhase::Testing,
-				DataException("Corpus load_input: no testing data"));
-
-		if (!is_initialized)
-			this->alloc_zeros(write, CORPUS_ONE_HOT_DIM, batchSize);
-
-		int phase = to_int(learnPhase);
-		LMN_ASSERT_THROW(streamPos[phase] < streamSizes[phase],
-				DataException("load_input stream position out of bound"));
-
-		this->load_data(write, inputStreams[phase][streamPos[phase]]);
+//		LMN_ASSERT_THROW(learnPhase != LearningPhase::Testing,
+//				DataException("Corpus load_input: no testing data"));
+//
+//		if (!is_initialized)
+//			this->alloc_zeros(write, CORPUS_ONE_HOT_DIM, batchSize);
+//
+//		int phase = to_int(learnPhase);
+//		LMN_ASSERT_THROW(streamPos[phase] < streamSizes[phase],
+//				DataException("load_input stream position out of bound"));
+//
+//		this->load_data(write, inputStreams[phase][streamPos[phase]]);
 	}
 
 	void load_target(DataPtr write, bool is_initialized, LearningPhase learnPhase)
 	{
-		LMN_ASSERT_THROW(learnPhase != LearningPhase::Testing,
-				DataException("Corpus load_target: no testing data"));
+		// target is always the next char (unless at the very end, fill target as '<space>')
 
-		if (!is_initialized)
-			// just a row of labels
-			this->alloc_zeros(write, 1, batchSize);
-
-		int phase = to_int(learnPhase);
-		LMN_ASSERT_THROW(streamPos[phase] < streamSizes[phase],
-				DataException("load_target stream position out of bound"));
-
-		this->load_data(write, targetStreams[phase][streamPos[phase]]);
+//		LMN_ASSERT_THROW(learnPhase != LearningPhase::Testing,
+//				DataException("Corpus load_target: no testing data"));
+//
+//		if (!is_initialized)
+//			// just a row of labels
+//			this->alloc_zeros(write, 1, batchSize);
+//
+//		int phase = to_int(learnPhase);
+//		LMN_ASSERT_THROW(streamPos[phase] < streamSizes[phase],
+//				DataException("load_target stream position out of bound"));
+//
+//		this->load_data(write, targetStreams[phase][streamPos[phase]]);
 	}
 
 	bool prepare_next_batch_impl(LearningPhase learnPhase)
 	{
-		LMN_ASSERT_THROW(learnPhase != LearningPhase::Validation,
-				DataException("MNIST prepare_next_batch: no validation data"));
-
-		int phase = to_int(learnPhase);
-		// proceed to the next item in stream
-		++ streamPos[phase];
-
-		// If point to last in stream, end of epoch = true
-		return streamPos[phase] == streamSizes[phase];
+//		LMN_ASSERT_THROW(learnPhase != LearningPhase::Validation,
+//				DataException("MNIST prepare_next_batch: no validation data"));
+//
+//		int phase = to_int(learnPhase);
+//		// proceed to the next item in stream
+//		++ streamPos[phase];
+//
+//		// If point to last in stream, end of epoch = true
+//		return streamPos[phase] == streamSizes[phase];
+		return true;
 	}
 
 	void reset_epoch_impl(LearningPhase phase)
@@ -111,7 +152,7 @@ public:
 
 	Dimension input_dim() const
 	{
-		return { MNIST_INPUT_DIM, this->batchSize };
+		return { CORPUS_ONE_HOT_DIM, this->batchSize };
 	}
 
 	Dimension target_dim() const
@@ -147,11 +188,12 @@ private:
 	// current position in input/target stream
 	std::array<int, LEARNING_PHASE_N> streamPos;
 
-	// accessed by enum2integral(Training/Validation/Testing)
-	// each inner vector<float> is a batch of images/labels
-	std::array<vector<vector<float>>, LEARNING_PHASE_N> inputStreams, targetStreams;
-
 	CorpusLoader corpus;
+
+public: // for debugging
+	// accessed by enum2integral(Training/Validation/Testing)
+	// target stream is just next char of inputStream
+	std::array<vector<vector<float>>, LEARNING_PHASE_N> inputStreams;
 };
 
 

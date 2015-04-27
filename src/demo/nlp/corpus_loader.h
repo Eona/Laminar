@@ -144,7 +144,8 @@ public:
 	/**
 	 * Concat the chars to a string
 	 */
-	static std::string code2str(std::vector<int> codes)
+	template<typename IntT>
+	static std::string code2str(std::vector<IntT> codes)
 	{
 		std::string ans = "";
 		for (int x : codes)

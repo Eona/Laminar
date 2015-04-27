@@ -1,4 +1,4 @@
-message("Eona build demo/mnist")
+message("Eona build demo/NLP")
 
 if (false)
 set(NLP_CUBLAS_EXE 
