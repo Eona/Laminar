@@ -201,7 +201,7 @@ __global__ void mat_multNN_shared_kernel(float* C, int CRows, int CCols, float* 
     if (Row < CRows && Col < CCols)
     	C[(blockIdx.x * blockDim.x + threadIdx.x)*CRows + blockIdx.y*blockDim.y+threadIdx.y]=CValue;
 }
-__global__ void mat_multNT_shared_kernel(float *C, float *A, float *B, int m, int n, int l, int k)
+__global__ void mat_multNT_shared_kernel(float* C, int CRows, int CCols, float* A, int ARows, int ACols, float* B, int BRows, int BCols)
 {
 	float CValue = 0;
 
@@ -237,7 +237,7 @@ __global__ void mat_multNT_shared_kernel(float *C, float *A, float *B, int m, in
     	C[(blockIdx.x * blockDim.x + threadIdx.x)*CRows + blockIdx.y*blockDim.y+threadIdx.y]=CValue;
 }
 
-__global__ void mat_multTN_shared_kernel(float *C, float *A, float *B, int m, int n, int l, int k)
+__global__ void mat_multTN_shared_kernel(float* C, int CRows, int CCols, float* A, int ARows, int ACols, float* B, int BRows, int BCols)
 {
 	float CValue = 0;
 
