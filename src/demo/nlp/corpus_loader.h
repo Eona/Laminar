@@ -7,7 +7,8 @@
 
 #include "../../utils/laminar_utils.h"
 
-
+// 64 chars in consideration, using one-hot encoding
+static const constexpr int CORPUS_ONE_HOT_DIM = 64;
 
 /**
  * Load int class labels from a preprocessed corpus
@@ -38,6 +39,9 @@ public:
 	 */
 	std::vector<int> load(int n)
 	{
+		LMN_ASSERT_THROW(!ifs.eof(),
+			DataException("CorpusLoader::load() fails: EOF"));
+
 		std::vector<int> ans;
 		for (int i = 0; i < n; ++i)
 		{
@@ -48,13 +52,19 @@ public:
 		return ans;
 	}
 
+	/**
+	 * Break corpus stream into segments of certain length
+	 * @param numOfSegments
+	 * @param segmentLength
+	 * @return
+	 */
 	std::vector<std::vector<int>>
-			load_batch(int batch, int numPerBatch)
+			load_segment(int numOfSegments, int segmentLength)
 	{
 		std::vector<std::vector<int>> ans;
 
-		for (int b = 0; b < batch; ++b)
-			ans.push_back(this->load(numPerBatch));
+		for (int b = 0; b < numOfSegments; ++b)
+			ans.push_back(this->load(segmentLength));
 
 		return ans;
 	}
