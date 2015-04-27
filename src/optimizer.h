@@ -167,6 +167,22 @@ protected:
 
 };
 
+class ClippedMomentumGD : public MomentumGD
+{
+public:
+	ClippedMomentumGD(float learningRate, float moment) :
+		MomentumGD(learningRate, moment)
+	{}
+
+protected:
+	virtual void update_impl(
+			Tensor& paramValue, Tensor& paramGradient, LearningState::Ptr state)
+	{
+		Tensor clippedGradient = lmn::clip(paramGradient);
+		MomentumGD::update_impl(paramValue, clippedGradient, state);
+	}
+};
+
 /**
  * Nesterov momentum
  * http://cs231n.github.io/neural-networks-3/#sgd

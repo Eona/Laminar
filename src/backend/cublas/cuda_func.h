@@ -16,6 +16,16 @@ __device__ float sigmoid_func (float x)
 	return 1.f / (1.f + std::exp(-x));
 }
 
+__device__ float clip_func (float x)
+{
+	if (x < -1)
+		return -1;
+	else if (x > 1)
+		return 1;
+	else
+		return x;
+}
+
 __device__ float sigmoid_gradient_func (float x)
 {
 	return x * (1.f - x);
@@ -65,6 +75,7 @@ __device__ float subtract_func (float x, float y)
 //Static device function (single variable)
 __device__ op_func_t cu_sigmoid_func = sigmoid_func;
 __device__ op_func_t cu_sigmoid_gradient_func = sigmoid_gradient_func;
+__device__ op_func_t cu_clip_func = clip_func;
 __device__ op_func_t cu_sin_func = sin_func;
 __device__ op_func_t cu_cos_func = cos_func;
 __device__ op_func_t cu_tanh_func = tanh_func;
