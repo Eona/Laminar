@@ -208,8 +208,8 @@ public:
 	    //handle, A_len, x, incx, y, incy
 
 	    dim3 thread_per_block (16,16);
-	    dim3 num_blocks (ceil(double(w)/double(thread_per_block.x)),
-	                    ceil(double(h)/double(thread_per_block.y)));
+	    dim3 num_blocks (ceil(double(write->DIM_COL)/double(thread_per_block.x)),
+	                    ceil(double(write->DIM_ROW)/double(thread_per_block.y)));
 
 	    mat_multNN_shared_kernel<<<num_blocks, thread_per_block>>> (write->device_data, write->DIM_ROW, write->DIM_COL,
 	    															reads[0]->device_data, reads[0]->DIM_ROW, reads[0]->DIM_COL,

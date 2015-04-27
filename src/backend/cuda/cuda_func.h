@@ -168,36 +168,38 @@ __global__ void mat_multTN_kernel(float *C, float *A, float *B, int m, int n, in
 //############Shared memory implementation, assuming 2D kernel launch##############
 __global__ void mat_multNN_shared_kernel(float* C, int CRows, int CCols, float* A, int ARows, int ACols, float* B, int BRows, int BCols) {
 
-    float CValue = 0;
+	float CValue = 0;
 
-    int Row = blockIdx.y*TILE_WIDTH + threadIdx.y; // which row
-    int Col = blockIdx.x*TILE_WIDTH + threadIdx.x; // which col
+    int Row = blockIdx.y*TILE_WIDTH + threadIdx.y; // which row this thread is on
+    int Col = blockIdx.x*TILE_WIDTH + threadIdx.x; // which col this thread is on
 
     __shared__ float As[TILE_WIDTH][TILE_WIDTH];
     __shared__ float Bs[TILE_WIDTH][TILE_WIDTH];
 
     for (int k = 0; k < (TILE_WIDTH + ACols - 1)/TILE_WIDTH; k++) {
+    	//load the tile
+    	if (k*TILE_WIDTH + threadIdx.x < ACols && Row < ARows) {
+    		As[threadIdx.y][threadIdx.x] = A[(k*TILE_WIDTH + threadIdx.x)*ARows + Row];
+    	}
+    	else
+    		As[threadIdx.y][threadIdx.x] = 0.0;
 
-         if (k*TILE_WIDTH + threadIdx.x < ACols && Row < ARows)
-    	 	 As[threadIdx.y][threadIdx.x] = A[(k*TILE_WIDTH + threadIdx.y)*ACols + Col];
-         else
-        	 As[threadIdx.y][threadIdx.x] = 0.0;
+    	if (k*TILE_WIDTH + threadIdx.y < BRows && Col < BCols)
+    		Bs[threadIdx.y][threadIdx.x] = B[Col*BRows + k*TILE_DIM + threadIdx.y];
+    	else
+    		Bs[threadIdx.y][threadIdx.x] = 0.0;
 
-         if (k*TILE_WIDTH + threadIdx.y < BRows && Col < BCols)
-	    	 Bs[threadIdx.y][threadIdx.x] = B[(k*TILE_WIDTH + threadIdx.y)*BCols + Col];
-         else
-        	 Bs[threadIdx.y][threadIdx.x] = 0.0;
+    	__syncthreads();
 
-         __syncthreads();
+    	//compute partial result
+    	for (int n = 0; n < TILE_WIDTH; ++n)
+    		CValue += As[threadIdx.y][n] * Bs[n][threadIdx.x];
 
-         for (int n = 0; n < TILE_WIDTH; ++n)
-        	 CValue += As[threadIdx.y][n] * Bs[n][threadIdx.x];
-
-         __syncthreads();
+    	__syncthreads();
     }
 
     if (Row < CRows && Col < CCols)
-    	C[((blockIdx.y * blockDim.y + threadIdx.y)*CCols)+(blockIdx.x*blockDim.x)+threadIdx.x]=CValue;
+    	C[(blockIdx.x * blockDim.x + threadIdx.x)*CRows + blockIdx.y*blockDim.y+threadIdx.y]=CValue;
 }
 //__global__ void mat_multNT_shared_kernel(float *C, float *A, float *B, int m, int n, int l, int k)
 //{
