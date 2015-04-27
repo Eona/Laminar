@@ -74,6 +74,15 @@ int main(int argc, char **argv)
 	v1.push_back(m3);
 	v1.push_back(m1);
 
+	engine.zero_clear(v, m1, true);
+	engine.zero_clear(v, m3, true);
+	m1->print_matrix("zero(m1)");
+	m3->print_matrix("zero(m3)");
+
+//	engine.zero_clear(m1, out, true);
+
+
+#if 0
 	for (int i = 0; i < 10; ++i){
 	engine.sub(v, out, true);
 //	out->print_matrix("m1 - m2");
@@ -139,4 +148,5 @@ int main(int argc, char **argv)
 
 	gt.print_stats(GlobalTimer<cl_event>::Nanosec, "test");
 	out->free_data();
+#endif
 }

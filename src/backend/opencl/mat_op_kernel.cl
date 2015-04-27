@@ -101,6 +101,14 @@ __kernel void mat_scale_kernel(__global float * Y, __global float * X, float a, 
     }
 }
 
+__kernel void mat_fill_kernel(__global float * Y, float a, int DATA_SIZE)
+{
+    int idx = get_global_id(0);
+    if (idx < DATA_SIZE) {
+		Y[idx] = a;
+    }
+}
+
 /*sigmoid */
 __kernel void mat_sigmoid_kernel(__global float * Y, __global float * X, int DATA_SIZE)
 {

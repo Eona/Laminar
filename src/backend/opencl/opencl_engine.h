@@ -74,6 +74,7 @@ public:
 		cl->register_kernel("dummy", "matop_prog", "dummy");
 		cl->register_kernel("mat_add_kernel", "matop_prog", "add");
 		cl->register_kernel("mat_scale_kernel", "matop_prog", "scale");
+		cl->register_kernel("mat_fill_kernel", "matop_prog", "fill");
 		cl->register_kernel("mat_elem_mult_kernel", "matop_prog", "element_mult");
 		cl->register_kernel("mat_sigmoid_kernel", "matop_prog", "sigmoid");
 		cl->register_kernel("mat_sigmoid_gradient_kernel", "matop_prog", "sigmoid_gradient");
@@ -87,40 +88,40 @@ public:
 		cl->register_kernel("mat_mult_TN_kernel", "matop_prog", "mult_TN");
 		NUM_LOCAL_WORKER = cl->query_group_size();
 
-		register_create_op(MEMFUNC_BIND_2(OpenclEngine::create));
-		register_normal_op("t+t", MEMFUNC_BIND_3(OpenclEngine::add));
-		register_normal_op("t-t", MEMFUNC_BIND_3(OpenclEngine::sub));
-		register_normal_op("-t", MEMFUNC_BIND_3(OpenclEngine::negate));
-		register_normal_op("t*t", MEMFUNC_BIND_3(OpenclEngine::multNN));
-		register_normal_op("t*s", MEMFUNC_BIND_3(OpenclEngine::multTS));
-		register_normal_op("s*t", MEMFUNC_BIND_3(OpenclEngine::multST));
-		register_normal_op("t=t", MEMFUNC_BIND_3(OpenclEngine::assign));
-		register_context_op<float>("s=const", MEMFUNC_BIND_4(OpenclEngine::assign_const));
-
-		register_normal_op("sin", MEMFUNC_BIND_3(OpenclEngine::sin));
-		register_normal_op("cos", MEMFUNC_BIND_3(OpenclEngine::cos));
-		register_normal_op("tanh", MEMFUNC_BIND_3(OpenclEngine::tanh));
-		register_normal_op("tanh_gradient", MEMFUNC_BIND_3(OpenclEngine::tanh_gradient));
-		register_normal_op("sigmoid", MEMFUNC_BIND_3(OpenclEngine::sigmoid));
-		register_normal_op("sigmoid_gradient", MEMFUNC_BIND_3(OpenclEngine::sigmoid_gradient));
-		register_normal_op("transpose", MEMFUNC_BIND_3(OpenclEngine::transpose));
-		register_normal_op("element_mult", MEMFUNC_BIND_3(OpenclEngine::element_mult));
-		register_normal_op("square_loss", MEMFUNC_BIND_3(OpenclEngine::square_loss));
-		register_normal_op("s+s", MEMFUNC_BIND_3(OpenclEngine::add_scalar));
-
-		register_normal_op("destroy", MEMFUNC_BIND_3(OpenclEngine::destroy));
-		register_normal_op("zero_clear", MEMFUNC_BIND_3(OpenclEngine::zero_clear));
-		register_normal_op("softmax", MEMFUNC_BIND_3(OpenclEngine::softmax));
-		register_normal_op("label_entropy_loss", MEMFUNC_BIND_3(OpenclEngine::label_entropy_loss));
-		register_normal_op("label_softmax_entropy_gradient", MEMFUNC_BIND_3(OpenclEngine::label_softmax_entropy_gradient));
-
-
-		register_normal_op("fill_rand", MEMFUNC_BIND_3(OpenclEngine::fill_rand));
-		register_normal_op("fill_rand_prehistory", MEMFUNC_BIND_3(OpenclEngine::fill_rand));
-		register_context_op<float>("scale", MEMFUNC_BIND_4(OpenclEngine::scale));
-		register_context_op<DimIndex, float>("perturb", MEMFUNC_BIND_5(OpenclEngine::perturb));
-		register_context_op<lmn::ElementFillFunc<float>>(
-						"fill_element", MEMFUNC_BIND_4(OpenclEngine::fill_element));
+//		register_create_op(MEMFUNC_BIND_2(OpenclEngine::create));
+//		register_normal_op("t+t", MEMFUNC_BIND_3(OpenclEngine::add));
+//		register_normal_op("t-t", MEMFUNC_BIND_3(OpenclEngine::sub));
+//		register_normal_op("-t", MEMFUNC_BIND_3(OpenclEngine::negate));
+//		register_normal_op("t*t", MEMFUNC_BIND_3(OpenclEngine::multNN));
+//		register_normal_op("t*s", MEMFUNC_BIND_3(OpenclEngine::multTS));
+//		register_normal_op("s*t", MEMFUNC_BIND_3(OpenclEngine::multST));
+//		register_normal_op("t=t", MEMFUNC_BIND_3(OpenclEngine::assign));
+//		register_context_op<float>("s=const", MEMFUNC_BIND_4(OpenclEngine::assign_const));
+//
+//		register_normal_op("sin", MEMFUNC_BIND_3(OpenclEngine::sin));
+//		register_normal_op("cos", MEMFUNC_BIND_3(OpenclEngine::cos));
+//		register_normal_op("tanh", MEMFUNC_BIND_3(OpenclEngine::tanh));
+//		register_normal_op("tanh_gradient", MEMFUNC_BIND_3(OpenclEngine::tanh_gradient));
+//		register_normal_op("sigmoid", MEMFUNC_BIND_3(OpenclEngine::sigmoid));
+//		register_normal_op("sigmoid_gradient", MEMFUNC_BIND_3(OpenclEngine::sigmoid_gradient));
+//		register_normal_op("transpose", MEMFUNC_BIND_3(OpenclEngine::transpose));
+//		register_normal_op("element_mult", MEMFUNC_BIND_3(OpenclEngine::element_mult));
+//		register_normal_op("square_loss", MEMFUNC_BIND_3(OpenclEngine::square_loss));
+//		register_normal_op("s+s", MEMFUNC_BIND_3(OpenclEngine::add_scalar));
+//
+//		register_normal_op("destroy", MEMFUNC_BIND_3(OpenclEngine::destroy));
+//		register_normal_op("zero_clear", MEMFUNC_BIND_3(OpenclEngine::zero_clear));
+//		register_normal_op("softmax", MEMFUNC_BIND_3(OpenclEngine::softmax));
+//		register_normal_op("label_entropy_loss", MEMFUNC_BIND_3(OpenclEngine::label_entropy_loss));
+//		register_normal_op("label_softmax_entropy_gradient", MEMFUNC_BIND_3(OpenclEngine::label_softmax_entropy_gradient));
+//
+//
+//		register_normal_op("fill_rand", MEMFUNC_BIND_3(OpenclEngine::fill_rand));
+//		register_normal_op("fill_rand_prehistory", MEMFUNC_BIND_3(OpenclEngine::fill_rand));
+//		register_context_op<float>("scale", MEMFUNC_BIND_4(OpenclEngine::scale));
+//		register_context_op<DimIndex, float>("perturb", MEMFUNC_BIND_5(OpenclEngine::perturb));
+//		register_context_op<lmn::ElementFillFunc<float>>(
+//						"fill_element", MEMFUNC_BIND_4(OpenclEngine::fill_element));
 	}
 
 
@@ -258,7 +259,7 @@ public:
 	    write->DIM_ROW = m;
 	    write->DIM_COL = n;
 	}
-
+	//helper func
 	void elementOp(std::string kernel_name, vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized){
 	    int m = reads[0]->DIM_ROW;
 	    int n = reads[0]->DIM_COL;
@@ -273,7 +274,14 @@ public:
 	    if(timed) gt->record_named_timer(kernel_name, duration, m*n);
 	}
 
-
+	//helper func
+	void fill(OpenclFloatMatPtr mat, float num) {
+	    cl->setup_kernel("fill", 0, sizeof(cl_mem), &mat->device_data); // Y
+	    cl->setup_kernel("fill", 1, sizeof(float), &num); // X
+	    cl->setup_kernel("fill", 2, sizeof(int), &(mat->LEN)); //DATA_SIZE
+	    cl_ulong duration = cl->exec_kernel("fill", cl->get_global_size(mat->LEN, NUM_LOCAL_WORKER), NUM_LOCAL_WORKER);
+	    if(timed) gt->record_named_timer("fill", duration, mat->LEN);
+	}
 	void add(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 	    debug_msg("c=a+b", is_initialized);
@@ -446,10 +454,12 @@ public:
 
 	void zero_clear(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
-		if (write->isScalar)
+		if (write->isScalar) {
 			write->scalar = 0;
-		else
-			write->zero_clear();
+		} else {
+		    //y = x
+			fill(write, 0);
+		}
 	}
 
 	void fill_element(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized,
