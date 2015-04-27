@@ -185,7 +185,7 @@ __global__ void mat_multNN_shared_kernel(float* C, int CRows, int CCols, float* 
     		As[threadIdx.y][threadIdx.x] = 0.0;
 
     	if (k*TILE_WIDTH + threadIdx.y < BRows && Col < BCols)
-    		Bs[threadIdx.y][threadIdx.x] = B[Col*BRows + k*TILE_DIM + threadIdx.y];
+    		Bs[threadIdx.y][threadIdx.x] = B[Col*BRows + k*TILE_WIDTH + threadIdx.y];
     	else
     		Bs[threadIdx.y][threadIdx.x] = 0.0;
 
