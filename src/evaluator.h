@@ -140,10 +140,10 @@ protected:
 	virtual void start_metric(Network::Ptr, std::shared_ptr<EngineT>, LearningPhase)
 	{}
 
-	virtual void update_metric(Network::Ptr, LearningPhase)
+	virtual void update_metric(Network::Ptr, std::shared_ptr<EngineT>, LearningPhase)
 	{}
 
-	virtual FloatT summarize_metric(Network::Ptr, LearningPhase)
+	virtual FloatT summarize_metric(Network::Ptr, std::shared_ptr<EngineT>, LearningPhase)
 	{
 		return 0;
 	}
