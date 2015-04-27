@@ -1,8 +1,10 @@
 from sys import argv
 import os
 from collections import Counter
+import struct
 
-fname = argv[1]
+# must end with '.corpus
+fname = argv[1][:-len('.corpus')]
 
 # map special chars to int index
 SpecialCharDict = {
@@ -33,17 +35,36 @@ def to_idx(c):
     else: # skip 
         return -1
 
-with open(fname, 'r') as corpus:
-    with open(fname[:-len('.corpus')] + '.bin', 'wb') as outbin:
+totalSize = 0
+
+with open(fname + '.corpus', 'r') as corpus:
+    # only a tmp file
+    with open(fname + '.dattmp', 'wb') as outbintmp:
         while True:
             c = corpus.read(1)
             if c:
                 idx = to_idx(c)
                 if idx >= 0:
-                    outbin.write(chr(idx))
+                    outbintmp.write(chr(idx))
+                    totalSize += 1
             else: break
 
+print 'Preprocessing done'
 
+# write totalSize to the start of file
+outbin = open(fname + '.dat', 'wb') 
+outbin.write(struct.pack('i', totalSize))
+
+with open(fname + '.dattmp', 'rb') as outbintmp:
+    while True:
+        dat = outbintmp.read(1024)
+        if dat:
+            outbin.write(dat)
+        else: break
+outbin.close()
+
+print 'Write done'
+os.remove(fname + '.dattmp')
 
 # ==== print counting info
 #   cc = Counter()
