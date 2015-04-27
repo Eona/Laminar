@@ -77,15 +77,16 @@ public:
 	/**
 	 * Laminar defined training corpus mapping
 	 */
-	static char convert(int x)
+	static char code2char(int code)
 	{
 		// first 26 are 'A' - 'Z'
-		if (0 <= x && x <= 25)
-			return char(x + 65);
-		else if (26 <= x && x <= 51)
-			return char(x + 71);
+		if (0 <= code && code <= 25)
+			return char(code + 65);
+		// next 26 are 'a' - 'z'
+		else if (26 <= code && code <= 51)
+			return char(code + 71);
 		else
-			switch (x)
+			switch (code)
 			{
 			case 52 : return ' ';
 			case 53 : return '!';
@@ -102,18 +103,52 @@ public:
 
 			default :
 				throw DataException(
-				"CorpuseLoader conversion error: unknown char " + std::to_string(x));
+				"CorpuseLoader conversion error: unknown code " + std::to_string(code));
 			}
 	}
 
 	/**
+	 * Reverse of code2char
+	 */
+	static int char2code(char ch)
+	{
+		// first 26 are 'A' - 'Z'
+		if ('A' <= ch && ch <= 'Z')
+			return int(ch - 65);
+		// next 26 are 'a' - 'z'
+		else if ('a' <= ch && ch <= 'z')
+			return int(ch - 71);
+		else
+			switch (ch)
+			{
+			case ' ' : return 52;
+			case '!' : return 53;
+			case '"' : return 54;
+			case '\'': return 55;
+			case '(' : return 56;
+			case ')' : return 57;
+			case ',' : return 58;
+			case '-' : return 59;
+			case '.' : return 60;
+			case ':' : return 61;
+			case ';' : return 62;
+			case '?' : return 63;
+
+			default :
+				throw DataException(
+				"CorpuseLoader conversion error: unknown char " + std::to_string(ch));
+			}
+	}
+
+
+	/**
 	 * Concat the chars to a string
 	 */
-	static std::string convert(std::vector<int> xs)
+	static std::string code2str(std::vector<int> codes)
 	{
 		std::string ans = "";
-		for (int x : xs)
-			ans += convert(x);
+		for (int x : codes)
+			ans += code2char(x);
 		return ans;
 	}
 
