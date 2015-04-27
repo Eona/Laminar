@@ -19,6 +19,122 @@ using namespace std;
 int main(int argc, char **argv)
 {
 
+/**###############Correctness test###################**/
+#if 1
+#if CL
+	OpenclEngine engine;
+#else
+	CudaEngine engine;
+#endif
+	//create testcases
+
+	float t1[9] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10, 5};
+	float t2[9] = {0.1, 6.8, 4.9, 2.0, 1, 4, 5, 9, 4};
+	float t3[6] = {1.1, 7.8, 5.9, 3.0, 2, 5};
+	float t4[8] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10};
+	float t5[8] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10};
+	float tl[3] = {0, 1, 2};
+
+//
+//
+#if CL
+	OpenclFloatMatPtr m1 (new OpenclFloatMat(t1, 3, 3, engine.cl));
+	OpenclFloatMatPtr m2 (new OpenclFloatMat(t2, 3, 3, engine.cl));
+	OpenclFloatMatPtr m3 (new OpenclFloatMat(t3, 2, 3, engine.cl));
+	OpenclFloatMatPtr m4 (new OpenclFloatMat(t4, 4, 2, engine.cl));
+	OpenclFloatMatPtr m5 (new OpenclFloatMat(t5, 4, 2, engine.cl));
+	OpenclFloatMatPtr m_label (new OpenclFloatMat(tl, 1,3, engine.cl));
+	OpenclFloatMatPtr lm (new OpenclFloatMat());
+	OpenclFloatMatPtr ms (new OpenclFloatMat());
+	OpenclFloatMatPtr out(new OpenclFloatMat());
+	ms->isScalar = true;
+	std::vector<OpenclFloatMatPtr> v, v1, v2, v3, vl ,vs;
+#else
+	CudaFloatMatPtr m1 (new CudaFloatMat(t1, 3, 3));
+	CudaFloatMatPtr m2 (new CudaFloatMat(t2, 3, 3));
+	CudaFloatMatPtr m3 (new CudaFloatMat(t3, 2, 3));
+	CudaFloatMatPtr m4 (new CudaFloatMat(t4, 4, 2));
+	CudaFloatMatPtr m5 (new CudaFloatMat(t5, 4, 2));
+	CudaFloatMatPtr m_label (new CudaFloatMat(tl, 1,3));
+	CudaFloatMatPtr lm (new CudaFloatMat());
+	CudaFloatMatPtr ms (new CudaFloatMat());
+	CudaFloatMatPtr out(new CudaFloatMat());
+	ms->isScalar = true;
+	std::vector<CudaFloatMatPtr> v, v1, v2, v3, vl, vs;
+#endif
+
+	v = {m1, m2};
+	v1 = {m3, m1};
+	v2 = {m1, m3};
+	v3 = {m4, m5};
+	vl = {m1, m_label};
+
+	engine.sub(v, out, false);
+	out->print_matrix("m1 - m2");
+
+	engine.add(v, out, true);
+	out->print_matrix("m1 + m2");
+
+	engine.negate(v, out, true);
+	out->print_matrix("-m1");
+
+	engine.multNN(v, out, true);
+	out->print_matrix("m1 * m2");
+
+	engine.multNN(v1, out, false);
+	out->print_matrix("m3 * m1");
+
+//	engine.multNT(v, out, false);
+//	out->print_matrix("m1 * T(m3)");
+//
+//	engine.multTN(v, out, false);
+//	out->print_matrix("T(m4) * m5");
+
+	engine.assign(v1, out, false);
+	out->print_matrix("m3 -> out");
+
+	ms->scalar = 3;
+	vs = {ms, v};
+	engine.multST(vs, out, false);
+	out->print_matrix("m1*3");
+
+	vs = {v, ms};
+	engine.multTS(vs, out, false);
+	out->print_matrix("3*m1");
+
+	engine.sigmoid(v, out, false);
+	out->print_matrix("sigmod(m1)");
+
+	engine.sigmoid_gradient(v, out, true);
+	out->print_matrix("sigmoid_gradient(m1)");
+
+	engine.sin(v, out, true);
+	out->print_matrix("sin(m1)");
+
+	engine.cos(v, out, true);
+	out->print_matrix("cos(m1)");
+
+	engine.tanh(v, out, true);
+	out->print_matrix("tanh(m1)");
+
+	engine.tanh_gradient(v, out, true);
+	out->print_matrix("tanh_gradient(m1)");
+
+	engine.element_mult(v, out, true);
+	out->print_matrix("m1 .* m2");
+
+    engine.square_loss(v, lm, true);
+    cout<<"loss: "<<lm->scalar<<endl;
+
+    engine.label_entropy_loss(vl, lm, true);
+    cout<<"entropy: "<<lm->scalar<<endl;
+
+    engine.label_softmax_entropy_gradient(vl, out, false);
+	out->print_matrix("softmax(m1)");
+#endif
+/**###############Consistency test###################**/
+
+#if 0
 #if CL
 	OpenclEngine engine;
 #else
@@ -118,7 +234,9 @@ int main(int argc, char **argv)
 
     engine.label_softmax_entropy_gradient(vl, out, false);
 	out->print_matrix("softmax(m1)");
+#endif
 
+/**###############Performance test###################**/
 #if 0
 #if CL
 	GlobalTimer<cl_event> gt;

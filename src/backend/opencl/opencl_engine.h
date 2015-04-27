@@ -329,11 +329,13 @@ public:
 
 	void multST(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
+		assert(reads[0]->isScaler);
 	    scaleMat(reads[1], write, is_initialized, reads[0]->scalar);
 	}
 
 	void multTS(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
+		assert(reads[1]->isScaler);
 	    scaleMat(reads[0], write, is_initialized, reads[1]->scalar);
 	}
 
