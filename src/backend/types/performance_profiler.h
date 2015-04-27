@@ -125,7 +125,6 @@ public:
     		outfile.open("../experiment/" + exp_name  + "/" + timer.first + ".csv");
     		int sum_data = 0;
     		uint64_t sum_time = 0;
-			cout<<timer.first << ": "<<endl;
     		for (auto entry: timer.second) {
     			process_timer(entry);
         		uint64_t t = to_time_scale(res, entry.time); //task duration
@@ -136,7 +135,7 @@ public:
 //        		cout << t << ", " << entry.data_size<< " at "<< stamp << endl;
     		}
     		outfile.close();
-    		cout << "Computation through put" <<(double)sum_data/(double)sum_time<<"\n\n";
+    		cout<<timer.first << ": " <<(double)sum_data/(double)sum_time<<"\n";
     	}
 	}
 

@@ -304,9 +304,9 @@ int main(int argc, char **argv)
     }
 
 #if CL
-    gt.print_stats(GlobalTimer<cl_event>::Nanosec, "test");
+    gt.print_stats(GlobalTimer<cl_event>::Microsec, "test");
 #else
-    gt.print_stats(GlobalTimer<cudaEvent_t>::Nanosec, "test");
+    gt.print_stats(GlobalTimer<cudaEvent_t>::Microsec, "test");
 #endif
 
 #endif
