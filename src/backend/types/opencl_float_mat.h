@@ -87,6 +87,7 @@ public:
 	 */
 	void to_device(float *d) {
 		cl->to_device_write(device_data, d, MEM_SIZE);
+		assert(MEM_SIZE > 1);
 	}
 
 	/*
@@ -98,7 +99,8 @@ public:
 
 
 	void zero_clear() {
-		cl->to_device_fill(device_data, MEM_SIZE, 0);
+
+		assert(MEM_SIZE > 1);
 	}
 
 	void fill_rand(int seed) {

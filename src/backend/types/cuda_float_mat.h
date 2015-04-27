@@ -5,6 +5,7 @@
 #include <curand.h>
 #include <vector>
 #include "gpu_float_mat.h"
+#include <cuda_func.h>
 
 #define NUM_THREAD_PER_BLOCK 512;
 
@@ -99,9 +100,6 @@ public:
 	/*
 	 * Copy device data to host
 	 */
-	void zero_clear() {
-		fill(0);
-	}
 
 	void to_host() {
 		if (!host_data) host_data = (float *)malloc(MEM_SIZE);
