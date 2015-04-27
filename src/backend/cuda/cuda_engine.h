@@ -167,12 +167,6 @@ public:
 	}
 
 	/*
-	 * write = alpha * Op(reads[0]) + beta * Op(reads[1])
-	 */
-	void addMat(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized, float alpha, float beta)
-	{
-	    MATOP_DUAL("add", cu_add_func);
-	}
 
 
 	/*
@@ -262,8 +256,7 @@ public:
 	void add(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 	    debug_msg("c=a+b", is_initialized);
-	    float alpha = 1.0f;
-	    addMat(reads, write, is_initialized, alpha, alpha);
+	    MATOP_DUAL("add", cu_add_func);
 	}
 
 	void add_scalor(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
@@ -278,8 +271,7 @@ public:
 	{
 	    debug_msg("c=a-b", is_initialized);
 
-	    float alpha = 1.0f;
-	    addMat(reads, write, is_initialized, alpha, -alpha);
+	    MATOP_DUAL("subtract", cu_subtract_func);
 	}
 
 
