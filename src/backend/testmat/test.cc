@@ -2,7 +2,7 @@
  * Eona Studio (c)2015
  */
 
-#define CL 0
+#define CL 1
 #include <iostream>
 
 #if CL
@@ -20,11 +20,9 @@ int main(int argc, char **argv)
 {
 
 #if CL
-	GlobalTimer<cl_event> gt;
-	OpenclEngine engine(&gt);
+	OpenclEngine engine;
 #else
-	GlobalTimer<cudaEvent_t> gt;
-	CudaEngine engine(&gt);
+	CudaEngine engine;
 #endif
 	//create testcases
 
@@ -43,10 +41,11 @@ int main(int argc, char **argv)
 	OpenclFloatMatPtr m3 (new OpenclFloatMat(t3, 2, 3, engine.cl));
 	OpenclFloatMatPtr m4 (new OpenclFloatMat(t4, 4, 2, engine.cl));
 	OpenclFloatMatPtr m5 (new OpenclFloatMat(t5, 4, 2, engine.cl));
+	OpenclFloatMatPtr m_label (new OpenclFloatMat(tl, 1,3));
 	OpenclFloatMatPtr lm (new OpenclFloatMat());
 	OpenclFloatMatPtr out(new OpenclFloatMat());
 
-	std::vector<OpenclFloatMatPtr> v, v1, v2, v3;
+	std::vector<OpenclFloatMatPtr> v, v1, v2, v3, vl;
 #else
 	CudaFloatMatPtr m1 (new CudaFloatMat(t1, 3, 3));
 	CudaFloatMatPtr m2 (new CudaFloatMat(t2, 3, 3));
@@ -121,6 +120,13 @@ int main(int argc, char **argv)
 	out->print_matrix("softmax(m1)");
 
 #if 0
+#if CL
+	GlobalTimer<cl_event> gt;
+	OpenclEngine engine(&gt);
+#else
+	GlobalTimer<cudaEvent_t> gt;
+	CudaEngine engine(&gt);
+#endif
 
 	vector<int> dim = {1000, 1000};
 
