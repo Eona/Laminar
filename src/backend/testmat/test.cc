@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 	v2 = {m1, m3};
 	v3 = {m4, m5};
 
-	engine.sub(v, out, true);
+	engine.sub(v, out, false);
 	out->print_matrix("m1 - m2");
 
 	engine.add(v, out, true);
@@ -161,5 +161,5 @@ int main(int argc, char **argv)
 	}
 
 	gt.print_stats(GlobalTimer<cl_event>::Nanosec, "test");
-
+#endif
 }

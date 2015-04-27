@@ -4,5 +4,5 @@ LIB = -I/usr/local/cuda/include/
 LD_LIB = -L/usr/local/cuda/lib -l OpenCL
 # make and compile
 all:
-	$(CXX) opencl_engine.c $(LIB) $(LD_LIB) 
+	$(CXX) -std=c++11 opencl_engine.c $(LIB) $(LD_LIB) 
 
