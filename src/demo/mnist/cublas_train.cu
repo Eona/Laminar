@@ -85,6 +85,14 @@ protected:
 
 int main(int argc, char **argv)
 {
+	float lr = 0.005;
+	float moment = 0.96;
+	if (argc >= 3)
+	{
+		lr = atof(argv[1]);
+		moment = atof(argv[2]);
+	}
+
 	const int INPUT_DIM = 28 * 28;
 	const int TARGET_DIM = 10;
 	const int BATCH_SIZE = 50;
@@ -102,15 +110,17 @@ int main(int argc, char **argv)
 	auto net = ForwardNetwork::make(engine, dataman);
 	net->add_layer(linput);
 	net->new_connection<FullConnection>(linput, lhidden1);
-//	net->new_bias_layer(lhidden1);
+	net->new_bias_layer(lhidden1);
 	net->add_layer(lhidden1);
 	net->new_connection<FullConnection>(lhidden1, lhidden2);
-//	net->new_bias_layer(lhidden2);
+	net->new_bias_layer(lhidden2);
 	net->add_layer(lhidden2);
 	net->new_connection<FullConnection>(lhidden2, lloss);
 	net->add_layer(lloss);
 
-	auto opm = Optimizer::make<SimpleSGD>(0.01);
+//	auto opm = Optimizer::make<SimpleSGD>(0.02);
+//	auto opm = Optimizer::make<MomentumGD>(lr, moment);
+	auto opm = Optimizer::make<NesterovMomentum>(lr, moment);
 	auto eval = MnistAccuracyEvaluator::make(net);
 	auto stopper = StopCriteria::make<MaxEpochStopper>(MAX_EPOCH);
 	auto ser = NullSerializer::make();

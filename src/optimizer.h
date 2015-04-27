@@ -126,37 +126,92 @@ protected:
 
 /**
  * Learning with momentum
+ * http://cs231n.github.io/neural-networks-3/#sgd
  */
-class MomentumSGD : public Optimizer
+class MomentumGD : public Optimizer
 {
 public:
-	MomentumSGD(float initLearningRate) :
+	MomentumGD(float learningRate, float moment) :
 		Optimizer(),
-		initLearningRate(initLearningRate)
+		learningRate(learningRate),
+		moment(moment)
 	{}
 
-	virtual ~MomentumSGD() {}
+	virtual ~MomentumGD() {}
+
+private:
+	// map a param's addr to its previous update tensor (history)
+	std::unordered_map<int, Tensor::Ptr> momentumMap;
 
 protected:
-	Scalar::Ptr learningRate;
-	Tensor::Ptr lastUpdate;
-
-	float initLearningRate;
+	float learningRate;
+	float moment;
 
 	virtual void initialize_impl()
-	{
-		this->learningRate = Scalar::make(engine);
-		this->lastUpdate = Tensor::make(engine);
-		// upload float to Scalar
-		*learningRate = initLearningRate;
-	}
+	{ }
 
-	virtual void setup_impl(Tensor&) {}
+	virtual void setup_impl(Tensor& param)
+	{
+		// initialize momentum tensors to be of the same dimension with all zeros
+		momentumMap[param.addr] = Tensor::make(engine, param.dim());
+	}
 
 	virtual void update_impl(
 			Tensor& paramValue, Tensor& paramGradient, LearningState::Ptr state)
 	{
-		paramValue -= *learningRate * paramGradient;
+		Tensor& momentum = *momentumMap[paramValue.addr];
+
+		momentum = moment * momentum - learningRate * paramGradient;
+		paramValue += momentum;
+	}
+
+};
+
+/**
+ * Nesterov momentum
+ * http://cs231n.github.io/neural-networks-3/#sgd
+ */
+class NesterovMomentum : public MomentumGD
+{
+public:
+	NesterovMomentum(float learningRate, float moment) :
+		MomentumGD(learningRate, moment)
+	{}
+
+	virtual ~NesterovMomentum() {}
+
+private:
+	// map a param's addr to its previous update tensor (history)
+	std::unordered_map<int, std::array<Tensor::Ptr, 2>> momentumMap;
+	// index
+	enum {
+		PREV = 0,
+		CURRENT = 1
+	};
+
+protected:
+
+	virtual void setup_impl(Tensor& param)
+	{
+		// initialize momentum tensors to be of the same dimension with all zeros
+		momentumMap[param.addr][PREV] = Tensor::make(engine, param.dim());
+		momentumMap[param.addr][CURRENT] = Tensor::make(engine, param.dim());
+	}
+
+	virtual void update_impl(
+			Tensor& paramValue, Tensor& paramGradient, LearningState::Ptr state)
+	{
+		Tensor& momentumPrev = *momentumMap[paramValue.addr][PREV];
+		Tensor& momentumCur = *momentumMap[paramValue.addr][CURRENT];
+
+		/*
+		v_prev = v # back this up
+		v = mu * v - learning_rate * dx # velocity update stays the same
+		x += -mu * v_prev + (1 + mu) * v # position update changes form
+		*/
+		momentumPrev = momentumCur;
+		momentumCur = moment * momentumCur - learningRate * paramGradient;
+		paramValue += -moment * momentumPrev + (1 + moment) * momentumCur;
 	}
 };
 
