@@ -31,10 +31,10 @@ using namespace std;
 }
 
 
-class CudaEngine : public Engine<CudaFloatMat>
+class CublasEngine : public Engine<CudaFloatMat>
 {
 public:
-	CudaEngine() :
+	CublasEngine() :
 		Engine<CudaFloatMat>()
 	{
 		gt = NULL;
@@ -42,7 +42,7 @@ public:
 		init();
 
 	}
-	CudaEngine(GlobalTimer<cudaEvent_t> * g) :
+	CublasEngine(GlobalTimer<cudaEvent_t> * g) :
 		Engine<CudaFloatMat>()
 	{
 		gt = g;
@@ -53,42 +53,42 @@ public:
 
 	void init() {
 	    cublasCreate(&handle);
-		register_create_op(MEMFUNC_BIND_2(CudaEngine::create));
-		register_normal_op("t+t", MEMFUNC_BIND_3(CudaEngine::add));
-		register_normal_op("t-t", MEMFUNC_BIND_3(CudaEngine::sub));
-		register_normal_op("s+s", MEMFUNC_BIND_3(CudaEngine::add_scalor));
-		register_normal_op("-t", MEMFUNC_BIND_3(CudaEngine::negate));
-		register_normal_op("t*t", MEMFUNC_BIND_3(CudaEngine::multNN));
-		register_normal_op("t*s", MEMFUNC_BIND_3(CudaEngine::multTS));
-		register_normal_op("s*t", MEMFUNC_BIND_3(CudaEngine::multST));
-		register_normal_op("s*s", MEMFUNC_BIND_3(CudaEngine::multSS));
-		register_normal_op("t=t", MEMFUNC_BIND_3(CudaEngine::assign));
-		register_context_op<float>("s=const", MEMFUNC_BIND_4(CudaEngine::assign_const));
+		register_create_op(MEMFUNC_BIND_2(CublasEngine::create));
+		register_normal_op("t+t", MEMFUNC_BIND_3(CublasEngine::add));
+		register_normal_op("t-t", MEMFUNC_BIND_3(CublasEngine::sub));
+		register_normal_op("s+s", MEMFUNC_BIND_3(CublasEngine::add_scalor));
+		register_normal_op("-t", MEMFUNC_BIND_3(CublasEngine::negate));
+		register_normal_op("t*t", MEMFUNC_BIND_3(CublasEngine::multNN));
+		register_normal_op("t*s", MEMFUNC_BIND_3(CublasEngine::multTS));
+		register_normal_op("s*t", MEMFUNC_BIND_3(CublasEngine::multST));
+		register_normal_op("s*s", MEMFUNC_BIND_3(CublasEngine::multSS));
+		register_normal_op("t=t", MEMFUNC_BIND_3(CublasEngine::assign));
+		register_context_op<float>("s=const", MEMFUNC_BIND_4(CublasEngine::assign_const));
 
-		register_normal_op("sin", MEMFUNC_BIND_3(CudaEngine::sin));
-		register_normal_op("cos", MEMFUNC_BIND_3(CudaEngine::cos));
-		register_normal_op("tanh", MEMFUNC_BIND_3(CudaEngine::tanh));
-		register_normal_op("tanh_gradient", MEMFUNC_BIND_3(CudaEngine::tanh_gradient));
-		register_normal_op("sigmoid", MEMFUNC_BIND_3(CudaEngine::sigmoid));
-		register_normal_op("sigmoid_gradient", MEMFUNC_BIND_3(CudaEngine::sigmoid_gradient));
-		register_normal_op("transpose", MEMFUNC_BIND_3(CudaEngine::transpose));
-		register_normal_op("element_mult", MEMFUNC_BIND_3(CudaEngine::element_mult));
-		register_normal_op("square_loss", MEMFUNC_BIND_3(CudaEngine::square_loss));
+		register_normal_op("sin", MEMFUNC_BIND_3(CublasEngine::sin));
+		register_normal_op("cos", MEMFUNC_BIND_3(CublasEngine::cos));
+		register_normal_op("tanh", MEMFUNC_BIND_3(CublasEngine::tanh));
+		register_normal_op("tanh_gradient", MEMFUNC_BIND_3(CublasEngine::tanh_gradient));
+		register_normal_op("sigmoid", MEMFUNC_BIND_3(CublasEngine::sigmoid));
+		register_normal_op("sigmoid_gradient", MEMFUNC_BIND_3(CublasEngine::sigmoid_gradient));
+		register_normal_op("transpose", MEMFUNC_BIND_3(CublasEngine::transpose));
+		register_normal_op("element_mult", MEMFUNC_BIND_3(CublasEngine::element_mult));
+		register_normal_op("square_loss", MEMFUNC_BIND_3(CublasEngine::square_loss));
 
-		register_normal_op("destroy", MEMFUNC_BIND_3(CudaEngine::destroy));
-		register_normal_op("zero_clear", MEMFUNC_BIND_3(CudaEngine::zero_clear));
+		register_normal_op("destroy", MEMFUNC_BIND_3(CublasEngine::destroy));
+		register_normal_op("zero_clear", MEMFUNC_BIND_3(CublasEngine::zero_clear));
 
-		register_normal_op("fill_rand", MEMFUNC_BIND_3(CudaEngine::fill_rand));
-		register_normal_op("softmax", MEMFUNC_BIND_3(CudaEngine::softmax));
-		register_normal_op("label_entropy_loss", MEMFUNC_BIND_3(CudaEngine::label_entropy_loss));
-		register_normal_op("label_softmax_entropy_gradient", MEMFUNC_BIND_3(CudaEngine::label_softmax_entropy_gradient));
+		register_normal_op("fill_rand", MEMFUNC_BIND_3(CublasEngine::fill_rand));
+		register_normal_op("softmax", MEMFUNC_BIND_3(CublasEngine::softmax));
+		register_normal_op("label_entropy_loss", MEMFUNC_BIND_3(CublasEngine::label_entropy_loss));
+		register_normal_op("label_softmax_entropy_gradient", MEMFUNC_BIND_3(CublasEngine::label_softmax_entropy_gradient));
 
-		register_context_op<float>("scale", MEMFUNC_BIND_4(CudaEngine::scale));
+		register_context_op<float>("scale", MEMFUNC_BIND_4(CublasEngine::scale));
 
-		register_context_op<DimIndex, float>("perturb", MEMFUNC_BIND_5(CudaEngine::perturb));
+		register_context_op<DimIndex, float>("perturb", MEMFUNC_BIND_5(CublasEngine::perturb));
 
 		register_context_op<lmn::ElementFillFunc<float>>(
-						"fill_element", MEMFUNC_BIND_4(CudaEngine::fill_element));
+						"fill_element", MEMFUNC_BIND_4(CublasEngine::fill_element));
 
 	}
 
@@ -593,7 +593,7 @@ public:
 		return reads->scalar;
 	}
 
-	TYPEDEF_PTR(CudaEngine);
+	TYPEDEF_PTR(CublasEngine);
 
 private:
 	cublasHandle_t handle;

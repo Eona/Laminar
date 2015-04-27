@@ -6,7 +6,7 @@
 #define DEMO_MNIST_CUBLAS_MNIST_DATAMAN_H_
 
 #include "mnist_dataman.h"
-#include "../../backend/cublas/cuda_engine.h"
+#include "../../backend/cublas/cublas_engine.h"
 
 struct CublasMnistDataManager :
 		public MnistDataManager<CudaFloatMat>

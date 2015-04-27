@@ -2,7 +2,7 @@
  * Eona Studio (c) 2015
  */
 
-#include "../backend/cublas/cuda_engine.h"
+#include "../backend/cublas/cublas_engine.h"
 #include "test_utils.h"
 
 struct CublasRandDataManager :
@@ -36,7 +36,7 @@ TEST(CublasForward, Simple)
 	const int TARGET_DIM = 4;
 	const int BATCH_SIZE = 2;
 
-	auto engine = EngineBase::make<CudaEngine>();
+	auto engine = EngineBase::make<CublasEngine>();
 
 	auto dataman = DataManagerBase::make<CublasRandDataManager>(
 					engine, INPUT_DIM, TARGET_DIM, BATCH_SIZE);
@@ -68,7 +68,7 @@ TEST(CublasForward, Simple)
 //	net.execute("forward");
 //	net.execute("backward");
 
-	gradient_check<CudaEngine, CublasRandDataManager>(net, 1e-2f, 0.8f);
+	gradient_check<CublasEngine, CublasRandDataManager>(net, 1e-2f, 0.8f);
 }
 
 TEST(CublasForward, Softmax)
@@ -77,7 +77,7 @@ TEST(CublasForward, Softmax)
 	const int TARGET_DIM = 4;
 	const int BATCH_SIZE = 2;
 
-	auto engine = EngineBase::make<CudaEngine>();
+	auto engine = EngineBase::make<CublasEngine>();
 
 	auto dataman = DataManagerBase::make<CublasRandDataManager>(
 					engine, INPUT_DIM, 1, BATCH_SIZE,
@@ -102,5 +102,5 @@ TEST(CublasForward, Softmax)
 	net.new_connection<FullConnection>(l3, l4);
 	net.add_layer(l4);
 
-	gradient_check<CudaEngine, CublasRandDataManager>(net, 1e-2f, 0.8f);
+	gradient_check<CublasEngine, CublasRandDataManager>(net, 1e-2f, 0.8f);
 }

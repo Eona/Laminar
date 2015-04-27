@@ -5,18 +5,18 @@
 #include "../../full_connection.h"
 #include "../../loss_layer.h"
 #include "../../activation_layer.h"
+#include "../../backend/cublas/cublas_engine.h"
 #include "../../bias_layer.h"
 #include "../../parameter.h"
 #include "../../network.h"
 #include "../../learning_session.h"
 
-#include "../../backend/cublas/cuda_engine.h"
 #include "cublas_mnist_dataman.h"
 
-struct MnistAccuracyEvaluator : public Evaluator<CudaEngine, float>
+struct MnistAccuracyEvaluator : public Evaluator<CublasEngine, float>
 {
 	MnistAccuracyEvaluator(Network::Ptr net) :
-		Evaluator<CudaEngine, float>(net)
+		Evaluator<CublasEngine, float>(net)
 	{ }
 
 	virtual ~MnistAccuracyEvaluator() {}
@@ -28,7 +28,7 @@ protected:
 	int correct;
 
 	/*********** defaults ***********/
-	virtual void start_metric(Network::Ptr net, CudaEngine::Ptr engine, LearningPhase phase)
+	virtual void start_metric(Network::Ptr net, CublasEngine::Ptr engine, LearningPhase phase)
 	{
 		LMN_ASSERT_THROW(phase == LearningPhase::Testing,
 			LearningException("MnistAccuracyEvaluator can only evaluate metric in Testing phase"));
@@ -38,7 +38,7 @@ protected:
 		correct = 0;
 	}
 
-	virtual void update_metric(Network::Ptr net, CudaEngine::Ptr engine, LearningPhase)
+	virtual void update_metric(Network::Ptr net, CublasEngine::Ptr engine, LearningPhase)
 	{
 		// 10-x-batch matrix, each column is a distribution
 		Tensor::Ptr outprob = net->lossLayer->in_value_ptr(0);
@@ -77,7 +77,7 @@ protected:
 		}
 	}
 
-	virtual float summarize_metric(Network::Ptr, CudaEngine::Ptr, LearningPhase)
+	virtual float summarize_metric(Network::Ptr, CublasEngine::Ptr, LearningPhase)
 	{
 		return (float) correct / total;
 	}
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 	const int BATCH_SIZE = 50;
 	const int MAX_EPOCH = 100;
 
-	auto engine = EngineBase::make<CudaEngine>();
+	auto engine = EngineBase::make<CublasEngine>();
 	auto dataman =
 		DataManagerBase::make<CublasMnistDataManager>(engine, BATCH_SIZE, "../data/mnist");
 
