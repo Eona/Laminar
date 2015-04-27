@@ -2,16 +2,8 @@
  * Eona Studio (c) 2015
  */
 
-#include "../../full_connection.h"
-#include "../../loss_layer.h"
-#include "../../activation_layer.h"
-#include "../../bias_layer.h"
-#include "../../parameter.h"
-#include "../../network.h"
-#include "../../learning_session.h"
-#include "../../utils/rand_utils.h"
-
 #include "../../backend/vecmat/vecmat_engine.h"
+#include "../../utils/rand_utils.h"
 #include "corpus_loader.h"
 #include "corpus_dataman.h"
 
@@ -33,15 +25,14 @@ protected:
 		write->new_zeros(rowdim, coldim);
 	}
 
-	// one batch of image (28 * 28 * batchSize)
-	void load_data(DataPtr write, vector<float>& imageBatch)
+	void load_data(DataPtr write, vector<float>& data)
 	{
-//		write->fill([&](int r, int c) {
-//			return imageBatch[r + c * MNIST_INPUT_DIM];
-//		});
+		int i = 0;
+		write->fill([&](int r, int c) {
+			return data[i++];
+		});
 	}
 };
-
 
 int main(int argc, char **argv)
 {
@@ -59,21 +50,20 @@ int main(int argc, char **argv)
 	const string CORPUS_MIDSUMMER = "../data/corpus/shakespeare_midsummer.dat";
 	const string CORPUS_UNDER_SEA = "../data/corpus/verne_under_sea.dat";
 
-	const int INPUT_DIM = 28 * 28;
-	const int TARGET_DIM = 10;
+	const int INPUT_DIM = CORPUS_ONE_HOT_DIM;
+	const int TARGET_DIM = CORPUS_ONE_HOT_DIM;
+	const int LSTM_DIM = 128;
 	const int BATCH_SIZE = 10;
 	const int HISTORY_LENGTH = 100;
 	const int MAX_EPOCH = 100;
-//
-//	FakeRand::instance_connection().gen_uniform_rand(
-//					300*300 + 300*764 + 10*300, -0.08f, 0.08f, DEBUG_SEED);
+
+	FakeRand::instance_connection().gen_uniform_rand(1e5, -0.08f, 0.08f, DEBUG_SEED);
 
 	auto engine = EngineBase::make<VecmatEngine>();
 	auto dataman = DataManagerBase::make<VecmatCorpusDataManager>(
-//			engine, BATCH_SIZE, HISTORY_LENGTH, "../data/corpus/dummy.dat");
-			engine, BATCH_SIZE, HISTORY_LENGTH, argv[1]);
+				engine, BATCH_SIZE, HISTORY_LENGTH, CORPUS_UNDER_SEA);
 
-	auto& streams = dataman->inputStreams;
+/*	auto& streams = dataman->inputStreams;
 
 	int MAX_PRINT = 500;
 	for (auto& stream : streams)
@@ -88,36 +78,32 @@ int main(int argc, char **argv)
 					DEBUG_TITLE("next seq");
 			DEBUG_MSG(CorpusLoader::code2str<float>(stream[s]));
 		}
-	}
+	}*/
 
+	auto inLayer = Layer::make<ConstantLayer>(INPUT_DIM);
+	auto lossLayer = Layer::make<LabelSoftmaxEntropyLayer>(TARGET_DIM);
 
-//	auto linput = Layer::make<ConstantLayer>(INPUT_DIM);
-//	auto lhidden1 = Layer::make<SigmoidLayer>(300);
-//	auto lhidden2 = Layer::make<SigmoidLayer>(300);
-//	auto lloss = Layer::make<LabelSoftmaxEntropyLayer>(TARGET_DIM);
-//
-//	auto net = ForwardNetwork::make(engine, dataman);
-//	net->add_layer(linput);
-//	net->new_connection<FullConnection>(linput, lhidden1);
-////	net->new_bias_layer(lhidden1);
-//	net->add_layer(lhidden1);
-//	net->new_connection<FullConnection>(lhidden1, lhidden2);
-////	net->new_bias_layer(lhidden2);
-//	net->add_layer(lhidden2);
-//	net->new_connection<FullConnection>(lhidden2, lloss);
-//	net->add_layer(lloss);
-//
-//	auto opm = Optimizer::make<SimpleSGD>(0.01);
-//	auto eval = NoMetricEvaluator<VecmatEngine>::make(net);
-//	auto stopper = StopCriteria::make<MaxEpochStopper>(MAX_EPOCH);
-//	auto ser = NullSerializer::make();
-//	auto evalsched = EpochIntervalSchedule::make(0, 1);
-//	auto obv = NullObserver::make();
-//
-//	auto session = new_learning_session(net, opm, eval, stopper, ser, evalsched, obv);
-//
-//	session->initialize();
-//	session->train();
+	auto net = RecurrentNetwork::make(engine, dataman, HISTORY_LENGTH);
+
+	net->add_layer(inLayer);
+	auto lstmComposite =
+		Composite<RecurrentNetwork>::make<LstmComposite>(inLayer, LSTM_DIM);
+
+	net->add_composite(lstmComposite);
+	net->new_connection<FullConnection>(lstmComposite->out_layer(), lossLayer);
+	net->add_layer(lossLayer);
+
+	auto opm = Optimizer::make<SimpleSGD>(0.001);
+	auto eval = NoMetricEvaluator<VecmatEngine>::make(net);
+	auto stopper = StopCriteria::make<MaxEpochStopper>(MAX_EPOCH);
+	auto ser = NullSerializer::make();
+	auto evalsched = EpochIntervalSchedule::make(0, 1);
+	auto obv = MinibatchObserver::make();
+
+	auto session = new_learning_session(net, opm, eval, stopper, ser, evalsched, obv);
+
+	session->initialize();
+	session->train();
 }
 
 
