@@ -201,53 +201,75 @@ __global__ void mat_multNN_shared_kernel(float* C, int CRows, int CCols, float* 
     if (Row < CRows && Col < CCols)
     	C[(blockIdx.x * blockDim.x + threadIdx.x)*CRows + blockIdx.y*blockDim.y+threadIdx.y]=CValue;
 }
-//__global__ void mat_multNT_shared_kernel(float *C, float *A, float *B, int m, int n, int l, int k)
-//{
-//	float CValue = 0;
-//
-//    int Row = blockIdx.y*TILE_WIDTH + threadIdx.y; // which row this thread is on
-//    int Col = blockIdx.x*TILE_WIDTH + threadIdx.x; // which col this thread is on
-//
-//    __shared__ float As[TILE_WIDTH][TILE_WIDTH];
-//    __shared__ float Bs[TILE_WIDTH][TILE_WIDTH];
-//
-//    for (int k = 0; k < (TILE_WIDTH + ACols - 1)/TILE_WIDTH; k++) {
-//    	//load the tile
-//    	if (k*TILE_WIDTH + threadIdx.x < ACols && Row < ARows) {
-//    		As[threadIdx.y][threadIdx.x] = A[(k*TILE_WIDTH + threadIdx.x)*ARows + Row];
-//    	}
-//    	else
-//    		As[threadIdx.y][threadIdx.x] = 0.0;
-//
-//    	if (k*TILE_WIDTH + threadIdx.x < BCols && Row < BRows)
-//    		Bs[threadIdx.y][threadIdx.x] = B[(k*TILE_WIDTH + threadIdx.x)*BRows + Row];
-//    	else
-//    		Bs[threadIdx.y][threadIdx.x] = 0.0;
-//
-//    	__syncthreads();
-//
-//    	//compute partial result
-//    	for (int n = 0; n < TILE_WIDTH; ++n)
-//    		CValue += As[threadIdx.y][n] * Bs[n][threadIdx.x];
-//
-//    	__syncthreads();
-//    }
-//
-//    if (Row < CRows && Col < CCols)
-//    	C[(blockIdx.x * blockDim.x + threadIdx.x)*CRows + blockIdx.y*blockDim.y+threadIdx.y]=CValue;
-//}
-//
-//__global__ void mat_multTN_shared_kernel(float *C, float *A, float *B, int m, int n, int l, int k)
-//{
-//	int idx = blockDim.x * blockIdx.x + threadIdx.x;
-//    if (idx >= n * k) return;
-//    size_t b_col = (idx / n) * l; //start index in B
-//    size_t a_col = (idx % n) * m; //start index in A
-//    float sum = 0;
-//    for (int i = 0; i < m; ++i) { //a column of A
-//        sum += B[b_col + i] * A[a_col + i];
-//    }
-//    C[idx] = sum;
-//}
+__global__ void mat_multNT_shared_kernel(float *C, float *A, float *B, int m, int n, int l, int k)
+{
+	float CValue = 0;
+
+    int Row = blockIdx.y*TILE_WIDTH + threadIdx.y; // which row this thread is on
+    int Col = blockIdx.x*TILE_WIDTH + threadIdx.x; // which col this thread is on
+
+    __shared__ float As[TILE_WIDTH][TILE_WIDTH];
+    __shared__ float Bs[TILE_WIDTH][TILE_WIDTH];
+
+    for (int k = 0; k < (TILE_WIDTH + ACols - 1)/TILE_WIDTH; k++) {
+    	//load the tile
+    	if (k*TILE_WIDTH + threadIdx.x < ACols && Row < ARows) {
+    		As[threadIdx.y][threadIdx.x] = A[(k*TILE_WIDTH + threadIdx.x)*ARows + Row];
+    	}
+    	else
+    		As[threadIdx.y][threadIdx.x] = 0.0;
+
+    	if (k*TILE_WIDTH + threadIdx.x < BCols && Row < BRows)
+    		Bs[threadIdx.y][threadIdx.x] = B[(k*TILE_WIDTH + threadIdx.x)*BRows + Row];
+    	else
+    		Bs[threadIdx.y][threadIdx.x] = 0.0;
+
+    	__syncthreads();
+
+    	//compute partial result
+    	for (int n = 0; n < TILE_WIDTH; ++n)
+    		CValue += As[threadIdx.y][n] * Bs[n][threadIdx.x];
+
+    	__syncthreads();
+    }
+
+    if (Row < CRows && Col < CCols)
+    	C[(blockIdx.x * blockDim.x + threadIdx.x)*CRows + blockIdx.y*blockDim.y+threadIdx.y]=CValue;
+}
+
+__global__ void mat_multTN_shared_kernel(float *C, float *A, float *B, int m, int n, int l, int k)
+{
+	float CValue = 0;
+
+    int Row = blockIdx.y*TILE_WIDTH + threadIdx.y; // which row this thread is on
+    int Col = blockIdx.x*TILE_WIDTH + threadIdx.x; // which col this thread is on
+
+    __shared__ float As[TILE_WIDTH][TILE_WIDTH];
+    __shared__ float Bs[TILE_WIDTH][TILE_WIDTH];
+
+    for (int k = 0; k < (TILE_WIDTH + ARows - 1)/TILE_WIDTH; k++) {
+    	//load the tile
+    	if (k*TILE_WIDTH + threadIdx.y < ARows && Col < ACols)
+    		As[threadIdx.y][threadIdx.x] = A[Col*ARows + k*TILE_WIDTH + threadIdx.y];
+    	else
+    		As[threadIdx.y][threadIdx.x] = 0.0;
+
+    	if (k*TILE_WIDTH + threadIdx.y < BRows && Col < BCols)
+    		Bs[threadIdx.y][threadIdx.x] = B[Col*BRows + k*TILE_WIDTH + threadIdx.y];
+    	else
+    		Bs[threadIdx.y][threadIdx.x] = 0.0;
+
+    	__syncthreads();
+
+    	//compute partial result
+    	for (int n = 0; n < TILE_WIDTH; ++n)
+    		CValue += As[threadIdx.y][n] * Bs[n][threadIdx.x];
+
+    	__syncthreads();
+    }
+
+    if (Row < CRows && Col < CCols)
+    	C[(blockIdx.x * blockDim.x + threadIdx.x)*CRows + blockIdx.y*blockDim.y+threadIdx.y]=CValue;
+}
 
 #endif

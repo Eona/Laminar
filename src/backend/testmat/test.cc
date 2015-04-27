@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 {
 
 /**###############Correctness test###################**/
-#if 0
+#if 1
 #if CL
 	OpenclEngine engine;
 #else
@@ -84,11 +84,11 @@ int main(int argc, char **argv)
 	engine.multNN(v1, out, false);
 	out->print_matrix("m3 * m1");
 
-//	engine.multNT(v, out, false);
-//	out->print_matrix("m1 * T(m3)");
-//
-//	engine.multTN(v, out, false);
-//	out->print_matrix("T(m4) * m5");
+	engine.multNT(v2, out, false);
+	out->print_matrix("m1 * T(m3)");
+
+	engine.multTN(v3, out, false);
+	out->print_matrix("T(m4) * m5");
 
 	engine.assign(v1, out, false);
 	out->print_matrix("m3 -> out");
@@ -134,7 +134,7 @@ int main(int argc, char **argv)
 #endif
 /**###############Consistency test###################**/
 
-#if 1
+#if 0
 #if CL
 	OpenclEngine engine;
 #else
@@ -165,11 +165,15 @@ int main(int argc, char **argv)
 
 	std::vector<CudaFloatMatPtr> v, v1, v2, v3, vl, rv;
 #endif
-	engine.create(m1, {10, 20});
-	engine.create(m2, {10, 20});
-	engine.create(m3, {20, 70});
-	engine.create(m4, {300, 1});
-	engine.create(m5, {300, 70});
+    int dim1 = 100;
+    int dim2 = 200;
+    int dim3 = 700;
+    engine.create(m1, {dim1, dim2});
+    engine.create(m2, {dim1, dim2});
+    engine.create(m3, {dim2, dim3});
+    engine.create(m4, {300, 1});
+    engine.create(m5, {300, 70});
+
 
 	engine.fill_rand(rv, m1, true);
 	engine.fill_rand(rv, m2, true);
@@ -187,10 +191,8 @@ int main(int argc, char **argv)
 	engine.negate(v, out, true);
 	out->print_matrix("-m1");
 
-	engine.multNN(v, out, true);
-	out->print_matrix("m1 * m2");
+	v = {m1, m3};
 
-	v = {m1,m3};
 	engine.multNN(v, out, false);
 	out->print_matrix("m1 * m3");
 
