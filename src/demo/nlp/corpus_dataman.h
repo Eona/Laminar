@@ -29,7 +29,10 @@ public:
 		historyLength(historyLength),
 		streamSizes({ 0, 0, 0 }),
 		streamPos( { 0, 0, 0 } ),
-		corpus(corpusFileName)
+		corpus(corpusFileName),
+		// prepare reusable one-hot memory
+		onehotTensor(CORPUS_ONE_HOT_DIM * batchSize),
+		lastTarget(batchSize)
 	{
 		// Round the corpus to the nearest thousand
 		int totalSize = corpus.size();
@@ -40,8 +43,8 @@ public:
 		DEBUG_MSG("total size", totalSize);
 
 		// index to LEARNING_PHASE_N
-		const int TRAIN = enum2integral(LearningPhase::Training);
-		const int VALID = enum2integral(LearningPhase::Validation);
+		const int TRAIN = to_int(LearningPhase::Training);
+		const int VALID = to_int(LearningPhase::Validation);
 
 		// Divide training/validation by 3:1
 		streamSizes[TRAIN] = int(0.75 * (totalSize / historyBatchUnit)) * historyBatchUnit;
@@ -50,15 +53,11 @@ public:
 		DEBUG_MSG("train size", streamSizes[TRAIN]);
 		DEBUG_MSG("valid size", streamSizes[VALID]);
 /*
-
 		LMN_ASSERT_THROW(streamSizes[TRAIN] % (historyLength * batchSize) == 0,
 				DataException("training size must be divisible by historyLength * batchSize"));
 		LMN_ASSERT_THROW(streamSizes[VALID] % (historyLength * batchSize) == 0,
 				DataException("validation size must be divisible by historyLength * batchSize"));
 */
-
-		const int SPACE_CODE = CorpusLoader::char2code(' ');
-
 		for (int PHASE : { TRAIN, VALID })
 		{
 			// [[history], [history], [history] ...]
@@ -94,55 +93,65 @@ public:
 			inputStreams[PHASE] = std::move(dataStream);
 		}
 
+		// the last target (at the very end, no next char) will be all spaces
+		std::fill(lastTarget.begin(), lastTarget.end(), CorpusLoader::char2code(' '));
 	}
 
 	virtual ~CorpusDataManager() {}
 
 	void load_input(DataPtr write, bool is_initialized, LearningPhase learnPhase)
 	{
-//		LMN_ASSERT_THROW(learnPhase != LearningPhase::Testing,
-//				DataException("Corpus load_input: no testing data"));
-//
-//		if (!is_initialized)
-//			this->alloc_zeros(write, CORPUS_ONE_HOT_DIM, batchSize);
-//
-//		int phase = to_int(learnPhase);
-//		LMN_ASSERT_THROW(streamPos[phase] < streamSizes[phase],
-//				DataException("load_input stream position out of bound"));
-//
-//		this->load_data(write, inputStreams[phase][streamPos[phase]]);
+		LMN_ASSERT_THROW(learnPhase != LearningPhase::Testing,
+				DataException("Corpus load_input: no testing data"));
+
+		if (!is_initialized)
+			this->alloc_zeros(write, CORPUS_ONE_HOT_DIM, batchSize);
+
+		int phase = to_int(learnPhase);
+		LMN_ASSERT_THROW(streamPos[phase] < streamSizes[phase],
+				DataException("load_input stream position out of bound"));
+
+		// One-hot encoding column major
+		vector<float>& labels = inputStreams[phase][streamPos[phase]];
+
+		std::fill(onehotTensor.begin(), onehotTensor.end(), 0);
+		for (int b = 0; b < batchSize; ++b)
+			onehotTensor[CORPUS_ONE_HOT_DIM * b + (int) labels[b]] = 1.f;
+
+		this->load_data(write, onehotTensor);
 	}
 
 	void load_target(DataPtr write, bool is_initialized, LearningPhase learnPhase)
 	{
-		// target is always the next char (unless at the very end, fill target as '<space>')
+		LMN_ASSERT_THROW(learnPhase != LearningPhase::Testing,
+				DataException("Corpus load_target: no testing data"));
 
-//		LMN_ASSERT_THROW(learnPhase != LearningPhase::Testing,
-//				DataException("Corpus load_target: no testing data"));
-//
-//		if (!is_initialized)
-//			// just a row of labels
-//			this->alloc_zeros(write, 1, batchSize);
-//
-//		int phase = to_int(learnPhase);
-//		LMN_ASSERT_THROW(streamPos[phase] < streamSizes[phase],
-//				DataException("load_target stream position out of bound"));
-//
-//		this->load_data(write, targetStreams[phase][streamPos[phase]]);
+		if (!is_initialized)
+			// just a row of labels
+			this->alloc_zeros(write, 1, batchSize);
+
+		int phase = to_int(learnPhase);
+		LMN_ASSERT_THROW(streamPos[phase] < streamSizes[phase],
+				DataException("load_target stream position out of bound"));
+
+		// target is always the next char (unless at the very end, fill target as '<space>')
+		this->load_data(write,
+				streamPos[phase] != streamSizes[phase] - 1 ?
+					inputStreams[phase][streamPos[phase] + 1]:
+					lastTarget);
 	}
 
 	bool prepare_next_batch_impl(LearningPhase learnPhase)
 	{
-//		LMN_ASSERT_THROW(learnPhase != LearningPhase::Validation,
-//				DataException("MNIST prepare_next_batch: no validation data"));
-//
-//		int phase = to_int(learnPhase);
-//		// proceed to the next item in stream
-//		++ streamPos[phase];
-//
-//		// If point to last in stream, end of epoch = true
-//		return streamPos[phase] == streamSizes[phase];
-		return true;
+		LMN_ASSERT_THROW(learnPhase != LearningPhase::Testing,
+				DataException("Corpus prepare_next_batch: no testing data"));
+
+		int phase = to_int(learnPhase);
+		// proceed to the next item in stream
+		++ streamPos[phase];
+
+		// If point to last in stream, end of epoch = true
+		return streamPos[phase] == streamSizes[phase];
 	}
 
 	void reset_epoch_impl(LearningPhase phase)
@@ -189,6 +198,10 @@ private:
 	std::array<int, LEARNING_PHASE_N> streamPos;
 
 	CorpusLoader corpus;
+
+	vector<float> onehotTensor; // reuse to encode one-hot
+	// At the very end of sequence, when no next char, assume to be space
+	vector<float> lastTarget;
 
 public: // for debugging
 	// accessed by enum2integral(Training/Validation/Testing)
