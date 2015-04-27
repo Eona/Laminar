@@ -5,10 +5,10 @@
 #include "cuda_engine.h"
 using namespace std;
 
-
+typedef std::shared_ptr<CudaFloatMat> CudaFloatMatPtr;
 int main(int argc, char **argv)
 {
-	GlobalTimer<cl_event> gt;
+	GlobalTimer<cudaEvent_t> gt;
 	CudaEngine engine(&gt);
 
 	//create testcases
@@ -21,11 +21,11 @@ int main(int argc, char **argv)
 	float t5[8] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10};
 //
 //
-	CudaFloatMatPtr m1 (new CudaFloatMat(t1, 3, 3, engine.cl));
-	CudaFloatMatPtr m2 (new CudaFloatMat(t2, 3, 3, engine.cl));
-	CudaFloatMatPtr m3 (new CudaFloatMat(t3, 2, 3, engine.cl));
-	CudaFloatMatPtr m4 (new CudaFloatMat(t4, 4, 2, engine.cl));
-	CudaFloatMatPtr m5 (new CudaFloatMat(t5, 4, 2, engine.cl));
+	CudaFloatMatPtr m1 (new CudaFloatMat(t1, 3, 3));
+	CudaFloatMatPtr m2 (new CudaFloatMat(t2, 3, 3));
+	CudaFloatMatPtr m3 (new CudaFloatMat(t3, 2, 3));
+	CudaFloatMatPtr m4 (new CudaFloatMat(t4, 4, 2));
+	CudaFloatMatPtr m5 (new CudaFloatMat(t5, 4, 2));
 	CudaFloatMatPtr out(new CudaFloatMat());
 	vector<int> dim = {3,3};
 	engine.create(out, dim);
@@ -134,9 +134,9 @@ int main(int argc, char **argv)
 	engine.element_mult(v, out, true);
 	out->print_matrix("m1 .* m2");
 
-	float loss;
-	engine.square_loss(v, &loss, true);
-	cout<<"loss: "<<loss<<endl;
+    CudaFloatMatPtr lm (new CudaFloatMat());
+    engine.square_loss(v, lm, true);
+    cout<<"loss: "<<lm->scalar<<endl;
 
 //	engine.fill_rand(v, out, true);
 //	out->print_matrix("rand");
@@ -145,7 +145,7 @@ int main(int argc, char **argv)
 //	out->print_matrix("0.66337");
 //	}
 
-	gt.print_stats(GlobalTimer<cl_event>::Nanosec, "test");
+	gt.print_stats(GlobalTimer<cudaEvent_t>::Nanosec, "test");
 	out->free_data();
 #endif
 }

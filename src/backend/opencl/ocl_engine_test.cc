@@ -105,10 +105,10 @@ int main(int argc, char **argv)
 //	engine.multNN(v, out, false);
 //	out->print_matrix("m3 * m1");
 
-	engine.multNT(v, out, true);
+	engine.multNT(v, out, false);
 //	out->print_matrix("m1 * T(m3)");
 
-	engine.multTN(v, out, true);
+	engine.multTN(v, out, false);
 //	out->print_matrix("T(m4) * m5");
 
 	engine.assign(v1, out, true);
@@ -135,9 +135,9 @@ int main(int argc, char **argv)
 	engine.element_mult(v, out, true);
 //	out->print_matrix("m1 .* m2");
 
-//	float loss;
-//	engine.square_loss(v, &loss, true);
-//	cout<<"loss: "<<loss<<endl;
+	OpenclFloatMatPtr lm (new OpenclFloatMat());
+    engine.square_loss(v, lm, true);
+    cout<<"loss: "<<lm->scalar<<endl;
 
 //	engine.fill_rand(v, out, true);
 //	out->print_matrix("rand");
