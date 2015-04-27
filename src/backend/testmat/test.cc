@@ -33,6 +33,8 @@ int main(int argc, char **argv)
 	float t3[6] = {1.1, 7.8, 5.9, 3.0, 2, 5};
 	float t4[8] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10};
 	float t5[8] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10};
+	float tl[3] = {0, 1, 2};
+
 //
 //
 #if CL
@@ -51,16 +53,18 @@ int main(int argc, char **argv)
 	CudaFloatMatPtr m3 (new CudaFloatMat(t3, 2, 3));
 	CudaFloatMatPtr m4 (new CudaFloatMat(t4, 4, 2));
 	CudaFloatMatPtr m5 (new CudaFloatMat(t5, 4, 2));
+	CudaFloatMatPtr m_label (new CudaFloatMat(tl, 1,3));
 	CudaFloatMatPtr lm (new CudaFloatMat());
 	CudaFloatMatPtr out(new CudaFloatMat());
 
-	std::vector<CudaFloatMatPtr> v, v1, v2, v3;
+	std::vector<CudaFloatMatPtr> v, v1, v2, v3, vl;
 #endif
 
 	v = {m1, m2};
 	v1 = {m3, m1};
 	v2 = {m1, m3};
 	v3 = {m4, m5};
+	vl = {m1, m_label};
 
 	engine.sub(v, out, false);
 	out->print_matrix("m1 - m2");
@@ -110,6 +114,11 @@ int main(int argc, char **argv)
     engine.square_loss(v, lm, true);
     cout<<"loss: "<<lm->scalar<<endl;
 
+    engine.label_entropy_loss(vl, lm, true);
+    cout<<"entropy: "<<lm->scalar<<endl;
+
+    engine.label_softmax_entropy_gradient(vl, lm, true);
+	out->print_matrix("softmax(m1)");
 
 #if 0
 
