@@ -96,6 +96,17 @@ public:
 	typedef std::shared_ptr<CudaFloatMat> CudaFloatMatPtr;
 	typedef std::shared_ptr<float> FloatPtr;
 
+#define CHECK2() {\
+	assert(reads[0]->DIM_ROW == reads[1]->DIM_ROW && \
+		   reads[0]->DIM_COL == reads[1]->DIM_COL && \
+		   reads[0]->DIM_ROW == write->DIM_ROW &&\
+		   reads[0]->DIM_COL == write->DIM_COL); \
+}
+
+#define CHECK1() {\
+		assert(reads[0]->DIM_ROW == write->DIM_ROW &&\
+				reads[0]->DIM_COL == write->DIM_COL); \
+}
 
 //Execute kernel function of the form Y = op(X)
 #define MATOP(name, device_func) {\
@@ -211,19 +222,38 @@ public:
 	    dim3 num_blocks (ceil(double(write->DIM_COL)/double(thread_per_block.x)),
 	                    ceil(double(write->DIM_ROW)/double(thread_per_block.y)));
 
-	    mat_multNN_shared_kernel<<<num_blocks, thread_per_block>>> (write->device_data, write->DIM_ROW, write->DIM_COL,
-	    															reads[0]->device_data, reads[0]->DIM_ROW, reads[0]->DIM_COL,
-	    															reads[1]->device_data, reads[1]->DIM_ROW, reads[1]->DIM_COL
-	    															);
+	    if (opA == "N" && opB == "N") {
+	    	TIME(name, m*k+l*n,
+	    			mat_multNN_shared_kernel<<<num_blocks, thread_per_block>>>
+	    			(write->device_data, write->DIM_ROW, write->DIM_COL,
+	    			reads[0]->device_data, reads[0]->DIM_ROW, reads[0]->DIM_COL,
+	    			reads[1]->device_data, reads[1]->DIM_ROW, reads[1]->DIM_COL
+	    			)
+	    		);
+	    } else {
+	        printf ("Transpose multiplication is not implemented");
+	        exit (EXIT_FAILURE);
+	    }
 
-//	    TIME(name, m*k+l*n,
-//		cublasSgemm(handle,
-//					reads[0]->getOp(opA), reads[1]->getOp(opB),
-//					m, n, k,
-//					&alpha, reads[0]->device_data, reads[0]->LDIM,
-//					reads[1]->device_data, reads[1]->LDIM, &beta,
-//					write->device_data, write->LDIM)
-//	    );
+//	    if (opA == "T" && opB == "N") {
+//	    	TIME(name, m*k+l*n,
+//	    			mat_multTN_shared_kernel<<<num_blocks, thread_per_block>>>
+//	    			(write->device_data, write->DIM_ROW, write->DIM_COL,
+//	    			reads[0]->device_data, reads[0]->DIM_ROW, reads[0]->DIM_COL,
+//	    			reads[1]->device_data, reads[1]->DIM_ROW, reads[1]->DIM_COL
+//	    			)
+//	    		);
+//	    }
+//
+//	    if (opA == "N" && opB == "T") {
+//	    	TIME(name, m*k+l*n,
+//	    			mat_multNT_shared_kernel<<<num_blocks, thread_per_block>>>
+//	    			(write->device_data, write->DIM_ROW, write->DIM_COL,
+//	    			reads[0]->device_data, reads[0]->DIM_ROW, reads[0]->DIM_COL,
+//	    			reads[1]->device_data, reads[1]->DIM_ROW, reads[1]->DIM_COL
+//	    			)
+//	    		);
+//	    }
 	}
 
 	/*
@@ -239,7 +269,6 @@ public:
 
 	    //y = x
 	    //handle, x_len, x, incx, y, incy
-	    assert(reads[0]->LEN == write->LEN);
 	    TIME("assign", m*n,
 	    reads[0]->copy_to_device(write->device_data);
 	    );
@@ -247,6 +276,7 @@ public:
 	    write->DIM_ROW = reads[0]->DIM_ROW;
 	    write->DIM_COL = reads[0]->DIM_COL;
 	    write->LDIM = reads[0]->LDIM;
+	    CHECK1();
 	}
 
 	//helper func
@@ -262,11 +292,13 @@ public:
 															  	 write->LEN
 															   );
 		if(timed) t.stop();
+	    CHECK1();
 	}
 	void add(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 	    debug_msg("c=a+b", is_initialized);
 	    MATOP_DUAL("add", cu_add_func);
+	    CHECK2();
 	}
 
 	void add_scalor(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
@@ -280,8 +312,8 @@ public:
 	void sub(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 	    debug_msg("c=a-b", is_initialized);
-
 	    MATOP_DUAL("subtract", cu_subtract_func);
+	    CHECK2();
 	}
 
 
