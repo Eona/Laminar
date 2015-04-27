@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 {
 
 /**###############Correctness test###################**/
-#if 1
+#if 0
 #if CL
 	OpenclEngine engine;
 #else
@@ -238,7 +238,7 @@ int main(int argc, char **argv)
 #endif
 
 /**###############Performance test###################**/
-#if 0
+#if 1
 #if CL
 	GlobalTimer<cl_event> gt;
 	OpenclEngine engine(&gt);
@@ -255,44 +255,50 @@ int main(int argc, char **argv)
 	OpenclFloatMatPtr m3 (new OpenclFloatMat());
 	OpenclFloatMatPtr out(new OpenclFloatMat());
 	OpenclFloatMatPtr lm (new OpenclFloatMat());
-	std::vector<OpenclFloatMatPtr> rv;
+    std::vector<OpenclFloatMatPtr> v, rv;
 #else
-	CudaFloatMatPtr m1 (new CudaFloatMat());
-	CudaFloatMatPtr m2 (new CudaFloatMat());
-	CudaFloatMatPtr m3 (new CudaFloatMat());
-	CudaFloatMatPtr out(new CudaFloatMat());
-	CudaFloatMatPtr lm (new CudaFloatMat());
-	std::vector<CudaFloatMatPtr> rv;
+    CudaFloatMatPtr m1 (new CudaFloatMat());
+    CudaFloatMatPtr m2 (new CudaFloatMat());
+    CudaFloatMatPtr m3 (new CudaFloatMat());
+    CudaFloatMatPtr out(new CudaFloatMat());
+    CudaFloatMatPtr lm (new CudaFloatMat());
+    std::vector<CudaFloatMatPtr> v, rv;
 #endif
 
-	engine.create(m1, dim);
-	engine.create(m2, dim);
-	engine.create(m3, dim);
-	engine.create(out, dim);
+    engine.create(m1, dim);
+    engine.create(m2, dim);
+    engine.create(m3, dim);
+    engine.create(out, dim);
 
-	engine.fill_rand(rv, m1, true);
-	engine.fill_rand(rv, m2, true);
-	engine.fill_rand(rv, m3, true);
+    engine.fill_rand(rv, m1, true);
+    engine.fill_rand(rv, m2, true);
+    engine.fill_rand(rv, m3, true);
+    v = {m1, m2};
 
-	for (int i = 0; i < 10; ++i){
-		engine.sub(v, out, true);
-		engine.add(v, out, true);
-		engine.negate(v, out, true);
-		engine.multNN(v, out, true);
-		engine.multNT(v, out, true);
-		engine.multTN(v, out, true);
-		engine.assign(v1, out, true);
-		engine.sigmoid(v, out, true);
-		engine.sigmoid_gradient(v, out, true);
-		engine.sin(v, out, true);
-		engine.cos(v, out, true);
-		engine.tanh(v, out, true);
-		engine.tanh_gradient(v, out, true);
-		engine.element_mult(v, out, true);
-		engine.square_loss(v, lm, true);
-		cout<<"loss: "<<lm->scalar<<endl;
-	}
+    for (int i = 0; i < 10; ++i){
+        engine.sub(v, out, true);
+        engine.add(v, out, true);
+        engine.negate(v, out, true);
+        engine.multNN(v, out, true);
+        engine.multNT(v, out, true);
+        engine.multTN(v, out, true);
+        engine.assign(v, out, true);
+        engine.sigmoid(v, out, true);
+        engine.sigmoid_gradient(v, out, true);
+        engine.sin(v, out, true);
+        engine.cos(v, out, true);
+        engine.tanh(v, out, true);
+        engine.tanh_gradient(v, out, true);
+        engine.element_mult(v, out, true);
+        engine.square_loss(v, lm, true);
+        cout<<"loss: "<<lm->scalar<<endl;
+    }
 
-	gt.print_stats(GlobalTimer<cl_event>::Nanosec, "test");
+#if CL
+    gt.print_stats(GlobalTimer<cl_event>::Nanosec, "test");
+#else
+    gt.print_stats(GlobalTimer<cudaEvent_t>::Nanosec, "test");
+#endif
+
 #endif
 }
