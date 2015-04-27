@@ -94,11 +94,11 @@ int main(int argc, char **argv)
 	out->print_matrix("m3 -> out");
 
 	ms->scalar = 3;
-	vs = {ms, v};
+	vs = {ms, m1};
 	engine.multST(vs, out, false);
 	out->print_matrix("m1*3");
 
-	vs = {v, ms};
+	vs = {m1, ms};
 	engine.multTS(vs, out, false);
 	out->print_matrix("3*m1");
 
