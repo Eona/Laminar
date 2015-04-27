@@ -10,8 +10,35 @@
 #include "../../network.h"
 #include "../../learning_session.h"
 
+#include "mnist_dataman.h"
 #include "../../backend/opencl/opencl_engine.h"
-#include "opencl_mnist_dataman.h"
+
+struct OpenclMnistDataManager :
+		public MnistDataManager<OpenclFloatMat>
+{
+	OpenclMnistDataManager(EngineBase::Ptr engine,
+					int batchSize,
+					string mnistDataDir) :
+		MnistDataManager<OpenclFloatMat>(engine, batchSize, mnistDataDir),
+		cl(EngineBase::cast<OpenclEngine>(engine)->cl)
+	{}
+
+protected:
+	OclUtilContext* cl;
+
+	// subclass handles actual data load
+	void alloc_zeros(DataPtr write, int rowdim, int coldim)
+	{
+		write->reset(rowdim, coldim, cl);
+	}
+
+	// one batch of image (28 * 28 * batchSize)
+	void load_data(DataPtr write, vector<float>& imageBatch)
+	{
+		write->to_device(&imageBatch[0]);
+	}
+};
+
 
 int main(int argc, char **argv)
 {
