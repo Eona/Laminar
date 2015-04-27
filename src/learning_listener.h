@@ -254,4 +254,22 @@ protected:
 	void observe_impl(std::shared_ptr<Network>, LearningState::Ptr) { }
 };
 
+// Print every batch. Debugging
+struct MinibatchObserver :
+		public Observer<Network>
+{
+	virtual ~MinibatchObserver() {}
+
+	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(MinibatchObserver)
+
+protected:
+	virtual void observe_impl(std::shared_ptr<Network>, LearningState::Ptr state)
+	{
+		cout << "Current minibatch: " << state->batchInEpoch
+					<< " in epoch " << state->epoch << endl;
+		cout << "Training loss: " << state->trainingLoss << endl;
+	}
+};
+
+
 #endif /* LEARNING_LISTENER_H_ */
