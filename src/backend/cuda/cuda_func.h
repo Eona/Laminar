@@ -9,7 +9,7 @@
 typedef float (*op_func_t) (float); // device pointer function
 typedef float (*op_func_dual_t) (float, float); // device pointer function (two arguments)
 
-
+#define TILE_WIDTH 16 //for shared memory multiplication
 
 __device__ float sigmoid_func (float x)
 {
@@ -124,5 +124,105 @@ __global__ void mat_fill_kernel(float *target, float alpha, int N)
 	target[tid] = alpha;
 }
 
+//############naive multiplication implementation##############
+__global__ void mat_multNN_kernel(float *C, float *A, float *B, int m, int n, int l, int k)
+{
+	int idx = blockDim.x * blockIdx.x + threadIdx.x;
+    if (idx >= m * k) return;
+    size_t b_col = (idx / m) * n;//start index in B
+    size_t a_row = (idx % m); //start index in A
+    float sum = 0;
+    for (int i = 0; i < n; ++i) { //a column of A
+        sum += B[b_col + i] * A[a_row + i * m];
+    }
+    C[idx] = sum;
+}
+
+__global__ void mat_multNT_kernel(float *C, float *A, float *B, int m, int n, int l, int k)
+{
+	int idx = blockDim.x * blockIdx.x + threadIdx.x;
+    if (idx >= m * l) return;
+    size_t b_row = (idx / m); //start index in B
+    size_t a_row = (idx % m); //start index in A
+    float sum = 0;
+    for (int i = 0; i < n; ++i) { //a row of A
+        sum += B[b_row + i * l] * A[a_row + i * m];
+    }
+    C[idx] = sum;
+}
+
+__global__ void mat_multTN_kernel(float *C, float *A, float *B, int m, int n, int l, int k)
+{
+	int idx = blockDim.x * blockIdx.x + threadIdx.x;
+    if (idx >= n * k) return;
+    size_t b_col = (idx / n) * l; //start index in B
+    size_t a_col = (idx % n) * m; //start index in A
+    float sum = 0;
+    for (int i = 0; i < m; ++i) { //a column of A
+        sum += B[b_col + i] * A[a_col + i];
+    }
+    C[idx] = sum;
+}
+
+
+//############Shared memory implementation, assuming 2D kernel launch##############
+__global__ void mat_multNN_shared_kernel(float* C, int CRows, int CCols, float* A, int ARows, int ACols, float* B, int BRows, int BCols) {
+
+    float CValue = 0;
+
+    int Row = blockIdx.y*TILE_WIDTH + threadIdx.y; // which row
+    int Col = blockIdx.x*TILE_WIDTH + threadIdx.x; // which col
+
+    __shared__ float As[TILE_WIDTH][TILE_WIDTH];
+    __shared__ float Bs[TILE_WIDTH][TILE_WIDTH];
+
+    for (int k = 0; k < (TILE_WIDTH + ACols - 1)/TILE_WIDTH; k++) {
+
+         if (k*TILE_WIDTH + threadIdx.x < ACols && Row < ARows)
+    	 	 As[threadIdx.y][threadIdx.x] = A[(k*TILE_WIDTH + threadIdx.y)*ACols + Col];
+         else
+        	 As[threadIdx.y][threadIdx.x] = 0.0;
+
+         if (k*TILE_WIDTH + threadIdx.y < BRows && Col < BCols)
+	    	 Bs[threadIdx.y][threadIdx.x] = B[(k*TILE_WIDTH + threadIdx.y)*BCols + Col];
+         else
+        	 Bs[threadIdx.y][threadIdx.x] = 0.0;
+
+         __syncthreads();
+
+         for (int n = 0; n < TILE_WIDTH; ++n)
+        	 CValue += As[threadIdx.y][n] * Bs[n][threadIdx.x];
+
+         __syncthreads();
+    }
+
+    if (Row < CRows && Col < CCols)
+    	C[((blockIdx.y * blockDim.y + threadIdx.y)*CCols)+(blockIdx.x*blockDim.x)+threadIdx.x]=CValue;
+}
+//__global__ void mat_multNT_shared_kernel(float *C, float *A, float *B, int m, int n, int l, int k)
+//{
+//	int idx = blockDim.x * blockIdx.x + threadIdx.x;
+//    if (idx >= m * l) return;
+//    size_t b_row = (idx / m); //start index in B
+//    size_t a_row = (idx % m); //start index in A
+//    float sum = 0;
+//    for (int i = 0; i < n; ++i) { //a row of A
+//        sum += B[b_row + i * l] * A[a_row + i * m];
+//    }
+//    C[idx] = sum;
+//}
+//
+//__global__ void mat_multTN_shared_kernel(float *C, float *A, float *B, int m, int n, int l, int k)
+//{
+//	int idx = blockDim.x * blockIdx.x + threadIdx.x;
+//    if (idx >= n * k) return;
+//    size_t b_col = (idx / n) * l; //start index in B
+//    size_t a_col = (idx % n) * m; //start index in A
+//    float sum = 0;
+//    for (int i = 0; i < m; ++i) { //a column of A
+//        sum += B[b_col + i] * A[a_col + i];
+//    }
+//    C[idx] = sum;
+//}
 
 #endif

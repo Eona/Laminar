@@ -206,14 +206,24 @@ public:
 	    std::string name = "mult_"+opA+opB;
 	    //C = a Op(A)* Op(B) + b C  -- A [mxk] B [kxn] C[mxn]
 	    //handle, A_len, x, incx, y, incy
-	    TIME(name, m*k+l*n,
-		cublasSgemm(handle,
-					reads[0]->getOp(opA), reads[1]->getOp(opB),
-					m, n, k,
-					&alpha, reads[0]->device_data, reads[0]->LDIM,
-					reads[1]->device_data, reads[1]->LDIM, &beta,
-					write->device_data, write->LDIM)
-	    );
+
+	    dim3 thread_per_block (16,16);
+	    dim3 num_blocks (ceil(double(w)/double(thread_per_block.x)),
+	                    ceil(double(h)/double(thread_per_block.y)));
+
+	    mat_multNN_shared_kernel<<<num_blocks, thread_per_block>>> (write->device_data, write->DIM_ROW, write->DIM_COL,
+	    															reads[0]->device_data, reads[0]->DIM_ROW, reads[0]->DIM_COL,
+	    															reads[1]->device_data, reads[1]->DIM_ROW, reads[1]->DIM_COL
+	    															);
+
+//	    TIME(name, m*k+l*n,
+//		cublasSgemm(handle,
+//					reads[0]->getOp(opA), reads[1]->getOp(opB),
+//					m, n, k,
+//					&alpha, reads[0]->device_data, reads[0]->LDIM,
+//					reads[1]->device_data, reads[1]->LDIM, &beta,
+//					write->device_data, write->LDIM)
+//	    );
 	}
 
 	/*
