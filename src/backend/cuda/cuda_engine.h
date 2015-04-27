@@ -223,33 +223,33 @@ public:
 	                    ceil(double(write->DIM_ROW)/double(thread_per_block.y)));
 
 	    if (opA == "N" && opB == "N") {
-	    	TIME(name, m*k+l*n,
+//	    	TIME(name, m*k+l*n,
 	    			mat_multNN_shared_kernel<<<num_blocks, thread_per_block>>>
 	    			(write->device_data, write->DIM_ROW, write->DIM_COL,
 	    			reads[0]->device_data, reads[0]->DIM_ROW, reads[0]->DIM_COL,
 	    			reads[1]->device_data, reads[1]->DIM_ROW, reads[1]->DIM_COL
-	    			)
-	    		);
+	    			);
+//	    		);
 	    }
 
 	    if (opA == "T" && opB == "N") {
-	    	TIME(name, m*k+l*n,
+//	    	TIME(name, m*k+l*n,
 	    			mat_multTN_shared_kernel<<<num_blocks, thread_per_block>>>
 	    			(write->device_data, write->DIM_ROW, write->DIM_COL,
 	    			reads[0]->device_data, reads[0]->DIM_ROW, reads[0]->DIM_COL,
 	    			reads[1]->device_data, reads[1]->DIM_ROW, reads[1]->DIM_COL
-	    			)
-	    		);
+	    			);
+//	    		);
 	    }
 
 	    if (opA == "N" && opB == "T") {
-	    	TIME(name, m*k+l*n,
+//	    	TIME(name, m*k+l*n,
 	    			mat_multNT_shared_kernel<<<num_blocks, thread_per_block>>>
 	    			(write->device_data, write->DIM_ROW, write->DIM_COL,
 	    			reads[0]->device_data, reads[0]->DIM_ROW, reads[0]->DIM_COL,
 	    			reads[1]->device_data, reads[1]->DIM_ROW, reads[1]->DIM_COL
-	    			)
-	    		);
+	    			);
+//	    		);
 	    }
 	}
 
