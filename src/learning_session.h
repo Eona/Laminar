@@ -103,14 +103,13 @@ public:
 			// running average
 			state->trainingLoss = totalTrainingLoss / state->batchInEpoch;
 
-			DEBUG_MSG("Minibatch", state->batchInEpoch);
-			DEBUG_MSG("Training loss", state->trainingLoss);
+//			DEBUG_MSG("Minibatch", state->batchInEpoch);
+//			DEBUG_MSG("Training loss", state->trainingLoss);
 
 			/*********** Update parameters ***********/
 			if (!optimizerRoutine)
 			{
-				for (auto pc : net->param_containers())
-					optimizer->update(pc, state);
+				optimizer->update(net->param_containers(), state);
 				optimizerRoutine = engine->flush_execute();
 			}
 			else
@@ -146,7 +145,9 @@ public:
 				DEBUG_MSG("Epoch", state->epoch);
 				DEBUG_MSG("Training loss", state->trainingLoss);
 				DEBUG_MSG("Validation loss", state->validationLoss);
+				DEBUG_MSG("Validation metric", state->validationMetric);
 				DEBUG_MSG("Testing loss", state->testingLoss);
+				DEBUG_MSG("Testing metric", state->testingMetric);
 
 				/*********** Save to disk ***********/
 				serializer->save(net, state);
@@ -180,7 +181,8 @@ protected:
 		net->execute("initialize");
 
 		optimizer->init_engine(engine);
-		optimizer->initialize();
+		optimizer->initialize(net->param_containers());
+
 		// FIXME unify 'execute' interface of Network & Optimizer
 		engine->flush_execute();
 	}
