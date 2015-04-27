@@ -10,9 +10,9 @@
 #include "../opencl/opencl_engine.h"
 #else
 #include "../cuda/cuda_engine.h"
+typedef std::shared_ptr<CudaFloatMat> CudaFloatMatPtr;
 #endif
 
-typedef std::shared_ptr<CudaFloatMat> CudaFloatMatPtr;
 using namespace std;
 
 
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 	OpenclFloatMatPtr m3 (new OpenclFloatMat(t3, 2, 3, engine.cl));
 	OpenclFloatMatPtr m4 (new OpenclFloatMat(t4, 4, 2, engine.cl));
 	OpenclFloatMatPtr m5 (new OpenclFloatMat(t5, 4, 2, engine.cl));
-	OpenclFloatMatPtr m_label (new OpenclFloatMat(tl, 1,3));
+	OpenclFloatMatPtr m_label (new OpenclFloatMat(tl, 1,3, engine.cl));
 	OpenclFloatMatPtr lm (new OpenclFloatMat());
 	OpenclFloatMatPtr out(new OpenclFloatMat());
 
@@ -116,7 +116,7 @@ int main(int argc, char **argv)
     engine.label_entropy_loss(vl, lm, true);
     cout<<"entropy: "<<lm->scalar<<endl;
 
-    engine.label_softmax_entropy_gradient(vl, lm, true);
+    engine.label_softmax_entropy_gradient(vl, out, false);
 	out->print_matrix("softmax(m1)");
 
 #if 0
