@@ -27,6 +27,11 @@ public:
 	static constexpr const char *OP_LOAD_INPUT = "load_input";
 	static constexpr const char *OP_LOAD_TARGET = "load_target";
 
+	// TODO
+	// ugly workaround for RNN: load_input() compiled version has to trigger
+	// a prepare_next_epoch instruction every time
+	static constexpr const char *OP_PREPARE_NEXT_BATCH = "prepare_next_epoch";
+
 	/**
 	 * Network calls the request to fill in input Tensor
 	 */
@@ -41,6 +46,13 @@ public:
 	void upload_target(const TensorBase& tensor)
 	{
 		engine->upload(Instruction(OP_LOAD_TARGET, {}, tensor.addr));
+	}
+
+	// TODO ugly workaround
+	void upload_prepare_next_batch()
+	{
+		// FIXME should NOT use addr 0, because it's is_initialize field might be altered
+		engine->upload(Instruction(OP_PREPARE_NEXT_BATCH, {}, 0));
 	}
 
 	LearningPhase learning_phase() const
@@ -157,6 +169,16 @@ public:
 					DataException("load_target failure because end of epoch reached."));
 
 				this->load_target(write, is_initialized, this->learning_phase());
+			}
+		);
+
+		engine_->register_normal_op(DataManagerBase::OP_PREPARE_NEXT_BATCH,
+			[this](vector<DataPtr>, DataPtr write, bool is_initialized)
+			{
+				LMN_ASSERT_THROW(!this->is_end_of_epoch(),
+					DataException("prepare_next_batch failure because end of epoch reached."));
+
+				this->prepare_next_batch();
 			}
 		);
 	}
