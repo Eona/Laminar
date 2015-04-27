@@ -12,7 +12,6 @@
 #include "../cuda/cuda_engine.h"
 #endif
 
-
 typedef std::shared_ptr<CudaFloatMat> CudaFloatMatPtr;
 using namespace std;
 
@@ -47,12 +46,12 @@ int main(int argc, char **argv)
 
 	std::vector<OpenclFloatMatPtr> v, v1, v2, v3;
 #else
-	std::vector<CudaFloatMatPtr> v;
 	CudaFloatMatPtr m1 (new CudaFloatMat(t1, 3, 3));
 	CudaFloatMatPtr m2 (new CudaFloatMat(t2, 3, 3));
 	CudaFloatMatPtr m3 (new CudaFloatMat(t3, 2, 3));
 	CudaFloatMatPtr m4 (new CudaFloatMat(t4, 4, 2));
 	CudaFloatMatPtr m5 (new CudaFloatMat(t5, 4, 2));
+	CudaFloatMatPtr lm (new CudaFloatMat());
 	CudaFloatMatPtr out(new CudaFloatMat());
 
 	std::vector<CudaFloatMatPtr> v, v1, v2, v3;
