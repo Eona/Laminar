@@ -222,7 +222,7 @@ public:
 	    dim3 num_blocks (ceil(double(write->DIM_COL)/double(thread_per_block.x)),
 	                    ceil(double(write->DIM_ROW)/double(thread_per_block.y)));
 
-		CudaTimer t(name, gt, size);
+		CudaTimer t(name, gt, m*k+l*n);
 		if(timed) t.start();
 		if (opA == "N" && opB == "N") {
 			mat_multNN_shared_kernel<<<num_blocks, thread_per_block>>>

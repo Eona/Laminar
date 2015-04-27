@@ -2,12 +2,16 @@
  * Eona Studio (c)2015
  */
 
-#define CL 1
+#define CL 0
+#define CUBLAS 1
 #include <iostream>
 
 #if CL
 #include "../opencl/ocl_util.h"
 #include "../opencl/opencl_engine.h"
+#elif CUBLAS
+#include "../cublas/cublas_engine.h"
+typedef std::shared_ptr<CudaFloatMat> CudaFloatMatPtr;
 #else
 #include "../cuda/cuda_engine.h"
 typedef std::shared_ptr<CudaFloatMat> CudaFloatMatPtr;
@@ -239,12 +243,17 @@ int main(int argc, char **argv)
 
 /**###############Performance test###################**/
 #if 1
+
 #if CL
-	GlobalTimer<cl_event> gt;
-	OpenclEngine engine(&gt);
+    GlobalTimer<cl_event> gt;
+    OpenclEngine engine(&gt);
 #else
-	GlobalTimer<cudaEvent_t> gt;
-	CudaEngine engine(&gt);
+    GlobalTimer<cudaEvent_t> gt;
+#if CUBLAS
+    CublasEngine engine(&gt);
+#else
+    CudaEngine engine(&gt);
+#endif
 #endif
 
 	vector<int> dim = {1000, 1000};

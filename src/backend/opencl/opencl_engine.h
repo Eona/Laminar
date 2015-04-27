@@ -445,9 +445,8 @@ public:
 	    cl_ulong duration = cl->exec_kernel("square_loss", cl->get_global_size(aux.LEN, NUM_LOCAL_WORKER), NUM_LOCAL_WORKER);
 	    if(timed) gt->record_named_timer("square_loss", duration, m*n*2);
 
-	    float t[aux.MEM_SIZE];
-	    aux.to_host(t);
-
+	    auto t = vector<float>(aux.LEN);
+	    aux.to_host(&t[0]);
 	    for (int i = 0; i < aux.LEN; ++i) {
 	    	write->scalar += t[i];
 	    }

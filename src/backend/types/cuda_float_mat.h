@@ -123,6 +123,9 @@ public:
 		}
 	}
 
+	void zero_clear() {
+		fill(0);
+	}
 	void fill_rand(int seed) {
 		auto r = alloc_vector();
 		srand (seed);
