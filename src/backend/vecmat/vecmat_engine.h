@@ -421,6 +421,11 @@ inline void label_entropy_loss(
 	for (int c = 0; c < rmat.col(); ++c)
 	{
 		int label = (int) labels(0, c);
+
+		LMN_ASSERT_THROW(0 <= label && label < rmat.row(),
+			VecmatEngineException("label_softmax_entropy_gradient label value error\n" +
+				to_str(label) + " should < rowdim " + to_str(rmat.row())));
+
 		// value at label:
 		loss(0, 0) += -std::log(rmat(label, c));
 	}
@@ -454,6 +459,11 @@ inline void label_softmax_entropy_gradient(
 	for (int c = 0; c < rmat.col(); ++c)
 	{
 		int label = (int) labels(0, c);
+
+		LMN_ASSERT_THROW(0 <= label && label < rmat.row(),
+			VecmatEngineException("label_softmax_entropy_gradient label value error\n" +
+				to_str(label) + " should < rowdim " + to_str(rmat.row())));
+
 		wmat(label, c) -= 1.f; // y - t (sparse)
 	}
 }
