@@ -2,7 +2,7 @@
  * Eona Studio (c) 2015
  */
 
-
+#include <cuda.h>
 #ifndef CUDA_FUNC_H_
 #define CUDA_FUNC_H_
 
@@ -101,12 +101,12 @@ __global__ void mat_op_kernel(float *c, float *a, float *b, int N, op_func_dual_
 	c[tid] = (*op)(a[tid], b[tid]);
 }
 
-__global__ void mat_sum_kernel(float *source, float sum, int N)
-{
-	int tid = blockDim.x * blockIdx.x + threadIdx.x;
-	if (tid >= N) return;
-	atomicAdd(&sum, source[tid]);
-}
+//__global__ void mat_sum_kernel(float *source, float sum, int N)
+//{
+//	int tid = blockDim.x * blockIdx.x + threadIdx.x;
+//	if (tid >= N) return;
+//	atomicAdd(&sum, source[tid]);
+//}
 
 // Y = a*X
 __global__ void mat_scale_kernel(float *target, float alpha, int N)

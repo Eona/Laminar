@@ -428,12 +428,13 @@ public:
 														reads[1]->device_data,
 														aux.LEN,
 														h_func );
-		cudaDeviceSynchronize();
-		float sum = 0;
-		mat_sum_kernel<<<aux.GRID_DIM, aux.BLOCK_DIM>>>( aux.device_data,
-														 sum,
-														 aux.LEN
-													   );
+//		cudaDeviceSynchronize();
+//		float sum = 0;
+//		mat_sum_kernel<<<aux.GRID_DIM, aux.BLOCK_DIM>>>( aux.device_data,
+//														 sum,
+//														 aux.LEN
+//													   );
+	    cublasSasum(handle, aux.LEN, aux.device_data, 1, &write->scalar);
 		write->isScalar = true;
 	}
 
