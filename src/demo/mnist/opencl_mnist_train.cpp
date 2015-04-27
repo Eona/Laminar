@@ -9,10 +9,36 @@
 #include "../../parameter.h"
 #include "../../network.h"
 #include "../../learning_session.h"
-#include "../../utils/rand_utils.h"
 
-#include "../../backend/vecmat/vecmat_engine.h"
-#include "vecmat_mnist_dataman.h"
+#include "mnist_dataman.h"
+#include "../../backend/opencl/opencl_engine.h"
+
+struct OpenclMnistDataManager :
+		public MnistDataManager<OpenclFloatMat>
+{
+	OpenclMnistDataManager(EngineBase::Ptr engine,
+					int batchSize,
+					string mnistDataDir) :
+		MnistDataManager<OpenclFloatMat>(engine, batchSize, mnistDataDir),
+		cl(EngineBase::cast<OpenclEngine>(engine)->cl)
+	{}
+
+protected:
+	OclUtilContext* cl;
+
+	// subclass handles actual data load
+	void alloc_zeros(DataPtr write, int rowdim, int coldim)
+	{
+		write->reset(rowdim, coldim, cl);
+	}
+
+	// one batch of image (28 * 28 * batchSize)
+	void load_data(DataPtr write, vector<float>& imageBatch)
+	{
+		write->to_device(&imageBatch[0]);
+	}
+};
+
 
 int main(int argc, char **argv)
 {
@@ -21,12 +47,11 @@ int main(int argc, char **argv)
 	const int BATCH_SIZE = 50;
 	const int MAX_EPOCH = 100;
 
-	FakeRand::instance_connection().gen_uniform_rand(
-			300*300 + 300*764 + 10*300, -0.08f, 0.08f, DEBUG_SEED);
+//	GlobalTimer<cl_event> gt;
 
-	auto engine = EngineBase::make<VecmatEngine>();
+	auto engine = EngineBase::make<OpenclEngine>();
 	auto dataman =
-		DataManagerBase::make<VecmatMnistDataManager>(engine, BATCH_SIZE, "../data/mnist");
+		DataManagerBase::make<OpenclMnistDataManager>(engine, BATCH_SIZE, "../data/mnist");
 
 	auto linput = Layer::make<ConstantLayer>(INPUT_DIM);
 	auto lhidden1 = Layer::make<SigmoidLayer>(300);
@@ -44,8 +69,19 @@ int main(int argc, char **argv)
 	net->new_connection<FullConnection>(lhidden2, lloss);
 	net->add_layer(lloss);
 
+//	net->execute("initialize");
+//	net->execute("load_input");
+//	net->execute("load_target");
+//	net->execute("forward");
+//	net->execute("backward");
+//	net->execute("zero_clear");
+
+//	DEBUG_MSG(linput->in_value(0).addr);
+//	lmn::zero_clear(linput->in_value(0));
+//	engine->flush_execute();
+
 	auto opm = Optimizer::make<SimpleSGD>(0.01);
-	auto eval = NoMetricEvaluator<VecmatEngine>::make(net);
+	auto eval = NoMetricEvaluator<OpenclEngine>::make(net);
 	auto stopper = StopCriteria::make<MaxEpochStopper>(MAX_EPOCH);
 	auto ser = NullSerializer::make();
 	auto evalsched = EpochIntervalSchedule::make(0, 1);
