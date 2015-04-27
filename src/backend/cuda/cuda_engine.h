@@ -246,15 +246,11 @@ public:
 	}
 
 	//helper func
-	void scaleMat(CudaFloatMatPtr read0, CudaFloatMatPtr write, bool is_initialized, float scalar)
+	void scaleMat(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized, float scalar)
 	{
-		auto v = {read0};
-	    assignMat(v, write, is_initialized); // copy to write
+	    assignMat(reads, write, is_initialized); // copy to write
 	    //y = -y
-		if (!is_initialized) {
-	    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);
-		}
-		CudaTimer t("scale", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL * 2);
+		CudaTimer t("scale", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
 		if(timed) t.start();
 		//__global__ void mat_scale_kernel(float *target, float alpha, int N)
 		mat_scale_kernel<<<write->GRID_DIM, write->BLOCK_DIM>>>( write->device_data,
