@@ -3,6 +3,9 @@
  */
 
 #include "test_utils.h"
+#include "../backend/vecmat/vecmat_engine.h"
+#include "../backend/vecmat/vecmat_rand_dataman.h"
+#include "../backend/vecmat/vecmat_func_dataman.h"
 
 FakeRand& rand_conn = FakeRand::instance_connection();
 FakeRand& rand_prehis = FakeRand::instance_prehistory();
@@ -274,7 +277,7 @@ TEST(VecmatRNN, TemporalSkipBias)
 	net.new_bias_layer(l4);
 	net.add_layer(l4);
 
-	gradient_check<VecmatEngine, VecmatRandDataManager, float>(net, 1e-2, 1);
+	gradient_check<VecmatEngine, VecmatRandDataManager, float>(net, 1e-2, 2.f);
 }
 
 
@@ -428,5 +431,5 @@ TEST(VecmatRNN, GatedTanhBias)
 	net.new_bias_layer(l4);
 	net.add_layer(l4);
 
-	gradient_check<VecmatEngine, VecmatRandDataManager>(net, 1e-2f, 1.3f);
+	gradient_check<VecmatEngine, VecmatRandDataManager>(net, 1e-2f, 2.f);
 }

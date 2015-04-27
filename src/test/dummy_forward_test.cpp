@@ -4,6 +4,9 @@
 
 #include "test_utils.h"
 
+#include "../backend/dummy/dummy_dataman.h"
+#include "../backend/dummy/dummy_engine.h"
+
 FakeRand& rand_conn = FakeRand::instance_connection();
 FakeRand& rand_input = FakeRand::instance_input();
 FakeRand& rand_target = FakeRand::instance_target();

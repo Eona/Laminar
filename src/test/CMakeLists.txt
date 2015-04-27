@@ -4,7 +4,7 @@ include(eona_gtest)
 # toggle this to avoid recompiling gtests
 set(RUN_CPU_GTEST true)
 set(RUN_CUDA_GTEST true)
-set(RUN_OPENCL_GTEST true)
+set(RUN_OPENCL_GTEST false)
 
 # global option from eona_gtest.cmake
 set(RUN_TEST_DURING_BUILD false)
@@ -20,6 +20,7 @@ set(CPU_TEST_SUITE
 
 set(CUDA_TEST_SUITE 
     cublas_forward_test
+    cublas_lstm_test
     )
     
 set(OPENCL_TEST_SUITE

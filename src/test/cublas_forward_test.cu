@@ -2,33 +2,7 @@
  * Eona Studio (c) 2015
  */
 
-#include "../backend/cublas/cublas_engine.h"
-#include "test_utils.h"
-
-struct CublasRandDataManager :
-		public RandDataManager<CudaFloatMat>
-{
-	CublasRandDataManager(EngineBase::Ptr engine,
-					int inputDim, int targetDim, int batchSize,
-					int targetLabelClasses = 0) :
-		RandDataManager<CudaFloatMat>(engine,
-				inputDim, targetDim, batchSize,
-				targetLabelClasses)
-	{ }
-
-protected:
-	// subclass handles actual data load
-	void alloc_zeros(DataPtr write, int rowdim, int coldim)
-	{
-		write->reset(rowdim, coldim);
-	}
-
-	// one batch of image (28 * 28 * batchSize)
-	void load_data(DataPtr write, vector<float>& data)
-	{
-		write->to_device(&data[0]);
-	}
-};
+#include "cublas_helper.h"
 
 TEST(CublasForward, Simple)
 {

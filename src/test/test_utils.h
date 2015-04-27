@@ -22,14 +22,6 @@
 #include "../engine/tensor.h"
 #include "../engine/tensor_ops.h"
 
-#include "../backend/dummy/dummy_dataman.h"
-#include "../backend/dummy/dummy_engine.h"
-
-#include "../backend/vecmat/vecmat_engine.h"
-#include "../backend/vecmat/vecmat_rand_dataman.h"
-#include "../backend/vecmat/vecmat_func_dataman.h"
-#include "rand_dataman.h"
-
 using namespace std;
 
 #define conn_full Connection::make<FullConnection>
