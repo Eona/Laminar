@@ -79,6 +79,7 @@ public:
 		register_normal_op("zero_clear", MEMFUNC_BIND_3(CublasEngine::zero_clear));
 
 		register_normal_op("fill_rand", MEMFUNC_BIND_3(CublasEngine::fill_rand));
+		register_normal_op("fill_rand_prehistory", MEMFUNC_BIND_3(CublasEngine::fill_rand));
 		register_normal_op("softmax", MEMFUNC_BIND_3(CublasEngine::softmax));
 		register_normal_op("label_entropy_loss", MEMFUNC_BIND_3(CublasEngine::label_entropy_loss));
 		register_normal_op("label_softmax_entropy_gradient", MEMFUNC_BIND_3(CublasEngine::label_softmax_entropy_gradient));
