@@ -36,6 +36,13 @@ protected:
 
 int main(int argc, char **argv)
 {
+	float lr = 0.0001;
+	float moment = 0.9;
+	if (argc == 3)
+	{
+		lr = atof(argv[1]);
+		moment = atof(argv[2]);
+	}
 /*
 	CorpusLoader corpus("../data/corpus/shakespeare_hamlet.dat");
 	int s = corpus.size();
@@ -93,7 +100,7 @@ int main(int argc, char **argv)
 	net->new_connection<FullConnection>(lstmComposite->out_layer(), lossLayer);
 	net->add_layer(lossLayer);
 
-	auto opm = Optimizer::make<SimpleSGD>(0.001);
+	auto opm = Optimizer::make<MomentumGD>(lr, moment);
 	auto eval = NoMetricEvaluator<VecmatEngine>::make(net);
 	auto stopper = StopCriteria::make<MaxEpochStopper>(MAX_EPOCH);
 	auto ser = NullSerializer::make();

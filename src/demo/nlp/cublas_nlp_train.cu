@@ -2,18 +2,6 @@
  * Eona Studio (c) 2015
  */
 
-#include "../../full_connection.h"
-#include "../../gated_connection.h"
-#include "../../loss_layer.h"
-#include "../../activation_layer.h"
-#include "../../lstm.h"
-#include "../../bias_layer.h"
-#include "../../parameter.h"
-#include "../../network.h"
-#include "../../rnn.h"
-#include "../../learning_session.h"
-#include "../../utils/rand_utils.h"
-
 #include "../../backend/cublas/cublas_engine.h"
 #include "corpus_loader.h"
 #include "corpus_dataman.h"
@@ -42,21 +30,16 @@ protected:
 	}
 };
 
-struct BatchObserver :
-		public Observer<RecurrentNetwork>
-{
-	virtual void observe_impl(std::shared_ptr<RecurrentNetwork>, LearningState::Ptr state)
-	{
-		DEBUG_MSG("Minibatch", state->batchInEpoch);
-		DEBUG_MSG("Training loss", state->trainingLoss);
-	}
-
-	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(BatchObserver)
-};
-
 
 int main(int argc, char **argv)
 {
+	float lr = 0.0001;
+	float moment = 0.9;
+	if (argc == 3)
+	{
+		lr = atof(argv[1]);
+		moment = atof(argv[2]);
+	}
 /*
 	CorpusLoader corpus("../data/corpus/shakespeare_hamlet.dat");
 	int s = corpus.size();
@@ -95,12 +78,12 @@ int main(int argc, char **argv)
 	net->new_connection<FullConnection>(lstmComposite->out_layer(), lossLayer);
 	net->add_layer(lossLayer);
 
-	auto opm = Optimizer::make<SimpleSGD>(0.01);
+	auto opm = Optimizer::make<ClippedMomentumGD>(lr, moment);
 	auto eval = NoMetricEvaluator<CublasEngine>::make(net);
 	auto stopper = StopCriteria::make<MaxEpochStopper>(MAX_EPOCH);
 	auto ser = NullSerializer::make();
 	auto evalsched = EpochIntervalSchedule::make(0, 1);
-	auto obv = BatchObserver::make();
+	auto obv = MinibatchObserver::make();
 
 	auto session = new_learning_session(net, opm, eval, stopper, ser, evalsched, obv);
 

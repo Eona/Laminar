@@ -5,6 +5,18 @@
 #ifndef DEMO_NLP_CORPUS_DATAMAN_H_
 #define DEMO_NLP_CORPUS_DATAMAN_H_
 
+#include "../../full_connection.h"
+#include "../../gated_connection.h"
+#include "../../loss_layer.h"
+#include "../../activation_layer.h"
+#include "../../lstm.h"
+#include "../../bias_layer.h"
+#include "../../parameter.h"
+#include "../../network.h"
+#include "../../rnn.h"
+#include "../../learning_session.h"
+#include "../../utils/rand_utils.h"
+
 #include "../../engine/data_manager.h"
 #include "../../utils/laminar_utils.h"
 #include "corpus_loader.h"
@@ -157,6 +169,14 @@ public:
 	void reset_epoch_impl(LearningPhase phase)
 	{
 		this->streamPos[to_int(phase)] = 0;
+	}
+
+	// TODO Ugly workaround, see DataManager for more info
+	virtual void reset_sequence(LearningPhase phase)
+	{
+		this->streamPos[to_int(phase)] -= historyLength;
+		LMN_ASSERT_THROW(this->streamPos[to_int(phase)] >= 0,
+			DataException("reset_sequence error"));
 	}
 
 	Dimension input_dim() const
