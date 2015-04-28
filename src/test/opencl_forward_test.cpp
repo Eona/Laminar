@@ -17,7 +17,7 @@ TEST(OpenclForward, Simple)
 
 	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
 
-//	auto l2 = Layer::make<SigmoidLayer>(3);
+	auto l2 = Layer::make<SigmoidLayer>(3);
 
 	auto l3 = Layer::make<CosineLayer>(7);
 
@@ -26,20 +26,14 @@ TEST(OpenclForward, Simple)
 	ForwardNetwork net(engine, dataman);
 
 	net.add_layer(l1);
-//	net.new_connection<FullConnection>(l1, l3);
-//	net.new_connection<FullConnection>(l1, l2);
-//	net.add_layer(l2);
-//	net.new_connection<FullConnection>(l2, l3);
-//	net.add_layer(l3);
-//	net.new_connection<FullConnection>(l3, l4);
+	net.new_connection<FullConnection>(l1, l3);
+	net.new_connection<FullConnection>(l1, l2);
+	net.add_layer(l2);
+	net.new_connection<FullConnection>(l2, l3);
+	net.add_layer(l3);
+	net.new_connection<FullConnection>(l3, l4);
 	net.new_connection<FullConnection>(l1, l4);
 	net.add_layer(l4);
-
-//	net.execute("initialize");
-//	net.execute("load_input");
-//	net.execute("load_target");
-//	net.execute("forward");
-//	net.execute("backward");
 
 	gradient_check<OpenclEngine, OpenclRandDataManager>(net, 1e-2f, 0.8f);
 }
@@ -72,6 +66,7 @@ TEST(OpenclForward, Softmax)
 	net.add_layer(l2);
 	net.new_connection<FullConnection>(l2, l3);
 	net.add_layer(l3);
+
 	net.new_connection<FullConnection>(l3, l4);
 	net.add_layer(l4);
 

@@ -4,7 +4,7 @@ include(eona_gtest)
 # toggle this to avoid recompiling gtests
 set(RUN_CPU_GTEST false)
 set(RUN_CUDA_GTEST true)
-set(RUN_OPENCL_GTEST false)
+set(RUN_OPENCL_GTEST true)
 
 # global option from eona_gtest.cmake
 set(RUN_TEST_DURING_BUILD false)
@@ -25,6 +25,7 @@ set(CUDA_TEST_SUITE
     
 set(OPENCL_TEST_SUITE
     opencl_forward_test
+    opencl_lstm_test
     )
     
 # Initialize to empty list
@@ -46,7 +47,10 @@ endif()
 
 if (RUN_OPENCL_GTEST)
     add_multiple_gtests(${OPENCL_TEST_SUITE})
+#    foreach(target IN ITEMS ${OPENCL_TEST_SUITE})
     link_opencl(${OPENCL_TEST_SUITE})
+#    link_opencl(${target})
+#    endforeach()
     
     list(APPEND TEST_SUITE ${OPENCL_TEST_SUITE})
 endif()
