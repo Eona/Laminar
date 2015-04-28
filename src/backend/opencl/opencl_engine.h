@@ -438,6 +438,7 @@ public:
 	    float t[aux.MEM_SIZE];
 	    aux.to_host(t);
 
+	    write->scalar = 0;
 	    for (int i = 0; i < aux.LEN; ++i) {
 	    	write->scalar += t[i];
 	    }
@@ -449,7 +450,8 @@ public:
 		if (write->isScalar)
 			write->scalar = 0;
 		else
-			write->zero_clear();
+			if (is_initialized)
+				write->zero_clear();
 	}
 
 	void fill_element(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized,
