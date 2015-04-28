@@ -32,6 +32,10 @@ struct LearningState
 	 * Training loss averaged over number of batches in the current epoch
 	 */
 	float trainingLoss = 0;
+	/**
+	 * Current minibatch training loss
+	 */
+	float curBatchTrainingLoss = 0;
 
 	/**
 	 * Validation loss averaged over number of batches in the current epoch
@@ -50,6 +54,7 @@ struct LearningState
 	void clear_loss()
 	{
 		trainingLoss = 0;
+		curBatchTrainingLoss = 0;
 		validationLoss = 0;
 		validationMetric = 0;
 		testingLoss = 0;
@@ -267,7 +272,8 @@ protected:
 	{
 		cout << "Current minibatch: " << state->batchInEpoch
 					<< " in epoch " << state->epoch << endl;
-		cout << "Training loss: " << state->trainingLoss << endl;
+		cout << "Total training loss: " << state->trainingLoss << endl;
+		cout << "Current training loss: " << state->curBatchTrainingLoss << endl;
 	}
 };
 
