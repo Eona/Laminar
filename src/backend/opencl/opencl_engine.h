@@ -88,40 +88,40 @@ public:
 		cl->register_kernel("mat_mult_TN_kernel", "matop_prog", "mult_TN");
 		NUM_LOCAL_WORKER = cl->query_group_size();
 
-//		register_create_op(MEMFUNC_BIND_2(OpenclEngine::create));
-//		register_normal_op("t+t", MEMFUNC_BIND_3(OpenclEngine::add));
-//		register_normal_op("t-t", MEMFUNC_BIND_3(OpenclEngine::sub));
-//		register_normal_op("-t", MEMFUNC_BIND_3(OpenclEngine::negate));
-//		register_normal_op("t*t", MEMFUNC_BIND_3(OpenclEngine::multNN));
-//		register_normal_op("t*s", MEMFUNC_BIND_3(OpenclEngine::multTS));
-//		register_normal_op("s*t", MEMFUNC_BIND_3(OpenclEngine::multST));
-//		register_normal_op("t=t", MEMFUNC_BIND_3(OpenclEngine::assign));
-//		register_context_op<float>("s=const", MEMFUNC_BIND_4(OpenclEngine::assign_const));
-//
-//		register_normal_op("sin", MEMFUNC_BIND_3(OpenclEngine::sin));
-//		register_normal_op("cos", MEMFUNC_BIND_3(OpenclEngine::cos));
-//		register_normal_op("tanh", MEMFUNC_BIND_3(OpenclEngine::tanh));
-//		register_normal_op("tanh_gradient", MEMFUNC_BIND_3(OpenclEngine::tanh_gradient));
-//		register_normal_op("sigmoid", MEMFUNC_BIND_3(OpenclEngine::sigmoid));
-//		register_normal_op("sigmoid_gradient", MEMFUNC_BIND_3(OpenclEngine::sigmoid_gradient));
-//		register_normal_op("transpose", MEMFUNC_BIND_3(OpenclEngine::transpose));
-//		register_normal_op("element_mult", MEMFUNC_BIND_3(OpenclEngine::element_mult));
-//		register_normal_op("square_loss", MEMFUNC_BIND_3(OpenclEngine::square_loss));
-//		register_normal_op("s+s", MEMFUNC_BIND_3(OpenclEngine::add_scalar));
-//
-//		register_normal_op("destroy", MEMFUNC_BIND_3(OpenclEngine::destroy));
-//		register_normal_op("zero_clear", MEMFUNC_BIND_3(OpenclEngine::zero_clear));
-//		register_normal_op("softmax", MEMFUNC_BIND_3(OpenclEngine::softmax));
-//		register_normal_op("label_entropy_loss", MEMFUNC_BIND_3(OpenclEngine::label_entropy_loss));
-//		register_normal_op("label_softmax_entropy_gradient", MEMFUNC_BIND_3(OpenclEngine::label_softmax_entropy_gradient));
-//
-//
-//		register_normal_op("fill_rand", MEMFUNC_BIND_3(OpenclEngine::fill_rand));
-//		register_normal_op("fill_rand_prehistory", MEMFUNC_BIND_3(OpenclEngine::fill_rand));
-//		register_context_op<float>("scale", MEMFUNC_BIND_4(OpenclEngine::scale));
-//		register_context_op<DimIndex, float>("perturb", MEMFUNC_BIND_5(OpenclEngine::perturb));
-//		register_context_op<lmn::ElementFillFunc<float>>(
-//						"fill_element", MEMFUNC_BIND_4(OpenclEngine::fill_element));
+		register_create_op(MEMFUNC_BIND_2(OpenclEngine::create));
+		register_normal_op("t+t", MEMFUNC_BIND_3(OpenclEngine::add));
+		register_normal_op("t-t", MEMFUNC_BIND_3(OpenclEngine::sub));
+		register_normal_op("-t", MEMFUNC_BIND_3(OpenclEngine::negate));
+		register_normal_op("t*t", MEMFUNC_BIND_3(OpenclEngine::multNN));
+		register_normal_op("t*s", MEMFUNC_BIND_3(OpenclEngine::multTS));
+		register_normal_op("s*t", MEMFUNC_BIND_3(OpenclEngine::multST));
+		register_normal_op("t=t", MEMFUNC_BIND_3(OpenclEngine::assign));
+		register_context_op<float>("s=const", MEMFUNC_BIND_4(OpenclEngine::assign_const));
+
+		register_normal_op("sin", MEMFUNC_BIND_3(OpenclEngine::sin));
+		register_normal_op("cos", MEMFUNC_BIND_3(OpenclEngine::cos));
+		register_normal_op("tanh", MEMFUNC_BIND_3(OpenclEngine::tanh));
+		register_normal_op("tanh_gradient", MEMFUNC_BIND_3(OpenclEngine::tanh_gradient));
+		register_normal_op("sigmoid", MEMFUNC_BIND_3(OpenclEngine::sigmoid));
+		register_normal_op("sigmoid_gradient", MEMFUNC_BIND_3(OpenclEngine::sigmoid_gradient));
+		register_normal_op("transpose", MEMFUNC_BIND_3(OpenclEngine::transpose));
+		register_normal_op("element_mult", MEMFUNC_BIND_3(OpenclEngine::element_mult));
+		register_normal_op("square_loss", MEMFUNC_BIND_3(OpenclEngine::square_loss));
+		register_normal_op("s+s", MEMFUNC_BIND_3(OpenclEngine::add_scalar));
+
+		register_normal_op("destroy", MEMFUNC_BIND_3(OpenclEngine::destroy));
+		register_normal_op("zero_clear", MEMFUNC_BIND_3(OpenclEngine::zero_clear));
+		register_normal_op("softmax", MEMFUNC_BIND_3(OpenclEngine::softmax));
+		register_normal_op("label_entropy_loss", MEMFUNC_BIND_3(OpenclEngine::label_entropy_loss));
+		register_normal_op("label_softmax_entropy_gradient", MEMFUNC_BIND_3(OpenclEngine::label_softmax_entropy_gradient));
+
+
+		register_normal_op("fill_rand", MEMFUNC_BIND_3(OpenclEngine::fill_rand));
+		register_normal_op("fill_rand_prehistory", MEMFUNC_BIND_3(OpenclEngine::fill_rand));
+		register_context_op<float>("scale", MEMFUNC_BIND_4(OpenclEngine::scale));
+		register_context_op<DimIndex, float>("perturb", MEMFUNC_BIND_5(OpenclEngine::perturb));
+		register_context_op<lmn::ElementFillFunc<float>>(
+						"fill_element", MEMFUNC_BIND_4(OpenclEngine::fill_element));
 	}
 
 

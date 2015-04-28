@@ -2,8 +2,8 @@
  * Eona Studio (c)2015
  */
 
-#define CL 0
-#define CUBLAS 1
+#define CL 1
+#define CUBLAS 0
 #include <iostream>
 
 #if CL
