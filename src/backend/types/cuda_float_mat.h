@@ -100,7 +100,7 @@ public:
 	 * Copy device data to host
 	 */
 	void zero_clear() {
-		// FIXME host_data should never be null
+		// TODO device_data should never be null
 		if (device_data)
 			fill(0);
 	}

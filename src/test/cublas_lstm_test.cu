@@ -40,7 +40,7 @@ TEST(CublasLSTM, Composite)
 
 	net.add_layer(lossLayer);
 
-	gradient_check<CublasEngine, CublasRandDataManager>(net, 1e-2f, 1.f);
+	gradient_check<CublasEngine, CublasRandDataManager>(net, 1e-2f, 2.f);
 }
 
 
@@ -76,5 +76,5 @@ TEST(CublasLSTM, Softmax)
 
 	net.add_layer(lossLayer);
 
-	gradient_check<CublasEngine, CublasRandDataManager>(net, 1e-2f, 1.f);
+	gradient_check<CublasEngine, CublasRandDataManager>(net, 1e-2f, 2.f);
 }

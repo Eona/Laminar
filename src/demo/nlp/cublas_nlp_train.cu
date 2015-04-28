@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 
 	const int INPUT_DIM = CORPUS_ONE_HOT_DIM;
 	const int TARGET_DIM = CORPUS_ONE_HOT_DIM;
-	const int LSTM_DIM = 128;
+	const int LSTM_DIM = 230;
 	const int BATCH_SIZE = 10;
 	const int HISTORY_LENGTH = 100;
 	const int MAX_EPOCH = 100;
@@ -71,21 +71,42 @@ int main(int argc, char **argv)
 	auto net = RecurrentNetwork::make(engine, dataman, HISTORY_LENGTH);
 
 	net->add_layer(inLayer);
+
+//	auto sigLayer1 = Layer::make<SigmoidLayer>(LSTM_DIM);
+//	auto sigLayer2 = Layer::make<SigmoidLayer>(LSTM_DIM);
+//	net->new_connection<FullConnection>(inLayer, sigLayer1);
+//	net->new_recur_connection<FullConnection>(sigLayer1, sigLayer1);
+//	net->new_bias_layer(sigLayer1);
+//	net->add_layer(sigLayer1);
+//	net->new_connection<FullConnection>(sigLayer1, sigLayer2);
+//	net->new_recur_connection<FullConnection>(sigLayer2, sigLayer2);
+//	net->new_bias_layer(sigLayer2);
+//	net->add_layer(sigLayer2);
+//	net->new_connection<FullConnection>(sigLayer2, lossLayer);
+
 	auto lstmComposite =
 		Composite<RecurrentNetwork>::make<LstmComposite>(inLayer, LSTM_DIM);
-
 	net->add_composite(lstmComposite);
 	net->new_connection<FullConnection>(lstmComposite->out_layer(), lossLayer);
+
 	net->add_layer(lossLayer);
 
+//	auto opm = Optimizer::make<SimpleSGD>(lr);
 	auto opm = Optimizer::make<ClippedMomentumGD>(lr, moment);
 	auto eval = NoMetricEvaluator<CublasEngine>::make(net);
 	auto stopper = StopCriteria::make<MaxEpochStopper>(MAX_EPOCH);
 	auto ser = NullSerializer::make();
-	auto evalsched = EpochIntervalSchedule::make(0, 1);
+	auto evalsched = EpochIntervalSchedule::make(1, 0);
 	auto obv = MinibatchObserver::make();
 
 	auto session = new_learning_session(net, opm, eval, stopper, ser, evalsched, obv);
+
+//	net->execute("initialize");
+//	net->execute("load_input");
+//	net->execute("load_target");
+//
+//	auto inveri = engine->read_memory(net->layers[0]->in_value_ptr(0));
+//	auto tarveri = engine->read_memory(net->lossLayer->target_value(0));
 
 	session->initialize();
 	session->train();
