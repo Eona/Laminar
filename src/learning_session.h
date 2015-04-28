@@ -90,21 +90,20 @@ public:
 			net->execute("forward");
 			net->execute("backward");
 
-			/********* optionally observe network at every minibatch ********/
-			observer->observe(net, state);
-
 			/*********** Update state after this minibatch ***********/
 			// all batches processed so far
 			state->batchAll += state->batchSize;
 			// current batch in the current epoch
 			state->batchInEpoch += state->batchSize;
 			// Accumulate batch loss to this epoch's total training loss
-			totalTrainingLoss += evaluator->read_network_loss();
+			float curBatchLoss = evaluator->read_network_loss();
+			totalTrainingLoss += curBatchLoss;
 			// running average
 			state->trainingLoss = totalTrainingLoss / state->batchInEpoch;
+			state->curBatchTrainingLoss = curBatchLoss / state->batchSize;
 
-//			DEBUG_MSG("Minibatch", state->batchInEpoch);
-//			DEBUG_MSG("Training loss", state->trainingLoss);
+			/********* optionally observe network at every minibatch ********/
+			observer->observe(net, state);
 
 			/*********** Update parameters ***********/
 			if (!optimizerRoutine)

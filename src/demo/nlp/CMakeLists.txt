@@ -1,6 +1,6 @@
-message("Eona build demo/mnist")
+message("Eona build demo/NLP")
 
-if (false)
+if (true)
 set(NLP_CUBLAS_EXE 
     cublas_nlp_train)
 cublas_add_executable(${NLP_CUBLAS_EXE} ${NLP_CUBLAS_EXE}.cu)

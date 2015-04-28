@@ -33,8 +33,9 @@ protected:
 	// one batch of image (28 * 28 * batchSize)
 	void load_data(DataPtr write, vector<float>& imageBatch)
 	{
+		int i = 0;
 		write->fill([&](int r, int c) {
-			return imageBatch[r + c * MNIST_INPUT_DIM];
+			return imageBatch[i++];
 		});
 	}
 };

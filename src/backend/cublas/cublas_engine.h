@@ -71,6 +71,7 @@ public:
 		register_normal_op("tanh_gradient", MEMFUNC_BIND_3(CublasEngine::tanh_gradient));
 		register_normal_op("sigmoid", MEMFUNC_BIND_3(CublasEngine::sigmoid));
 		register_normal_op("sigmoid_gradient", MEMFUNC_BIND_3(CublasEngine::sigmoid_gradient));
+		register_normal_op("clip", MEMFUNC_BIND_3(CublasEngine::clip));
 		register_normal_op("transpose", MEMFUNC_BIND_3(CublasEngine::transpose));
 		register_normal_op("element_mult", MEMFUNC_BIND_3(CublasEngine::element_mult));
 		register_normal_op("square_loss", MEMFUNC_BIND_3(CublasEngine::square_loss));
@@ -108,8 +109,10 @@ public:
 			write->scalar = 0;
 		else
 		{
-			LMN_ASSERT_THROW(is_initialized,
-				EngineException("CUDA zero_clear must have been inited"));
+//			LMN_ASSERT_THROW(is_initialized,
+//				EngineException("CUDA zero_clear must have been inited"));
+			// FIXME unknown reason: why zero_clear is called on uninit data???
+			if (is_initialized)
 			write->zero_clear();
 		}
 	}
@@ -371,6 +374,12 @@ public:
 			if(timed) {\
 				t.stop();\
 			}\
+	}
+
+	// clip LSTM gradient between -1 and 1
+	inline void clip(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
+	{
+		MATOP("clip", cu_clip_func);
 	}
 
 	inline void sigmoid(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)

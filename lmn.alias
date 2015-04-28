@@ -51,3 +51,4 @@ python ../lmncheck.py check_val dummy_lstm
 '
 
 alias tv='make gtest && chv'
+alias m='mnist/cublas_mnist_train'

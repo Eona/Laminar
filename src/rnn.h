@@ -39,11 +39,11 @@
 class RecurrentNetwork : public Network
 {
 public:
-	RecurrentNetwork(EngineBase::Ptr engine_, DataManagerBase::Ptr dataManager_,
-			int historyLength_, int maxTemporalSkip_ = 1) :
-		Network(engine_, dataManager_),
-		historyLength(historyLength_),
-		maxTemporalSkip(maxTemporalSkip_)
+	RecurrentNetwork(EngineBase::Ptr engine, DataManagerBase::Ptr dataManager,
+			int historyLength, int maxTemporalSkip = 1) :
+		Network(engine, dataManager),
+		historyLength(historyLength),
+		maxTemporalSkip(maxTemporalSkip)
 	{ }
 
 	virtual ~RecurrentNetwork() {};
@@ -119,17 +119,30 @@ protected:
 	/**************************************
 	******* Training logic *********
 	**************************************/
-	// FIXME notify DataManager about new sequence start?
 	virtual void load_input()
 	{
 		for (int frame = 0; frame < this->historyLength; ++frame)
+		{
 			dataManager->upload_input(layers[0]->in_value(frame));
+			// TODO has to upload an instruction because the compiled executable
+			// cannot run a non-registered instruction
+			dataManager->upload_prepare_next_batch();
+		}
+		// UGLY UGLY UGLY
+		// ASSUME load_input is followed by load_target, prepare for load_target
+		dataManager->upload_reset_sequence();
 	}
 
 	virtual void load_target()
 	{
 		for (int frame = 0; frame < this->historyLength; ++frame)
+		{
 			dataManager->upload_target(lossLayer->target_value(frame));
+			// TODO UGLY UGLY UGLY, don't prepare_next_batch at the last load
+			// because LearningSession will call prepare_next_batch again
+			if (frame != this->historyLength - 1)
+				dataManager->upload_prepare_next_batch();
+		}
 	}
 
 	virtual void zero_clear()

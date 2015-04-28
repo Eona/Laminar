@@ -32,6 +32,10 @@ struct LearningState
 	 * Training loss averaged over number of batches in the current epoch
 	 */
 	float trainingLoss = 0;
+	/**
+	 * Current minibatch training loss
+	 */
+	float curBatchTrainingLoss = 0;
 
 	/**
 	 * Validation loss averaged over number of batches in the current epoch
@@ -50,6 +54,7 @@ struct LearningState
 	void clear_loss()
 	{
 		trainingLoss = 0;
+		curBatchTrainingLoss = 0;
 		validationLoss = 0;
 		validationMetric = 0;
 		testingLoss = 0;
@@ -228,9 +233,19 @@ struct Observer : public ObserverBase
 {
 	virtual ~Observer() {}
 
-	virtual void observe(std::shared_ptr<NetworkT>, LearningState::Ptr) = 0;
+	void observe(std::shared_ptr<Network> net_, LearningState::Ptr state)
+	{
+		auto net = std::dynamic_pointer_cast<NetworkT>(net_);
+		LMN_ASSERT_NULLPTR(net,
+			LearningException("Observer network type mismatch"));
+
+		this->observe_impl(net, state);
+	}
 
 	GEN_GENERIC_MAKEPTR_STATIC_MEMBER(Observer)
+
+protected:
+	virtual void observe_impl(std::shared_ptr<NetworkT>, LearningState::Ptr) = 0;
 };
 
 /**
@@ -238,9 +253,29 @@ struct Observer : public ObserverBase
  */
 struct NullObserver : public Observer<Network>
 {
-	void observe(std::shared_ptr<Network>, LearningState::Ptr) { }
-
 	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(NullObserver)
+
+protected:
+	void observe_impl(std::shared_ptr<Network>, LearningState::Ptr) { }
 };
+
+// Print every batch. Debugging
+struct MinibatchObserver :
+		public Observer<Network>
+{
+	virtual ~MinibatchObserver() {}
+
+	GEN_CONCRETE_MAKEPTR_STATIC_MEMBER(MinibatchObserver)
+
+protected:
+	virtual void observe_impl(std::shared_ptr<Network>, LearningState::Ptr state)
+	{
+		cout << "Current minibatch: " << state->batchInEpoch
+					<< " in epoch " << state->epoch << endl;
+		cout << "Total training loss: " << state->trainingLoss << endl;
+		cout << "Current training loss: " << state->curBatchTrainingLoss << endl;
+	}
+};
+
 
 #endif /* LEARNING_LISTENER_H_ */

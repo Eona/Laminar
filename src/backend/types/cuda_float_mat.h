@@ -31,7 +31,7 @@ public:
 	float * device_data;
 
 	CudaFloatMat(){
-		init_dim(1,1);
+		init_dim(0,0);
 		op = CUBLAS_OP_N;
 		device_data = NULL;
 		host_data = NULL;
@@ -99,6 +99,11 @@ public:
 	/*
 	 * Copy device data to host
 	 */
+	void zero_clear() {
+		// TODO device_data should never be null
+		if (device_data)
+			fill(0);
+	}
 
 	void to_host() {
 		if (!host_data) host_data = (float *)malloc(MEM_SIZE);
@@ -123,9 +128,6 @@ public:
 		}
 	}
 
-	void zero_clear() {
-		fill(0);
-	}
 	void fill_rand(int seed) {
 		auto r = alloc_vector();
 		srand (seed);

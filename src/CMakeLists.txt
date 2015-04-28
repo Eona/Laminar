@@ -27,6 +27,9 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/backend/cublas
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/demo/mnist 
                 ${CMAKE_CURRENT_BINARY_DIR}/mnist)
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/demo/nlp 
+                ${CMAKE_CURRENT_BINARY_DIR}/nlp)
+
 # ==========================================
 message("Eona build src/ toplevel")
 

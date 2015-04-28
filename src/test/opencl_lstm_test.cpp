@@ -2,15 +2,9 @@
  * Eona Studio (c) 2015
  */
 
-#include "cublas_helper.h"
+#include "opencl_helper.h"
 
-FakeRand& rand_conn = FakeRand::instance_connection();
-FakeRand& rand_prehis = FakeRand::instance_prehistory();
-FakeRand& rand_input = FakeRand::instance_input();
-FakeRand& rand_target = FakeRand::instance_target();
-
-
-TEST(CublasLSTM, Composite)
+TEST(OpenclLSTM, Composite)
 {
 	const int HISTORY = 5;
 	const int INPUT_DIM = 2;
@@ -20,8 +14,8 @@ TEST(CublasLSTM, Composite)
 	auto inLayer = Layer::make<ConstantLayer>(INPUT_DIM);
 	auto lossLayer = Layer::make<SquareLossLayer>(TARGET_DIM);
 
-	auto engine = EngineBase::make<CublasEngine>();
-	auto dataman = DataManagerBase::make<CublasRandDataManager>(
+	auto engine = EngineBase::make<OpenclEngine>();
+	auto dataman = DataManagerBase::make<OpenclRandDataManager>(
 			engine, INPUT_DIM, TARGET_DIM, BATCH);
 
 	RecurrentNetwork net(engine, dataman, HISTORY);
@@ -35,16 +29,14 @@ TEST(CublasLSTM, Composite)
 	//		Composite<RecurrentNetwork>::create<LstmComposite>(inLayer, 7);
 
 	net.add_composite(lstmComposite);
-
 	net.new_connection<FullConnection>(lstmComposite->out_layer(), lossLayer);
-
 	net.add_layer(lossLayer);
 
-	gradient_check<CublasEngine, CublasRandDataManager>(net, 1e-2f, 2.f);
+	gradient_check<OpenclEngine, OpenclRandDataManager>(net, 1e-2f, 1.f);
 }
 
 
-TEST(CublasLSTM, Softmax)
+TEST(OpenclLSTM, Softmax)
 {
 	const int HISTORY = 5;
 	const int INPUT_DIM = 2;
@@ -54,8 +46,8 @@ TEST(CublasLSTM, Softmax)
 	auto inLayer = Layer::make<ConstantLayer>(INPUT_DIM);
 	auto lossLayer = Layer::make<LabelSoftmaxEntropyLayer>(TARGET_DIM);
 
-	auto engine = EngineBase::make<CublasEngine>();
-	auto dataman = DataManagerBase::make<CublasRandDataManager>(
+	auto engine = EngineBase::make<OpenclEngine>();
+	auto dataman = DataManagerBase::make<OpenclRandDataManager>(
 			engine, INPUT_DIM, 1, BATCH,
 			// classification task
 			TARGET_DIM);
@@ -69,12 +61,9 @@ TEST(CublasLSTM, Softmax)
 	// or you can add the object directly:
 	// auto lstmCompositeObject =
 	//		Composite<RecurrentNetwork>::create<LstmComposite>(inLayer, 7);
-
 	net.add_composite(lstmComposite);
-
 	net.new_connection<FullConnection>(lstmComposite->out_layer(), lossLayer);
-
 	net.add_layer(lossLayer);
 
-	gradient_check<CublasEngine, CublasRandDataManager>(net, 1e-2f, 2.f);
+	gradient_check<OpenclEngine, OpenclRandDataManager>(net, 1e-2f, 1.f);
 }

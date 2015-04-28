@@ -7,6 +7,7 @@ function(opencl_add_executable target)
 endfunction()
 
 function(link_opencl targets)
+    list(APPEND targets ${ARGN})
     foreach(target IN ITEMS ${targets})
         target_link_libraries(${target} ${OPENCL_LIBRARIES})
     endforeach()

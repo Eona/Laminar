@@ -447,6 +447,8 @@ public:
 
 	    auto t = vector<float>(aux.LEN);
 	    aux.to_host(&t[0]);
+
+	    write->scalar = 0;
 	    for (int i = 0; i < aux.LEN; ++i) {
 	    	write->scalar += t[i];
 	    }
@@ -459,7 +461,8 @@ public:
 			write->scalar = 0;
 		} else {
 		    //y = x
-			fill(write, 0);
+			if (is_initialized)
+				fill(write, 0);
 		}
 	}
 

@@ -32,7 +32,7 @@ public:
 
 	bool prepare_next_batch_impl(LearningPhase)
 	{
-		throw UnimplementedException("DummyDataManger cannot prepare_next_batch");
+		return false;
 	}
 
 	Dimension input_dim() const

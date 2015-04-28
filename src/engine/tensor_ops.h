@@ -168,6 +168,10 @@ typedef std::function<Tensor(const Tensor&)> TransferFunction;
 
 	GEN_UNARY_OP(softmax);
 
+	/**
+	 * clip a value (e.g. LSTM gradient) to between [-1, 1]
+	 */
+	GEN_UNARY_OP(clip);
 
 #define GEN_BINARY_OP(fname, ReturnT) \
 	ReturnT fname(const Tensor& x1, const Tensor& x2) \

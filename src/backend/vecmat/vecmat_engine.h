@@ -8,6 +8,7 @@
 #include "../../engine/engine.h"
 #include "../../engine/tensor.h"
 #include "../../engine/tensor_ops.h"
+#include "../../utils/rand_utils.h"
 #include "../vecmat/vecmat.h"
 
 #define VECTORMAT_DEBUG false
@@ -349,6 +350,28 @@ inline void square_loss(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_init
 		}
 }
 
+inline void clip(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
+{
+	debug_msg("clip", is_initialized);
+	debug_assert_init("clip", is_initialized);
+
+	Vecmatf& rmat = *reads[0];
+	Vecmatf& wmat = *write;
+	rmat.assert_same_dim(wmat, "clip reads[0] VS write addr");
+
+	auto clipper = [](float x) ->float
+	{
+		if (x != x) return 0; // NaN
+		if (x < -1) return -1;
+		else if (x > 1) return 1;
+		else return x;
+	};
+
+	for (int r = 0; r < rmat.row(); ++r)
+		for (int c = 0; c < rmat.col(); ++c)
+			wmat(r, c) = clipper(rmat(r, c));
+}
+
 /**
  * Max-exp trick for numerical stability
  * 1) find max in each column vector
@@ -420,6 +443,11 @@ inline void label_entropy_loss(
 	for (int c = 0; c < rmat.col(); ++c)
 	{
 		int label = (int) labels(0, c);
+
+		LMN_ASSERT_THROW(0 <= label && label < rmat.row(),
+			VecmatEngineException("label_softmax_entropy_gradient label value error\n" +
+				to_str(label) + " should < rowdim " + to_str(rmat.row())));
+
 		// value at label:
 		loss(0, 0) += -std::log(rmat(label, c));
 	}
@@ -453,6 +481,11 @@ inline void label_softmax_entropy_gradient(
 	for (int c = 0; c < rmat.col(); ++c)
 	{
 		int label = (int) labels(0, c);
+
+		LMN_ASSERT_THROW(0 <= label && label < rmat.row(),
+			VecmatEngineException("label_softmax_entropy_gradient label value error\n" +
+				to_str(label) + " should < rowdim " + to_str(rmat.row())));
+
 		wmat(label, c) -= 1.f; // y - t (sparse)
 	}
 }
@@ -465,7 +498,7 @@ inline void zero_clear(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initi
 	// FIXME loss layer output might be zero cleared without being initialized
 //	debug_assert_init("zero_clear", is_initialized);
 
-	if (is_initialized)
+//	if (is_initialized)
 		write->zero_clear();
 }
 
@@ -563,6 +596,7 @@ public:
 		register_normal_op("element_mult", Impl::element_mult);
 		register_normal_op("square_loss", Impl::square_loss);
 		register_normal_op("softmax", Impl::softmax);
+		register_normal_op("clip", Impl::clip);
 		register_normal_op("label_entropy_loss", Impl::label_entropy_loss);
 		register_normal_op("label_softmax_entropy_gradient", Impl::label_softmax_entropy_gradient);
 
