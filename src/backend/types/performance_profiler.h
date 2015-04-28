@@ -101,7 +101,6 @@ public:
 		if (res == Sec) duration /= 1e9;
 		if (res == Millisec) duration /= 1e6;
 		if (res == Microsec) duration /= 1e3;
-
 		return duration;
 	}
 
@@ -268,7 +267,10 @@ struct MemoryEntry{
 
 class MemoryMonitor{
 public:
-
+	enum Resolution
+	{
+		Sec, Millisec, Microsec, Nanosec
+	};
 
 	MemoryMonitor() {
 		t0 = Clock::now();
@@ -292,15 +294,24 @@ public:
 		mem_list.push_back(e);
 	}
 
-	void print_stats(std::string exp_name) {
+	void print_stats(Resolution res, std::string exp_name) {
 		ofstream outfile;
 		outfile.open("../experiment/" + exp_name  + "/memory_profile.csv");
 		outfile<<"time_stamp,memory_load"<<endl;
 		for (auto entry: mem_list) {
     		uint64_t stamp = to_time_scale(Millisec, std::chrono::duration_cast<nanoseconds>(entry.time_stamp - t0).count());
+    		cout<<stamp<<","<<entry.mem_size<<endl;
 		}
 	}
+
 private:
+
+	uint64_t to_time_scale(Resolution res, uint64_t duration) {
+		if (res == Sec) duration /= 1e9;
+		if (res == Millisec) duration /= 1e6;
+		if (res == Microsec) duration /= 1e3;
+		return duration;
+	}
 	vector<MemoryEntry> mem_list;
 	Clock::time_point t0;
 };
