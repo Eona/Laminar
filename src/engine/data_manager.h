@@ -141,12 +141,13 @@ protected:
 	// TODO ugly workaround
 	virtual void reset_sequence(LearningPhase) {}
 
-private:
-	LearningPhase learnPhase;
 	/**
 	 * If input/target stream has ended (current epoch finishes)
 	 */
 	std::array<bool, LEARNING_PHASE_N> isEndOfEpoch;
+
+private:
+	LearningPhase learnPhase;
 
 };
 

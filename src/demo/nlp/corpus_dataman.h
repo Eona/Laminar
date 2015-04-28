@@ -103,6 +103,9 @@ public:
 				}
 			}
 			inputStreams[PHASE] = std::move(dataStream);
+
+		// WARNING streamPos points to data batch, so streamSizes should be reduced to batches
+			streamSizes[PHASE] /= batchSize;
 		}
 
 		// the last target (at the very end, no next char) will be all spaces
@@ -172,11 +175,14 @@ public:
 	}
 
 	// TODO Ugly workaround, see DataManager for more info
-	virtual void reset_sequence(LearningPhase phase)
+	virtual void reset_sequence(LearningPhase learnPhase)
 	{
-		this->streamPos[to_int(phase)] -= historyLength;
-		LMN_ASSERT_THROW(this->streamPos[to_int(phase)] >= 0,
+		int phase = to_int(learnPhase);
+		this->streamPos[phase] -= historyLength;
+		LMN_ASSERT_THROW(this->streamPos[phase] >= 0,
 			DataException("reset_sequence error"));
+		// WARNING: must reset, otherwise will assume EOF!
+		this->isEndOfEpoch[phase] = false;
 	}
 
 	Dimension input_dim() const
