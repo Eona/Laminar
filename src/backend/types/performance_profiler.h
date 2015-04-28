@@ -274,6 +274,7 @@ public:
 
 	MemoryMonitor() {
 		t0 = Clock::now();
+		initial_load = query_load();
 	}
 
 	void log_memory (size_t current_load){
@@ -283,14 +284,18 @@ public:
 
 	//Log memory using CUDA's memory profiler
 	void log_memory (){
+		MemoryEntry e(query_load());
+		mem_list.push_back(e);
+	}
+
+	size_t query_load() {
 		size_t free_byte;
 		size_t total_byte;
         if ( cudaSuccess != cudaMemGetInfo( &free_byte, &total_byte )) {
             printf("Error: cudaMemGetInfo fails, %s \n");
             exit(1);
         }
-		MemoryEntry e(total_byte-free_byte);
-		mem_list.push_back(e);
+		return total_byte-free_byte;
 	}
 
 	void print_stats(Resolution res, std::string exp_name) {
@@ -299,7 +304,7 @@ public:
 		outfile<<"time_stamp,memory_load"<<endl;
 		for (auto entry: mem_list) {
     		uint64_t stamp = to_time_scale(Millisec, std::chrono::duration_cast<nanoseconds>(entry.time_stamp - t0).count());
-    		cout<<stamp<<","<<entry.mem_size<<endl;
+    		cout<<stamp<<","<<entry.mem_size - initial_load<<endl;
 		}
 	}
 
@@ -313,6 +318,8 @@ private:
 	}
 	vector<MemoryEntry> mem_list;
 	Clock::time_point t0;
+
+	size_t initial_load;
 };
 
 
