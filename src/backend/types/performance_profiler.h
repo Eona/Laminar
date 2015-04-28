@@ -22,7 +22,9 @@
 #include <cuda.h>
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
+#include "../opencl/ocl_util.h"
 //#include "../../gpu_utils.h"
+
 
 using namespace std;
 typedef std::chrono::high_resolution_clock Clock;
@@ -38,12 +40,14 @@ struct TimerEntry{
 	size_t op_index;
 	Event begin_event;
 	Event end_event;
+	bool use_event;
 
 	TimerEntry(uint64_t t, size_t d, size_t index) {
 		time = t;
 		data_size = d;
 		op_index = index;
 		time_stamp = Clock::now();
+		use_event = false;
 	}
 
 	TimerEntry(Event e0, Event e1, size_t d, size_t index) {
@@ -51,6 +55,7 @@ struct TimerEntry{
 		end_event = e1;
 		op_index = index;
 		data_size = d;
+		use_event = true;
 	}
 };
 
@@ -105,23 +110,30 @@ public:
 	}
 
 	void process_timer(TimerEntry<cl_event>& entry) {
-
+		if (entry.use_event) {
+    		cl_ulong time_start, time_end; //record time in nanoseconds
+        	OCL_CHECKERROR(clWaitForEvents(1, &entry.end_event));
+        	OCL_CHECKERROR(clGetEventProfilingInfo(entry.begin_event, CL_PROFILING_COMMAND_START, sizeof(time_start), &time_start, NULL));
+        	OCL_CHECKERROR(clGetEventProfilingInfo(entry.end_event, CL_PROFILING_COMMAND_END, sizeof(time_end), &time_end, NULL));
+        	entry.time = time_end - time_start;
+		}
 	}
 
 	void process_timer(TimerEntry<cudaEvent_t>& entry) {
-
+		if (entry.use_event) {
+			cudaEventSynchronize(entry.end_event);
+			float elapsed;
+			cudaEventElapsedTime(&elapsed, entry.begin_event, entry.end_event);
+			entry.time = elapsed * 1e6;
+		}
 	}
 
 
 	void print_stats(Resolution res, std::string exp_name) {
-//		Clock::time_point t1 = Clock::now();
-//		nanoseconds global_duration = std::chrono::duration_cast<nanoseconds>(t1 - t0);
-//		named_timers["global"].time += global_duration;
-//		named_timers["global"].data_size = 1;
-
     	for ( auto timer: named_timers ) {
     		ofstream outfile;
     		outfile.open("../experiment/" + exp_name  + "/" + timer.first + ".csv");
+    		outfile<<"time_stamp,";
     		int sum_data = 0;
     		uint64_t sum_time = 0;
     		for (auto entry: timer.second) {
@@ -242,6 +254,44 @@ private:
 	cudaEvent_t stopTime;
 
 };
+
+
+struct MemoryEntry{
+	Clock::time_point time_stamp;
+	size_t mem_size;
+
+	MemoryEntry(size_t mem_size){
+		this->mem_size = mem_size;
+		time_stamp = Clock::now();
+	}
+};
+
+class MemoryMonitor{
+	vector<MemoryEntry> mem_list;
+	Clock::time_point t0;
+
+	MemoryMonitor() {
+		t0 = Clock::now();
+	}
+
+	void record_mem (size_t current_load){
+		MemoryEntry e(current_load);
+		mem_list.push_back(e);
+	}
+
+	void record_mem (){
+		size_t free_byte;
+		size_t total_byte;
+		cuda_status = cudaMemGetInfo( &free_byte, &total_byte ) ;
+        if ( cudaSuccess != cuda_status ){
+            printf("Error: cudaMemGetInfo fails, %s \n");
+            exit(1);
+        }
+		MemoryEntry e(total_byte-free_byte);
+		mem_list.push_back(e);
+	}
+};
+
 
 
 #endif
