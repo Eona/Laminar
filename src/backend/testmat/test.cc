@@ -22,7 +22,7 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
-
+	MemoryMonitor mm;
 /**###############Correctness test###################**/
 #if 0
 #if CL
@@ -285,6 +285,7 @@ int main(int argc, char **argv)
     v = {m1, m2};
 
     for (int i = 0; i < 10; ++i){
+    	mm.log_memory();
         engine.sub(v, out, true);
         engine.add(v, out, true);
         engine.negate(v, out, true);
@@ -302,7 +303,7 @@ int main(int argc, char **argv)
         engine.square_loss(v, lm, true);
         cout<<"loss: "<<lm->scalar<<endl;
     }
-
+    mm.print_stats(MemoryMonitor::Microsec, "test");
 #if CL
     gt.print_stats(GlobalTimer<cl_event>::Microsec, "test");
 #else
