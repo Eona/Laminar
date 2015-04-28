@@ -285,8 +285,7 @@ public:
 	void log_memory (){
 		size_t free_byte;
 		size_t total_byte;
-		cuda_status = cudaMemGetInfo( &free_byte, &total_byte ) ;
-        if ( cudaSuccess != cuda_status ){
+        if ( cudaSuccess != cudaMemGetInfo( &free_byte, &total_byte )) {
             printf("Error: cudaMemGetInfo fails, %s \n");
             exit(1);
         }
