@@ -350,6 +350,27 @@ inline void square_loss(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_init
 		}
 }
 
+inline void clip(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized)
+{
+	debug_msg("clip", is_initialized);
+	debug_assert_init("clip", is_initialized);
+
+	Vecmatf& rmat = *reads[0];
+	Vecmatf& wmat = *write;
+	rmat.assert_same_dim(wmat, "clip reads[0] VS write addr");
+
+	auto clipper = [](float x) {
+		if (x != x) return 0; // NaN
+		if (x < -1) return -1;
+		else if (x > 1) return 1;
+		else return x;
+	};
+
+	for (int r = 0; r < rmat.row(); ++r)
+		for (int c = 0; c < rmat.col(); ++c)
+			wmat(r, c) = clipper(rmat(r, c));
+}
+
 /**
  * Max-exp trick for numerical stability
  * 1) find max in each column vector
@@ -476,7 +497,7 @@ inline void zero_clear(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initi
 	// FIXME loss layer output might be zero cleared without being initialized
 //	debug_assert_init("zero_clear", is_initialized);
 
-	if (is_initialized)
+//	if (is_initialized)
 		write->zero_clear();
 }
 
@@ -574,6 +595,7 @@ public:
 		register_normal_op("element_mult", Impl::element_mult);
 		register_normal_op("square_loss", Impl::square_loss);
 		register_normal_op("softmax", Impl::softmax);
+		register_normal_op("clip", Impl::clip);
 		register_normal_op("label_entropy_loss", Impl::label_entropy_loss);
 		register_normal_op("label_softmax_entropy_gradient", Impl::label_softmax_entropy_gradient);
 

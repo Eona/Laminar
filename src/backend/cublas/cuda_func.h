@@ -18,6 +18,10 @@ __device__ float sigmoid_func (float x)
 
 __device__ float clip_func (float x)
 {
+	// NaN
+	if (x != x)
+		return 0;
+
 	if (x < -1)
 		return -1;
 	else if (x > 1)
