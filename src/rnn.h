@@ -126,10 +126,11 @@ protected:
 			dataManager->upload_input(layers[0]->in_value(frame));
 			// TODO has to upload an instruction because the compiled executable
 			// cannot run a non-registered instruction
-			if (frame != this->historyLength - 1)
-				dataManager->upload_prepare_next_batch();
+			dataManager->upload_prepare_next_batch();
 		}
-
+		// UGLY UGLY UGLY
+		// ASSUME load_input is followed by load_target, prepare for load_target
+		dataManager->upload_reset_sequence();
 	}
 
 	virtual void load_target()
@@ -137,6 +138,8 @@ protected:
 		for (int frame = 0; frame < this->historyLength; ++frame)
 		{
 			dataManager->upload_target(lossLayer->target_value(frame));
+			// TODO UGLY UGLY UGLY, don't prepare_next_batch at the last load
+			// because LearningSession will call prepare_next_batch again
 			if (frame != this->historyLength - 1)
 				dataManager->upload_prepare_next_batch();
 		}

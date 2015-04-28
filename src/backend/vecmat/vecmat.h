@@ -131,37 +131,37 @@ public:
 
 	FloatT& operator()(int row, int col)
 	{
-		LMN_ASSERT_THROW(0<= row && row < this->row() && 0 <= col && col < this->col(),
+/*		LMN_ASSERT_THROW(0<= row && row < this->row() && 0 <= col && col < this->col(),
 			VecmatException("access out of range\n"
 				"Dim = " + container2str(Dimension{this->row(), this->col()}) +
-				"\naccessor = " + container2str(Dimension{row, col})))
+				"\naccessor = " + container2str(Dimension{row, col})))*/
 		return mat[row][col];
 	}
 
 	FloatT operator()(int row, int col) const
 	{
-		LMN_ASSERT_THROW(0<= row && row < this->row() && 0 <= col && col < this->col(),
+/*		LMN_ASSERT_THROW(0<= row && row < this->row() && 0 <= col && col < this->col(),
 			VecmatException("access out of range\n"
 				"Dim = " + container2str(Dimension{this->row(), this->col()}) +
-				"\naccessor = " + container2str(Dimension{row, col})))
+				"\naccessor = " + container2str(Dimension{row, col})))*/
 		return mat[row][col];
 	}
 
 	FloatT& at(DimIndex idx)
 	{
-		LMN_ASSERT_THROW(idx[0] < this->row() && idx[1] < this->col(),
+/*		LMN_ASSERT_THROW(idx[0] < this->row() && idx[1] < this->col(),
 			VecmatException("access out of range\n"
 				"Dim = " + container2str(Dimension{this->row(), this->col()}) +
-				"\naccessor = " + container2str(idx)))
+				"\naccessor = " + container2str(idx)))*/
 		return mat[idx[0]][idx[1]];
 	}
 
 	FloatT at(DimIndex idx) const
 	{
-		LMN_ASSERT_THROW(idx[0] < this->row() && idx[1] < this->col(),
+/*		LMN_ASSERT_THROW(idx[0] < this->row() && idx[1] < this->col(),
 			VecmatException("access out of range\n"
 				"Dim = " + container2str(Dimension{this->row(), this->col()}) +
-				"\naccessor = " + container2str(idx)))
+				"\naccessor = " + container2str(idx)))*/
 		return mat[idx[0]][idx[1]];
 	}
 

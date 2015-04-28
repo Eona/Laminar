@@ -27,11 +27,6 @@ public:
 	static constexpr const char *OP_LOAD_INPUT = "load_input";
 	static constexpr const char *OP_LOAD_TARGET = "load_target";
 
-	// TODO
-	// ugly workaround for RNN: load_input() compiled version has to trigger
-	// a prepare_next_epoch instruction every time
-	static constexpr const char *OP_PREPARE_NEXT_BATCH = "prepare_next_epoch";
-
 	/**
 	 * Network calls the request to fill in input Tensor
 	 */
@@ -48,11 +43,22 @@ public:
 		engine->upload(Instruction(OP_LOAD_TARGET, {}, tensor.addr));
 	}
 
-	// TODO ugly workaround
+	// TODO ugly workaround for RNN: load_input() compiled version has to trigger
+	// a prepare_next_epoch instruction every time
+	static constexpr const char *OP_PREPARE_NEXT_BATCH = "prepare_next_epoch";
 	void upload_prepare_next_batch()
 	{
 		// FIXME should NOT use addr 0, because it's is_initialize field might be altered
 		engine->upload(Instruction(OP_PREPARE_NEXT_BATCH, {}, 0));
+	}
+
+	// TODO ugly workaround for RNN: load_input() compiled version has to trigger
+	// a reset_sequence every time after loading all inputs (to prepare for target)
+	static constexpr const char *OP_RESET_SEQUENCE = "reset_sequence";
+	void upload_reset_sequence()
+	{
+		// FIXME should NOT use addr 0, because it's is_initialize field might be altered
+		engine->upload(Instruction(OP_RESET_SEQUENCE, {}, 0));
 	}
 
 	LearningPhase learning_phase() const
@@ -132,6 +138,9 @@ protected:
 	 */
 	virtual void reset_epoch_impl(LearningPhase) = 0;
 
+	// TODO ugly workaround
+	virtual void reset_sequence(LearningPhase) {}
+
 private:
 	LearningPhase learnPhase;
 	/**
@@ -172,6 +181,7 @@ public:
 			}
 		);
 
+		// Ugly workaround
 		engine_->register_normal_op(DataManagerBase::OP_PREPARE_NEXT_BATCH,
 			[this](vector<DataPtr>, DataPtr write, bool is_initialized)
 			{
@@ -179,6 +189,14 @@ public:
 					DataException("prepare_next_batch failure because end of epoch reached."));
 
 				this->prepare_next_batch();
+			}
+		);
+
+		// Ugly workaround
+		engine_->register_normal_op(DataManagerBase::OP_RESET_SEQUENCE,
+			[this](vector<DataPtr>, DataPtr write, bool is_initialized)
+			{
+				this->reset_sequence(this->learning_phase());
 			}
 		);
 	}
