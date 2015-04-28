@@ -44,7 +44,7 @@ public:
 
 	bool prepare_next_batch_impl(LearningPhase)
 	{
-		throw UnimplementedException("VecmatRandDataManager cannot prepare_next_batch");
+		return false;
 	}
 
 	void reset_epoch_impl(LearningPhase)
