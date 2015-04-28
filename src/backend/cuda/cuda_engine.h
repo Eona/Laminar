@@ -39,17 +39,29 @@ public:
 	{
 		gt = NULL;
 		timed = false;
+//		log_mem = false;
 		init();
 
 	}
+
 	CudaEngine(GlobalTimer<cudaEvent_t> * g) :
 		Engine<CudaFloatMat>()
 	{
 		gt = g;
 		timed = true;
+//		log_mem = false;
 		init();
-
 	}
+
+//	CudaEngine(GlobalTimer<cudaEvent_t> * g, MemoryMonitor * m) :
+//		Engine<CudaFloatMat>()
+//	{
+//		gt = g;
+//		mm = m;
+//		timed = true;
+//		log_mem = true;
+//		init();
+//	}
 
 	void init() {
 	    cublasCreate(&handle);
@@ -402,10 +414,6 @@ public:
 	    write->local_transpose();
 	}
 
-
-
-
-
 	inline void sigmoid(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 		debug_msg("sigmoid", is_initialized);
@@ -639,6 +647,8 @@ private:
 	bool timed;
 	GlobalTimer<cudaEvent_t> * gt;
 
+//	bool log_mem;
+//	MemoryMonitor * mm;
 };
 
 #endif /* CUDA_ENGINE_H_ */

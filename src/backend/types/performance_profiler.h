@@ -133,7 +133,7 @@ public:
     	for ( auto timer: named_timers ) {
     		ofstream outfile;
     		outfile.open("../experiment/" + exp_name  + "/" + timer.first + ".csv");
-    		outfile<<"time_stamp,";
+    		outfile<<"time_stamp,op_index,duration,size"<<endl;
     		int sum_data = 0;
     		uint64_t sum_time = 0;
     		for (auto entry: timer.second) {
@@ -267,19 +267,20 @@ struct MemoryEntry{
 };
 
 class MemoryMonitor{
-	vector<MemoryEntry> mem_list;
-	Clock::time_point t0;
+public:
+
 
 	MemoryMonitor() {
 		t0 = Clock::now();
 	}
 
-	void record_mem (size_t current_load){
+	void log_memory (size_t current_load){
 		MemoryEntry e(current_load);
 		mem_list.push_back(e);
 	}
 
-	void record_mem (){
+	//Log memory using CUDA's memory profiler
+	void log_memory (){
 		size_t free_byte;
 		size_t total_byte;
 		cuda_status = cudaMemGetInfo( &free_byte, &total_byte ) ;
@@ -290,6 +291,18 @@ class MemoryMonitor{
 		MemoryEntry e(total_byte-free_byte);
 		mem_list.push_back(e);
 	}
+
+	void print_stats(std::string exp_name) {
+		ofstream outfile;
+		outfile.open("../experiment/" + exp_name  + "/memory_profile.csv");
+		outfile<<"time_stamp,memory_load"<<endl;
+		for (auto entry: mem_list) {
+    		uint64_t stamp = to_time_scale(Millisec, std::chrono::duration_cast<nanoseconds>(entry.time_stamp - t0).count());
+		}
+	}
+private:
+	vector<MemoryEntry> mem_list;
+	Clock::time_point t0;
 };
 
 
