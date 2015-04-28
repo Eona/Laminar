@@ -93,12 +93,17 @@ int main(int argc, char **argv)
 	auto net = RecurrentNetwork::make(engine, dataman, HISTORY_LENGTH);
 
 	net->add_layer(inLayer);
-	auto lstmComposite =
-		Composite<RecurrentNetwork>::make<LstmComposite>(inLayer, LSTM_DIM);
-
-	net->add_composite(lstmComposite);
-	net->new_connection<FullConnection>(lstmComposite->out_layer(), lossLayer);
+	auto sigLayer = Layer::make<SigmoidLayer>(LSTM_DIM);
+	net->new_connection<FullConnection>(inLayer, sigLayer);
+	net->new_recur_connection<FullConnection>(sigLayer, sigLayer);
+	net->add_layer(sigLayer);
+//	auto lstmComposite =
+//		Composite<RecurrentNetwork>::make<LstmComposite>(inLayer, LSTM_DIM);
+//	net->add_composite(lstmComposite);
+//	net->new_connection<FullConnection>(lstmComposite->out_layer(), lossLayer);
+	net->new_connection<FullConnection>(sigLayer, lossLayer);
 	net->add_layer(lossLayer);
+
 
 	auto opm = Optimizer::make<MomentumGD>(lr, moment);
 	auto eval = NoMetricEvaluator<VecmatEngine>::make(net);

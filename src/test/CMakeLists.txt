@@ -2,7 +2,7 @@ message("Eona build test/")
 include(eona_gtest)
 
 # toggle this to avoid recompiling gtests
-set(RUN_CPU_GTEST false)
+set(RUN_CPU_GTEST true)
 set(RUN_CUDA_GTEST true)
 set(RUN_OPENCL_GTEST true)
 

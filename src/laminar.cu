@@ -6,6 +6,7 @@
 #include "gated_connection.h"
 #include "loss_layer.h"
 #include "activation_layer.h"
+#include "backend/cublas/cublas_engine.h"
 #include "bias_layer.h"
 #include "parameter.h"
 #include "network.h"
@@ -24,7 +25,6 @@
 #include "backend/vecmat/vecmat_engine.h"
 #include "backend/vecmat/vecmat_rand_dataman.h"
 #include "backend/vecmat/vecmat_func_dataman.h"
-#include "backend/cublas/cuda_engine.h"
 #include "backend/types/cuda_float_mat.h"
 #include "backend/opencl/opencl_engine.h"
 #include "utils/global_utils.h"
@@ -68,7 +68,7 @@ struct PrintGradient : public Observer<Network>
 
 int main(int argc, char **argv)
 {
-	auto images = read_mnist_image(string("../data/mnist/") + MNIST_TRAIN_IMAGE_FILE, 10, 3, true);
+/*	auto images = read_mnist_image(string("../data/mnist/") + MNIST_TRAIN_IMAGE_FILE, 10, 3, true);
 	auto mnlabels = read_mnist_label(string("../data/mnist/") + MNIST_TRAIN_LABEL_FILE, 10, 3);
 
 	lmn::Vecmatf mat(28, 28);
@@ -83,7 +83,7 @@ int main(int argc, char **argv)
 
 	DEBUG_MSG(mnlabels[0]);
 	DEBUG_MSG(mnlabels[1]);
-	DEBUG_MSG(mnlabels[2]);
+	DEBUG_MSG(mnlabels[2]);*/
 
 	using namespace lmn::VecmatImpl;
 	using lmn::Vecmatf;
@@ -115,11 +115,11 @@ int main(int argc, char **argv)
 	label_entropy_loss({ans, labels}, scalar, true);
 	label_softmax_entropy_gradient({ans, labels}, ans, true);
 
-	DEBUG_MSG(*scalar);
-	DEBUG_MSG(*ans);
+//	DEBUG_MSG(*scalar);
+//	DEBUG_MSG(*ans);
 
 	/************************************/
-	/*auto engine = std::make_shared<OpenclEngine>();
+/*	auto engine = std::make_shared<OpenclEngine>();
 	Tensor t1(engine, {4, 7});
 	Tensor t2(engine, {7, 9});
 
@@ -189,7 +189,7 @@ int main(int argc, char **argv)
 	net->new_connection<FullConnection>(l3, lloss);
 	net->add_layer(lloss);
 
-	auto opm = Optimizer::make<SGD>(0.3);
+	auto opm = Optimizer::make<SimpleSGD>(0.3);
 	auto eval = NoMetricEvaluator<VecmatEngine>::make(net);
 	auto stopper = StopCriteria::make<MaxEpochStopper>(MAX_EPOCH);
 	auto ser = NullSerializer::make();

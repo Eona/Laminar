@@ -359,7 +359,8 @@ inline void clip(vector<VecmatfPtr> reads, VecmatfPtr write, bool is_initialized
 	Vecmatf& wmat = *write;
 	rmat.assert_same_dim(wmat, "clip reads[0] VS write addr");
 
-	auto clipper = [](float x) {
+	auto clipper = [](float x) ->float
+	{
 		if (x != x) return 0; // NaN
 		if (x < -1) return -1;
 		else if (x > 1) return 1;
