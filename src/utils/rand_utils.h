@@ -112,6 +112,9 @@ public:
 
 	float operator() ()
 	{
+		LMN_ASSERT_THROW(size() != 0,
+			LaminarException("FakeRand no internal sequence set."));
+
 		if (i >= size())
 		{
 			if (isCircularWrap)
