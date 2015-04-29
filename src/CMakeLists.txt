@@ -11,7 +11,8 @@ include(eona_opencl)
 include(eona_eigen)
 
 set(RUN_GTEST false)
-set(RUN_DEMO true)
+set(RUN_DEMO_MNIST true)
+set(RUN_DEMO_NLP false)
 
 # CMAKE_CURRENT_BINARY_DIR: where generated cmake files go 
 # CMAKE_BINARY_DIR: top level of your build tree
@@ -28,10 +29,12 @@ endif()
 #    ${CMAKE_CURRENT_BINARY_DIR}/backend/types)
 
 # =================== DEMO ==================
-if (RUN_DEMO)
+if (RUN_DEMO_MNIST)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/demo/mnist 
                     ${CMAKE_CURRENT_BINARY_DIR}/mnist)
+endif()
     
+if (RUN_DEMO_NLP)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/demo/nlp 
                     ${CMAKE_CURRENT_BINARY_DIR}/nlp)
 endif()

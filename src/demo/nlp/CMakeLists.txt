@@ -7,12 +7,6 @@ cublas_add_executable(${NLP_CUBLAS_EXE} ${NLP_CUBLAS_EXE}.cu)
 link_opencl(${NLP_CUBLAS_EXE})
 endif()
 
-if (false)
-set(NLP_OPENCL_EXE 
-    opencl_nlp_train)
-opencl_add_executable(${NLP_OPENCL_EXE} ${NLP_OPENCL_EXE}.cpp)
-endif()
-
 if (true)
 set(NLP_VECMAT_EXE
     vecmat_nlp_train)
