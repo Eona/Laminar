@@ -96,6 +96,8 @@ public:
 		register_normal_op("t*s", MEMFUNC_BIND_3(OpenclEngine::multTS));
 		register_normal_op("s*t", MEMFUNC_BIND_3(OpenclEngine::multST));
 		register_normal_op("t=t", MEMFUNC_BIND_3(OpenclEngine::assign));
+		register_normal_op("s+s", MEMFUNC_BIND_3(OpenclEngine::add_scalar));
+		register_normal_op("s*s", MEMFUNC_BIND_3(OpenclEngine::mult_scalar));
 		register_context_op<float>("s=const", MEMFUNC_BIND_4(OpenclEngine::assign_const));
 
 		register_normal_op("sin", MEMFUNC_BIND_3(OpenclEngine::sin));
@@ -107,7 +109,6 @@ public:
 		register_normal_op("transpose", MEMFUNC_BIND_3(OpenclEngine::transpose));
 		register_normal_op("element_mult", MEMFUNC_BIND_3(OpenclEngine::element_mult));
 		register_normal_op("square_loss", MEMFUNC_BIND_3(OpenclEngine::square_loss));
-		register_normal_op("s+s", MEMFUNC_BIND_3(OpenclEngine::add_scalar));
 
 		register_normal_op("destroy", MEMFUNC_BIND_3(OpenclEngine::destroy));
 		register_normal_op("zero_clear", MEMFUNC_BIND_3(OpenclEngine::zero_clear));
@@ -351,6 +352,14 @@ public:
 		reads[1]->isScalar = true;
 		write->isScalar = true;
 		write->scalar = reads[0]->scalar + reads[1]->scalar;
+	}
+
+	void mult_scalar(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
+	{
+		reads[0]->isScalar = true;
+		reads[1]->isScalar = true;
+		write->isScalar = true;
+		write->scalar = reads[0]->scalar * reads[1]->scalar;
 	}
 
 	inline void scale(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized, float scalar)
