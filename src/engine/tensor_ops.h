@@ -147,7 +147,7 @@ typedef std::function<Tensor(const Tensor&)> TransferFunction;
 	typename std::enable_if<is_tensor_base<TensorT>::value, TensorT>::type \
 	fname(const TensorT& x) \
 	{ \
-		Tensor ans(x.engine); \
+		TensorT ans(x.engine); \
 		x.upload(Instruction(STRINGFY(fname), {x.addr}, ans.addr)); \
 		return ans; \
 	}
