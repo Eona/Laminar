@@ -1,10 +1,17 @@
 /*
- * Eona Studio (c)2015
+ * Eona Studio (c) 2015
  */
 
-#define CL 1
-#define CUBLAS 0
-#include <iostream>
+#include "../../utils/global_utils.h"
+#include "../../utils/timer.h"
+#include "../eigen/eigen_engine.h"
+#include "../vecmat/vecmat_engine.h"
+#include "performance_profiler.h"
+
+#include <Eigen/Dense>
+
+#define CL true
+#define CUBLAS true
 
 #if CL
 #include "../opencl/ocl_util.h"
@@ -17,232 +24,75 @@ typedef std::shared_ptr<CudaFloatMat> CudaFloatMatPtr;
 typedef std::shared_ptr<CudaFloatMat> CudaFloatMatPtr;
 #endif
 
-using namespace std;
-
-
 int main(int argc, char **argv)
 {
+#define ELAPSED(instr, factor) \
+	t.start(); instr; elap = t.elapsed(); cout << TEST_SIZE*TEST_SIZE*factor / elap << endl;
+
+	CpuTimer t(Timer::Microsec);
+
+	/**************************************
+	******* Eigen engine *********
+	**************************************/
+	int TEST_SIZE = 2000;
+	auto m1e = std::make_shared<MatrixXf>(TEST_SIZE, TEST_SIZE);
+	auto m2e = std::make_shared<MatrixXf>(TEST_SIZE, TEST_SIZE);
+	auto m3e = std::make_shared<MatrixXf>(TEST_SIZE, TEST_SIZE);
+
+	namespace impe = lmn::EigenImpl;
+
+	impe::fill_rand({}, m1e, true);
+	impe::fill_rand({}, m2e, true);
+
+	double elap;
+
+	print_title("Eigen throughput");
+	ELAPSED(impe::add({m1e, m2e}, m3e, true), 2)
+	ELAPSED(impe::sub({m1e, m2e}, m3e, true), 2)
+	ELAPSED(impe::mult_t_t({m1e, m2e}, m3e, true), 2)
+	ELAPSED(*m3e = m1e->transpose() * *m2e, 2)
+	ELAPSED(*m3e = *m1e * m2e->transpose(), 2)
+	ELAPSED(impe::negate({m1e}, m3e, true), 1)
+	ELAPSED(impe::assign({m1e}, m3e, true), 1)
+	ELAPSED(impe::sigmoid({m1e}, m3e, true), 1)
+	ELAPSED(impe::sin({m1e}, m3e, true), 1)
+	ELAPSED(impe::cos({m1e}, m3e, true), 1)
+	ELAPSED(impe::element_mult({m1e, m2e}, m3e, true), 2)
+
+	TEST_SIZE = 1000;
+	using Vecmatf = lmn::Vecmatf;
+	auto m1v = std::make_shared<Vecmatf>(TEST_SIZE, TEST_SIZE);
+	auto m2v = std::make_shared<Vecmatf>(TEST_SIZE, TEST_SIZE);
+	auto m3v = std::make_shared<Vecmatf>(TEST_SIZE, TEST_SIZE);
+
+	/**************************************
+	******* Vecmat engine *********
+	**************************************/
+	namespace impv = lmn::VecmatImpl;
+
+	FakeRand::instance_connection().gen_uniform_rand(TEST_SIZE*TEST_SIZE*2, -1, 1, DEBUG_SEED);
+
+	impv::fill_rand({}, m1v, true);
+	impv::fill_rand({}, m2v, true);
+
+	print_title("Vecmat throughput");
+	ELAPSED(impv::add<1>({m1v, m2v}, m3v, true), 2)
+	ELAPSED(impv::sub<1>({m1v, m2v}, m3v, true), 2)
+	ELAPSED(*m3v = *m1v * *m2v, 2)
+	ELAPSED(*m3v = m1v->transpose() * *m2v, 2)
+	ELAPSED(*m3v = *m1v * m2v->transpose(), 2)
+	ELAPSED(impv::negate<1>({m1v}, m3v, true), 1)
+	ELAPSED(impv::assign<1>({m1v}, m3v, true), 1)
+	ELAPSED(impv::sigmoid({m1v}, m3v, true), 1)
+	ELAPSED(impv::sin({m1v}, m3v, true), 1)
+	ELAPSED(impv::cos({m1v}, m3v, true), 1)
+	ELAPSED(impv::element_mult({m1v, m2v}, m3v, true), 2)
+
+
+	/**************************************
+	******* cuBLAS and OpenCL *********
+	**************************************/
 	MemoryMonitor mm;
-/**###############Correctness test###################**/
-#if 0
-#if CL
-	OpenclEngine engine;
-#else
-	CudaEngine engine;
-#endif
-	//create testcases
-
-	float t1[9] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10, 5};
-	float t2[9] = {0.1, 6.8, 4.9, 2.0, 1, 4, 5, 9, 4};
-	float t3[6] = {1.1, 7.8, 5.9, 3.0, 2, 5};
-	float t4[8] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10};
-	float t5[8] = {1.1, 7.8, 5.9, 3.0, 2, 5, 6, 10};
-	float tl[3] = {0, 1, 2};
-
-//
-//
-#if CL
-	OpenclFloatMatPtr m1 (new OpenclFloatMat(t1, 3, 3, engine.cl));
-	OpenclFloatMatPtr m2 (new OpenclFloatMat(t2, 3, 3, engine.cl));
-	OpenclFloatMatPtr m3 (new OpenclFloatMat(t3, 2, 3, engine.cl));
-	OpenclFloatMatPtr m4 (new OpenclFloatMat(t4, 4, 2, engine.cl));
-	OpenclFloatMatPtr m5 (new OpenclFloatMat(t5, 4, 2, engine.cl));
-	OpenclFloatMatPtr m_label (new OpenclFloatMat(tl, 1,3, engine.cl));
-	OpenclFloatMatPtr lm (new OpenclFloatMat());
-	OpenclFloatMatPtr ms (new OpenclFloatMat());
-	OpenclFloatMatPtr out(new OpenclFloatMat());
-	ms->isScalar = true;
-	std::vector<OpenclFloatMatPtr> v, v1, v2, v3, vl ,vs;
-#else
-	CudaFloatMatPtr m1 (new CudaFloatMat(t1, 3, 3));
-	CudaFloatMatPtr m2 (new CudaFloatMat(t2, 3, 3));
-	CudaFloatMatPtr m3 (new CudaFloatMat(t3, 2, 3));
-	CudaFloatMatPtr m4 (new CudaFloatMat(t4, 4, 2));
-	CudaFloatMatPtr m5 (new CudaFloatMat(t5, 4, 2));
-	CudaFloatMatPtr m_label (new CudaFloatMat(tl, 1,3));
-	CudaFloatMatPtr lm (new CudaFloatMat());
-	CudaFloatMatPtr ms (new CudaFloatMat());
-	CudaFloatMatPtr out(new CudaFloatMat());
-	ms->isScalar = true;
-	std::vector<CudaFloatMatPtr> v, v1, v2, v3, vl, vs;
-#endif
-
-	v = {m1, m2};
-	v1 = {m3, m1};
-	v2 = {m1, m3};
-	v3 = {m4, m5};
-	vl = {m1, m_label};
-
-	engine.sub(v, out, false);
-	out->print_matrix("m1 - m2");
-
-	engine.add(v, out, true);
-	out->print_matrix("m1 + m2");
-
-	engine.negate(v, out, true);
-	out->print_matrix("-m1");
-
-	engine.multNN(v, out, true);
-	out->print_matrix("m1 * m2");
-
-	engine.multNN(v1, out, false);
-	out->print_matrix("m3 * m1");
-
-	engine.multNT(v2, out, false);
-	out->print_matrix("m1 * T(m3)");
-
-	engine.multTN(v3, out, false);
-	out->print_matrix("T(m4) * m5");
-
-	engine.assign(v1, out, false);
-	out->print_matrix("m3 -> out");
-
-	ms->scalar = 3;
-	vs = {ms, m1};
-	engine.multST(vs, out, false);
-	out->print_matrix("m1*3");
-
-	vs = {m1, ms};
-	engine.multTS(vs, out, false);
-	out->print_matrix("3*m1");
-
-	engine.sigmoid(v, out, false);
-	out->print_matrix("sigmod(m1)");
-
-	engine.sigmoid_gradient(v, out, true);
-	out->print_matrix("sigmoid_gradient(m1)");
-
-	engine.sin(v, out, true);
-	out->print_matrix("sin(m1)");
-
-	engine.cos(v, out, true);
-	out->print_matrix("cos(m1)");
-
-	engine.tanh(v, out, true);
-	out->print_matrix("tanh(m1)");
-
-	engine.tanh_gradient(v, out, true);
-	out->print_matrix("tanh_gradient(m1)");
-
-	engine.element_mult(v, out, true);
-	out->print_matrix("m1 .* m2");
-
-    engine.square_loss(v, lm, true);
-    cout<<"loss: "<<lm->scalar<<endl;
-
-    engine.label_entropy_loss(vl, lm, true);
-    cout<<"entropy: "<<lm->scalar<<endl;
-
-    engine.label_softmax_entropy_gradient(vl, out, false);
-	out->print_matrix("softmax(m1)");
-#endif
-/**###############Consistency test###################**/
-
-#if 0
-#if CL
-	OpenclEngine engine;
-#else
-	CudaEngine engine;
-#endif
-	//create testcases
-
-//
-//
-#if CL
-	OpenclFloatMatPtr m1 (new OpenclFloatMat());
-	OpenclFloatMatPtr m2 (new OpenclFloatMat());
-	OpenclFloatMatPtr m3 (new OpenclFloatMat());
-	OpenclFloatMatPtr m4 (new OpenclFloatMat());
-	OpenclFloatMatPtr m5 (new OpenclFloatMat());
-	OpenclFloatMatPtr lm (new OpenclFloatMat());
-	OpenclFloatMatPtr out(new OpenclFloatMat());
-
-	std::vector<OpenclFloatMatPtr> v, v1, v2, v3, vl, rv;
-#else
-	CudaFloatMatPtr m1 (new CudaFloatMat());
-	CudaFloatMatPtr m2 (new CudaFloatMat());
-	CudaFloatMatPtr m3 (new CudaFloatMat());
-	CudaFloatMatPtr m4 (new CudaFloatMat());
-	CudaFloatMatPtr m5 (new CudaFloatMat());
-	CudaFloatMatPtr lm (new CudaFloatMat());
-	CudaFloatMatPtr out(new CudaFloatMat());
-
-	std::vector<CudaFloatMatPtr> v, v1, v2, v3, vl, rv;
-#endif
-    int dim1 = 100;
-    int dim2 = 200;
-    int dim3 = 700;
-    engine.create(m1, {dim1, dim2});
-    engine.create(m2, {dim1, dim2});
-    engine.create(m3, {dim2, dim3});
-    engine.create(m4, {300, 1});
-    engine.create(m5, {300, 70});
-
-
-	engine.fill_rand(rv, m1, true);
-	engine.fill_rand(rv, m2, true);
-	engine.fill_rand(rv, m3, true);
-	engine.fill_rand(rv, m4, true);
-	engine.fill_rand(rv, m5, true);
-
-	v = {m1,m2};
-	engine.sub(v, out, false);
-	out->print_matrix("m1 - m2");
-
-	engine.add(v, out, true);
-	out->print_matrix("m1 + m2");
-
-	engine.negate(v, out, true);
-	out->print_matrix("-m1");
-
-	v = {m1, m3};
-
-	engine.multNN(v, out, false);
-	out->print_matrix("m1 * m3");
-
-//	engine.multNT(v, out, false);
-//	out->print_matrix("m1 * T(m3)");
-//
-//	engine.multTN(v, out, false);
-//	out->print_matrix("T(m4) * m5");
-
-	engine.assign(v, out, false);
-	out->print_matrix("m1 -> out");
-
-	engine.sigmoid(v, out, false);
-	out->print_matrix("sigmod(m1)");
-
-	engine.sigmoid_gradient(v, out, true);
-	out->print_matrix("sigmoid_gradient(m1)");
-
-	engine.sin(v, out, true);
-	out->print_matrix("sin(m1)");
-
-	engine.cos(v, out, true);
-	out->print_matrix("cos(m1)");
-
-	engine.tanh(v, out, true);
-	out->print_matrix("tanh(m1)");
-
-	engine.tanh_gradient(v, out, true);
-	out->print_matrix("tanh_gradient(m1)");
-
-	v = {m1,m2};
-	engine.element_mult(v, out, true);
-	out->print_matrix("m1 .* m2");
-
-//    engine.square_loss(v, lm, true);
-//    cout<<"loss: "<<lm->scalar<<endl;
-//
-//    engine.label_entropy_loss(vl, lm, true);
-//    cout<<"entropy: "<<lm->scalar<<endl;
-//
-//    engine.label_softmax_entropy_gradient(vl, out, false);
-//	out->print_matrix("softmax(m1)");
-#endif
-
-/**###############Performance test###################**/
-#if 1
 
 #if CL
     GlobalTimer<cl_event> gt;
@@ -310,5 +160,6 @@ int main(int argc, char **argv)
     gt.print_stats(GlobalTimer<cudaEvent_t>::Microsec, "test");
 #endif
 
-#endif
 }
+
+
