@@ -14,6 +14,14 @@ function(cublas_add_executable target)
     cuda_add_cublas_to_target(${target})
 endfunction()
 
+# Link multiple targets with cublas 
+function(link_cublas targets)
+    list(APPEND targets ${ARGN})
+    foreach(target IN ITEMS ${targets})
+        cuda_add_cublas_to_target(${target})
+    endforeach()
+endfunction()
+
 #cuda_add_executable(${MAIN} ${SOURCES})
 
 #CUDA_ADD_CUFFT_TO_TARGET( cuda_target )
