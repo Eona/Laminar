@@ -16,33 +16,22 @@ TEST(EigenForward, Simple)
 					engine, INPUT_DIM, TARGET_DIM, BATCH_SIZE);
 
 	auto l1 = Layer::make<ConstantLayer>(INPUT_DIM);
-
-//	auto l2 = Layer::make<SigmoidLayer>(7);
-
-//	auto l3 = Layer::make<TanhLayer>(4);
-
+	auto l2 = Layer::make<SigmoidLayer>(7);
+	auto l3 = Layer::make<TanhLayer>(4);
 	auto l4 = Layer::make<SquareLossLayer>(TARGET_DIM);
 
 	ForwardNetwork net(engine, dataman);
 
 	net.add_layer(l1);
-//	net.new_bias_layer(l2);
-//	net.new_connection<FullConnection>(l1, l2);
-//	net.add_layer(l2);
-//	net.new_bias_layer(l3);
-//	net.new_connection<FullConnection>(l2, l3);
-//	net.add_layer(l3);
-//	net.new_bias_layer(l4);
-//	net.new_connection<FullConnection>(l3, l4);
-
-	net.new_connection<FullConnection>(l1, l4);
+	net.new_bias_layer(l2);
+	net.new_connection<FullConnection>(l1, l2);
+	net.add_layer(l2);
+	net.new_bias_layer(l3);
+	net.new_connection<FullConnection>(l2, l3);
+	net.add_layer(l3);
+	net.new_bias_layer(l4);
+	net.new_connection<FullConnection>(l3, l4);
 	net.add_layer(l4);
-
-//	net.execute("initialize");
-//	net.execute("load_input");
-//	net.execute("load_target");
-//	net.execute("forward");
-//	net.execute("backward");
 
 	gradient_check<EigenEngine, EigenRandDataManager>(net, 1e-2f, 0.8f);
 }

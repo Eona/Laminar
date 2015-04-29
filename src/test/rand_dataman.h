@@ -10,6 +10,7 @@
 #include "../utils/rand_utils.h"
 #include "../utils/laminar_utils.h"
 
+// TODO sequence rand data support
 template<typename DataT>
 class RandDataManager :
 		public DataManager<DataT>

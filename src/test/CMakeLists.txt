@@ -3,19 +3,17 @@ include(eona_gtest)
 
 # toggle this to avoid recompiling gtests
 set(RUN_CPU_GTEST true)
-set(RUN_CUDA_GTEST true)
-set(RUN_OPENCL_GTEST true)
+set(RUN_CUDA_GTEST false)
+set(RUN_OPENCL_GTEST false)
 
 # global option from eona_gtest.cmake
 set(RUN_TEST_DURING_BUILD false)
 set(USE_CUBLAS true)
 
 set(CPU_TEST_SUITE 
-    dummy_forward_test dummy_rnn_test 
-    dummy_lstm_test
-    vecmat_forward_test vecmat_rnn_test 
-    vecmat_lstm_test
-    eigen_forward_test
+    dummy_forward_test dummy_rnn_test dummy_lstm_test
+    vecmat_forward_test vecmat_rnn_test vecmat_lstm_test
+    eigen_forward_test eigen_rnn_test eigen_lstm_test
 #    misc_test
     )
 
