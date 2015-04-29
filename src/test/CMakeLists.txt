@@ -15,6 +15,7 @@ set(CPU_TEST_SUITE
     dummy_lstm_test
     vecmat_forward_test vecmat_rnn_test 
     vecmat_lstm_test
+    eigen_forward_test
 #    misc_test
     )
 
