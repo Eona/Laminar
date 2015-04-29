@@ -13,6 +13,11 @@
 #include "mnist_dataman.h"
 #include "../../backend/opencl/opencl_engine.h"
 
+// WARNING OpenCL program must run in the same relative directly w.r.t. the kernel
+// For example, if a header refers to "./XXX_kernel.cl", and the header is in A/,
+// if you compile the executable to dir B/, you'll have to move the executable
+// to dir A/ and execute. Otherwise "invalid kernel name"
+
 struct OpenclMnistDataManager :
 		public MnistDataManager<OpenclFloatMat>
 {
@@ -47,26 +52,28 @@ int main(int argc, char **argv)
 	const int BATCH_SIZE = 50;
 	const int MAX_EPOCH = 100;
 
-//	GlobalTimer<cl_event> gt;
-
 	auto engine = EngineBase::make<OpenclEngine>();
 	auto dataman =
 		DataManagerBase::make<OpenclMnistDataManager>(engine, BATCH_SIZE, "../data/mnist");
 
 	auto linput = Layer::make<ConstantLayer>(INPUT_DIM);
 	auto lhidden1 = Layer::make<SigmoidLayer>(300);
-	auto lhidden2 = Layer::make<SigmoidLayer>(300);
+	auto lhidden2 = Layer::make<SigmoidLayer>(200);
+	auto lhidden3 = Layer::make<SigmoidLayer>(200);
 	auto lloss = Layer::make<LabelSoftmaxEntropyLayer>(TARGET_DIM);
 
 	auto net = ForwardNetwork::make(engine, dataman);
 	net->add_layer(linput);
 	net->new_connection<FullConnection>(linput, lhidden1);
-//	net->new_bias_layer(lhidden1);
+	net->new_bias_layer(lhidden1);
 	net->add_layer(lhidden1);
 	net->new_connection<FullConnection>(lhidden1, lhidden2);
-//	net->new_bias_layer(lhidden2);
+	net->new_bias_layer(lhidden2);
 	net->add_layer(lhidden2);
-	net->new_connection<FullConnection>(lhidden2, lloss);
+	net->new_connection<FullConnection>(lhidden2, lhidden3);
+	net->new_bias_layer(lhidden3);
+	net->add_layer(lhidden3);
+	net->new_connection<FullConnection>(lhidden3, lloss);
 	net->add_layer(lloss);
 
 //	net->execute("initialize");
@@ -75,10 +82,6 @@ int main(int argc, char **argv)
 //	net->execute("forward");
 //	net->execute("backward");
 //	net->execute("zero_clear");
-
-//	DEBUG_MSG(linput->in_value(0).addr);
-//	lmn::zero_clear(linput->in_value(0));
-//	engine->flush_execute();
 
 	auto opm = Optimizer::make<SimpleSGD>(0.01);
 	auto eval = NoMetricEvaluator<OpenclEngine>::make(net);

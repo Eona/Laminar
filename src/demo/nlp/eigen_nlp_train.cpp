@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 
 	net->add_layer(lossLayer);
 
-	auto opm = Optimizer::make<ClippedMomentumGD>(lr, moment);
+	auto opm = Optimizer::make<MomentumGD>(lr, moment);
 	auto eval = NoMetricEvaluator<EigenEngine>::make(net);
 	auto stopper = StopCriteria::make<MaxEpochStopper>(MAX_EPOCH);
 	auto ser = NullSerializer::make();

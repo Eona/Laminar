@@ -7,12 +7,6 @@ cublas_add_executable(${MNIST_CUBLAS_EXE} ${MNIST_CUBLAS_EXE}.cu)
 link_opencl(${MNIST_CUBLAS_EXE})
 endif()
 
-if (false)
-set(MNIST_OPENCL_EXE 
-    opencl_mnist_train)
-opencl_add_executable(${MNIST_OPENCL_EXE} ${MNIST_OPENCL_EXE}.cpp)
-endif()
-
 if (true)
 set(MNIST_VECMAT_EXE
     vecmat_mnist_train)
