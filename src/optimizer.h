@@ -147,6 +147,11 @@ protected:
 	float learningRate;
 	float moment;
 
+	Tensor& momentum_map(Tensor& paramValue)
+	{
+		return *this->momentumMap[paramValue.addr];
+	}
+
 	virtual void initialize_impl()
 	{ }
 
@@ -231,4 +236,68 @@ protected:
 	}
 };
 
+
+/**
+ * Adagrad (adaptive gradient)
+ */
+class Adagrad : public MomentumGD
+{
+public:
+	/**
+	 * @param initLearningRate
+	 */
+	Adagrad(float initLearningRate) :
+		MomentumGD(initLearningRate, 0)
+	{}
+
+	virtual ~Adagrad() {}
+
+protected:
+	virtual void update_impl(
+			Tensor& paramValue, Tensor& paramGradient, LearningState::Ptr state)
+	{
+		Tensor& accumulated = momentum_map(paramValue);
+
+		// accumulated += dx ** 2
+		accumulated += lmn::element_mult(paramGradient, paramGradient);
+
+		paramValue -= learningRate *
+				lmn::element_divide(paramGradient, lmn::sqrt(accumulated + 1e-7f));
+	}
+};
+
+
+/**
+ * Adagrad (adaptive gradient)
+ */
+class RmsProp : public MomentumGD
+{
+public:
+	/**
+	 * @param initLearningRate
+	 */
+	RmsProp(float initLearningRate, float decay) :
+		MomentumGD(initLearningRate, 0),
+		decay(decay)
+	{}
+
+	virtual ~RmsProp() {}
+
+private:
+	float decay;
+
+protected:
+	virtual void update_impl(
+			Tensor& paramValue, Tensor& paramGradient, LearningState::Ptr state)
+	{
+		Tensor& accumulated = momentum_map(paramValue);
+
+		// accumulated = decay * accumulated + (1 - decay) * dx**2
+		accumulated = decay * accumulated +
+				(1 - decay) * lmn::element_mult(paramGradient, paramGradient);
+
+		paramValue -= learningRate *
+				lmn::element_divide(paramGradient, lmn::sqrt(accumulated + 1e-7f));
+	}
+};
 #endif /* OPTIMIZER_H_ */
