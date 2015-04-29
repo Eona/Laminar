@@ -133,6 +133,24 @@ Tensor operator*(float scalar, const Tensor& x)
 	return ans;
 }
 
+// element-wise addition
+Tensor operator+(const Tensor& x, float scalar)
+{
+	Tensor ans(x.engine);
+	ans.upload(Instruction("t+const", {x.addr}, ans.addr,
+			OpContext<float>::make(scalar)));
+	return ans;
+}
+
+Tensor operator+(float scalar, const Tensor& x)
+{
+	Tensor ans(x.engine);
+	ans.upload(Instruction("t+const", {x.addr}, ans.addr,
+			OpContext<float>::make(scalar)));
+	return ans;
+}
+
+
 /**
  * Other common deep learning operations
  */
@@ -168,6 +186,8 @@ typedef std::function<Tensor(const Tensor&)> TransferFunction;
 
 	GEN_UNARY_OP(softmax);
 
+	GEN_UNARY_OP(sqrt);
+
 	/**
 	 * clip a value (e.g. LSTM gradient) to between [-1, 1]
 	 */
@@ -182,6 +202,8 @@ typedef std::function<Tensor(const Tensor&)> TransferFunction;
 	}
 
 	GEN_BINARY_OP(element_mult, Tensor);
+
+	GEN_BINARY_OP(element_divide, Tensor);
 
 	// 0.5f * sum( (x1 - x2)^2 )
 	GEN_BINARY_OP(square_loss, Scalar);
