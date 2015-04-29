@@ -66,7 +66,6 @@ class FakeRand
 private:
 	// fake args
 	FakeRand(string _name) :
-		randSeq { 2.51, 5.39, 5.80, -2.96, -2.73, -2.4, 0.55, -.47 },
 		name(_name)
 	{ }
 
@@ -94,6 +93,8 @@ public:
 	GenFakeRandInstance(prehistory);
 	GenFakeRandInstance(input);
 	GenFakeRandInstance(target);
+	// passing global float across files, debugging workaround
+	GenFakeRandInstance(passin);
 
 	/**
 	 * Manually set the internal 'random sequence'
