@@ -439,13 +439,17 @@ inline void set_value(vector<EigenfPtr> reads, EigenfPtr write, bool is_initiali
 }
 
 
-// FIXME add contextual rand engine
 inline void fill_rand(vector<EigenfPtr> reads, EigenfPtr write, bool is_initialized)
 {
 	debug_assert_init("fill_rand", is_initialized);
 
 	MatrixXf& wmat = *write;
-	UniformRand<float> rnd(-0.08f, 0.08f);
+	// FIXME work around for Eigen's gradient check
+	float bound = 0.08f;
+	if (FakeRand::instance_passin().size() != 0)
+		bound = FakeRand::instance_passin()[0];
+
+	UniformRand<float> rnd(-bound, bound);
 
 	for (int c = 0; c < wmat.cols(); ++c)
 		for (int r = 0; r < wmat.rows(); ++r)
