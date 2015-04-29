@@ -21,9 +21,10 @@
 
 #include <cuda.h>
 #include "cuda_runtime.h"
-
 #include "device_launch_parameters.h"
+#include "../opencl/ocl_util.h"
 //#include "../../gpu_utils.h"
+
 
 using namespace std;
 typedef std::chrono::high_resolution_clock Clock;
@@ -39,12 +40,14 @@ struct TimerEntry{
 	size_t op_index;
 	Event begin_event;
 	Event end_event;
+	bool use_event;
 
 	TimerEntry(uint64_t t, size_t d, size_t index) {
 		time = t;
 		data_size = d;
 		op_index = index;
 		time_stamp = Clock::now();
+		use_event = false;
 	}
 
 	TimerEntry(Event e0, Event e1, size_t d, size_t index) {
@@ -52,6 +55,7 @@ struct TimerEntry{
 		end_event = e1;
 		op_index = index;
 		data_size = d;
+		use_event = true;
 	}
 };
 
@@ -97,7 +101,6 @@ public:
 		if (res == Sec) duration /= 1e9;
 		if (res == Millisec) duration /= 1e6;
 		if (res == Microsec) duration /= 1e3;
-
 		return duration;
 	}
 
@@ -106,26 +109,32 @@ public:
 	}
 
 	void process_timer(TimerEntry<cl_event>& entry) {
-
+		if (entry.use_event) {
+    		cl_ulong time_start, time_end; //record time in nanoseconds
+        	OCL_CHECKERROR(clWaitForEvents(1, &entry.end_event));
+        	OCL_CHECKERROR(clGetEventProfilingInfo(entry.begin_event, CL_PROFILING_COMMAND_START, sizeof(time_start), &time_start, NULL));
+        	OCL_CHECKERROR(clGetEventProfilingInfo(entry.end_event, CL_PROFILING_COMMAND_END, sizeof(time_end), &time_end, NULL));
+        	entry.time = time_end - time_start;
+		}
 	}
 
 	void process_timer(TimerEntry<cudaEvent_t>& entry) {
-
+		if (entry.use_event) {
+			cudaEventSynchronize(entry.end_event);
+			float elapsed;
+			cudaEventElapsedTime(&elapsed, entry.begin_event, entry.end_event);
+			entry.time = elapsed * 1e6;
+		}
 	}
 
 
 	void print_stats(Resolution res, std::string exp_name) {
-//		Clock::time_point t1 = Clock::now();
-//		nanoseconds global_duration = std::chrono::duration_cast<nanoseconds>(t1 - t0);
-//		named_timers["global"].time += global_duration;
-//		named_timers["global"].data_size = 1;
-
     	for ( auto timer: named_timers ) {
     		ofstream outfile;
     		outfile.open("../experiment/" + exp_name  + "/" + timer.first + ".csv");
+    		outfile<<"time_stamp,op_index,duration,size"<<endl;
     		int sum_data = 0;
     		uint64_t sum_time = 0;
-			cout<<timer.first << ": "<<endl;
     		for (auto entry: timer.second) {
     			process_timer(entry);
         		uint64_t t = to_time_scale(res, entry.time); //task duration
@@ -136,7 +145,7 @@ public:
 //        		cout << t << ", " << entry.data_size<< " at "<< stamp << endl;
     		}
     		outfile.close();
-    		cout << "Computation through put" <<(double)sum_data/(double)sum_time<<"\n\n";
+    		cout<<timer.first << ": " <<(double)sum_data/(double)sum_time<<"\n";
     	}
 	}
 
@@ -244,6 +253,75 @@ private:
 	cudaEvent_t stopTime;
 
 };
+
+
+struct MemoryEntry{
+	Clock::time_point time_stamp;
+	size_t mem_size;
+
+	MemoryEntry(size_t mem_size){
+		this->mem_size = mem_size;
+		time_stamp = Clock::now();
+	}
+};
+
+class MemoryMonitor{
+public:
+	enum Resolution
+	{
+		Sec, Millisec, Microsec, Nanosec
+	};
+
+	MemoryMonitor() {
+		t0 = Clock::now();
+		initial_load = query_load();
+	}
+
+	void log_memory (size_t current_load){
+		MemoryEntry e(current_load);
+		mem_list.push_back(e);
+	}
+
+	//Log memory using CUDA's memory profiler
+	void log_memory (){
+		MemoryEntry e(query_load());
+		mem_list.push_back(e);
+	}
+
+	size_t query_load() {
+		size_t free_byte;
+		size_t total_byte;
+        if ( cudaSuccess != cudaMemGetInfo( &free_byte, &total_byte )) {
+            printf("Error: cudaMemGetInfo fails, %s \n");
+            exit(1);
+        }
+		return total_byte-free_byte;
+	}
+
+	void print_stats(Resolution res, std::string exp_name) {
+		ofstream outfile;
+		outfile.open("../experiment/" + exp_name  + "/memory_profile.csv");
+		outfile<<"time_stamp,memory_load"<<endl;
+		for (auto entry: mem_list) {
+    		uint64_t stamp = to_time_scale(Millisec, std::chrono::duration_cast<nanoseconds>(entry.time_stamp - t0).count());
+    		cout<<stamp<<","<<entry.mem_size - initial_load<<endl;
+		}
+	}
+
+private:
+
+	uint64_t to_time_scale(Resolution res, uint64_t duration) {
+		if (res == Sec) duration /= 1e9;
+		if (res == Millisec) duration /= 1e6;
+		if (res == Microsec) duration /= 1e3;
+		return duration;
+	}
+	vector<MemoryEntry> mem_list;
+	Clock::time_point t0;
+
+	size_t initial_load;
+};
+
 
 
 #endif

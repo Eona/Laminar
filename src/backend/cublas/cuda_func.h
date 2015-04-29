@@ -3,8 +3,8 @@
  */
 
 
-#ifndef CUDA_FUNC_H_
-#define CUDA_FUNC_H_
+#ifndef CUBLAS_FUNC_H_
+#define CUBLAS_FUNC_H_
 
 typedef float (*op_func_t) (float); // device pointer function
 typedef float (*op_func_dual_t) (float, float); // device pointer function (two arguments)

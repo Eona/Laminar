@@ -2,8 +2,8 @@
  * Eona Studio (c) 2015
  */
 
-#ifndef CUBLAS_ENGINE_H_
-#define CUBLAS_ENGINE_H_
+#ifndef CUDA_ENGINE_H_
+#define CUDA_ENGINE_H_
 
 #include "../../utils/global_utils.h"
 #include "../../utils/laminar_utils.h"
@@ -31,71 +31,136 @@ using namespace std;
 }
 
 
-class CublasEngine : public Engine<CudaFloatMat>
+class CudaEngine : public Engine<CudaFloatMat>
 {
 public:
-	CublasEngine() :
+	CudaEngine() :
 		Engine<CudaFloatMat>()
 	{
 		gt = NULL;
 		timed = false;
+//		log_mem = false;
 		init();
 
 	}
-	CublasEngine(GlobalTimer<cudaEvent_t> * g) :
+
+	CudaEngine(GlobalTimer<cudaEvent_t> * g) :
 		Engine<CudaFloatMat>()
 	{
 		gt = g;
 		timed = true;
+//		log_mem = false;
 		init();
-
 	}
+
+//	CudaEngine(GlobalTimer<cudaEvent_t> * g, MemoryMonitor * m) :
+//		Engine<CudaFloatMat>()
+//	{
+//		gt = g;
+//		mm = m;
+//		timed = true;
+//		log_mem = true;
+//		init();
+//	}
 
 	void init() {
 	    cublasCreate(&handle);
-		register_create_op(MEMFUNC_BIND_2(CublasEngine::create));
-		register_normal_op("t+t", MEMFUNC_BIND_3(CublasEngine::add));
-		register_normal_op("t-t", MEMFUNC_BIND_3(CublasEngine::sub));
-		register_normal_op("s+s", MEMFUNC_BIND_3(CublasEngine::add_scalor));
-		register_normal_op("-t", MEMFUNC_BIND_3(CublasEngine::negate));
-		register_normal_op("t*t", MEMFUNC_BIND_3(CublasEngine::multNN));
-		register_normal_op("t*s", MEMFUNC_BIND_3(CublasEngine::multTS));
-		register_normal_op("s*t", MEMFUNC_BIND_3(CublasEngine::multST));
-		register_normal_op("s*s", MEMFUNC_BIND_3(CublasEngine::multSS));
-		register_normal_op("t=t", MEMFUNC_BIND_3(CublasEngine::assign));
-		register_context_op<float>("s=const", MEMFUNC_BIND_4(CublasEngine::assign_const));
+		register_create_op(MEMFUNC_BIND_2(CudaEngine::create));
+		register_normal_op("t+t", MEMFUNC_BIND_3(CudaEngine::add));
+		register_normal_op("t-t", MEMFUNC_BIND_3(CudaEngine::sub));
+		register_normal_op("s+s", MEMFUNC_BIND_3(CudaEngine::add_scalor));
+		register_normal_op("-t", MEMFUNC_BIND_3(CudaEngine::negate));
+		register_normal_op("t*t", MEMFUNC_BIND_3(CudaEngine::multNN));
+		register_normal_op("t*s", MEMFUNC_BIND_3(CudaEngine::multTS));
+		register_normal_op("s*t", MEMFUNC_BIND_3(CudaEngine::multST));
+		register_normal_op("s*s", MEMFUNC_BIND_3(CudaEngine::multSS));
+		register_normal_op("t=t", MEMFUNC_BIND_3(CudaEngine::assign));
+		register_context_op<float>("s=const", MEMFUNC_BIND_4(CudaEngine::assign_const));
 
-		register_normal_op("sin", MEMFUNC_BIND_3(CublasEngine::sin));
-		register_normal_op("cos", MEMFUNC_BIND_3(CublasEngine::cos));
-		register_normal_op("tanh", MEMFUNC_BIND_3(CublasEngine::tanh));
-		register_normal_op("tanh_gradient", MEMFUNC_BIND_3(CublasEngine::tanh_gradient));
-		register_normal_op("sigmoid", MEMFUNC_BIND_3(CublasEngine::sigmoid));
-		register_normal_op("sigmoid_gradient", MEMFUNC_BIND_3(CublasEngine::sigmoid_gradient));
-		register_normal_op("clip", MEMFUNC_BIND_3(CublasEngine::clip));
-		register_normal_op("transpose", MEMFUNC_BIND_3(CublasEngine::transpose));
-		register_normal_op("element_mult", MEMFUNC_BIND_3(CublasEngine::element_mult));
-		register_normal_op("square_loss", MEMFUNC_BIND_3(CublasEngine::square_loss));
+		register_normal_op("sin", MEMFUNC_BIND_3(CudaEngine::sin));
+		register_normal_op("cos", MEMFUNC_BIND_3(CudaEngine::cos));
+		register_normal_op("tanh", MEMFUNC_BIND_3(CudaEngine::tanh));
+		register_normal_op("tanh_gradient", MEMFUNC_BIND_3(CudaEngine::tanh_gradient));
+		register_normal_op("sigmoid", MEMFUNC_BIND_3(CudaEngine::sigmoid));
+		register_normal_op("sigmoid_gradient", MEMFUNC_BIND_3(CudaEngine::sigmoid_gradient));
+		register_normal_op("transpose", MEMFUNC_BIND_3(CudaEngine::transpose));
+		register_normal_op("element_mult", MEMFUNC_BIND_3(CudaEngine::element_mult));
+		register_normal_op("square_loss", MEMFUNC_BIND_3(CudaEngine::square_loss));
 
-		register_normal_op("destroy", MEMFUNC_BIND_3(CublasEngine::destroy));
-		register_normal_op("zero_clear", MEMFUNC_BIND_3(CublasEngine::zero_clear));
+		register_normal_op("destroy", MEMFUNC_BIND_3(CudaEngine::destroy));
+		register_normal_op("zero_clear", MEMFUNC_BIND_3(CudaEngine::zero_clear));
 
-		register_normal_op("fill_rand", MEMFUNC_BIND_3(CublasEngine::fill_rand));
-		register_normal_op("fill_rand_prehistory", MEMFUNC_BIND_3(CublasEngine::fill_rand));
-		register_normal_op("softmax", MEMFUNC_BIND_3(CublasEngine::softmax));
-		register_normal_op("label_entropy_loss", MEMFUNC_BIND_3(CublasEngine::label_entropy_loss));
-		register_normal_op("label_softmax_entropy_gradient", MEMFUNC_BIND_3(CublasEngine::label_softmax_entropy_gradient));
+		register_normal_op("fill_rand", MEMFUNC_BIND_3(CudaEngine::fill_rand));
+		register_normal_op("fill_rand_prehistory", MEMFUNC_BIND_3(CudaEngine::fill_rand));
+		register_normal_op("softmax", MEMFUNC_BIND_3(CudaEngine::softmax));
+		register_normal_op("label_entropy_loss", MEMFUNC_BIND_3(CudaEngine::label_entropy_loss));
+		register_normal_op("label_softmax_entropy_gradient", MEMFUNC_BIND_3(CudaEngine::label_softmax_entropy_gradient));
 
-		register_context_op<float>("scale", MEMFUNC_BIND_4(CublasEngine::scale));
+		register_context_op<float>("scale", MEMFUNC_BIND_4(CudaEngine::scale));
 
-		register_context_op<DimIndex, float>("perturb", MEMFUNC_BIND_5(CublasEngine::perturb));
+		register_context_op<DimIndex, float>("perturb", MEMFUNC_BIND_5(CudaEngine::perturb));
 
 		register_context_op<lmn::ElementFillFunc<float>>(
-						"fill_element", MEMFUNC_BIND_4(CublasEngine::fill_element));
+						"fill_element", MEMFUNC_BIND_4(CudaEngine::fill_element));
 
 	}
 
 	typedef std::shared_ptr<CudaFloatMat> CudaFloatMatPtr;
 	typedef std::shared_ptr<float> FloatPtr;
+
+#define CHECK2() {\
+	assert(reads[0]->DIM_ROW == reads[1]->DIM_ROW && \
+		   reads[0]->DIM_COL == reads[1]->DIM_COL && \
+		   reads[0]->DIM_ROW == write->DIM_ROW &&\
+		   reads[0]->DIM_COL == write->DIM_COL); \
+}
+
+#define CHECK1() {\
+		assert(reads[0]->DIM_ROW == write->DIM_ROW &&\
+				reads[0]->DIM_COL == write->DIM_COL); \
+}
+
+//Execute kernel function of the form Y = op(X)
+#define MATOP(name, device_func) {\
+		if (!is_initialized) {\
+	    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
+		}\
+		op_func_t h_func;\
+		cudaMemcpyFromSymbol( &h_func, device_func, sizeof( op_func_t ) );\
+		CudaTimer t(name, gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);\
+		if(timed) {\
+			t.start();\
+		}\
+		mat_op_kernel<<<write->GRID_DIM, write->BLOCK_DIM>>>( write->device_data, \
+															  reads[0]->device_data, \
+															  write->LEN, \
+															  h_func ); \
+	    if(timed) {\
+	    	t.stop();\
+	    }\
+}
+
+//Execute kernel function of the form C = op(A,B)
+#define MATOP_DUAL(name, device_func) {\
+		if (!is_initialized) {\
+	    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
+		}\
+		op_func_dual_t h_func;\
+		cudaMemcpyFromSymbol( &h_func, device_func, sizeof( op_func_dual_t ) );\
+		CudaTimer t(name, gt, reads[0]->DIM_ROW * reads[0]->DIM_COL * 2);\
+		if(timed) {\
+			t.start();\
+		}\
+		mat_op_kernel<<<write->GRID_DIM, write->BLOCK_DIM>>>( write->device_data, \
+															  reads[0]->device_data, \
+															  reads[1]->device_data, \
+															  write->LEN, \
+															  h_func ); \
+		if(timed) {\
+			t.stop();\
+		}\
+}
+
 
 	void create(CudaFloatMatPtr write, vector<int> dim)
 	{
@@ -109,11 +174,13 @@ public:
 			write->scalar = 0;
 		else
 		{
-//			LMN_ASSERT_THROW(is_initialized,
-//				EngineException("CUDA zero_clear must have been inited"));
-			// FIXME unknown reason: why zero_clear is called on uninit data???
-			if (is_initialized)
-			write->zero_clear();
+			LMN_ASSERT_THROW(is_initialized,
+				EngineException("CUDA zero_clear must have been inited"));
+			//__global__ void mat_scale_kernel(float *target, float alpha, int N)
+			mat_fill_kernel<<<write->GRID_DIM, write->BLOCK_DIM>>>( write->device_data,
+																  	 0,
+																  	 write->LEN
+																   );
 		}
 	}
 
@@ -123,25 +190,6 @@ public:
 	}
 
 	/*
-	 * write = alpha * Op(reads[0]) + beta * Op(reads[1])
-	 */
-	void addMat(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized, float alpha, float beta)
-	{
-
-	    int m = reads[1]->DIM_ROW;
-	    int n = reads[1]->DIM_COL;
-	    if (!is_initialized) {
-	    	write->reset(m, n);
-	    }
-		TIME("add", m*n*2,
-		cublasSgeam(handle,
-	                reads[0]->getOp(), reads[1]->getOp(),
-	                m, n,
-	                &alpha, reads[0]->device_data, reads[0]->LDIM,
-	                &beta, reads[1]->device_data, reads[1]->LDIM,
-	                write->device_data, write->LDIM)
-	    );
-	}
 
 
 	/*
@@ -181,14 +229,41 @@ public:
 	    std::string name = "mult_"+opA+opB;
 	    //C = a Op(A)* Op(B) + b C  -- A [mxk] B [kxn] C[mxn]
 	    //handle, A_len, x, incx, y, incy
-	    TIME(name, m*k+l*n,
-		cublasSgemm(handle,
-					reads[0]->getOp(opA), reads[1]->getOp(opB),
-					m, n, k,
-					&alpha, reads[0]->device_data, reads[0]->LDIM,
-					reads[1]->device_data, reads[1]->LDIM, &beta,
-					write->device_data, write->LDIM)
-	    );
+
+	    dim3 thread_per_block (16,16);
+	    dim3 num_blocks (ceil(double(write->DIM_COL)/double(thread_per_block.x)),
+	                    ceil(double(write->DIM_ROW)/double(thread_per_block.y)));
+
+		CudaTimer t(name, gt, m*k+l*n);
+		if(timed) t.start();
+		if (opA == "N" && opB == "N") {
+			mat_multNN_shared_kernel<<<num_blocks, thread_per_block>>>
+					(write->device_data, write->DIM_ROW, write->DIM_COL,
+							reads[0]->device_data, reads[0]->DIM_ROW, reads[0]->DIM_COL,
+							reads[1]->device_data, reads[1]->DIM_ROW, reads[1]->DIM_COL
+					);
+		}
+
+		if (opA == "T" && opB == "N") {
+			//	    	TIME(name, m*k+l*n,
+			mat_multTN_shared_kernel<<<num_blocks, thread_per_block>>>
+					(write->device_data, write->DIM_ROW, write->DIM_COL,
+							reads[0]->device_data, reads[0]->DIM_ROW, reads[0]->DIM_COL,
+							reads[1]->device_data, reads[1]->DIM_ROW, reads[1]->DIM_COL
+					);
+			//	    		);
+		}
+
+		if (opA == "N" && opB == "T") {
+			//	    	TIME(name, m*k+l*n,
+			mat_multNT_shared_kernel<<<num_blocks, thread_per_block>>>
+					(write->device_data, write->DIM_ROW, write->DIM_COL,
+							reads[0]->device_data, reads[0]->DIM_ROW, reads[0]->DIM_COL,
+							reads[1]->device_data, reads[1]->DIM_ROW, reads[1]->DIM_COL
+					);
+			//	    		);
+		}
+    	if(timed)  t.stop();
 	}
 
 	/*
@@ -204,7 +279,6 @@ public:
 
 	    //y = x
 	    //handle, x_len, x, incx, y, incy
-	    assert(reads[0]->LEN == write->LEN);
 	    TIME("assign", m*n,
 	    reads[0]->copy_to_device(write->device_data);
 	    );
@@ -212,13 +286,29 @@ public:
 	    write->DIM_ROW = reads[0]->DIM_ROW;
 	    write->DIM_COL = reads[0]->DIM_COL;
 	    write->LDIM = reads[0]->LDIM;
+	    CHECK1();
 	}
 
+	//helper func
+	void scaleMat(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized, float scalar)
+	{
+	    assignMat(reads, write, is_initialized); // copy to write
+	    //y = -y
+		CudaTimer t("scale", gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);
+		if(timed) t.start();
+		//__global__ void mat_scale_kernel(float *target, float alpha, int N)
+		mat_scale_kernel<<<write->GRID_DIM, write->BLOCK_DIM>>>( write->device_data,
+															  	 scalar,
+															  	 write->LEN
+															   );
+		if(timed) t.stop();
+	    CHECK1();
+	}
 	void add(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 	    debug_msg("c=a+b", is_initialized);
-	    float alpha = 1.0f;
-	    addMat(reads, write, is_initialized, alpha, alpha);
+	    MATOP_DUAL("add", cu_add_func);
+	    CHECK2();
 	}
 
 	void add_scalor(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
@@ -232,22 +322,16 @@ public:
 	void sub(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 	    debug_msg("c=a-b", is_initialized);
-
-	    float alpha = 1.0f;
-	    addMat(reads, write, is_initialized, alpha, -alpha);
+	    MATOP_DUAL("subtract", cu_subtract_func);
+	    CHECK2();
 	}
+
 
 	void negate(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
 	{
 	    debug_msg("c=-a", is_initialized);
 	    //y = x
-	    assignMat(reads, write, is_initialized);
-
-	    //y = -y
-	    const float alpha = -1.0f;
-	    TIME("scale", write->LEN,
-	    cublasSscal(handle, write->LEN, &alpha, write->device_data, 1);
-	    )
+	    scaleMat(reads, write, is_initialized, -1);
 	}
 
 	void multNN(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
@@ -308,15 +392,11 @@ public:
 		write->scalar = reads[0]->scalar * reads[1]->scalar;
 	}
 
-	inline void scale(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized, float scaler)
+	inline void scale(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized, float scalar)
 	{
 		debug_msg("scale", is_initialized);
-	    //y = x
-	    assignMat(reads, write, is_initialized);
-	    //y = ay
-	    TIME("scale", write->LEN,
-	    cublasSscal(handle, write->LEN, &scaler, write->device_data, 1);
-	    )
+		//y = ay
+	    scaleMat(reads, write, is_initialized, scalar);
 	}
 
 	inline void destroy(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
@@ -332,54 +412,6 @@ public:
 		debug_msg("transpose", is_initialized);
 	    assignMat(reads, write, is_initialized);
 	    write->local_transpose();
-	}
-
-
-
-	#define MATOP(name, device_func) {\
-			if (!is_initialized) {\
-		    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
-			}\
-			op_func_t h_func;\
-			cudaMemcpyFromSymbol( &h_func, device_func, sizeof( op_func_t ) );\
-			CudaTimer t(name, gt, reads[0]->DIM_ROW * reads[0]->DIM_COL);\
-			if(timed) {\
-				t.start();\
-			}\
-			mat_op_kernel<<<write->GRID_DIM, write->BLOCK_DIM>>>( write->device_data, \
-																  reads[0]->device_data, \
-																  write->LEN, \
-																  h_func ); \
-		    if(timed) {\
-		    	t.stop();\
-		    }\
-	}
-
-
-	#define MATOP_DUAL(name, device_func) {\
-			if (!is_initialized) {\
-		    	write->reset(reads[0]->DIM_ROW, reads[0]->DIM_COL);\
-			}\
-			op_func_dual_t h_func;\
-			cudaMemcpyFromSymbol( &h_func, device_func, sizeof( op_func_t ) );\
-			CudaTimer t(name, gt, reads[0]->DIM_ROW * reads[0]->DIM_COL * 2);\
-			if(timed) {\
-				t.start();\
-			}\
-			mat_op_kernel<<<write->GRID_DIM, write->BLOCK_DIM>>>( write->device_data, \
-																  reads[0]->device_data, \
-																  reads[1]->device_data, \
-																  write->LEN, \
-																  h_func ); \
-			if(timed) {\
-				t.stop();\
-			}\
-	}
-
-	// clip LSTM gradient between -1 and 1
-	inline void clip(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
-	{
-		MATOP("clip", cu_clip_func);
 	}
 
 	inline void sigmoid(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized)
@@ -436,9 +468,14 @@ public:
 														reads[1]->device_data,
 														aux.LEN,
 														h_func );
-
-		write->isScalar = true;
+//		cudaDeviceSynchronize();
+//		float sum = 0;
+//		mat_sum_kernel<<<aux.GRID_DIM, aux.BLOCK_DIM>>>( aux.device_data,
+//														 sum,
+//														 aux.LEN
+//													   );
 	    cublasSasum(handle, aux.LEN, aux.device_data, 1, &write->scalar);
+		write->isScalar = true;
 	}
 
 	inline void softmax(vector<CudaFloatMatPtr> reads, CudaFloatMatPtr write, bool is_initialized) {
@@ -603,13 +640,15 @@ public:
 		return reads->scalar;
 	}
 
-	TYPEDEF_PTR(CublasEngine);
+	TYPEDEF_PTR(CudaEngine);
 
 private:
 	cublasHandle_t handle;
 	bool timed;
 	GlobalTimer<cudaEvent_t> * gt;
 
+//	bool log_mem;
+//	MemoryMonitor * mm;
 };
 
 #endif /* CUDA_ENGINE_H_ */

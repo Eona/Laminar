@@ -74,6 +74,7 @@ public:
 		cl->register_kernel("dummy", "matop_prog", "dummy");
 		cl->register_kernel("mat_add_kernel", "matop_prog", "add");
 		cl->register_kernel("mat_scale_kernel", "matop_prog", "scale");
+		cl->register_kernel("mat_fill_kernel", "matop_prog", "fill");
 		cl->register_kernel("mat_elem_mult_kernel", "matop_prog", "element_mult");
 		cl->register_kernel("mat_sigmoid_kernel", "matop_prog", "sigmoid");
 		cl->register_kernel("mat_sigmoid_gradient_kernel", "matop_prog", "sigmoid_gradient");
@@ -258,7 +259,7 @@ public:
 	    write->DIM_ROW = m;
 	    write->DIM_COL = n;
 	}
-
+	//helper func
 	void elementOp(std::string kernel_name, vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized){
 	    int m = reads[0]->DIM_ROW;
 	    int n = reads[0]->DIM_COL;
@@ -273,7 +274,14 @@ public:
 	    if(timed) gt->record_named_timer(kernel_name, duration, m*n);
 	}
 
-
+	//helper func
+	void fill(OpenclFloatMatPtr mat, float num) {
+	    cl->setup_kernel("fill", 0, sizeof(cl_mem), &mat->device_data); // Y
+	    cl->setup_kernel("fill", 1, sizeof(float), &num); // X
+	    cl->setup_kernel("fill", 2, sizeof(int), &(mat->LEN)); //DATA_SIZE
+	    cl_ulong duration = cl->exec_kernel("fill", cl->get_global_size(mat->LEN, NUM_LOCAL_WORKER), NUM_LOCAL_WORKER);
+	    if(timed) gt->record_named_timer("fill", duration, mat->LEN);
+	}
 	void add(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
 	    debug_msg("c=a+b", is_initialized);
@@ -321,11 +329,13 @@ public:
 
 	void multST(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
+		assert(reads[0]->isScalar);
 	    scaleMat(reads[1], write, is_initialized, reads[0]->scalar);
 	}
 
 	void multTS(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
+		assert(reads[1]->isScalar);
 	    scaleMat(reads[0], write, is_initialized, reads[1]->scalar);
 	}
 
@@ -435,8 +445,8 @@ public:
 	    cl_ulong duration = cl->exec_kernel("square_loss", cl->get_global_size(aux.LEN, NUM_LOCAL_WORKER), NUM_LOCAL_WORKER);
 	    if(timed) gt->record_named_timer("square_loss", duration, m*n*2);
 
-	    float t[aux.MEM_SIZE];
-	    aux.to_host(t);
+	    auto t = vector<float>(aux.LEN);
+	    aux.to_host(&t[0]);
 
 	    write->scalar = 0;
 	    for (int i = 0; i < aux.LEN; ++i) {
@@ -447,11 +457,13 @@ public:
 
 	void zero_clear(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized)
 	{
-		if (write->isScalar)
+		if (write->isScalar) {
 			write->scalar = 0;
-		else
+		} else {
+		    //y = x
 			if (is_initialized)
-				write->zero_clear();
+				fill(write, 0);
+		}
 	}
 
 	void fill_element(vector<OpenclFloatMatPtr> reads, OpenclFloatMatPtr write, bool is_initialized,
