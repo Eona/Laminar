@@ -292,7 +292,7 @@ public:
 		size_t free_byte;
 		size_t total_byte;
         if ( cudaSuccess != cudaMemGetInfo( &free_byte, &total_byte )) {
-            printf("Error: cudaMemGetInfo fails, %s \n");
+            printf("Error: cudaMemGetInfo fails\n");
             exit(1);
         }
 		return total_byte-free_byte;
