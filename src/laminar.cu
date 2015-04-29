@@ -19,18 +19,23 @@
 #include "engine/engine.h"
 #include "engine/tensor.h"
 #include "engine/tensor_ops.h"
-
-#include "backend/dummy/dummy_engine.h"
-#include "backend/dummy/dummy_dataman.h"
+//
+//#include "backend/dummy/dummy_engine.h"
+//#include "backend/dummy/dummy_dataman.h"
 #include "backend/vecmat/vecmat_engine.h"
-#include "backend/vecmat/vecmat_rand_dataman.h"
-#include "backend/vecmat/vecmat_func_dataman.h"
-#include "backend/types/cuda_float_mat.h"
-#include "backend/opencl/opencl_engine.h"
+//#include "backend/vecmat/vecmat_rand_dataman.h"
+//#include "backend/vecmat/vecmat_func_dataman.h"
+//#include "backend/types/cuda_float_mat.h"
+//#include "backend/opencl/opencl_engine.h"
+#include "backend/types/performance_profiler.h"
+#include "backend/eigen/eigen_engine.h"
 #include "utils/global_utils.h"
 #include "utils/timer.h"
 
 #include "demo/mnist/mnist_parser.h"
+
+#include <Eigen/Dense>
+using namespace Eigen;
 
 FakeRand& rand_conn = FakeRand::instance_connection();
 FakeRand& rand_prehis = FakeRand::instance_prehistory();
@@ -68,6 +73,8 @@ struct PrintGradient : public Observer<Network>
 
 int main(int argc, char **argv)
 {
+
+
 /*	auto images = read_mnist_image(string("../data/mnist/") + MNIST_TRAIN_IMAGE_FILE, 10, 3, true);
 	auto mnlabels = read_mnist_label(string("../data/mnist/") + MNIST_TRAIN_LABEL_FILE, 10, 3);
 
@@ -84,39 +91,6 @@ int main(int argc, char **argv)
 	DEBUG_MSG(mnlabels[0]);
 	DEBUG_MSG(mnlabels[1]);
 	DEBUG_MSG(mnlabels[2]);*/
-
-	using namespace lmn::VecmatImpl;
-	using lmn::Vecmatf;
-
-	Vecmat<float> A = {
-		{2.1, -1.2},
-		{-3.3, .4},
-		{1.65, -.7},
-		{-1.33, .57}
-	};
-
-	Vecmat<float> A2 = {
-			{1.1, 3, 6},
-			{7.8, 2, 10},
-			{5.9, 5, 5}
-	};
-
-	Vecmat<float> B = {
-			{1, 2, 0}
-	};
-
-	auto a = std::make_shared<Vecmatf>(A2);
-	auto ans = std::make_shared<Vecmatf>(A2.row(), A2.col());
-	auto labels = std::make_shared<Vecmatf>(B);
-
-	auto scalar = std::make_shared<Vecmatf>(1, 1);
-
-	softmax({a}, ans, true);
-	label_entropy_loss({ans, labels}, scalar, true);
-	label_softmax_entropy_gradient({ans, labels}, ans, true);
-
-//	DEBUG_MSG(*scalar);
-//	DEBUG_MSG(*ans);
 
 	/************************************/
 /*	auto engine = std::make_shared<OpenclEngine>();
@@ -137,71 +111,6 @@ int main(int argc, char **argv)
 
 	auto mem = engine->read_memory(t3);
 	mem->print_matrix("fei shen");*/
-
-/*
-//	const int HISTORY = 5;
-	const int INPUT_DIM = 4;
-	const int TARGET_DIM = 3;
-	const int BATCH = 2;
-	const int MAX_EPOCH = 1000;
-
-	rand_conn.gen_uniform_rand(90, -0.1, 0.1, DEBUG_SEED); //rand_conn.print_rand_seq();
-//
-//	rand_prehis.gen_uniform_rand(30, -.5, .5); //rand_prehis.print_rand_seq();
-//
-//	rand_input.gen_uniform_rand(20, -1, 1); //rand_input.print_rand_seq();
-//
-//	rand_target.gen_uniform_rand(40, -1, 1); //rand_target.print_rand_seq();
-
-	auto learnableFunc = [](const lmn::Vecmatf& in, lmn::Vecmatf& out) {
-		// Each column is a batch
-		for (int c = 0; c < in.col(); ++c)
-		{
-//			out(0, c) = sin(in(0, c)) + cos(in(1, c));
-//			out(1, c) = cos(in(1, c)) + sin(in(2, c));
-//			out(2, c) = 2 * sin(in(2, c)) - cos(in(3, c));
-			out(0, c) = cos(in(0, c)) * in(1, c) + in(2, c);
-			out(1, c) = in(1, c) * sin(in(2, c)) + in(3, c);
-			out(2, c) = in(2, c) * in(3, c) + sin(in(0, c));
-		}
-	};
-
-	auto engine = EngineBase::make<VecmatEngine>();
-	auto dataman = DataManagerBase::make<VecmatFuncDataManager>(
-						engine, INPUT_DIM, TARGET_DIM, BATCH,
-						learnableFunc,
-						100, 20, 10,
-						-1.f, 1.f);
-
-	auto linput = Layer::make<ConstantLayer>(INPUT_DIM);
-	auto l2 = Layer::make<SigmoidLayer>(100);
-	auto l3 = Layer::make<SigmoidLayer>(100);
-	auto lloss = Layer::make<SquareLossLayer>(TARGET_DIM);
-
-	auto net = ForwardNetwork::make(engine, dataman);
-	net->add_layer(linput);
-	net->new_connection<FullConnection>(linput, l2);
-	net->new_bias_layer(l2);
-	net->add_layer(l2);
-	net->new_connection<FullConnection>(l2, l3);
-	net->new_bias_layer(l3);
-	net->add_layer(l3);
-	net->new_connection<FullConnection>(l3, lloss);
-	net->add_layer(lloss);
-
-	auto opm = Optimizer::make<SimpleSGD>(0.3);
-	auto eval = NoMetricEvaluator<VecmatEngine>::make(net);
-	auto stopper = StopCriteria::make<MaxEpochStopper>(MAX_EPOCH);
-	auto ser = NullSerializer::make();
-	auto sched = EpochIntervalSchedule::make(1, 1);
-
-	auto session = new_learning_session(net, opm, eval, stopper, ser, sched,
-			std::make_shared<PrintGradient<VecmatEngine>>(MAX_EPOCH));
-
-	session->initialize();
-
-	session->train();
-*/
 
 
 	/*Tensor t1(dummyEng, { 2, 3 });

@@ -3,7 +3,7 @@ include(eona_gtest)
 
 # toggle this to avoid recompiling gtests
 set(RUN_CPU_GTEST true)
-set(RUN_CUDA_GTEST false)
+set(RUN_CUDA_GTEST true)
 set(RUN_OPENCL_GTEST false)
 
 # global option from eona_gtest.cmake
@@ -40,6 +40,7 @@ endif()
 if (RUN_CUDA_GTEST)
     #> add_gtest_cuda(${TEST_SUITE} ${TEST_SUITE}.cu)
     add_multiple_gtests_cuda(${CUDA_TEST_SUITE})
+    link_opencl(${CUDA_TEST_SUITE})
 
     list(APPEND TEST_SUITE ${CUDA_TEST_SUITE})
 endif()

@@ -10,25 +10,31 @@ include(eona_cuda)
 include(eona_opencl)
 include(eona_eigen)
 
+set(RUN_GTEST false)
+set(RUN_DEMO true)
+
 # CMAKE_CURRENT_BINARY_DIR: where generated cmake files go 
 # CMAKE_BINARY_DIR: top level of your build tree
-#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../src ${CMAKE_CURRENT_BINARY_DIR}/bin)
+# add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../src ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test 
-    ${CMAKE_CURRENT_BINARY_DIR}/test)
+# =================== GTests ==================
+if (RUN_GTEST)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test 
+        ${CMAKE_CURRENT_BINARY_DIR}/test)
+endif()
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/backend/cublas 
-    ${CMAKE_CURRENT_BINARY_DIR}/backend/cublas)
-#
-#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/backend/opencl 
-#    ${CMAKE_CURRENT_BINARY_DIR}/backend/opencl)
+# =================== Other tests ==================
+#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/backend/types 
+#    ${CMAKE_CURRENT_BINARY_DIR}/backend/types)
 
 # =================== DEMO ==================
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/demo/mnist 
-                ${CMAKE_CURRENT_BINARY_DIR}/mnist)
-
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/demo/nlp 
-                ${CMAKE_CURRENT_BINARY_DIR}/nlp)
+if (RUN_DEMO)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/demo/mnist 
+                    ${CMAKE_CURRENT_BINARY_DIR}/mnist)
+    
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/demo/nlp 
+                    ${CMAKE_CURRENT_BINARY_DIR}/nlp)
+endif()
 
 # ==========================================
 message("Eona build src/ toplevel")
@@ -40,7 +46,7 @@ set(SOURCES
     ${MAIN}.cu
     )
 
-if (false)
+if (true)
     cublas_add_executable(${MAIN} ${SOURCES})
     target_link_libraries(${MAIN} ${OPENCL_LIBRARIES})
 endif()
