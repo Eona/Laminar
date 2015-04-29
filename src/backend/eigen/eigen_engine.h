@@ -33,17 +33,18 @@ namespace EigenImpl {
 
 MatrixXf create(int row, int col)
 {
-	return MatrixXf(row, col);
+	// WARNING plain Eigen ctor does NOT initialize to zero!!!
+	return MatrixXf::Zero(row, col);
 }
 
 MatrixXf create(Dimension dim)
 {
-	return MatrixXf(dim[0], dim[1]);
+	return MatrixXf::Zero(dim[0], dim[1]);
 }
 
 MatrixXf create(EigenfPtr mat)
 {
-	return MatrixXf(mat->rows(), mat->cols());
+	return MatrixXf::Zero(mat->rows(), mat->cols());
 }
 
 Dimension dim(EigenfPtr mat)
