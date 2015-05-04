@@ -1,6 +1,6 @@
-#Laminar Tutorial
+#Introduction
+## What is Deep Learning?
 
-##Introduction
 Deep learning is a branch of machine learning based on a set of algorithms that attempt to model high-level abstractions and patterns in data by using non-linear architectures known as _neural networks_. 
 
 Deep learning has seen tremendous success recently in a wide range of domains, from semantic modeling in natural language processing to object recognition and classification in computer vision. Deep neural networks are able to solve extremely hard AI problems not tractable by traditional statistically learning algorithms like support vector machines. Their success can be attributed to a single most powerful theorem in machine learning: the _Universal Approximation Theorem_, which states that 
@@ -10,25 +10,28 @@ Deep learning has seen tremendous success recently in a wide range of domains, f
 
 This theorem looks very promising, but as is usually the case in math, the beauty is limited only in theory. In practice, the implementation details and training procedure are crucial to the performance of a neural network.  
 
-Our library aims to provide a comprehensive framework to train and deploy feed-forward neural networks and recurrent neural networks, two of the most important deep learning architectures. 
+##What is ***Laminar***?
 
-The library is named **Laminar**. In fluid dynamics, the term _Laminar flow_ means a steady flow without turbulence. Deep learning is based on _gradient flow_ that forward/backward propagates through the neural network, so we appropriately steal the concept from physics. 
+*Laminar* is a library that aims to provide a comprehensive framework to train and deploy feed-forward neural networks and recurrent neural networks, two of the most important deep learning architectures. 
 
-The name is also a recursive acronym:
+The name is chosen with a two-fold meaning. In fluid dynamics, the term _Laminar flow_ means a steady flow without turbulence. Deep learning is based on _gradient flow_ that forward/backward propagates through the neural network, so we appropriately steal the concept from physics. 
+
+*LAMINAR* is also a recursive acronym:
 __*Laminar Accelerated and MInimalistic Neural ARchitecture*__ 
 
 *Laminar* library is designed to be:
 
-- User-friendly: as you will see in the next few chapters.<br><br>
-- Efficient: the library runs very fast on both CPU and GPU, using state-of-the-art computational backends. <br><br>
-- Versatile: provides a large number of built-in pluggable modules. <br><br>
-	- Most common networks can be constructed and trained with ease.<br><br>
-	- Six computational backends have been provided, which fully support most mainstream CPUs and GPUs (even ones without CUDA support). <br><br>
-- Customizable in every corner: if the built-in modules cannot satisfy your needs, you can always roll your own modules by extending the architecture. <br><br>
+- Expressive user interface in C++ 11.<br><br>
+- Efficient and scalable. The library runs efficiently on heterogenous hardware, including both single- and multi-threaded CPUs, both CUDA and non-CUDA GPUs, thanks to state-of-the-art computational backends. <br><br>
+- Versatile. Literally dozens of built-in pluggable modules are shipped with *Laminar*. <br><br>
+	- Arbitrarily complicated networks can be constructed and trained with ease.<br>
+	- Six computational backends are provided, which support most of the common hardware. <br>
+- Customizable in every corner frome end to end. If the built-in modules cannot satisfy your needs, you can always roll your own modules by extending the architecture. <br><br>
+- The scale of the code base is comparable to industrial-strength open-source libraries like *Torch*.<br><br>
 
 This tutorial assumes that readers are reasonably familiar with the basic concepts of machine learning, e.g. loss function, gradient descent, training, cross-validation, etc. [This website](http://deeplearning.net/) is a good place to start with these fundamental concepts. 
 
-## Installation
+# Installation
 
 _Laminar_ is a C++ 11 template-based header library, which means there is no installation process - simply unzip the source and include in your project. This eliminates the hassle of linking dynamic libraries.  
 
@@ -46,9 +49,9 @@ _Laminar_ uses `cmake` to manage the external library dependencies. The minimal 
 Happy deep learning!
 
 #Architecture
-<img src="https://raw.githubusercontent.com/JimJarvis/DocImages/master/laminar/overview.png" alt="Overview" height="400" width="200">
+At the highest level, the _Laminar_ architecture can be roughly divided into 4 parts: network topology, virtual engine, computation backend and learning modules. 
 
-At the highest level, the _Laminar_ architecture can be roughly divided into three parts:
+![Big picture](https://raw.githubusercontent.com/JimJarvis/DocImages/master/laminar/Laminar_Big_Picture.png)
 
 ## Network Topology
 You can build any imaginable neural network topology as long as you can define a computational graph ("network" is used interchangeably here). 
@@ -57,13 +60,13 @@ The network is an abstract container that encapsulates the nodes ("layers") and 
 	 
 The network is analogous to a high-level language. 
 
-###Virtual Engine
+##Virtual Engine
 
 The virtual engine receives instructions from the network. The instructions encode when to allocate memory and what computation needs to be performed on which memory address. All the memory are managed by an internal object pool. 
 	 
 In a sense, the virtual engine is an intermediate agent. It is somewhat analogous to a compiler that translates higher-level instructions to lower-level representations. It delegates computation to the next module.
 	 
-##Actual computation backends
+##Computation backend
 	
 This is the main workhorse that powers the deep learning process. *Laminar*'s speed is limited only by the backend it runs on. All computation backends conform to a unified interface that integrates with the virtual engine. In this way, switching between drastically different computation hardware becomes very easy. We currently have the following backends choices:
 
@@ -74,6 +77,14 @@ This is the main workhorse that powers the deep learning process. *Laminar*'s sp
 	- In CPU mode, intel-based OpenCL invokes [ThreadBuildingBlock](https://www.threadingbuildingblocks.org/) under the hood, a high-performance multithreading platform. <br><br>
 	- In GPU mode, OpenCL can run on both NVidia and non-NVidia graphics processors. For example, OpenCL runs on _Intel Iris Pro_ GPU which does not support CUDA. _Intel Iris Pro_ is commonly found on Macbook Pros.<br><br>
 - cuBLAS: a high-performance GPU [linear algebra library](https://developer.nvidia.com/cuBLAS). It is included natively as part of the CUDA toolkit. From our experiments, cuBLAS is the fastest compute engine of all six. 
+
+## Learning Modules
+
+The learning modules manage the network training and experiment bookkeeping for you. You will be able to customize different modules to suit the need for your experiment with specific training data and evaluation metric. 
+
+The ***O-E-S-S-E-O*** workflow, which will be discussed in depth later, enables you to perform diverse deep learning from natural language processing to system biology. 
+
+This is a 30,000-foot overview of the *Laminar* architecture. You are now fully prepared to run your very first deep learning task. 
 
 
 #Feed-forward Neural Network
@@ -280,7 +291,7 @@ The code for the above network should look straightforward by now.
 Each line above specifies either a layer (node) or a connection (edge). No code is wasted - in other words, these are the minimal codes required to build your dream network. 
 
 #Recurrent Neural Network (RNN)
-##TitleCreate your first RNN
+##Create your first RNN
 
 While the component building blocks are the same as feed-forward networks, RNNs have an extra temporal dimension, which makes them dramatically more powerful (equivalent to generic Turing machine) and at the same time much harder to train.
 
@@ -570,9 +581,14 @@ You typically don't want to run validation and testing after every training epoc
 
 If you want to print out any information as the training goes, `Observer` is the plug-in module for you to implement. 
 
-As the author of *Laminar*, I have personally used `Observer` to print out debugging information at every minibatch. 
+The authors of *Laminar* have personally used `Observer` to print out debugging information at every minibatch. 
 
-## Putting together everything
+And finally ...
+
+**V** for Vendetta!
+
+
+## Putting everything together
 
 Now that we have learned the ***O-E-S-S-E-O*** workflow, we are ready to put all the pieces together and complete the puzzle. 
 
@@ -580,12 +596,13 @@ The key `LearningSession` object can be constructed by a template function:
 
     auto session = new_learning_session(net, O_, E_, S_, S_, E_, O_);
 
-Here's a sample *Laminar* experiment that trains a high performance *MNIST* hand-written digit recognizer on cuBLAS:
+Here's a sample *Laminar* experiment that trains a high performance *MNIST* hand-written digit recognizer on cuBLAS backend:
 
     auto engine = EngineBase::make<CublasEngine>();
 	auto dataman =
-		DataManagerBase::make<CublasMnistDataManager>(engine, BATCH_SIZE, "../data/mnist");
+		DataManagerBase::make<MnistDataManager>(engine, BATCH_SIZE, "../data/mnist");
 
+	// build the network as we did in the first chapters
 	auto linput = Layer::make<ConstantLayer>(INPUT_DIM);
 	auto lhidden1 = Layer::make<SigmoidLayer>(300);
 	auto lhidden2 = Layer::make<SigmoidLayer>(300);
@@ -606,13 +623,66 @@ Here's a sample *Laminar* experiment that trains a high performance *MNIST* hand
 	auto eval = MnistAccuracyEvaluator::make(net);
 	auto stopper = StopCriteria::make<MaxEpochStopper>(MAX_EPOCH);
 	auto ser = NullSerializer::make();
-	auto evalsched = EpochIntervalSchedule::make(0, 1);
+	auto evalsched = EpochIntervalSchedule::make(0, 3);
 	auto obv = NullObserver::make();
 
 	auto session = new_learning_session(net, opm, eval, stopper, ser, evalsched, obv);
 
 	session->initialize();
 	session->train();
+
+The code should look very intuitive. In case you might have missed something, let's walk through the code briefly:
+
+    auto engine = EngineBase::make<CublasEngine>();
+
+Selects cuBLAS as our backend engine that runs at lightning speed on Nvidia GPUs. 
+
+    auto dataman =
+		DataManagerBase::make<MnistDataManager>(engine, BATCH_SIZE, "../data/mnist");
+
+Reads data from the MNIST training/testing databases, which are binary files in big-endian mode. 
+
+    auto net = ForwardNetwork::make(engine, dataman);
+
+Constructs a forward network with the engine and data manager.
+
+	auto opm = Optimizer::make<NesterovMomentum>(lr, moment);
+
+Chooses the Nesterov Momentum optimizer shipped with the library. The optimizer takes two parameters:
+
+ - lr: initial learning rate, typically a small positive number.
+ - moment: learning momentum, typically between `0.7` to `0.95`.
+
+In our experiments, `MomentumGD` works equally well. 
+
+	auto eval = MnistAccuracyEvaluator::make(net);
+    
+A customized evaluator that returns MNIST percentage classification accuracy. 
+
+	auto stopper = StopCriteria::make<MaxEpochStopper>(MAX_EPOCH);
+
+Stops learning after `MAX_EPOCH` number of epochs is reached.
+
+	auto ser = NullSerializer::make();
+
+Doesn't save any parameter to disk. In a real setting, you should write a serializer for your own data format. 
+
+	auto evalsched = EpochIntervalSchedule::make(0, 3);
+
+Does not run validation, but runs testing at the end of every 3 epochs. 
+
+	auto obv = NullObserver::make();
+
+A placeholder observer that doesn't do anything. 
+
+	auto session = new_learning_session(net, opm, eval, stopper, ser, evalsched, obv);
+
+Constructs a learning session. Note the order ***O-E-S-S-E-O***. 
+
+	session->initialize();
+	session->train();
+
+Relax and grab a cup of coffee. The training will take a while!
 
 You have just completed your first journey through the *Laminar* framework. 
 

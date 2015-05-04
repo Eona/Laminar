@@ -1,151 +1,441 @@
-#Design Document
-##Error Handling
+#***Laminar*** Architecture
 
-Laminar framework has a hierarchy of exceptions. A function will thrown an exception of appropriate type if it fails the consistency check. 
+The highest-level overview of the *Laminar* architecture:
 
-###Laminar Exception
-The top level exception. `LaminarException` directly extends `std::exception` and is the highest level exception type in the library. 
-
-It is rarely thrown by itself, except when the error is too hard to classify by more detailed derived exceptions. 
-
-###Network Exception
-A `NetworkException` is thrown by the `Network` base class, or any of its derived classes `ForwardNetwork` and `RecurrentNetwork`.
-
-The exception is typically thrown when there are inconsistencies in the network topology. 
-
-For example, the following situations will trigger a `NetworkException`
-
-- A non-recurrent connection attempts to connect a layer to itself. <br><br>
-- The network has no input layer.<br><br>
-- The network has no loss layer (the last layer must be a derived class of `LossLayer`)<br><br>
-- For recurrent networks, an error occurs when a connection's temporal skip value exceeds the global `maxTemporalSkip`. <br><br>
-
-###Component Exception
-A `ComponentException` is thrown when either `Layer` or `Connection` sees an inconsistency. 
-
-For example, the following situations will trigger `ComponentException`
-
-- `Layer` receives an invalid `Dimension`
-- `ConstantConnection` attempts to connect two layers with different dimensions. 
-- `GatedConnection` dimension mismatch.
-
-###Engine Exception
-An `EngineException` is thrown whenever an internal inconsistency occurs in either the virtual engine itself or any of its backends. 
-
-###Tensor Exception
-A `TensorException` is thrown when invalid operations are performed on a tensor
-
-###Learning Exception
-
-A `LearningException` is thrown when the learning procedure fails or sees a logical inconsistency.
-
-Any of the ***O-E-S-S-E-O*** modules (Optimizer, Evaluator, Stop criteria, Serializer, Evaluation schedule, Observer) can throw a `LearningException`
-
-###Data Exception
-
-A `DataException` is normally thrown by the `DataManager`. 
-
-Any invalid IO operations that read/load training/testing data will trigger a `DataException`. 
-
-When the training/testing data streams are depleted but the user fails to reset a new epoch, `DataException` will also be triggered. 
-
-#Interface Design
-![Interface](https://raw.githubusercontent.com/JimJarvis/DocImages/master/laminar/overview.png)
-
-At the highest level, the _Laminar_ architecture can be roughly divided into three parts:
+![Big picture](https://raw.githubusercontent.com/JimJarvis/DocImages/master/laminar/Laminar_Big_Picture.png)
 
 ## Network Topology
-You can build any imaginable neural network topology as long as you can define a computational graph ("network" is used interchangeably here). 
-	 
-The network is an abstract container that encapsulates the nodes ("layers") and edges ("connections"). It does not do actual computation. Instead, it uploads instructions to the virtual engine. 
-	 
-The network is analogous to a high-level language. 
 
-###Virtual Engine
+You can build any imaginable neural network topology as long as you can specify a computation graph precisely. 
+	 
+The network is a mathematically abstract container that encapsulates the nodes ("layers") and edges ("connections"). It does not do any actual computation. Instead, it uploads instructions to the virtual engine. 
+
+The network is analogous to a "high-level language", as indicated in the overview figure. 
+
+##Virtual Engine
 
 The virtual engine receives instructions from the network. The instructions encode when to allocate memory and what computation needs to be performed on which memory address. All the memory are managed by an internal object pool. 
 	 
-In a sense, the virtual engine is an intermediate agent. It is somewhat analogous to a compiler that translates higher-level instructions to lower-level representations. It delegates computation to the next module.
-	 
-##Actual computation backends
-	
-This is the main workhorse that powers the deep learning process. *Laminar*'s speed is limited only by the backend it runs on. All computation backends conform to a unified interface that integrates with the virtual engine. In this way, switching between drastically different computation hardware becomes very easy. We currently have the following backends choices:
+The virtual engine acts as an intermediate agent, analogous to a compiler that translates higher-level instructions to lower-level "assembly". It delegates computation to the next module.
 
-- Eigen (CPU): based on the [Eigen](eigen.tuxfamily.org) library, a template header library for high-performance linear algebra computation. Eigen has transparent multithreading support. <br><br>
-- Vecmat (CPU): the C++ `std::vector`-based backend. This is implemented from scratch and is predictably the slowest of all backends. It has been developed mainly for debugging purposes and should not be used in deployment. <br><br>
-- CUDA: a plain CUDA backend implementation using [NVidia's toolkit](http://www.nvidia.com/object/cuda_home_new.html). We have implemented custom GPU kernels for matrix operations, optimized by shared memory. <br><br>
-- OpenCL: counts as two backends, because OpenCL can run on both CPU and GPU. <br><br>
-	- In CPU mode, intel-based OpenCL invokes [ThreadBuildingBlock](https://www.threadingbuildingblocks.org/) under the hood, a high-performance multithreading platform. <br><br>
-	- In GPU mode, OpenCL can run on both NVidia and non-NVidia graphics processors. For example, OpenCL runs on _Intel Iris Pro_ GPU which does not support CUDA. _Intel Iris Pro_ is commonly found on Macbook Pros.<br><br>
-- cuBLAS: a high-performance GPU [linear algebra library](https://developer.nvidia.com/cuBLAS). It is included natively as part of the CUDA toolkit. From our experiments, cuBLAS is the fastest compute engine of all six. 
+##Computation Backend
 
-#Optimizations
+A computation backend executes the "assembly" generated by the virtual engine. 
 
-##Network Optimization
+A *Laminar* "assembly" is essentially a C++ 11 lambda that can be stored and executed later. 
 
-The temporal skip implementation has certain optimizations
+##Learning Modules
 
-	net.init_max_temporal_skip(3);
+`LearningSession` is the primary component in the learning module hierarchy. It runs and manages the deep learning experiments based on your specification.
 
-If you set the temporal skip value to a special `Layer::UNLIMITED_TEMPORAL_SKIP` constant, the network will save the full gradient history so that you can jump to an arbitrary frame back in time. 
+# Design Philosophy
 
-It is recommended that you keep the value as low as possible, because the more temporal skip you set, the more gradient history the network will save. This might result in unnecessarily large memory footprint. `Layer::UNLIMITED_TEMPORAL_SKIP` is typically used for learning debugging, if you wish to inspect the gradient history at every time frame. 
+Prof. Bjarne Stroustrup, creator of the C++ language, once said (and I paraphrase) that 
 
-The very first implementation did not have this option - all gradient history is saved in a huge container even though only a tiny fraction of it is active at a time. 
+> A good library design keeps simple things simple, and advanced things customizable. 
+> 
+> A language's value lies not in itself, but in the programs that can be written with the language. 
 
-In a major revision, we optimize the network such that a "gradient window" slides back through history. The gradient history is saved up to `maxTemporalSkip`. This drastically decreases memory footprint and increases efficiency. 
+Similarly, we believe that a library's value lies not in itself, but in the applications that can be built with the library. 
 
-##Engine Optimization
+*Laminar* framework has tried its best to fulfill these ideals. 
 
-###Temporary variable elimination
-We have implemented special optimizers that scan the sequence of instruction queue and eliminate unnecessary temporary variables. 
+# Keep simple usage simple
 
-###Math operation optimization
+For users who only want to use *Laminar* out of the box, we keep the code required to run a full-fledged deep learning experiment as simple, readable and maintainable as possible.
 
-The following line
+We refer to this part of the interface as "*Laminar* User API".
+
+##Network topology
+
+*Laminar* keeps the code for creating neural network topology minimal. In fact, you only have to write a single line of code for each layer and connection - the minimal lines of code required to specify a topology without ambiguity. 
+
+In other words, if your network topology code is 6 times longer than your friend's, that implies intuitively that your network topology is 6 times more complicated. 
+
+You can create arbitrarily complex feed-forward and recurrent network topologies. For recurrent networks, you can connect a layer to an arbitrary frame back in the past. 
+
+##Virtual engine
+
+*No code* is required on your part to interact with the virtual engine --- all interactions are done under the hood by `Tensor`, the abstract mathematical data type that represents multi-dimensional matrices in neural network computation. 
+
+##Computational backend
+
+As an end-user, you have 6 built-in computational backends to choose from, which support all kinds of hardware from single- / multi-threaded CPUs to GPUs. 
+
+Switching backend is embarassingly simple --- only a single line of code is required to change, specifically the template parameter to `EngineBase::make` and any constructor arguments the backend might accept. 
+
+    auto engine = EngineBase::make<EigenEngien>();
+    
+    auto engine = EngineBase::make<CublasEngine>(); // takes an optional memory profiler arg.
+    
+    ...
+
+
+##Learning Modules
+
+All you need to do is to follow the ***O-E-S-S-E-O*** workflow mentioned in the tutorial. 
+
+###Optimizer
+You have six out-of-the-box optimizers to choose from. 
+
+1. SGD 
+2. MomentumGD
+3. NesterovMomentum
+4. Adagrad
+5. RMSprop
+6. ClippedMomentum
+
+For more details, please refer to the manual.
+
+###Evaluator
+You need to implement your own metric evaluator, if your performance metric does not coincide with the loss function value of your neural network. Otherwise, you don't have to do anything. 
+
+Calculating your own metric, like percentage accuracy, is not at all complex: you only have to implement the pure virtual methods specified in the `Evaluator` interface. 
+
+###Stop Criteria
+
+Unless you are implementing sophisticated stop criteria from machine learning papers, all you need is the built-in `MaxEpochStopper` that stops the learning after a maximal number of epochs reached. 
+
+###Serializer
+
+As for the current release, you will have to implement your own serializer that saves the parameters to disk. 
+
+If you are running a prototype experiment, you can use `NullSerializer` as a placeholder (or simply omit the argument, as the templatized `new_learning_session()` will take care of it).
+
+For the next release, we plan to implement 6 default serializers that save the parameters from the 6 built-in computational backends to various file formats, like binary format for both endianness, matlab data file, Mathematica data file, CSV format, etc.
+
+###Evaluation schedule
+
+This is a very simple module that specifies when do you want to do validation and testing. 
+
+The simplest but complete option is `EpochIntervalSchedule`. For more details please refer to the manual. 
+
+###Observer
+
+You will leave this module as the default `NullObserver` unless you want to log statistics as the learning goes. 
+
+A `MinibatchObserver` is provided as a convenience module that prints the learning curve information after every minibatch. 
+
+# Advanced usage customizable
+
+You can customize every component, engine or learning module from end to end. The framework provides a clean interface to minimize your customization efforts. 
+
+Designed for power users, this part of the interface is referred to as "*Laminar* Developer API". 
+
+##Network Topology
+
+###Layer
+
+Due to the vast volume of deep learning literature, we cannot possibly provide every non-linear activation function used or every network loss function mentioned. 
+
+While the built-in layer types are typically sufficient for most research tasks, you can add your own `LossLayer` and `ActivationLayer` with ease by implement pure virtual methods specified in the base classes. 
+
+###Connection
+
+You can add your customized connection types in a very similar fashion as customized layer types. 
+
+In the next release, we plan to add support for convolutional neural networks (will be discussed in more details later). Remarkably, we will use the Developer API ourselves - convolutional netsworks need a few extra types of layers and connections, e.g. `ConvolutionalConnection`, `MaxPoolingConnection`, `MeanPoolingConnection`, etc. 
+
+Meanwhile, you can implement your own convolutional network using the Developer API, instead of waiting for us to release v1.2!
+
+###Network Optimization
+
+A notable optimization has been made in temporal-skip recurrent networks. 
+
+	net.init_max_temporal_skip(3); 
+
+Our very first attempt did not have this maximal temporal skip value - all gradient history is saved in a huge container even though only a tiny fraction of it is active at a time. 
+
+After a major revision, we optimize the network such that a "gradient window" slides back through history. The gradient history is saved in a much smaller container whose size is equal to `maxTemporalSkip`. This drastically decreases memory footprint and increases efficiency. 
+
+Nevertheless, if you want to inspect the full gradient history for debugging or educational purposes, you can always set the maximal temporal skip value to a special `Layer::UNLIMITED_TEMPORAL_SKIP` constant, which forces the network to save the entire gradient history. 
+
+##Virtual Engine
+
+###TensorBase Hierarchy
+
+`TensorBase` is the main communication channel between the network topology and the virtual engine. The network uploads instructions (topic of the next subsection) to the virtual engine via `TensorBase`. 
+
+<img src ="https://raw.githubusercontent.com/JimJarvis/DocImages/master/laminar/tensor.png" width = "330" />
+
+We make the distinction between `Tensor` and `Scalar`, because certain operations have overloaded meaning for `Tensor` and `Scalar`. For example, `Tensor`-`Tensor` multiplication is of course not the same as `Tensor`-`Scalar` multiplication (which is essentially element-wise scaling). 
+
+####Big-Six operators overloaded
+
+All of the following operators are carefully overloaded for `Tensor` and `Scalar`:
+
+1. Constructor --- uploads `create` instruction
+2. Destructor --- `destroy` instruction
+3. Copy assignment --- `assign` instruction
+4. Copy constructor --- `create` instruction
+5. Move assignment --- `assign` instruction
+6. Move assignment --- `create` instruction
+
+####Standalone math operators overloaded
+
+Common math operators are overloaded for both `Tensor` and `Scalar`:
+
+- `+`  plus operator
+- `-`  minus operator
+- `-`  negate operator
+- `*`  multiplication operator
+
+####Member math operators overloaded
+
+Math operators that are member functions are also overloaded:
+
+- `+=`  plus-assign operator
+- `-=`  minus-assign operator
+- `*=`  multiply-assign operator
+
+####Special functions in lmn:: namespace
+
+A complete listing can be found in the manual. A few examples are:
+
+- `lmn::sigmoid` --- a normal operation
+- `lmn::clip` --- a normal operation
+- `lmn::perturb` --- a context operation, will be discussed in the next section.
+
+A context operation passes an extra `OpContext` argument to the `Instruction` constructor. 
+A normal operation leaves `OpContext` field as `nullptr`.
+
+###Instruction
+`Instruction` is a class that constitutes an "intermediate representation" between high-level math logic and low-level computation. 
+
+Each `Instruction` has four fields:
+
+####Opcode
+
+`Opcode` is a wrapper around `std::string` and implements `std::hash<Opcode>` interface. Example opcodes are `t+t` (tensor addition), `t*t` (tensor multiplication), `sigmoid`, `cos`, `scale` (linear tensor scaling), etc. 
+
+*Laminar* has around 20 built-in opcodes. If you want to implement your own backend, you will have to register the opcodes with your backend's actual implementation. 
+
+Note that you don't have to register all the opcodes though. For example, if you do not plan to use `ClippedMomentum` optimizer, you don't have to implement the `"clip"` opcode. 
+
+####Read addresses
+A vector of ints represent the read addresses for an instruction. The number of read addresses can be zero or more. 
+
+####Write address
+An int represents the write address for an instruction, which always has one and only one write address as for the current release. 
+
+In v1.2, we will add support for multi-read, multi-write instructions.
+
+####OpContext
+There are two types of opcodes:
+
+1. Normal opcodes with no operational context
+2. Context opcodes
+
+We introduce the concept of "context opcode" because an instruction might need extra information (other than tensors) to perform an operation. For example, the opcode `"perturb"`, an essential instruction used in gradient checking, requires not only a tensor address to be operated on, but also a `DimIndex` that specifies which entry to be perturbed and a constant amount of perturbation (typically `1e-6f`, a very small positive number). The extra `DimIndex` and `float` information are what we call "operation context variables". 
+
+`OpContext` class is designed to work with *any* number of context variables of *any* type. To achieve this, we make extensive use of `std::tuple<>` and c++ 11 variadic templates to store the context variables. Then the `std::tuple` is unpacked by a sophisticated template meta-programming trick and passed on to the actual backend function. 
+
+`OpContext` is one of the many examples where *Laminar* goes to great lengths to keep the Developer API clean, even though that requires very obscure and difficult code internally. 
+
+An example `Instruction` is shown below:
+
+    Instruction instr(
+	    // opcode
+	    Opcode("my_op",
+	    // read addresses
+	    { 1, 2 },
+	    // write address
+	    3,
+	    // operation context with 3 variables
+	    OpContext<int, string, std::function<float(float)>>(
+	    3, // int context
+	    "this is a context", // string context
+	    [](float x) { return x * x; } // std::function context
+	    )
+	 );
+
+As you can see from the above example, an instruction can take arbitrary number of arbitrary heterogenous types.
+
+###Instruction-level optimizations
+
+The following lines perform a transpose-multiplication:
 
 	Tensor t1, t2, t3;
 	t1 = lmn::transpose(t2) * t3;
 
-is translated to the following list of instructions:
+The above will upload a raw sequence of instructions to the virtual engine:  
 
-    transpose t2 -> tmp
-    mult_t_t tmp t3 -> tmp2
-    assign tmp2 -> t1
+    // pseudocode format:
+    opcode, [read addresses] -> write address
+    
+    "transpose", 1 -> 2  // 2 is a temporary
+    "mult", [2, 3] -> 4  // write result to 4
 
-Our optimizer is able to squash the above into a single instruction
+The virtual engine examines the sequence, eliminates the temporary address and squashes the above into one instruction
 
-    transpose_mult t2, t3 -> t1
+    "transpose_mult", [1, 3] -> 4
 
-Note that a `transpose_mult` is a single instruction on BLAS. It is much more efficient than `transpose()` first and then multiply the two matrices. 
+This optimization is very important because performing a *real* transposition followed by a multiplication is much less efficient than a single computation command "tranpose-multiply".
 
-#v1.2 Future Release
+Highly optimized linear algebra libraries, like cuBLAS, has such a single instruction that does not actually tranpose the matrix under the hood. 
+
+In the current release, unfortunately, *Laminar* does not have a Developer API for the virtual engine. In the next version, the virtual engine will become fully customizable by your own instruction optimizing routines. 
+
+Suppose your engine has another sequence of instructions
+
+    slow_op1 [1, 2] -> 3  // 3 is a temporary
+    slow_op2 [3] -> 4  // 4 is yet another temporary
+    slow_op3 [4, 5] -> 6  // 6 is the output
+
+which can be squashed into a single, much faster instruction:
+
+    lightning_op [1, 2, 5] -> 6
+
+You will soon be able to specify this customized optimization in the Developer API v1.2. 
+
+##Computation Backend
+
+A complete Developer API is provided for rolling your own computational backend. 
+
+While built-in support for CPUs and GPUs seem enough for most research tasks, you might want to run *Laminar* on a quantum computer or Ironman's suit in the future. 
+
+Developer API allows you to implement your quantum backend in several clean steps. 
+
+ 1. Specify a quantum data type. <br><br>
+ 2. Implement your quantum computation functions, please refer to the manual for interface requirements. <br><br>
+	 1. Normal operations
+	 2. Context operations with trailing context parameters
+ 3. Register your functions with *Laminar* opcodes. 
+
+Now your deep networks will run seamlessly on your quantum processor. 
+
+##Learning Modules
+
+The Developer API overlaps with the User API significantly in this section. 
+
+###Optimizer
+
+Developer API can be used to implement your own gradient optimizing algorithm. 
+
+There are dozens of well-studied algorithms over the past three decades in both general machine learning and deep learning community. You can easily implement a more advanced algorithm than the 6 built-in ones. 
+
+###Evaluator
+
+Since an end-user needs to write metric evaluation logic for a specific learning problem, the User API is the same as the Developer API. 
+
+###Stop Criteria
+
+Developer API allows you to employ much more advanced stop criteria than the naive `MaxEpochStopper`. 
+
+###Serializer
+
+Currently, the `Serializer` User API is the same as Developer API, because no default serialization is provided. 
+
+In the next release, you will be able to use 6 default serializers corresponding to the 6 backends and different data file formats. 
+
+You will use the Developer API only when you are rolling your quantum backend or exporting the learned parameters to an unusual data format. 
+
+###Evaluation schedule
+User API coincides with Developer API.
+
+###Observer
+User API coincides with Developer API.
+
+# Efficiency and Scalability
+
+##Little tradeoff
+
+As if governed by an unspoken theorem, there is typically a difficult tradeoff between efficiency and the beauty of interface. 
+
+*Laminar*, however, suffers very little from this tradeoff. Part of *Laminar*'s design philosophy is that we should not sacrifice efficiency in exchange for clean and readable code --- they ought to coexist.
+
+ Deep learning is one of the most data-intensive fields in computer science. No one would be willing to use our library if it slows down their learning experiment by a significant amount compared to hard-coded neural networks. 
+
+The "compiled" sequence of instructions is almost as short as hard-coded back propagation algorithm (for feed-forward networks) or BPTT algorithm (for recurrent networks), while the network topology frontend does not have to sacrifice its flexible, succinct and readable code style. We owe this feature to the virtual engine that acts as an intermediate agent to separate deep learning math from computation cleanly.
+
+In the next release, the virtual engine will have better optimizations for the instruction queue, which means that it might even run faster and produce smaller memory footprint than some hand-engineered neural network implementations online. 
+
+##Scales as the backend scales
+
+*Laminar*'s scalability is synonymous with its backend's scalability, because only backends are responsible for the actual computation heavy-lifting. 
+
+Except for `VecmatEngine` (only for debugging and logging purposes), the other 5 engines shipped with *Laminar* are based on industrial-strength numerical libraries that scale extremely well. 
+
+For example, the Eigen library is one of the fastest CPU-based linear algebra engines in the world. It employs advanced optimization techniques like template-based lazy evaluation and explicit vectorization for SSE 2/3/4, ARM NEON, and AltiVec instruction sets.
+
+cuBLAS is also a state-of-the-art matrix computation library that runs at lightning speed on massively parallel graphical processors. 
+
+If you use the Developer API, you are guaranteed that *Laminar* scales as your own backend implementation scales with very little overhead. We look forward to your scalable quantum computing backend some day. 
+
+#Error Handling
+
+*Laminar* framework has two types of error handling
+
+- Compile-time error check
+- Run-time error check
+
+## Compile-time error
+
+If an inconsistency (either an internal problem or an incorrect usage) can be detected at compile time, *Laminar* will not defer it to run time. 
+
+In `debug_utils.h`, *Laminar* uses a few macros that call `static_assert` under the hood. 
+
+The *Laminar* macros will print out a very outstanding compile time error message that spans at least 10 lines (5 newline characters before and 5 after). This ensures that the static assert message will not be buried among other irrelevant compiler error messages.
+
+    LMN_STATIC_ASSERT(cond, error_message); 
+
+If `cond` evaluates to false, compilation fails with `error_message`.
+    
+    LMN_STATIC_ASSERT_IS_BASE(Base, Derived, error_message);
+
+If `Derived` is not a derived class from `Base`, compilation fails with `error_message`.
+
+## Run-time error
+
+*Laminar* has a hierarchy of runtime exceptions. 
+
+<img src="https://raw.githubusercontent.com/JimJarvis/DocImages/master/laminar/exceptions.png" width="600">
+
+For more information about each exception type, please refer to the manual. 
+
+#v1.2 Release Plan
+
+We have briefly mentioned several v1.2 improvement plans in the previous chapters. In the next sections, we outline a few additional visions for the future.
+
 ##Convolutional Neural Network
 
-In v1.2, we would like to incorporate convolutional NNs into the *Laminar* framework. 
+In v1.2, convolutional neural networks (CNN) will be incorporated into the *Laminar* framework. 
 
-Convolutional Neural Networks (CNN) are biologically-inspired variants of MLPs. From Hubel and Wiesel’s early work on the cat’s visual cortex, we know the visual cortex contains a complex arrangement of cells. 
+CNN is a biologically-inspired deep learning model inspired by visual cortex research. It exploits spatially-local correlation by enforcing a local connectivity pattern between neurons of adjacent layers. In other words, the inputs of hidden units in layer *m* are from a subset of units in layer *m - 1*, units that have spatially contiguous receptive fields. 
 
-These cells are sensitive to small sub-regions of the visual field, called a receptive field. The sub-regions are tiled to cover the entire visual field. These cells act as local filters over the input space and are well-suited to exploit the strong spatially local correlation present in natural images.
-
-Additionally, two basic cell types have been identified: Simple cells respond maximally to specific edge-like patterns within their receptive field. Complex cells have larger receptive fields and are locally invariant to the exact position of the pattern.
-
-CNNs exploit spatially-local correlation by enforcing a local connectivity pattern between neurons of adjacent layers. In other words, the inputs of hidden units in layer *m* are from a subset of units in layer *m - 1*, units that have spatially contiguous receptive fields. 
-
-In addition, CNNs feature *shared weights* that drastically decrease the number of parameters to be trained, thus boosting learning efficiency dramatically. 
+In addition, CNNs feature *shared weights* that drastically decrease the number of parameters to be trained. CNNs are most typically used for computer vision tasks like image recognition and object detection. 
 
 ##Neural Turing Machine
+
 Neural Turing Machines are novel architectures that extend the capabilities of neural networks by coupling them to external memory resources, which they can interact with by attentional processes. 
 
 The combined system is analogous to a Turing Machine or Von Neumann architecture but is differentiable end-to-end, allowing it to be efficiently trained with gradient descent. 
 
 Preliminary results in cutting edge research demonstrate that Neural Turing Machines can infer simple algorithms such as copying, sorting, and associative recall from input and output examples.
 
-##Fortran backend
-In addition to the 6 backends shipped with the current *Laminar* release, we would like to have a high-performance Fortran backend that powers the neural networks. 
+##Fortran Backend
 
-##TBB backend
+Fortran, though ancient, is still unparalleled in its numerical computation efficiency. Physicists at CERN rely heavily on Fortran legacy code bases for high-performance simulation. 
 
-Intel *ThreadBuildingBlock* (TBB) is a mature library that uses multithreading to scale up CPU clusters. 
+We would like to provide a Fortran-C++ wrapper backend for physicists who wish to use deep learning techniques for particle physics. 
 
-We would like *Laminar* to run on large-scale cloud clusters with TBB. 
+##Cloud Backend
+
+The *Laminar* framework can be distributed over a cluster of computers if a cloud-based backend can be implemented. Cloud computing has the potential to scale deep learning to a new order of magnitude. 
+
+##Advanced Compiler Techniques
+
+We would like to implement a few advanced compiler techniques to optimize the virtual engine. To name a few:
+
+- Expression-tree based instruction level optimization. 
+- Liveness analysis
+
+Credits to David.
+
+##References
+
+- http://deeplearning.net/tutorial/lenet.html
+- http://yann.lecun.com/exdb/lenet/
+- http://cernlib.web.cern.ch/cernlib/
+- http://arxiv.org/abs/1410.5401
+- http://en.wikipedia.org/wiki/Live_variable_analysis
