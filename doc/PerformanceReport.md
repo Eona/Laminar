@@ -1,3 +1,24 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+#*Laminar* Performance Report
+
+- [Comparison of the backends](#comparison-of-the-backends)
+- [Operation profiling](#operation-profiling)
+- [MNIST training](#mnist-training)
+  - [Goal](#goal)
+  - [Network topology](#network-topology)
+  - [Learning](#learning)
+- [RNN Language Modeling](#rnn-language-modeling)
+  - [Setup](#setup)
+  - [Goal](#goal-1)
+  - [Corpus](#corpus)
+    - [Shakespeare's *A Midsummer Night's Dream*](#shakespeares-a-midsummer-nights-dream)
+    - [Kant's *Critique of Pure Reason*](#kants-critique-of-pure-reason)
+  - [Network topology](#network-topology-1)
+  - [Learning](#learning-1)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 #Comparison of the backends
 
 We have implemented six computation backends and have conducted extensive profiling on their time efficiency. The backends are listed below. 
@@ -131,12 +152,12 @@ The perplexity of the predictive distribution should be as low as possible.
 
 Excerpt:
 
-> Stand forth, Lysander: and my gracious duke, 
-This man hath bewitch'd the bosom of my child; 
-Thou, thou, Lysander, 
-thou hast given her rhymes, 
-And interchanged love-tokens with my child: 
-Thou hast by moonlight at her window sung
+> Stand forth, Lysander: and my gracious duke, <br>
+	This man hath bewitch'd the bosom of my child; <br>
+	Thou, thou, Lysander,  <br>
+	thou hast given her rhymes, <br> 
+	And interchanged love-tokens with my child:  <br>
+	Thou hast by moonlight at her window sung
 
 
 ###Kant's *Critique of Pure Reason*

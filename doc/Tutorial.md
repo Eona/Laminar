@@ -1,3 +1,40 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+#*Laminar* Tutorial
+
+- [Introduction](#introduction)
+  - [What is Deep Learning?](#what-is-deep-learning)
+  - [What is ***Laminar***?](#what-is-laminar)
+- [Installation](#installation)
+- [Architecture](#architecture)
+  - [Network Topology](#network-topology)
+  - [Virtual Engine](#virtual-engine)
+  - [Computation backend](#computation-backend)
+  - [Learning Modules](#learning-modules)
+- [Feed-forward Neural Network](#feed-forward-neural-network)
+  - [Create your first network](#create-your-first-network)
+  - [Gearing up feed-forward network](#gearing-up-feed-forward-network)
+- [Recurrent Neural Network (RNN)](#recurrent-neural-network-rnn)
+  - [Create your first RNN](#create-your-first-rnn)
+  - [Time-skip RNN](#time-skip-rnn)
+  - [Gated RNNs](#gated-rnns)
+  - [Long Short Term Memory RNN (LSTM)](#long-short-term-memory-rnn-lstm)
+  - [Extending the Topology](#extending-the-topology)
+- [Training Neural Networks](#training-neural-networks)
+  - [Engine](#engine)
+  - [Data Manager](#data-manager)
+  - [Learning Session](#learning-session)
+    - [***O-E-S-S-E-O***](#o-e-s-s-e-o)
+    - [**O** for Optimizer](#o-for-optimizer)
+    - [**E** for Evaluator](#e-for-evaluator)
+    - [**S** for Stop Criteria](#s-for-stop-criteria)
+    - [**S** for Serializer](#s-for-serializer)
+    - [**E** for Evaluation Schedule](#e-for-evaluation-schedule)
+    - [**O** for Observer](#o-for-observer)
+  - [Putting everything together](#putting-everything-together)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 #Introduction
 ## What is Deep Learning?
 
