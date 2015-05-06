@@ -62,9 +62,9 @@ __*Laminar Accelerated and MInimalistic Neural ARchitecture*__
 - Efficient and scalable. The library runs efficiently on heterogenous hardware, including both single- and multi-threaded CPUs, both CUDA and non-CUDA GPUs, thanks to state-of-the-art computational backends. <br><br>
 - Versatile. Literally dozens of built-in pluggable modules are shipped with *Laminar*. <br><br>
 	- Arbitrarily complicated networks can be constructed and trained with ease.<br>
-	- Six computational backends are provided, which support most of the common hardware. <br>
+	- Six computational backends are provided, which support most of the common hardware. <br><br>
 - Customizable in every corner frome end to end. If the built-in modules cannot satisfy your needs, you can always roll your own modules by extending the architecture. <br><br>
-- The scale of the code base is comparable to industrial-strength open-source libraries like *Torch*.<br><br>
+- The current code base contains more than 18,800 lines of code. And it is still growing on a daily basis. We plan to release the entire framework to the open-source community in the next few months. <br><br>
 
 This tutorial assumes that readers are reasonably familiar with the basic concepts of machine learning, e.g. loss function, gradient descent, training, cross-validation, etc. [This website](http://deeplearning.net/) is a good place to start with these fundamental concepts. 
 
