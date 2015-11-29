@@ -25,3 +25,11 @@ To get started, please take a look at our [Tutorial](Tutorial.md). It primarily 
 For an in-depth discussion of technical details, please refer to the [Manual](Manual.md). It covers both the *User API* in more details, and the *Developer API* if you wish to extend the current architecture. 
 
 Finally, the [Design Document](DesignDoc.md) discusses *Laminar*'s design philosophy and our vision for the future. 
+
+
+## Naming convention
+
+ - Functions use underscores
+ - Macro functions use all-CAPS and underscores
+ - Variables start with lower case and use camel case
+ - Types and classes start with upper case and use camel case
